@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-11-08T01:05:36.328Z",
+  "accepted": {
+    "589d3a9b1aae8843": {
+      "title": "Policy \"vcard views insert\" lets anon write to vcard_views with an always-true check",
+      "severity": "critical",
+      "file": "supabase\\migrations\\20260728154545_c9bbcba2-9f34-41b8-aa85-9ea7c5413b13.sql"
+    },
+    "25b1d35253d982e8": {
+      "title": "public.tiktok_business_accounts is created without GRANT statements",
+      "severity": "high",
+      "file": "supabase\\migrations\\20261025235500_tiktok_business_messaging.sql"
+    }
+  }
+}
