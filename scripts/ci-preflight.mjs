@@ -22,10 +22,10 @@ function changedFiles() {
   } catch {
     return null; // base ref missing (shallow clone) — fall back to full lint
   }
-  const out = execSync(`git diff --name-only --diff-filter=ACMR ${base}...HEAD`, { encoding: "utf8" });
-  return out
-    .split("\n")
-    .filter((f) => /\.[cm]?[tj]sx?$/.test(f) && !f.startsWith("node_modules/"));
+  const out = execSync(`git diff --name-only --diff-filter=ACMR ${base}...HEAD`, {
+    encoding: "utf8",
+  });
+  return out.split("\n").filter((f) => /\.[cm]?[tj]sx?$/.test(f) && !f.startsWith("node_modules/"));
 }
 
 const MAX_FILES_SHOWN = 25;
@@ -38,8 +38,12 @@ function run(name, cmd, cmdArgs) {
     let out = "";
     child.stdout.on("data", (d) => (out += d));
     child.stderr.on("data", (d) => (out += d));
-    child.on("error", (err) => resolve({ name, code: 1, out: String(err), ms: Date.now() - startedAt }));
-    child.on("close", (code) => resolve({ name, code: code ?? 1, out, ms: Date.now() - startedAt }));
+    child.on("error", (err) =>
+      resolve({ name, code: 1, out: String(err), ms: Date.now() - startedAt }),
+    );
+    child.on("close", (code) =>
+      resolve({ name, code: code ?? 1, out, ms: Date.now() - startedAt }),
+    );
   });
 }
 
@@ -89,27 +93,45 @@ function report(title, result, parse) {
   for (const [file, errs] of files.slice(0, MAX_FILES_SHOWN)) {
     console.log(`\n  ${file} (${errs.length})`);
     for (const e of errs.slice(0, MAX_ERRORS_PER_FILE)) console.log(`  ${e}`);
-    if (errs.length > MAX_ERRORS_PER_FILE) console.log(`   ${errs.length - MAX_ERRORS_PER_FILE} more`);
+    if (errs.length > MAX_ERRORS_PER_FILE)
+      console.log(`   ${errs.length - MAX_ERRORS_PER_FILE} more`);
   }
-  if (files.length > MAX_FILES_SHOWN) console.log(`\n   ${files.length - MAX_FILES_SHOWN} more files with errors`);
+  if (files.length > MAX_FILES_SHOWN)
+    console.log(`\n   ${files.length - MAX_FILES_SHOWN} more files with errors`);
   if (total === 0) console.log(result.out.slice(0, 4000));
   return 1;
 }
 
 const jobs = [];
-if (runTypecheck) jobs.push(run("Typecheck", "node_modules/.bin/tsgo", ["--noEmit", "-p", "tsconfig.json"]));
+if (runTypecheck)
+  jobs.push(
+    run("Typecheck", process.execPath, [
+      "node_modules/@typescript/native-preview/bin/tsgo",
+      "--noEmit",
+      "-p",
+      "tsconfig.json",
+    ]),
+  );
 let lintNote = "";
 if (runLint) {
   let lintTargets = ["."];
   if (changedOnly) {
     const files = changedFiles();
-    if (files && files.length === 0) lintTargets = []; // nothing to lint
+    if (files && files.length === 0)
+      lintTargets = []; // nothing to lint
     else if (files) {
       lintTargets = files;
       lintNote = ` (${files.length} changed file(s))`;
     } else lintNote = " (base ref missing — full lint)";
   }
-  if (lintTargets.length > 0) jobs.push(run("Lint", "node_modules/.bin/eslint", [...lintTargets, "--quiet"]));
+  if (lintTargets.length > 0)
+    jobs.push(
+      run("Lint", process.execPath, [
+        "node_modules/eslint/bin/eslint.js",
+        ...lintTargets,
+        "--quiet",
+      ]),
+    );
 }
 
 const started = Date.now();
@@ -120,7 +142,8 @@ let failed = 0;
 let i = 0;
 if (runTypecheck) failed |= report("Typecheck", results[i++], parseTsErrors);
 if (runLint) {
-  if (jobs.length > (runTypecheck ? 1 : 0)) failed |= report(`Lint${lintNote}`, results[i++], parseLintErrors);
+  if (jobs.length > (runTypecheck ? 1 : 0))
+    failed |= report(`Lint${lintNote}`, results[i++], parseLintErrors);
   else console.log(`✔ Lint${lintNote} — no changed lintable files, skipped`);
 }
 console.log(`\nTotal wall time: ${((Date.now() - started) / 1000).toFixed(1)}s`);

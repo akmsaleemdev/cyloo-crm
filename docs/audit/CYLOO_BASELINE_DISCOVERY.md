@@ -48,18 +48,22 @@ The repository is already a multi-application workspace in practice, but it is n
 | Check | Result | Evidence |
 | --- | --- | --- |
 | `npm run security:policies` | Pass | Restored `security/policy-assertions.json`; both repository hardening assertions hold. |
-| `npm run preflight` | Blocked | `node_modules/.bin/tsgo` and `node_modules/.bin/eslint` are missing. |
-| `npm run typecheck` | Did not complete in the available baseline window | The configured `tsgo` command did not produce a result before it was stopped. |
+| Dependency installation | Pass | `npm ci --ignore-scripts` completed; registry access was slow, not proven unavailable. |
+| `npm run preflight` | Partially fixed | Windows executable lookup was corrected; a full preflight is not passing while full lint and typecheck remain unresolved. |
+| `npm run typecheck` | Not verified | A concurrent run failed with Windows out-of-memory; a standalone retry was stopped after exceeding 7 GB without completing. |
 | Targeted ESLint (`app.js`, `app.cjs`, `docs/script.js`) | Pass | `npx --no-install eslint ...` completed successfully. |
-| `npm run build:server` | Blocked | Vite is absent from the local `node_modules`; the command reports `'vite' is not recognized`. |
+| `npm run build:server` | Pass | Node-server production build completed with route-discovery, deprecation, and large-chunk warnings. |
+| `npm test -- --maxWorkers=2` | Pass | 20 test files and 122 tests passed. This does not establish live database RLS behavior. |
+| `npm run lint` | Fail | 200,497 errors and 192 warnings, predominantly existing Prettier issues across the repository. |
 | `npm audit --omit=dev --audit-level=high` | Fail | Four production-tree advisories were reported: DOMPurify (critical), undici (high), zod (high), and seroval (moderate). |
+| `npm run security:scan` | Fail | Five new dependency findings: DOMPurify (critical), and happy-dom, undici, Vite, and zod (high). Two other findings are baselined. |
 | `npm audit fix --omit=dev` | Blocked | The remediation command did not complete in the available local environment. |
-| Automated tests | Pending | Must run after dependencies/tooling are restored. |
+| Browser and live database tests | Not run | Require an appropriate isolated environment and credentials. |
 
 ## Initial risks and follow-up
 
-1. Restore a reproducible dependency installation from the committed lockfile and verify the expected binaries are present.
-2. Run typecheck, full lint, security scanning, focused RLS tests, production build, and the relevant Playwright smoke suite.
+1. Resolve the full lint backlog and profile or partition the typecheck so it can complete within available memory.
+2. Remediate the dependency findings, then rerun security scanning, live RLS tests, and the relevant Playwright smoke suite against an isolated environment.
 3. Review route-level data fetching and bundle output using measured build artifacts before making performance changes.
 4. Do not classify production readiness until the blocked checks have executed successfully and results are recorded.
 
