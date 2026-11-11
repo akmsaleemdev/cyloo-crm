@@ -346,9 +346,7 @@ import(pathToFileURL(serverEntry).href)
       startNodeServer(exportedHandler, "exported handler");
     }
     if (!didStartServer) {
-      throw new Error(
-        "[cyloo] Server entry loaded, but no HTTP listener or handler was created.",
-      );
+      throw new Error("[cyloo] Server entry loaded, but no HTTP listener or handler was created.");
     }
     console.log(`[cyloo] Server entry loaded: ${serverEntry}`);
   })

@@ -1,0 +1,18 @@
+{
+  "assertions": [
+    {
+      "id": "vcard-views-insert-is-public-card-scoped",
+      "severity": "critical",
+      "finding": "The vcard_views INSERT policy must validate the referenced card instead of accepting every row.",
+      "scope": "migrations",
+      "mustMatch": "CREATE\\s+POLICY\\s+[\\\"']vcard views insert[\\\"']\\s+ON\\s+public\\.vcard_views[\\s\\S]*?WITH\\s+CHECK\\s*\\([\\s\\S]*?EXISTS\\s*\\([\\s\\S]*?FROM\\s+public\\.vcards[\\s\\S]*?is_public\\s*=\\s*true[\\s\\S]*?revoked_at\\s+IS\\s+NULL"
+    },
+    {
+      "id": "tiktok-business-accounts-explicit-column-grant",
+      "severity": "high",
+      "finding": "The TikTok business account migration must explicitly restrict and grant only the intended non-secret columns.",
+      "scope": "migrations",
+      "mustMatch": "GRANT\\s+SELECT\\s*\\(\\s*id\\s*,\\s*workspace_id[\\s\\S]*?updated_at\\s*\\)\\s+ON\\s+public\\.tiktok_business_accounts\\s+TO\\s+authenticated"
+    }
+  ]
+}
