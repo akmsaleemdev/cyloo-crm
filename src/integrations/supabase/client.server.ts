@@ -6,6 +6,22 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 import { assertServiceRoleKey } from "@/lib/supabase/service-role-key.server";
 
+// Polyfill global WebSocket for server-side Supabase client if not present (Node < 22)
+if (typeof globalThis !== 'undefined' && !globalThis.WebSocket) {
+  class NoopWebSocket {
+    static readonly CONNECTING = 0;
+    static readonly OPEN = 1;
+    static readonly CLOSING = 2;
+    static readonly CLOSED = 3;
+    addEventListener() {}
+    removeEventListener() {}
+    dispatchEvent() { return false; }
+    send() {}
+    close() {}
+  }
+  (globalThis as unknown as { WebSocket: typeof NoopWebSocket }).WebSocket = NoopWebSocket;
+}
+
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }

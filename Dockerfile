@@ -3,7 +3,7 @@
 # TanStack Start SSR bundled with Vite; runs on Node 20 (works fine on 22 too).
 
 # ---------- 1. Dependencies ----------
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 RUN corepack enable && apk add --no-cache libc6-compat
 COPY package.json .npmrc bun.lock* package-lock.json* pnpm-lock.yaml* yarn.lock* ./
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.npm \
     else npm ci --ignore-scripts; fi
 
 # ---------- 2. Build ----------
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
@@ -38,7 +38,7 @@ ENV NITRO_PRESET=node-server
 RUN npm run build:server && npm run postbuild
 
 # ---------- 3. Runtime ----------
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 ARG APP_VERSION=6.8.9
 LABEL org.opencontainers.image.title="CYLOO" \
       org.opencontainers.image.description="CYLOO omnichannel messaging platform" \
