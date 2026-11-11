@@ -8,9 +8,9 @@ WORKDIR /app
 RUN corepack enable && apk add --no-cache libc6-compat
 COPY package.json .npmrc bun.lock* package-lock.json* pnpm-lock.yaml* yarn.lock* ./
 RUN --mount=type=cache,target=/root/.npm \
-    if [ -f bun.lock ]; then npm i -g bun && bun install --frozen-lockfile; \
-    elif [ -f pnpm-lock.yaml ]; then corepack prepare pnpm@latest --activate && pnpm i --frozen-lockfile; \
-    elif [ -f yarn.lock ]; then corepack prepare yarn@stable --activate && yarn install --frozen-lockfile; \
+    if [ -f bun.lock ]; then npm i -g bun && bun install; \
+    elif [ -f pnpm-lock.yaml ]; then corepack prepare pnpm@latest --activate && pnpm i; \
+    elif [ -f yarn.lock ]; then corepack prepare yarn@stable --activate && yarn install; \
     else npm ci; fi
 
 # ---------- 2. Build ----------
