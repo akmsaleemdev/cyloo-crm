@@ -12,7 +12,8 @@ const destination = resolve(publicOutput, "docs");
 
 const sourceStats = await stat(source).catch(() => null);
 if (!sourceStats?.isDirectory()) {
-  throw new Error(`Documentation source directory not found: ${source}`);
+  console.log(`[copy-docs-to-output] Documentation source directory not found: ${source}; skipping.`);
+  process.exit(0);
 }
 
 await mkdir(publicOutput, { recursive: true });

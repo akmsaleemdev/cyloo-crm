@@ -75,7 +75,8 @@ for (const dir of candidateDirectories) {
 }
 
 if (directories.length === 0) {
-  throw new Error(`No SSR output found. Looked in: ${candidateDirectories.join(", ")}`);
+  console.log(`[fix-ssr-export-all-cycle] No separate _ssr directory found (node-server standalone output); skipping.`);
+  process.exit(0);
 }
 
 for (const dir of directories) {
