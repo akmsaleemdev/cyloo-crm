@@ -935,16 +935,16 @@
   --neutral-900: oklch(0.083 0.003 25);
   --neutral-950: oklch(0.05 0.003 25);
 
-  --background: #121212;
-  --foreground: #ededed;
-  --surface: #1c1c1c;
-  --surface-elevated: #222222;
-  --surface-sunken: #0e0e0e;
+  --background: #151515;
+  --foreground: #e0e0e0;
+  --surface: #202020;
+  --surface-elevated: #262626;
+  --surface-sunken: #101010;
 
-  --card: #1c1c1c;
-  --card-foreground: #ededed;
-  --popover: #202020;
-  --popover-foreground: #ededed;
+  --card: #202020;
+  --card-foreground: #e0e0e0;
+  --popover: #222222;
+  --popover-foreground: #e0e0e0;
 
   --primary: oklch(0.65 0.19 265); /* CYLOO blue lighter for dark mode */
   --primary-foreground: oklch(1 0 0);
@@ -952,8 +952,8 @@
   --primary-muted: color-mix(in oklab, var(--primary) 15%, var(--surface));
 
   --secondary: #222222;
-  --secondary-foreground: #ededed;
-  --secondary-muted: #1c1c1c;
+  --secondary-foreground: #e0e0e0;
+  --secondary-muted: #1a1a1a;
 
   --accent: #3ece90; /* CYLOO green */
   --accent-foreground: oklch(1 0 0);
@@ -964,7 +964,7 @@
   --accent-muted: color-mix(in oklab, var(--accent) 18%, var(--surface));
 
   --muted: #242424;
-  --muted-foreground: #9a9a9a;
+  --muted-foreground: #a0a0a0;
 
   --success: oklch(0.72 0.15 150);
   --success-foreground: oklch(0.083 0.003 25);
@@ -987,9 +987,9 @@
   --status-busy: var(--danger);
   --status-offline: #525252;
 
-  --border: #262626;
-  --border-strong: #333333;
-  --input: #1f1f1f;
+  --border: #2a2a2a;
+  --border-strong: #383838;
+  --input: #222222;
   --ring: var(--accent);
 
   --chart-1: oklch(0.75 0.174 152);
@@ -1001,13 +1001,13 @@
   --chart-7: #fafafa;
   --chart-8: #525252;
 
-  --sidebar: #161616;
-  --sidebar-foreground: #ededed;
+  --sidebar: #1e1e1e;
+  --sidebar-foreground: #e0e0e0;
   --sidebar-primary: var(--accent);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #222222;
-  --sidebar-accent-foreground: #ededed;
-  --sidebar-border: #222222;
+  --sidebar-accent: #292929;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #292929;
 
   /* Hero surface — dark gradient; foreground near-white for AA */
   --hero-foreground: oklch(0.985 0 0);

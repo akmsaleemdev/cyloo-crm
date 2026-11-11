@@ -40,7 +40,6 @@ import {
   type DashboardWidgetConfig,
 } from "@/components/dashboard/dashboard-preferences";
 import { DashboardCustomizeModal } from "@/components/dashboard/dashboard-customize-modal";
-import { AIComposerHero } from "@/components/dashboard/ai-composer-hero";
 import { PageTransition, StaggerContainer, StaggerItem, MotionCard } from "@/components/ui/motion";
 const leadDisplayName = (l: {
   first_name: string | null;
@@ -152,9 +151,6 @@ function DashboardPage() {
         className="dashboard-page px-4 lg:px-8 py-6 max-w-7xl w-full mx-auto space-y-6"
         style={{ backgroundColor: "var(--dashboard-background, transparent)" }}
       >
-        {/* Signature AI Composer Hero matching Screenshot 1 & 2 */}
-        <AIComposerHero />
-
         <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {widgets
             .filter((w) => w.visible)

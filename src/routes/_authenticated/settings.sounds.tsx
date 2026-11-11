@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BellRing, MessageCircle, Play, Volume2 } from "lucide-react";
-import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout } from "@/components/app/settings/settings-layout";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -92,9 +92,11 @@ function SoundSettings() {
   // the controls immediately without a network request.
 
   return (
-    <>
-      <AppTopbar title="Notification sounds" subtitle="Choose a sound for each inbox channel and task reminders" />
-      <main className="mx-auto w-full max-w-5xl space-y-6 p-4 sm:p-6">
+    <SettingsLayout
+      title="Sounds & Alerts"
+      description="Choose audio notification sounds for channels, inbox messages, and task reminders."
+    >
+      <div className="space-y-6">
         <div className="rounded-control border border-border bg-surface p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <Volume2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -202,7 +204,7 @@ function SoundSettings() {
           </div>
           <p className="mt-3 text-xs text-muted-foreground">Reminder times and email delivery: <Link to="/settings/task-reminders" className="text-primary underline-offset-2 hover:underline">Task reminder settings</Link></p>
         </section>
-      </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 }

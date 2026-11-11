@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { getWhiteLabel, upsertWhiteLabel, verifyCustomDomain } from '@/lib/white-label/white-label.functions';
-import { AppTopbar } from '@/components/app/app-topbar';
+import { SettingsLayout } from '@/components/app/settings/settings-layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -128,24 +128,22 @@ function WhiteLabelSettings() {
   );
 
   if (workspaceRole.data !== 'owner' && workspaceRole.data !== 'admin') return (
-    <>
-      <AppTopbar title="Customization" />
-      <main className="mx-auto max-w-6xl w-full p-6 text-muted-foreground">
+    <SettingsLayout title="White Label & Brand">
+      <div className="p-6 text-muted-foreground">
         Only workspace owners and admins can manage customization.
-      </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 
   const savedDomain = (data?.config as any)?.custom_domain ?? '';
   const verified = savedDomain === form.custom_domain && (data?.config as any)?.custom_domain_verified;
 
   return (
-    <>
-      <AppTopbar
-        title="Customization"
-        subtitle="Manage workspace colors, identity, and appearance."
-      />
-      <main className="mx-auto max-w-6xl w-full p-6 space-y-6">
+    <SettingsLayout
+      title="White Label & Brand"
+      description="Manage workspace colors, identity, custom domain, and appearance."
+    >
+      <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid h-auto w-full grid-cols-1 gap-3 bg-transparent p-4 md:grid-cols-2">
           <div role="presentation" className="rounded-control border border-border bg-muted/30 p-3 md:col-span-2">
@@ -410,8 +408,8 @@ function WhiteLabelSettings() {
           {save.isPending ? 'Saving' : 'Save changes'}
         </Button>
       </div>}
-    </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 }
 

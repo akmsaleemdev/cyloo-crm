@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/settings/notifications")({
@@ -24,21 +24,30 @@ export const Route = createFileRoute("/_authenticated/settings/notifications")({
 
 function NotificationSettings() {
   return (
-    <>
-      <AppTopbar title="Notifications" subtitle="Choose which events notify you" />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
-        <div className="rounded-control border border-border bg-surface shadow-sm p-6 space-y-4">
-          {["New inbound message", "Automation errors", "Weekly performance digest"].map((n) => (
-            <div
-              key={n}
-              className="flex items-center justify-between rounded-control border border-border p-4"
-            >
-              <span className="text-sm">{n}</span>
-              <Checkbox defaultChecked />
-            </div>
-          ))}
-        </div>
-      </main>
-    </>
+    <SettingsLayout
+      title="Notifications"
+      description="Choose which product and workspace events send you notifications."
+    >
+      <SettingsCard title="Alert Channels & Triggers">
+        <SettingsRow
+          label="New inbound message"
+          description="Receive immediate alerts when new leads or customers reach out across any channel."
+        >
+          <Checkbox defaultChecked />
+        </SettingsRow>
+        <SettingsRow
+          label="Automation errors"
+          description="Alert me if an automation workflow, webhook trigger, or sync job fails."
+        >
+          <Checkbox defaultChecked />
+        </SettingsRow>
+        <SettingsRow
+          label="Weekly performance digest"
+          description="Receive a weekly recap of pipeline health, deal progression, and team activity."
+        >
+          <Checkbox defaultChecked />
+        </SettingsRow>
+      </SettingsCard>
+    </SettingsLayout>
   );
 }

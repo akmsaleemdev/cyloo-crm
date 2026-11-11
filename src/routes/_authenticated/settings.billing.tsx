@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout } from "@/components/app/settings/settings-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace, useWorkspaceRole } from "@/hooks/use-workspace";
 import { WorkspaceGatewaysPanel } from "@/components/app/billing/workspace-gateways-panel";
@@ -131,9 +131,11 @@ function BillingSettings() {
   });
 
   return (
-    <>
-      <AppTopbar title="Billing" subtitle="Plan and invoices" />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
+    <SettingsLayout
+      title="Billing & Plans"
+      description="Review your current plan, subscription status, and payment gateways."
+    >
+      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Current plan</CardTitle>
@@ -328,8 +330,8 @@ function BillingSettings() {
         {ws?.id && <GatewayHealthWidget workspaceId={ws.id} />}
 
         {ws?.id && <WorkspaceGatewaysPanel workspaceId={ws.id} canManage={canManageGateways} />}
-      </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 }
 

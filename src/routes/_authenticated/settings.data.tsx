@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout } from "@/components/app/settings/settings-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace, useDeleteWorkspace, useWorkspaceRole } from "@/hooks/use-workspace";
 import { Button } from "@/components/ui/button";
@@ -230,12 +230,11 @@ function DataSettings() {
   const [confirmName, setConfirmName] = useState("");
 
   return (
-    <>
-      <AppTopbar
-        title="Data & Privacy"
-        subtitle="Exports, retention, GDPR, and workspace deletion"
-      />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
+    <SettingsLayout
+      title="Data & Privacy"
+      description="Exports, retention policies, GDPR requests, and workspace data."
+    >
+      <div className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>Export workspace data</CardTitle>
@@ -490,8 +489,8 @@ function DataSettings() {
             )}
           </CardContent>
         </Card>
-      </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 }
 

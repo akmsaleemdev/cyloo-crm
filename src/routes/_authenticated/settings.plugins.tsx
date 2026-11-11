@@ -15,7 +15,7 @@ import {
   Trash2,
   ShieldAlert,
 } from "lucide-react";
-import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout } from "@/components/app/settings/settings-layout";
 import { toast } from "sonner";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
 
@@ -50,18 +50,17 @@ function InstalledPluginsPage() {
   };
 
   return (
-    <>
-      <AppTopbar
-        title="Installed plugins"
-        subtitle="Hot-install, update, disable, and remove workspace plugins without a redeploy."
-        actions={
-          <Button variant="outline" onClick={() => window.location.reload()}>
-            <RefreshCw className="size-4 mr-2" />
-            Reload host
-          </Button>
-        }
-      />
-      <main className="container mx-auto max-w-7xl p-6 space-y-6">
+    <SettingsLayout
+      title="Plugins & Extensions"
+      description="Manage installed plugins, license activations, and system capabilities."
+      actions={
+        <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+          <RefreshCw className="size-3.5 mr-1.5" />
+          Reload host
+        </Button>
+      }
+    >
+      <div className="space-y-6">
         {snap.installed.length === 0 ? (
           <Card>
             <CardContent className="p-10 text-center text-muted-foreground">
@@ -186,8 +185,8 @@ function InstalledPluginsPage() {
             ))}
           </CardContent>
         </Card>
-      </main>
-    </>
+      </div>
+    </SettingsLayout>
   );
 }
 

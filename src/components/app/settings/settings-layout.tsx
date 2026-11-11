@@ -4,20 +4,15 @@ import {
   ArrowLeft,
   Settings,
   Palette,
-  Sparkles,
   Globe,
-  Smartphone,
-  Cpu,
-  Keyboard,
-  User,
+  Bell,
+  Volume2,
+  Clock,
   Database,
-  Bot,
   Blocks,
-  Terminal,
   Users,
   ShieldCheck,
   CreditCard,
-  FileText,
   Sliders,
   ChevronRight,
 } from "lucide-react";
@@ -44,34 +39,24 @@ interface NavSection {
 
 const SETTINGS_NAV: NavSection[] = [
   {
-    group: "Basics",
+    group: "Workspace Settings",
     items: [
       { label: "General", to: "/settings/general", icon: Sliders, exact: true },
-      { label: "Appearance", to: "/settings/themes", icon: Palette, exact: true },
-      { label: "Model settings", to: "/ai-studio", icon: Sparkles },
-      { label: "Connected Apps", to: "/settings/connected-apps", icon: Globe },
-      { label: "Remote devices", to: "/whatsapp", icon: Smartphone },
-      { label: "Automations", to: "/automations", icon: Cpu },
-      { label: "White Label", to: "/settings/white-label", icon: ShieldCheck },
-    ],
-  },
-  {
-    group: "Agent capabilities",
-    items: [
-      { label: "Personalization", to: "/profile", icon: User },
-      { label: "Memory & Knowledge", to: "/knowledge", icon: Database },
-      { label: "Subagents", to: "/chatbots", icon: Bot },
-      { label: "Plugins", to: "/settings/plugins", icon: Blocks },
-      { label: "MCP & Developer API", to: "/developer", icon: Terminal },
-    ],
-  },
-  {
-    group: "Platform & Security",
-    items: [
       { label: "Team Members", to: "/settings/members", icon: Users },
       { label: "Security & Auth", to: "/settings/security", icon: ShieldCheck },
+      { label: "White Label & Brand", to: "/settings/white-label", icon: Palette },
+      { label: "Connected Channels", to: "/settings/connected-apps", icon: Globe },
       { label: "Billing & Plans", to: "/settings/billing", icon: CreditCard },
-      { label: "Audit Logs", to: "/admin/audit-logs", icon: FileText },
+    ],
+  },
+  {
+    group: "Preferences & Extensions",
+    items: [
+      { label: "Notifications", to: "/settings/notifications", icon: Bell },
+      { label: "Task Reminders", to: "/settings/task-reminders", icon: Clock },
+      { label: "Sounds & Alerts", to: "/settings/sounds", icon: Volume2 },
+      { label: "Data & Exports", to: "/settings/data", icon: Database },
+      { label: "Plugins & Extensions", to: "/settings/plugins", icon: Blocks },
     ],
   },
 ];
@@ -96,15 +81,15 @@ export function SettingsLayout({ title, description, children, actions }: Settin
   };
 
   return (
-    <div className="flex flex-1 min-h-[calc(100vh-3rem)] bg-[#121212] text-[#ededed]">
+    <div className="flex flex-1 min-h-[calc(100vh-3rem)] bg-[#151515] text-[#e0e0e0]">
       {/* Persistent Settings Sidebar matching Screenshot 3 */}
-      <aside className="w-64 shrink-0 border-r border-[#222222] bg-[#161616] flex flex-col justify-between select-none">
+      <aside className="w-64 shrink-0 border-r border-[#292929] bg-[#1e1e1e] flex flex-col justify-between select-none">
         <div className="p-3 overflow-y-auto">
           {/* Back to workspace button */}
           <button
             type="button"
             onClick={() => navigate({ to: "/dashboard" })}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#a3a3a3] hover:text-[#ededed] hover:bg-[#222222] transition-colors mb-3"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#292929] transition-colors mb-3"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back to workspace</span>
@@ -114,7 +99,7 @@ export function SettingsLayout({ title, description, children, actions }: Settin
           <div className="space-y-4">
             {SETTINGS_NAV.map((section) => (
               <div key={section.group} className="space-y-1">
-                <div className="px-3 text-[11px] font-semibold text-[#666666] tracking-wider">
+                <div className="px-3 text-[11px] font-semibold text-[#777777] tracking-wider uppercase">
                   {section.group}
                 </div>
                 <div className="space-y-0.5">
@@ -128,11 +113,11 @@ export function SettingsLayout({ title, description, children, actions }: Settin
                         className={cn(
                           "flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                           active
-                            ? "bg-[#282828] text-[#ffffff] font-semibold"
-                            : "text-[#a3a3a3] hover:text-[#ededed] hover:bg-[#222222]",
+                            ? "bg-[#292929] text-[#ffffff] font-semibold"
+                            : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#262626]",
                         )}
                       >
-                        <Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "text-accent" : "text-[#737373]")} />
+                        <Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "text-accent" : "text-[#777777]")} />
                         <span className="truncate">{item.label}</span>
                       </Link>
                     );
@@ -144,16 +129,16 @@ export function SettingsLayout({ title, description, children, actions }: Settin
         </div>
 
         {/* User bar at bottom left matching Screenshot 3 */}
-        <div className="p-3 border-t border-[#222222] flex items-center justify-between">
+        <div className="p-3 border-t border-[#292929] flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
             <div className="size-6 rounded-full bg-[#3ece90] text-black font-bold text-[11px] grid place-items-center shrink-0">
               {userInitial}
             </div>
-            <span className="text-xs font-semibold text-[#ededed] truncate">{userName}</span>
+            <span className="text-xs font-semibold text-[#e0e0e0] truncate">{userName}</span>
           </div>
           <Link
             to="/settings/general"
-            className="h-6 w-6 rounded grid place-items-center text-[#737373] hover:text-[#ededed] hover:bg-[#222222] transition-colors"
+            className="h-6 w-6 rounded grid place-items-center text-[#777777] hover:text-[#e0e0e0] hover:bg-[#292929] transition-colors"
           >
             <Settings className="h-3.5 w-3.5" />
           </Link>
@@ -164,7 +149,7 @@ export function SettingsLayout({ title, description, children, actions }: Settin
       <main className="flex-1 p-6 lg:p-10 max-w-4xl overflow-y-auto">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-medium tracking-tight text-[#ededed]">{title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-medium tracking-tight text-[#e0e0e0]">{title}</h1>
             {description && <p className="text-xs text-[#888888] mt-1">{description}</p>}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -193,13 +178,13 @@ export function SettingsCard({
   return (
     <div
       className={cn(
-        "rounded-xl bg-[#1c1c1c] border border-[#2a2a2a] shadow-sm overflow-hidden",
+        "rounded-xl bg-[#202020] border border-[#2a2a2a] shadow-sm overflow-hidden",
         className,
       )}
     >
       {(title || description) && (
-        <div className="px-5 py-4 border-b border-[#262626]">
-          {title && <h2 className="text-sm font-semibold text-[#ededed]">{title}</h2>}
+        <div className="px-5 py-4 border-b border-[#2a2a2a]">
+          {title && <h2 className="text-sm font-semibold text-[#e0e0e0]">{title}</h2>}
           {description && <p className="text-xs text-[#888888] mt-0.5">{description}</p>}
         </div>
       )}
@@ -232,3 +217,4 @@ export function SettingsRow({
     </div>
   );
 }
+

@@ -5,7 +5,6 @@ import {
   PanelLeftOpen,
   LogOut,
   ShieldCheck,
-  MoreHorizontal,
   LayoutDashboard,
   User,
   Settings,
@@ -13,15 +12,6 @@ import {
   LifeBuoy,
   Bell,
   Building2,
-  ArrowLeft,
-  ArrowRight,
-  Plus,
-  Workflow,
-  Blocks,
-  Smartphone,
-  Search,
-  SlidersHorizontal,
-  Folder,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMyProfile } from "@/hooks/use-profile";
@@ -210,7 +200,7 @@ export function AppSidebar() {
           sidebarCollapsed ? "w-[60px]" : "w-64",
         )}
       >
-        {/* Brand Header with History Nav Controls matching Screenshot 2 */}
+        {/* Brand Header */}
         <div
           className={cn(
             "flex items-center justify-between h-12 border-b border-sidebar-border transition-all",
@@ -237,95 +227,20 @@ export function AppSidebar() {
           </a>
 
           {!sidebarCollapsed && (
-            <div className="flex items-center gap-0.5 text-muted-foreground">
-              <button
-                type="button"
-                onClick={() => window.history.back()}
-                className="h-7 w-7 rounded-md grid place-items-center hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                title="Back"
-                aria-label="Back"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => window.history.forward()}
-                className="h-7 w-7 rounded-md grid place-items-center hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                title="Forward"
-                aria-label="Forward"
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="h-7 w-7 rounded-md grid place-items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
           )}
         </div>
 
-        {/* Quick Top Actions matching Screenshot 2 */}
-        {!sidebarCollapsed && (
-          <div className="px-3 pt-3 pb-1 space-y-1">
-            <Link
-              to="/tasks"
-              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="h-3.5 w-3.5 text-accent" />
-                <span>New task</span>
-              </span>
-              <kbd className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-muted/40 border border-border/40">
-                Ctrl+N
-              </kbd>
-            </Link>
-            <Link
-              to="/automations"
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-            >
-              <Workflow className="h-3.5 w-3.5 text-sidebar-foreground/60" />
-              <span>Automations</span>
-            </Link>
-            <Link
-              to="/chatbots/marketplace"
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-            >
-              <Blocks className="h-3.5 w-3.5 text-sidebar-foreground/60" />
-              <span>Plugin Marketplace</span>
-            </Link>
-          </div>
-        )}
-
-        {/* Task list and Projects Header matching Screenshot 2 */}
-        {!sidebarCollapsed && (
-          <div className="px-3 pt-2 pb-1">
-            <div className="flex items-center justify-between px-2 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
-              <span>Task list</span>
-              <div className="flex items-center gap-1.5 text-muted-foreground/60">
-                <Search className="h-3 w-3 hover:text-foreground cursor-pointer" />
-                <SlidersHorizontal className="h-3 w-3 hover:text-foreground cursor-pointer" />
-              </div>
-            </div>
-            <div className="mt-2 space-y-1">
-              <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground/60">Projects</div>
-              <Link
-                to="/projects"
-                className="group flex items-center justify-between px-2.5 py-1 rounded-md text-xs text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors"
-              >
-                <span className="flex items-center gap-2 truncate">
-                  <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="truncate">CYLOOCRM</span>
-                </span>
-              </Link>
-              <div className="pl-6 pr-2 py-0.5 flex items-center justify-between text-[11px] text-sidebar-foreground/65 hover:text-sidebar-foreground cursor-pointer">
-                <span className="flex items-center gap-1.5 truncate">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="truncate">ENTERPRISE CRM</span>
-                </span>
-                <span className="text-[10px] text-muted-foreground/60 shrink-0">Live</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Organization + Workspace switcher */}
-        <div className={cn("pt-2", sidebarCollapsed ? "px-2" : "px-3")}>
+        <div className={cn("pt-2 pb-1", sidebarCollapsed ? "px-2" : "px-3")}>
           <OrganizationSwitcherConnected collapsed={sidebarCollapsed} />
         </div>
 
@@ -503,13 +418,6 @@ export function AppSidebar() {
 
           {!sidebarCollapsed && (
             <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                className="h-7 w-7 rounded-md grid place-items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                title="Mobile Connected"
-              >
-                <Smartphone className="h-3.5 w-3.5 text-accent" />
-              </button>
               <Link
                 to="/settings/general"
                 className="h-7 w-7 rounded-md grid place-items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"

@@ -48,6 +48,8 @@ deploy/certs/*
 
 # Test artifacts
 coverage
+DB DETAILS.txt
+New Text Document.txt
 test-results
 playwright-report
 playwright/.cache
