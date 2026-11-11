@@ -1,4 +1,5 @@
 import { Brand } from "@/components/brand";
+import { PlatformLogo } from "@/components/brand";
 import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, AlertTriangle, Info, Rocket, ArrowRight, ArrowLeft, Sparkles, ShieldCheck, Database, Package, UserPlus } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, Info, ArrowRight, ArrowLeft, Sparkles, ShieldCheck, Database, Package, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   checkSystemRequirements,
@@ -183,8 +184,8 @@ function InstallWizard() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
       <div className="mx-auto max-w-3xl px-4 py-12">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-control bg-gradient-to-br from-primary to-primary/60 shadow-lg">
-            <Rocket className="h-7 w-7 text-primary-foreground" />
+          <div className="mx-auto mb-6 flex items-center justify-center">
+            <PlatformLogo className="h-12 max-w-[180px] object-contain" alt="CYLOO" />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight">Install <Brand /></h1>
           <p className="text-muted-foreground">Enterprise setup wizard · {APP_VERSION_LABEL}</p>
