@@ -56,13 +56,16 @@ import { Route as AuthenticatedClientRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedComplianceCenterRouteImport } from './routes/_authenticated/compliance-center'
 import { Route as AuthenticatedConsentRouteImport } from './routes/_authenticated/consent'
 import { Route as AuthenticatedContactListsRouteImport } from './routes/_authenticated/contact-lists'
+import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedCrmRouteImport } from './routes/_authenticated/crm'
 import { Route as AuthenticatedCustomFieldsRouteImport } from './routes/_authenticated/custom-fields'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDataGovernanceRouteImport } from './routes/_authenticated/data-governance'
 import { Route as AuthenticatedDeveloperPortalRouteImport } from './routes/_authenticated/developer-portal'
 import { Route as AuthenticatedDeveloperToolsRouteImport } from './routes/_authenticated/developer-tools'
 import { Route as AuthenticatedDripRouteImport } from './routes/_authenticated/drip'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated/exports'
+import { Route as AuthenticatedFieldServiceRouteImport } from './routes/_authenticated/field-service'
 import { Route as AuthenticatedForecastingRouteImport } from './routes/_authenticated/forecasting'
 import { Route as AuthenticatedGlobalSearchRouteImport } from './routes/_authenticated/global-search'
 import { Route as AuthenticatedHelpdeskRouteImport } from './routes/_authenticated/helpdesk'
@@ -79,6 +82,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOmnichannelAiRouteImport } from './routes/_authenticated/omnichannel-ai'
 import { Route as AuthenticatedOmnichannelAnalyticsRouteImport } from './routes/_authenticated/omnichannel-analytics'
 import { Route as AuthenticatedOrganizationRouteImport } from './routes/_authenticated/organization'
+import { Route as AuthenticatedPartnersRouteImport } from './routes/_authenticated/partners'
 import { Route as AuthenticatedPerformanceCenterRouteImport } from './routes/_authenticated/performance-center'
 import { Route as AuthenticatedPhonebookRouteImport } from './routes/_authenticated/phonebook'
 import { Route as AuthenticatedPortalRouteImport } from './routes/_authenticated/portal'
@@ -98,6 +102,7 @@ import { Route as AuthenticatedSecurityCenterRouteImport } from './routes/_authe
 import { Route as AuthenticatedSecurityIssuesRouteImport } from './routes/_authenticated/security-issues'
 import { Route as AuthenticatedSegmentsRouteImport } from './routes/_authenticated/segments'
 import { Route as AuthenticatedSocialRouteImport } from './routes/_authenticated/social'
+import { Route as AuthenticatedSystemHealthRouteImport } from './routes/_authenticated/system-health'
 import { Route as AuthenticatedTagsRouteImport } from './routes/_authenticated/tags'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
@@ -110,6 +115,7 @@ import { Route as AuthenticatedWaChatbotRouteImport } from './routes/_authentica
 import { Route as AuthenticatedWebhookAutomationRouteImport } from './routes/_authenticated/webhook-automation'
 import { Route as AuthenticatedWidgetsRouteImport } from './routes/_authenticated/widgets'
 import { Route as AuthenticatedWorkspaceRouteImport } from './routes/_authenticated/workspace'
+import { Route as AuthenticatedZatcaComplianceRouteImport } from './routes/_authenticated/zatca-compliance'
 import { Route as BookSlugRouteImport } from './routes/book.$slug'
 import { Route as DevAiHelpdeskTabsRouteImport } from './routes/dev.ai-helpdesk-tabs'
 import { Route as DevButtonsRouteImport } from './routes/dev.buttons'
@@ -668,6 +674,11 @@ const AuthenticatedContactListsRoute =
     path: '/contact-lists',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCrmRoute = AuthenticatedCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
@@ -684,6 +695,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDataGovernanceRoute =
+  AuthenticatedDataGovernanceRouteImport.update({
+    id: '/data-governance',
+    path: '/data-governance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDeveloperPortalRoute =
   AuthenticatedDeveloperPortalRouteImport.update({
     id: '/developer-portal',
@@ -706,6 +723,12 @@ const AuthenticatedExportsRoute = AuthenticatedExportsRouteImport.update({
   path: '/exports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFieldServiceRoute =
+  AuthenticatedFieldServiceRouteImport.update({
+    id: '/field-service',
+    path: '/field-service',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedForecastingRoute =
   AuthenticatedForecastingRouteImport.update({
     id: '/forecasting',
@@ -796,6 +819,11 @@ const AuthenticatedOrganizationRoute =
     path: '/organization',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPartnersRoute = AuthenticatedPartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPerformanceCenterRoute =
   AuthenticatedPerformanceCenterRouteImport.update({
     id: '/performance-center',
@@ -897,6 +925,12 @@ const AuthenticatedSocialRoute = AuthenticatedSocialRouteImport.update({
   path: '/social',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSystemHealthRoute =
+  AuthenticatedSystemHealthRouteImport.update({
+    id: '/system-health',
+    path: '/system-health',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTagsRoute = AuthenticatedTagsRouteImport.update({
   id: '/tags',
   path: '/tags',
@@ -961,6 +995,12 @@ const AuthenticatedWorkspaceRoute = AuthenticatedWorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedZatcaComplianceRoute =
+  AuthenticatedZatcaComplianceRouteImport.update({
+    id: '/zatca-compliance',
+    path: '/zatca-compliance',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const BookSlugRoute = BookSlugRouteImport.update({
   id: '/book/$slug',
   path: '/book/$slug',
@@ -2799,13 +2839,16 @@ export interface FileRoutesByFullPath {
   '/compliance-center': typeof AuthenticatedComplianceCenterRoute
   '/consent': typeof AuthenticatedConsentRoute
   '/contact-lists': typeof AuthenticatedContactListsRoute
+  '/contracts': typeof AuthenticatedContractsRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/custom-fields': typeof AuthenticatedCustomFieldsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/data-governance': typeof AuthenticatedDataGovernanceRoute
   '/developer-portal': typeof AuthenticatedDeveloperPortalRoute
   '/developer-tools': typeof AuthenticatedDeveloperToolsRouteWithChildren
   '/drip': typeof AuthenticatedDripRoute
   '/exports': typeof AuthenticatedExportsRoute
+  '/field-service': typeof AuthenticatedFieldServiceRoute
   '/forecasting': typeof AuthenticatedForecastingRoute
   '/global-search': typeof AuthenticatedGlobalSearchRoute
   '/helpdesk': typeof AuthenticatedHelpdeskRouteWithChildren
@@ -2822,6 +2865,7 @@ export interface FileRoutesByFullPath {
   '/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
   '/organization': typeof AuthenticatedOrganizationRoute
+  '/partners': typeof AuthenticatedPartnersRoute
   '/performance-center': typeof AuthenticatedPerformanceCenterRoute
   '/phonebook': typeof AuthenticatedPhonebookRoute
   '/portal': typeof AuthenticatedPortalRoute
@@ -2841,6 +2885,7 @@ export interface FileRoutesByFullPath {
   '/security-issues': typeof AuthenticatedSecurityIssuesRoute
   '/segments': typeof AuthenticatedSegmentsRoute
   '/social': typeof AuthenticatedSocialRoute
+  '/system-health': typeof AuthenticatedSystemHealthRoute
   '/tags': typeof AuthenticatedTagsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -2853,6 +2898,7 @@ export interface FileRoutesByFullPath {
   '/webhook-automation': typeof AuthenticatedWebhookAutomationRoute
   '/widgets': typeof AuthenticatedWidgetsRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
+  '/zatca-compliance': typeof AuthenticatedZatcaComplianceRoute
   '/book/$slug': typeof BookSlugRoute
   '/dev/ai-helpdesk-tabs': typeof DevAiHelpdeskTabsRoute
   '/dev/buttons': typeof DevButtonsRoute
@@ -3209,12 +3255,15 @@ export interface FileRoutesByTo {
   '/compliance-center': typeof AuthenticatedComplianceCenterRoute
   '/consent': typeof AuthenticatedConsentRoute
   '/contact-lists': typeof AuthenticatedContactListsRoute
+  '/contracts': typeof AuthenticatedContractsRoute
   '/crm': typeof AuthenticatedCrmRoute
   '/custom-fields': typeof AuthenticatedCustomFieldsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/data-governance': typeof AuthenticatedDataGovernanceRoute
   '/developer-portal': typeof AuthenticatedDeveloperPortalRoute
   '/drip': typeof AuthenticatedDripRoute
   '/exports': typeof AuthenticatedExportsRoute
+  '/field-service': typeof AuthenticatedFieldServiceRoute
   '/forecasting': typeof AuthenticatedForecastingRoute
   '/global-search': typeof AuthenticatedGlobalSearchRoute
   '/identity': typeof AuthenticatedIdentityRoute
@@ -3229,6 +3278,7 @@ export interface FileRoutesByTo {
   '/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
   '/organization': typeof AuthenticatedOrganizationRoute
+  '/partners': typeof AuthenticatedPartnersRoute
   '/performance-center': typeof AuthenticatedPerformanceCenterRoute
   '/phonebook': typeof AuthenticatedPhonebookRoute
   '/portal': typeof AuthenticatedPortalRoute
@@ -3247,6 +3297,7 @@ export interface FileRoutesByTo {
   '/security-issues': typeof AuthenticatedSecurityIssuesRoute
   '/segments': typeof AuthenticatedSegmentsRoute
   '/social': typeof AuthenticatedSocialRoute
+  '/system-health': typeof AuthenticatedSystemHealthRoute
   '/tags': typeof AuthenticatedTagsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/team': typeof AuthenticatedTeamRoute
@@ -3259,6 +3310,7 @@ export interface FileRoutesByTo {
   '/webhook-automation': typeof AuthenticatedWebhookAutomationRoute
   '/widgets': typeof AuthenticatedWidgetsRoute
   '/workspace': typeof AuthenticatedWorkspaceRoute
+  '/zatca-compliance': typeof AuthenticatedZatcaComplianceRoute
   '/book/$slug': typeof BookSlugRoute
   '/dev/ai-helpdesk-tabs': typeof DevAiHelpdeskTabsRoute
   '/dev/buttons': typeof DevButtonsRoute
@@ -3616,13 +3668,16 @@ export interface FileRoutesById {
   '/_authenticated/compliance-center': typeof AuthenticatedComplianceCenterRoute
   '/_authenticated/consent': typeof AuthenticatedConsentRoute
   '/_authenticated/contact-lists': typeof AuthenticatedContactListsRoute
+  '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/crm': typeof AuthenticatedCrmRoute
   '/_authenticated/custom-fields': typeof AuthenticatedCustomFieldsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/data-governance': typeof AuthenticatedDataGovernanceRoute
   '/_authenticated/developer-portal': typeof AuthenticatedDeveloperPortalRoute
   '/_authenticated/developer-tools': typeof AuthenticatedDeveloperToolsRouteWithChildren
   '/_authenticated/drip': typeof AuthenticatedDripRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
+  '/_authenticated/field-service': typeof AuthenticatedFieldServiceRoute
   '/_authenticated/forecasting': typeof AuthenticatedForecastingRoute
   '/_authenticated/global-search': typeof AuthenticatedGlobalSearchRoute
   '/_authenticated/helpdesk': typeof AuthenticatedHelpdeskRouteWithChildren
@@ -3639,6 +3694,7 @@ export interface FileRoutesById {
   '/_authenticated/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/_authenticated/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
   '/_authenticated/organization': typeof AuthenticatedOrganizationRoute
+  '/_authenticated/partners': typeof AuthenticatedPartnersRoute
   '/_authenticated/performance-center': typeof AuthenticatedPerformanceCenterRoute
   '/_authenticated/phonebook': typeof AuthenticatedPhonebookRoute
   '/_authenticated/portal': typeof AuthenticatedPortalRoute
@@ -3658,6 +3714,7 @@ export interface FileRoutesById {
   '/_authenticated/security-issues': typeof AuthenticatedSecurityIssuesRoute
   '/_authenticated/segments': typeof AuthenticatedSegmentsRoute
   '/_authenticated/social': typeof AuthenticatedSocialRoute
+  '/_authenticated/system-health': typeof AuthenticatedSystemHealthRoute
   '/_authenticated/tags': typeof AuthenticatedTagsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
@@ -3670,6 +3727,7 @@ export interface FileRoutesById {
   '/_authenticated/webhook-automation': typeof AuthenticatedWebhookAutomationRoute
   '/_authenticated/widgets': typeof AuthenticatedWidgetsRoute
   '/_authenticated/workspace': typeof AuthenticatedWorkspaceRoute
+  '/_authenticated/zatca-compliance': typeof AuthenticatedZatcaComplianceRoute
   '/book/$slug': typeof BookSlugRoute
   '/dev/ai-helpdesk-tabs': typeof DevAiHelpdeskTabsRoute
   '/dev/buttons': typeof DevButtonsRoute
@@ -4030,13 +4088,16 @@ export interface FileRouteTypes {
     | '/compliance-center'
     | '/consent'
     | '/contact-lists'
+    | '/contracts'
     | '/crm'
     | '/custom-fields'
     | '/dashboard'
+    | '/data-governance'
     | '/developer-portal'
     | '/developer-tools'
     | '/drip'
     | '/exports'
+    | '/field-service'
     | '/forecasting'
     | '/global-search'
     | '/helpdesk'
@@ -4053,6 +4114,7 @@ export interface FileRouteTypes {
     | '/omnichannel-ai'
     | '/omnichannel-analytics'
     | '/organization'
+    | '/partners'
     | '/performance-center'
     | '/phonebook'
     | '/portal'
@@ -4072,6 +4134,7 @@ export interface FileRouteTypes {
     | '/security-issues'
     | '/segments'
     | '/social'
+    | '/system-health'
     | '/tags'
     | '/tasks'
     | '/team'
@@ -4084,6 +4147,7 @@ export interface FileRouteTypes {
     | '/webhook-automation'
     | '/widgets'
     | '/workspace'
+    | '/zatca-compliance'
     | '/book/$slug'
     | '/dev/ai-helpdesk-tabs'
     | '/dev/buttons'
@@ -4440,12 +4504,15 @@ export interface FileRouteTypes {
     | '/compliance-center'
     | '/consent'
     | '/contact-lists'
+    | '/contracts'
     | '/crm'
     | '/custom-fields'
     | '/dashboard'
+    | '/data-governance'
     | '/developer-portal'
     | '/drip'
     | '/exports'
+    | '/field-service'
     | '/forecasting'
     | '/global-search'
     | '/identity'
@@ -4460,6 +4527,7 @@ export interface FileRouteTypes {
     | '/omnichannel-ai'
     | '/omnichannel-analytics'
     | '/organization'
+    | '/partners'
     | '/performance-center'
     | '/phonebook'
     | '/portal'
@@ -4478,6 +4546,7 @@ export interface FileRouteTypes {
     | '/security-issues'
     | '/segments'
     | '/social'
+    | '/system-health'
     | '/tags'
     | '/tasks'
     | '/team'
@@ -4490,6 +4559,7 @@ export interface FileRouteTypes {
     | '/webhook-automation'
     | '/widgets'
     | '/workspace'
+    | '/zatca-compliance'
     | '/book/$slug'
     | '/dev/ai-helpdesk-tabs'
     | '/dev/buttons'
@@ -4846,13 +4916,16 @@ export interface FileRouteTypes {
     | '/_authenticated/compliance-center'
     | '/_authenticated/consent'
     | '/_authenticated/contact-lists'
+    | '/_authenticated/contracts'
     | '/_authenticated/crm'
     | '/_authenticated/custom-fields'
     | '/_authenticated/dashboard'
+    | '/_authenticated/data-governance'
     | '/_authenticated/developer-portal'
     | '/_authenticated/developer-tools'
     | '/_authenticated/drip'
     | '/_authenticated/exports'
+    | '/_authenticated/field-service'
     | '/_authenticated/forecasting'
     | '/_authenticated/global-search'
     | '/_authenticated/helpdesk'
@@ -4869,6 +4942,7 @@ export interface FileRouteTypes {
     | '/_authenticated/omnichannel-ai'
     | '/_authenticated/omnichannel-analytics'
     | '/_authenticated/organization'
+    | '/_authenticated/partners'
     | '/_authenticated/performance-center'
     | '/_authenticated/phonebook'
     | '/_authenticated/portal'
@@ -4888,6 +4962,7 @@ export interface FileRouteTypes {
     | '/_authenticated/security-issues'
     | '/_authenticated/segments'
     | '/_authenticated/social'
+    | '/_authenticated/system-health'
     | '/_authenticated/tags'
     | '/_authenticated/tasks'
     | '/_authenticated/team'
@@ -4900,6 +4975,7 @@ export interface FileRouteTypes {
     | '/_authenticated/webhook-automation'
     | '/_authenticated/widgets'
     | '/_authenticated/workspace'
+    | '/_authenticated/zatca-compliance'
     | '/book/$slug'
     | '/dev/ai-helpdesk-tabs'
     | '/dev/buttons'
@@ -5692,6 +5768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContactListsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/contracts': {
+      id: '/_authenticated/contracts'
+      path: '/contracts'
+      fullPath: '/contracts'
+      preLoaderRoute: typeof AuthenticatedContractsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crm': {
       id: '/_authenticated/crm'
       path: '/crm'
@@ -5711,6 +5794,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/data-governance': {
+      id: '/_authenticated/data-governance'
+      path: '/data-governance'
+      fullPath: '/data-governance'
+      preLoaderRoute: typeof AuthenticatedDataGovernanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/developer-portal': {
@@ -5739,6 +5829,13 @@ declare module '@tanstack/react-router' {
       path: '/exports'
       fullPath: '/exports'
       preLoaderRoute: typeof AuthenticatedExportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/field-service': {
+      id: '/_authenticated/field-service'
+      path: '/field-service'
+      fullPath: '/field-service'
+      preLoaderRoute: typeof AuthenticatedFieldServiceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/forecasting': {
@@ -5851,6 +5948,13 @@ declare module '@tanstack/react-router' {
       path: '/organization'
       fullPath: '/organization'
       preLoaderRoute: typeof AuthenticatedOrganizationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/partners': {
+      id: '/_authenticated/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof AuthenticatedPartnersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/performance-center': {
@@ -5986,6 +6090,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSocialRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/system-health': {
+      id: '/_authenticated/system-health'
+      path: '/system-health'
+      fullPath: '/system-health'
+      preLoaderRoute: typeof AuthenticatedSystemHealthRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tags': {
       id: '/_authenticated/tags'
       path: '/tags'
@@ -6068,6 +6179,13 @@ declare module '@tanstack/react-router' {
       path: '/workspace'
       fullPath: '/workspace'
       preLoaderRoute: typeof AuthenticatedWorkspaceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/zatca-compliance': {
+      id: '/_authenticated/zatca-compliance'
+      path: '/zatca-compliance'
+      fullPath: '/zatca-compliance'
+      preLoaderRoute: typeof AuthenticatedZatcaComplianceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/book/$slug': {
@@ -8745,13 +8863,16 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedComplianceCenterRoute: typeof AuthenticatedComplianceCenterRoute
   AuthenticatedConsentRoute: typeof AuthenticatedConsentRoute
   AuthenticatedContactListsRoute: typeof AuthenticatedContactListsRoute
+  AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedCrmRoute: typeof AuthenticatedCrmRoute
   AuthenticatedCustomFieldsRoute: typeof AuthenticatedCustomFieldsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDataGovernanceRoute: typeof AuthenticatedDataGovernanceRoute
   AuthenticatedDeveloperPortalRoute: typeof AuthenticatedDeveloperPortalRoute
   AuthenticatedDeveloperToolsRoute: typeof AuthenticatedDeveloperToolsRouteWithChildren
   AuthenticatedDripRoute: typeof AuthenticatedDripRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
+  AuthenticatedFieldServiceRoute: typeof AuthenticatedFieldServiceRoute
   AuthenticatedForecastingRoute: typeof AuthenticatedForecastingRoute
   AuthenticatedGlobalSearchRoute: typeof AuthenticatedGlobalSearchRoute
   AuthenticatedHelpdeskRoute: typeof AuthenticatedHelpdeskRouteWithChildren
@@ -8768,6 +8889,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOmnichannelAiRoute: typeof AuthenticatedOmnichannelAiRoute
   AuthenticatedOmnichannelAnalyticsRoute: typeof AuthenticatedOmnichannelAnalyticsRoute
   AuthenticatedOrganizationRoute: typeof AuthenticatedOrganizationRoute
+  AuthenticatedPartnersRoute: typeof AuthenticatedPartnersRoute
   AuthenticatedPerformanceCenterRoute: typeof AuthenticatedPerformanceCenterRoute
   AuthenticatedPhonebookRoute: typeof AuthenticatedPhonebookRoute
   AuthenticatedPortalRoute: typeof AuthenticatedPortalRoute
@@ -8787,6 +8909,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSecurityIssuesRoute: typeof AuthenticatedSecurityIssuesRoute
   AuthenticatedSegmentsRoute: typeof AuthenticatedSegmentsRoute
   AuthenticatedSocialRoute: typeof AuthenticatedSocialRoute
+  AuthenticatedSystemHealthRoute: typeof AuthenticatedSystemHealthRoute
   AuthenticatedTagsRoute: typeof AuthenticatedTagsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -8799,6 +8922,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedWebhookAutomationRoute: typeof AuthenticatedWebhookAutomationRoute
   AuthenticatedWidgetsRoute: typeof AuthenticatedWidgetsRoute
   AuthenticatedWorkspaceRoute: typeof AuthenticatedWorkspaceRoute
+  AuthenticatedZatcaComplianceRoute: typeof AuthenticatedZatcaComplianceRoute
   AuthenticatedApiConfigSectionRoute: typeof AuthenticatedApiConfigSectionRoute
   AuthenticatedBookingAiAssistantRoute: typeof AuthenticatedBookingAiAssistantRoute
   AuthenticatedBookingAnalyticsRoute: typeof AuthenticatedBookingAnalyticsRoute
@@ -8911,14 +9035,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedComplianceCenterRoute: AuthenticatedComplianceCenterRoute,
   AuthenticatedConsentRoute: AuthenticatedConsentRoute,
   AuthenticatedContactListsRoute: AuthenticatedContactListsRoute,
+  AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedCrmRoute: AuthenticatedCrmRoute,
   AuthenticatedCustomFieldsRoute: AuthenticatedCustomFieldsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDataGovernanceRoute: AuthenticatedDataGovernanceRoute,
   AuthenticatedDeveloperPortalRoute: AuthenticatedDeveloperPortalRoute,
   AuthenticatedDeveloperToolsRoute:
     AuthenticatedDeveloperToolsRouteWithChildren,
   AuthenticatedDripRoute: AuthenticatedDripRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
+  AuthenticatedFieldServiceRoute: AuthenticatedFieldServiceRoute,
   AuthenticatedForecastingRoute: AuthenticatedForecastingRoute,
   AuthenticatedGlobalSearchRoute: AuthenticatedGlobalSearchRoute,
   AuthenticatedHelpdeskRoute: AuthenticatedHelpdeskRouteWithChildren,
@@ -8936,6 +9063,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOmnichannelAnalyticsRoute:
     AuthenticatedOmnichannelAnalyticsRoute,
   AuthenticatedOrganizationRoute: AuthenticatedOrganizationRoute,
+  AuthenticatedPartnersRoute: AuthenticatedPartnersRoute,
   AuthenticatedPerformanceCenterRoute: AuthenticatedPerformanceCenterRoute,
   AuthenticatedPhonebookRoute: AuthenticatedPhonebookRoute,
   AuthenticatedPortalRoute: AuthenticatedPortalRoute,
@@ -8955,6 +9083,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSecurityIssuesRoute: AuthenticatedSecurityIssuesRoute,
   AuthenticatedSegmentsRoute: AuthenticatedSegmentsRoute,
   AuthenticatedSocialRoute: AuthenticatedSocialRoute,
+  AuthenticatedSystemHealthRoute: AuthenticatedSystemHealthRoute,
   AuthenticatedTagsRoute: AuthenticatedTagsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
@@ -8967,6 +9096,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedWebhookAutomationRoute: AuthenticatedWebhookAutomationRoute,
   AuthenticatedWidgetsRoute: AuthenticatedWidgetsRoute,
   AuthenticatedWorkspaceRoute: AuthenticatedWorkspaceRoute,
+  AuthenticatedZatcaComplianceRoute: AuthenticatedZatcaComplianceRoute,
   AuthenticatedApiConfigSectionRoute: AuthenticatedApiConfigSectionRoute,
   AuthenticatedBookingAiAssistantRoute: AuthenticatedBookingAiAssistantRoute,
   AuthenticatedBookingAnalyticsRoute: AuthenticatedBookingAnalyticsRoute,

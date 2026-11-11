@@ -62,16 +62,16 @@ export function AppTopbar({
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-30 border-b border-border bg-surface/85 backdrop-blur-xl supports-[backdrop-filter]:bg-surface/70"
+      className="sticky top-0 z-30 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
     >
       {/* Row 1 — controls */}
-      <div className="flex h-header items-center gap-2 px-3 lg:px-6">
+      <div className="flex h-12 items-center gap-2 px-3 lg:px-6">
         <MobileNav />
 
         {navMode === "full" && showSidebarToggle && (
           <button
             onClick={toggleSidebar}
-            className="grid h-9 w-9 place-items-center rounded-control text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-surface-elevated hover:text-foreground transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -85,12 +85,12 @@ export function AppTopbar({
 
         <button
           onClick={() => setCommandOpen(true)}
-          className="hidden md:flex flex-1 max-w-xl items-center gap-2 rounded-control border border-border bg-muted/40 px-3 h-9 text-sm text-muted-foreground transition-all hover:bg-muted hover:border-border focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="hidden md:flex flex-1 max-w-lg items-center gap-2 rounded-xl border border-border/60 bg-surface/80 px-3 h-8 text-xs text-muted-foreground transition-all hover:bg-surface-elevated hover:border-border focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           aria-label="Open command palette"
         >
-          <Search className="h-4 w-4" />
-          <span className="flex-1 text-left truncate">Search contacts, messages, actions</span>
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground">
+          <Search className="h-3.5 w-3.5 text-muted-foreground/70" />
+          <span className="flex-1 text-left truncate">Ask CYLOO anything, @ context, / for commands</span>
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
             ⌘K
           </kbd>
         </button>

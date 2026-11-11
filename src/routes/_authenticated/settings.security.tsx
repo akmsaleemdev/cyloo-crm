@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -167,141 +168,123 @@ function SecuritySettings() {
   }
 
   return (
-    <>
-      <AppTopbar title="Security" subtitle="Password, 2FA, and active sessions" />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Change password</CardTitle>
-            <CardDescription>Use at least 8 characters.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={onChangePassword} className="grid gap-3 max-w-md">
-              <div className="grid gap-2">
-                <Label htmlFor="pw">New password</Label>
-                <Input
-                  id="pw"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="pw2">Confirm password</Label>
-                <Input
-                  id="pw2"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
-              <Button type="submit" disabled={saving} className="w-fit">
-                {saving ? "Updating" : "Update password"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+    <SettingsLayout
+      title="Security & Authentication"
+      description="Manage account credentials, two-factor authentication, session timeouts, and active devices."
+    >
+      <SettingsCard title="Password Credentials" description="Use at least 8 characters with a mix of letters and numbers.">
+        <form onSubmit={onChangePassword} className="p-5 grid gap-3 max-w-md">
+          <div className="grid gap-2">
+            <Label htmlFor="pw" className="text-xs font-semibold text-[#ededed]">New password</Label>
+            <Input
+              id="pw"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={8}
+              required
+              className="bg-[#141414] border-[#2c2c2c] text-[#ededed]"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="pw2" className="text-xs font-semibold text-[#ededed]">Confirm password</Label>
+            <Input
+              id="pw2"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              minLength={8}
+              required
+              className="bg-[#141414] border-[#2c2c2c] text-[#ededed]"
+            />
+          </div>
+          <Button
+            type="submit"
+            disabled={saving}
+            className="w-fit bg-[#3ece90] text-black font-semibold hover:bg-[#35b57d] h-8 text-xs px-4 rounded-lg mt-2 shadow-sm"
+          >
+            {saving ? "Updating…" : "Update password"}
+          </Button>
+        </form>
+      </SettingsCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Two-factor authentication</CardTitle>
-            <CardDescription>Require a second factor when signing in.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between rounded-control border p-3">
-              <div>
-                <div className="text-sm font-medium">TOTP authenticator app</div>
-                <div className="text-xs text-muted-foreground">
-                  {twofa.data?.enabled ? (
-                    <Badge variant="default">Enabled</Badge>
-                  ) : (
-                    <Badge variant="outline">Disabled</Badge>
-                  )}
-                  {twofa.data?.verified_at && (
-                    <span className="ml-2">
-                      Verified{" "}
-                      {formatZoned(new Date(twofa.data.verified_at), { dateStyle: "short" })}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <Switch checked={twofa.data?.enabled ?? false} onCheckedChange={toggle2FA} />
-            </div>
-          </CardContent>
-        </Card>
+      <SettingsCard title="Two-Factor Authentication & Inactivity" description="Enhanced protection matching enterprise security compliance standards.">
+        <SettingsRow
+          label="Require authenticator app (TOTP)"
+          description="Prompt for a verification code from Google Authenticator, 1Password, or Authy on each login."
+        >
+          <Switch checked={twofa.data?.enabled ?? false} onCheckedChange={toggle2FA} />
+        </SettingsRow>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Session</CardTitle>
-            <CardDescription>Auto sign-out after inactivity.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2 max-w-xs">
-              <Label htmlFor="idle">Idle timeout (minutes)</Label>
-              <Input
-                id="idle"
-                type="number"
-                min={5}
-                max={480}
-                value={idle}
-                onChange={(e) => setIdle(Number(e.target.value) || 30)}
-              />
-            </div>
-            <Button variant="outline" onClick={signOutEverywhere} disabled={signOutAll}>
-              {signOutAll ? "Signing out" : "Sign out on all devices"}
+        <SettingsRow
+          label="Inactivity auto-signout (minutes)"
+          description="Automatically terminate inactive sessions to protect confidential customer data."
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              id="idle"
+              type="number"
+              min={5}
+              max={480}
+              value={idle}
+              onChange={(e) => setIdle(Number(e.target.value) || 30)}
+              className="w-24 bg-[#141414] border-[#2c2c2c] text-[#ededed] h-8 text-xs text-center"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={signOutEverywhere}
+              disabled={signOutAll}
+              className="border-[#333333] hover:bg-[#222222] text-xs h-8 text-rose-400"
+            >
+              {signOutAll ? "Signing out…" : "Sign out all devices"}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsRow>
+      </SettingsCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Active sessions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {sessions.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading</p>
-            ) : (sessions.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No sessions tracked.</p>
-            ) : (
-              <ul className="divide-y">
-                {sessions.data!.map((s) => (
-                  <li key={s.id} className="flex items-center justify-between py-3">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">
-                        {s.device ?? s.user_agent ?? "Unknown device"}
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {s.location ?? s.ip_address ?? ""} · Last seen{" "}
-                        {formatZoned(new Date(s.last_seen_at), {
-                          dateStyle: "short",
-                          timeStyle: "medium",
-                        })}
-                        {s.revoked_at && <span className="ml-2 text-destructive">Revoked</span>}
-                      </div>
-                    </div>
-                    {!s.revoked_at && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive"
-                        onClick={() => revokeSession(s.id)}
-                      >
-                        Revoke
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-    </>
+      <SettingsCard
+        title="Active Sessions"
+        description="Devices and locations currently signed in to your account."
+      >
+        <div className="p-5">
+          {sessions.isLoading ? (
+            <p className="text-xs text-muted-foreground animate-pulse">Loading sessions…</p>
+          ) : (sessions.data ?? []).length === 0 ? (
+            <p className="text-xs text-muted-foreground">No sessions tracked.</p>
+          ) : (
+            <ul className="divide-y divide-[#262626]">
+              {sessions.data!.map((s: any) => (
+                <li key={s.id} className="py-2.5 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-medium text-[#ededed]">{s.device ?? s.user_agent ?? "Browser Session"}</span>
+                    <p className="text-[11px] text-[#737373]">
+                      {s.location ?? s.ip_address ?? "Local Network"} · Last seen{" "}
+                      {formatZoned(new Date(s.last_seen_at), {
+                        dateStyle: "short",
+                        timeStyle: "medium",
+                      })}
+                      {s.revoked_at && <span className="ml-2 text-rose-400">(Revoked)</span>}
+                    </p>
+                  </div>
+                  {!s.revoked_at && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-rose-400 hover:text-rose-300 hover:bg-[#252525] h-7 text-xs"
+                      onClick={() => revokeSession(s.id)}
+                    >
+                      Revoke
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </SettingsCard>
+    </SettingsLayout>
   );
 }

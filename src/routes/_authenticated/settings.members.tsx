@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,9 +103,10 @@ function MembersSettings() {
   }
 
   return (
-    <>
-      <AppTopbar title="Members" subtitle="Invite teammates and manage roles" />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
+    <SettingsLayout
+      title="Team Members & Roles"
+      description="Invite collaborators, assign workspace permissions, and audit pending invitations."
+    >
         {canManage && (
           <PermissionGate permission="members.invite">
             <Card>
@@ -311,7 +313,6 @@ function MembersSettings() {
             )}
           </CardContent>
         </Card>
-      </main>
-    </>
+    </SettingsLayout>
   );
 }

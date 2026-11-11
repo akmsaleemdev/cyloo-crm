@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,17 +28,14 @@ export const Route = createFileRoute("/_authenticated/settings/connected-apps")(
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(connectedAppsQueryOptions),
   component: () => (
-    <>
-      <AppTopbar
-        title="Connected applications"
-        subtitle="Third-party apps that can access your the account via OAuth."
-      />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
-        <Suspense fallback={<Loader2 className="animate-spin" />}>
-          <AppsList />
-        </Suspense>
-      </main>
-    </>
+    <SettingsLayout
+      title="Connected Applications"
+      description="Review and revoke third-party applications connected to your workspace via OAuth."
+    >
+      <Suspense fallback={<div className="p-8 flex justify-center"><Loader2 className="animate-spin text-accent h-6 w-6" /></div>}>
+        <AppsList />
+      </Suspense>
+    </SettingsLayout>
   ),
   errorComponent: ({ error }) => (
     <div className="p-6" role="alert">

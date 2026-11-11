@@ -13,7 +13,18 @@ import {
   LifeBuoy,
   Bell,
   Building2,
+  ArrowLeft,
+  ArrowRight,
+  Plus,
+  Workflow,
+  Blocks,
+  Smartphone,
+  Search,
+  SlidersHorizontal,
+  Folder,
 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useMyProfile } from "@/hooks/use-profile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +76,15 @@ export function AppSidebar() {
   const { active: activeWorkspace } = useCurrentWorkspace();
   const { data: workspaceRole } = useWorkspaceRole(activeWorkspace?.id);
   const brand = useTenantBrand();
+  const { user } = useAuth();
+  const { data: profile } = useMyProfile();
+  const userName =
+    profile?.display_name ||
+    profile?.full_name ||
+    (user?.user_metadata as { full_name?: string } | undefined)?.full_name ||
+    user?.email?.split("@")[0] ||
+    "White Creates";
+  const userInitial = userName.slice(0, 1).toUpperCase();
   const { data: convCounts } = useConversationCounts();
   const { config: platform } = usePlatformRuntime();
   const liveBadge = (to: string): number | undefined =>
@@ -190,43 +210,122 @@ export function AppSidebar() {
           sidebarCollapsed ? "w-[60px]" : "w-64",
         )}
       >
-        {/* Brand */}
-        <a
-          href="/"
+        {/* Brand Header with History Nav Controls matching Screenshot 2 */}
+        <div
           className={cn(
-            "flex items-center h-header border-b border-sidebar-border transition-all",
-            sidebarCollapsed ? "justify-center px-2" : "gap-2 px-5",
+            "flex items-center justify-between h-12 border-b border-sidebar-border transition-all",
+            sidebarCollapsed ? "justify-center px-2" : "px-3.5",
           )}
         >
-          <div className="grid place-items-center shrink-0 overflow-hidden">
-            <img
-              src={brand.logoUrl ?? cylooLogo}
-              alt={`${brand.name} logo`}
-              className="size-6"
-              onError={(e) => {
-                // A tenant logo URL can 404 (deleted asset / expired signed
-                // URL). Fall back to the bundled mark instead of rendering a
-                // broken-image icon in the rail.
-                const img = e.currentTarget;
-                if (img.src !== cylooLogo) img.src = cylooLogo;
-              }}
-            />
-          </div>
+          <a href="/" className="flex items-center gap-2.5 min-w-0 group">
+            <div className="grid place-items-center shrink-0 overflow-hidden">
+              <img
+                src={brand.logoUrl ?? cylooLogo}
+                alt={`${brand.name} logo`}
+                className="size-6 object-contain"
+                onError={(e) => {
+                  const img = e.currentTarget;
+                  if (img.src !== cylooLogo) img.src = cylooLogo;
+                }}
+              />
+            </div>
+            {!sidebarCollapsed && (
+              <span className="font-display font-bold text-base tracking-tight text-sidebar-foreground truncate group-hover:text-primary transition-colors">
+                {brand.name}
+              </span>
+            )}
+          </a>
 
           {!sidebarCollapsed && (
-            <div className="leading-tight animate-fade-in min-w-0">
-              <div
-                className="font-display font-bold text-xl text-sidebar-foreground truncate"
-                title={brand.name}
+            <div className="flex items-center gap-0.5 text-muted-foreground">
+              <button
+                type="button"
+                onClick={() => window.history.back()}
+                className="h-7 w-7 rounded-md grid place-items-center hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                title="Back"
+                aria-label="Back"
               >
-                {brand.name}
-              </div>
+                <ArrowLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => window.history.forward()}
+                className="h-7 w-7 rounded-md grid place-items-center hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                title="Forward"
+                aria-label="Forward"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
-        </a>
+        </div>
 
-        {/* Organization + Workspace switcher (merged) */}
-        <div className={cn("pt-4", sidebarCollapsed ? "px-2" : "px-3")}>
+        {/* Quick Top Actions matching Screenshot 2 */}
+        {!sidebarCollapsed && (
+          <div className="px-3 pt-3 pb-1 space-y-1">
+            <Link
+              to="/tasks"
+              className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Plus className="h-3.5 w-3.5 text-accent" />
+                <span>New task</span>
+              </span>
+              <kbd className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.5 rounded bg-muted/40 border border-border/40">
+                Ctrl+N
+              </kbd>
+            </Link>
+            <Link
+              to="/automations"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            >
+              <Workflow className="h-3.5 w-3.5 text-sidebar-foreground/60" />
+              <span>Automations</span>
+            </Link>
+            <Link
+              to="/chatbots/marketplace"
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+            >
+              <Blocks className="h-3.5 w-3.5 text-sidebar-foreground/60" />
+              <span>Plugin Marketplace</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Task list and Projects Header matching Screenshot 2 */}
+        {!sidebarCollapsed && (
+          <div className="px-3 pt-2 pb-1">
+            <div className="flex items-center justify-between px-2 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
+              <span>Task list</span>
+              <div className="flex items-center gap-1.5 text-muted-foreground/60">
+                <Search className="h-3 w-3 hover:text-foreground cursor-pointer" />
+                <SlidersHorizontal className="h-3 w-3 hover:text-foreground cursor-pointer" />
+              </div>
+            </div>
+            <div className="mt-2 space-y-1">
+              <div className="px-2 text-[10px] uppercase font-bold text-muted-foreground/60">Projects</div>
+              <Link
+                to="/projects"
+                className="group flex items-center justify-between px-2.5 py-1 rounded-md text-xs text-sidebar-foreground/80 hover:bg-sidebar-accent transition-colors"
+              >
+                <span className="flex items-center gap-2 truncate">
+                  <Folder className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="truncate">CYLOOCRM</span>
+                </span>
+              </Link>
+              <div className="pl-6 pr-2 py-0.5 flex items-center justify-between text-[11px] text-sidebar-foreground/65 hover:text-sidebar-foreground cursor-pointer">
+                <span className="flex items-center gap-1.5 truncate">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="truncate">ENTERPRISE CRM</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground/60 shrink-0">Live</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Organization + Workspace switcher */}
+        <div className={cn("pt-2", sidebarCollapsed ? "px-2" : "px-3")}>
           <OrganizationSwitcherConnected collapsed={sidebarCollapsed} />
         </div>
 
@@ -315,11 +414,11 @@ export function AppSidebar() {
           <ScrollAreaPrimitive.Corner />
         </ScrollAreaPrimitive.Root>
 
-        {/* Footer actions */}
+        {/* User Profile Bar matching Screenshot 2 & 3 */}
         <div
           className={cn(
-            "h-header flex items-center border-t border-sidebar-border",
-            sidebarCollapsed ? "px-2" : "px-3",
+            "h-14 flex items-center border-t border-sidebar-border bg-sidebar shrink-0",
+            sidebarCollapsed ? "justify-center px-1" : "justify-between px-3",
           )}
         >
           <DropdownMenu open={moreMenuOpen} onOpenChange={setMoreMenuOpen}>
@@ -332,49 +431,37 @@ export function AppSidebar() {
                   <button
                     type="button"
                     className={cn(
-                      "flex items-center rounded-control text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-                      sidebarCollapsed
-                        ? "mx-auto h-10 w-10 justify-center p-0"
-                        : "w-full gap-3 px-3 py-2",
+                      "flex items-center gap-2.5 rounded-lg text-left transition-colors hover:bg-sidebar-accent/60 p-1.5 min-w-0 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                      sidebarCollapsed ? "justify-center w-10 h-10" : "flex-1 mr-1",
                     )}
-                    aria-label="Account menu"
+                    aria-label="User menu"
                     aria-haspopup="menu"
                     aria-expanded={moreMenuOpen}
                   >
-                    <MoreHorizontal
-                      className={cn(sidebarCollapsed ? "h-5 w-5" : "h-4 w-4")}
-                      aria-hidden="true"
-                    />
-                    {!sidebarCollapsed && <span className="flex-1 text-left">More</span>}
+                    <div className="size-7 rounded-full bg-[#3ece90] text-black font-bold text-xs grid place-items-center shrink-0 shadow-sm">
+                      {userInitial}
+                    </div>
+                    {!sidebarCollapsed && (
+                      <div className="min-w-0 flex-1 leading-tight">
+                        <p className="text-xs font-semibold text-sidebar-foreground truncate">{userName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{user?.email ?? "Workspace User"}</p>
+                      </div>
+                    )}
                   </button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              {sidebarCollapsed && <TooltipContent side="right">More</TooltipContent>}
+              {sidebarCollapsed && <TooltipContent side="right">{userName}</TooltipContent>}
             </Tooltip>
+
             <DropdownMenuContent
               side={sidebarCollapsed ? "right" : "top"}
               align="start"
-              className="w-52"
+              className="w-56"
               loop
               onCloseAutoFocus={(e) => {
-                // Let AlertDialog take focus when opening; otherwise return focus to trigger (Radix default).
                 if (confirmSignOut) e.preventDefault();
               }}
             >
-              {navMode === "full" && !isInbox && (
-                <>
-                  <DropdownMenuItem onSelect={toggleSidebar}>
-                    {sidebarCollapsed ? (
-                      <PanelLeftOpen className="h-4 w-4" />
-                    ) : (
-                      <PanelLeftClose className="h-4 w-4" />
-                    )}
-                    <span>{sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                </>
-              )}
-
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="gap-2">
                   <User className="h-4 w-4" />
@@ -382,7 +469,7 @@ export function AppSidebar() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/settings" className="gap-2">
+                <Link to="/settings/general" className="gap-2">
                   <Settings className="h-4 w-4" />
                   <span>Settings</span>
                 </Link>
@@ -393,18 +480,6 @@ export function AppSidebar() {
                   <span>Billing</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/organization" className="gap-2">
-                  <Building2 className="h-4 w-4" />
-                  <span>Organization</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/settings/notifications" className="gap-2">
-                  <Bell className="h-4 w-4" />
-                  <span>Notifications</span>
-                </Link>
-              </DropdownMenuItem>
               {role === "superadmin" && (
                 <DropdownMenuItem asChild>
                   <Link to="/admin" className="gap-2">
@@ -413,14 +488,7 @@ export function AppSidebar() {
                   </Link>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem asChild>
-                <a href={docsUrl("support")} target="_blank" rel="noreferrer" className="gap-2">
-                  <LifeBuoy className="h-4 w-4" />
-                  <span>Help &amp; support</span>
-                </a>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
-
               <DropdownMenuItem
                 onSelect={(e) => {
                   e.preventDefault();
@@ -432,6 +500,25 @@ export function AppSidebar() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {!sidebarCollapsed && (
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                className="h-7 w-7 rounded-md grid place-items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                title="Mobile Connected"
+              >
+                <Smartphone className="h-3.5 w-3.5 text-accent" />
+              </button>
+              <Link
+                to="/settings/general"
+                className="h-7 w-7 rounded-md grid place-items-center text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                title="Workspace Settings"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
         </div>
       </aside>
       <AlertDialog open={confirmSignOut} onOpenChange={setConfirmSignOut}>

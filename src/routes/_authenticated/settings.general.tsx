@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Download, Loader2, Upload, X } from "lucide-react";
 
 import { AppTopbar } from "@/components/app/app-topbar";
+import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -80,144 +81,88 @@ function GeneralSettings() {
   }
 
   return (
-    <>
-      <AppTopbar title="General" subtitle="Workspace details and preferences" />
-      <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Workspace</CardTitle>
-            <CardDescription>Basic details about this workspace.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={onSave} className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Workspace name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  disabled={!canEdit}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  maxLength={80}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="slug">Slug</Label>
-                <Input id="slug" value={ws?.slug ?? ""} disabled />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="desc">Description</Label>
-                <Textarea
-                  id="desc"
-                  value={description}
-                  disabled={!canEdit}
-                  onChange={(e) => setDescription(e.target.value)}
-                  maxLength={500}
-                  rows={3}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="avatar">Logo</Label>
-                <WorkspaceLogoUpload
-                  logoUrl={avatarUrl}
-                  orgId={orgId}
-                  disabled={!canEdit}
-                  onChange={setAvatarUrl}
-                />
-              </div>
-              <div className="flex items-center justify-between rounded-control border p-3">
-                <div>
-                  <Label htmlFor="notif" className="text-sm">
-                    Workspace notifications
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Send activity emails to workspace members.
-                  </p>
-                </div>
-                <Switch
-                  id="notif"
-                  checked={notifications}
-                  disabled={!canEdit}
-                  onCheckedChange={setNotifications}
-                />
-              </div>
-              <div className="flex justify-end">
-                <Button type="submit" disabled={!canEdit || update.isPending}>
-                  {update.isPending ? "Saving" : "Save changes"}
-                </Button>
-              </div>
-              {!canEdit && (
-                <p className="text-xs text-muted-foreground">
-                  Only owners and admins can edit workspace details.
-                </p>
-              )}
-            </form>
-          </CardContent>
-        </Card>
+    <SettingsLayout
+      title="General Settings"
+      description="Manage workspace identity, visual branding, and communication preferences."
+      actions={
+        <Button
+          type="button"
+          onClick={onSave}
+          disabled={!canEdit || update.isPending}
+          className="bg-[#3ece90] text-black font-semibold hover:bg-[#35b57d] h-8 text-xs px-4 rounded-lg shadow-sm"
+        >
+          {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+          Save changes
+        </Button>
+      }
+    >
+      <SettingsCard title="Workspace Identity" description="Core naming and visual representation of your tenant workspace.">
+        <form onSubmit={onSave} className="p-5 space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name" className="text-xs font-semibold text-[#ededed]">Workspace name</Label>
+            <Input
+              id="name"
+              value={name}
+              disabled={!canEdit}
+              onChange={(e) => setName(e.target.value)}
+              required
+              maxLength={80}
+              className="bg-[#141414] border-[#2c2c2c] text-[#ededed]"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="slug" className="text-xs font-semibold text-[#ededed]">Slug</Label>
+            <Input id="slug" value={ws?.slug ?? ""} disabled className="bg-[#141414] border-[#2c2c2c] text-muted-foreground" />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="desc" className="text-xs font-semibold text-[#ededed]">Description</Label>
+            <Textarea
+              id="desc"
+              value={description}
+              disabled={!canEdit}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={500}
+              rows={3}
+              className="bg-[#141414] border-[#2c2c2c] text-[#ededed]"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="avatar" className="text-xs font-semibold text-[#ededed]">Logo</Label>
+            <WorkspaceLogoUpload
+              logoUrl={avatarUrl}
+              orgId={orgId}
+              disabled={!canEdit}
+              onChange={setAvatarUrl}
+            />
+          </div>
+        </form>
+      </SettingsCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>About {brandName}</CardTitle>
-            <CardDescription>Release information for this installation.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center justify-between border-b pb-2">
-              <span className="text-muted-foreground">Version</span>
-              <span className="flex items-center gap-2 font-medium">
-                {APP_VERSION_LABEL}
-                <Badge variant="secondary">{APP_RELEASE_CHANNEL}</Badge>
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b pb-2">
-              <span className="text-muted-foreground">Product</span>
-              <span className="font-medium">{brandName} — Omnichannel CRM</span>
-            </div>
-            {SHOW_RESOURCE_LINKS && <div className="pt-1">
-              <Button asChild variant="outline" size="sm">
-                <a href="/api/public/changelog.pdf" download>
-                  <Download className="h-4 w-4" />
-                  Download release notes (PDF)
-                </a>
-              </Button>
-            </div>}
-            {SHOW_RESOURCE_LINKS && <div className="flex flex-wrap items-center gap-4 pt-1">
-              <a
-                className="text-accent hover:underline"
-                href={docsUrl()}
-                target="_blank"
-                rel="noopener"
-              >
-                Documentation
-              </a>
-              <a
-                className="text-accent hover:underline"
-                href={docsUrl("changelog")}
-                target="_blank"
-                rel="noopener"
-              >
-                Changelog
-              </a>
-              <a
-                className="text-accent hover:underline"
-                href={docsUrl("status")}
-                target="_blank"
-                rel="noopener"
-              >
-                System status
-              </a>
-              <a
-                className="text-accent hover:underline"
-                href={docsUrl("support")}
-                target="_blank"
-                rel="noopener"
-              >
-                Support
-              </a>
-            </div>}
-          </CardContent>
-        </Card>
-      </main>
-    </>
+      <SettingsCard title="Preferences" description="Control notifications and alert behaviors for your team.">
+        <SettingsRow
+          label="Workspace notifications"
+          description="Send activity emails and team announcements to workspace members."
+        >
+          <Switch
+            id="notif"
+            checked={notifications}
+            disabled={!canEdit}
+            onCheckedChange={setNotifications}
+          />
+        </SettingsRow>
+      </SettingsCard>
+
+      <SettingsCard title={`About ${brandName}`} description="Release and environment information for this installation.">
+        <SettingsRow label="Version" description="Current production release channel">
+          <Badge variant="secondary" className="bg-[#242424] text-[#ededed] border-[#333333]">
+            {APP_VERSION_LABEL} · {APP_RELEASE_CHANNEL}
+          </Badge>
+        </SettingsRow>
+        <SettingsRow label="Product" description="Enterprise Omnichannel CRM">
+          <span className="text-xs font-semibold text-[#ededed]">{brandName}</span>
+        </SettingsRow>
+      </SettingsCard>
+    </SettingsLayout>
   );
 }
 

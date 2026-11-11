@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Theme = "light" | "dark" | "system";
 
-export const DEFAULT_THEME: Theme = "system";
+export const DEFAULT_THEME: Theme = "dark";
 const THEME_STORAGE_KEY = "cyloo:theme";
 
 type ThemeContextValue = {
