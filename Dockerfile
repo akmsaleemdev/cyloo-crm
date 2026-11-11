@@ -7,11 +7,12 @@ FROM node:20-alpine AS deps
 WORKDIR /app
 RUN corepack enable && apk add --no-cache libc6-compat
 COPY package.json .npmrc bun.lock* package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+COPY scripts ./scripts
 RUN --mount=type=cache,target=/root/.npm \
-    if [ -f bun.lock ]; then npm i -g bun && bun install; \
-    elif [ -f pnpm-lock.yaml ]; then corepack prepare pnpm@latest --activate && pnpm i; \
-    elif [ -f yarn.lock ]; then corepack prepare yarn@stable --activate && yarn install; \
-    else npm ci; fi
+    if [ -f bun.lock ]; then npm i -g bun && bun install --ignore-scripts; \
+    elif [ -f pnpm-lock.yaml ]; then corepack prepare pnpm@latest --activate && pnpm i --ignore-scripts; \
+    elif [ -f yarn.lock ]; then corepack prepare yarn@stable --activate && yarn install --ignore-scripts; \
+    else npm ci --ignore-scripts; fi
 
 # ---------- 2. Build ----------
 FROM node:20-alpine AS build
@@ -34,7 +35,7 @@ ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
 # Without a preset the build targets Cloudflare Workers and `node .output/server/index.mjs`
 # below would not start a server. node-server emits a standalone HTTP server.
 ENV NITRO_PRESET=node-server
-RUN npm run build
+RUN npm run build:server && npm run postbuild
 
 # ---------- 3. Runtime ----------
 FROM node:20-alpine AS runtime
