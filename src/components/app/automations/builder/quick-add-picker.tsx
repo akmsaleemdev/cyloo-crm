@@ -171,7 +171,7 @@ export function QuickAddPicker({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Zap className="w-4 h-4 text-primary" /> Quick add — WhatsApp CRM
+            <Zap className="w-4 h-4 text-primary" /> Quick add — CYLOO CRM
           </DialogTitle>
           <DialogDescription className="text-xs">
             Common triggers &amp; actions preconfigured for WhatsApp automations. Click one to drop

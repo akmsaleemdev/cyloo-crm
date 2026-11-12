@@ -68,7 +68,7 @@ function AboutPage() {
                 About <Brand />
               </span>
               <h1 className="text-marketing-title mt-3">
-                The WhatsApp CRM built for the next billion conversations.
+                The AI-powered omnichannel CRM built for the next billion conversations.
               </h1>
             </div>
             <p className="text-marketing-lede max-w-xl lg:justify-self-end">

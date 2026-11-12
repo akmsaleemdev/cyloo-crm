@@ -300,7 +300,7 @@ function AuthPage() {
             <h1 className="font-bold text-white text-3xl">
               {domainBrand?.login_headline ||
                 brand.tagline ||
-                `The AI-powered WhatsApp CRM for modern teams.`}
+                `The AI-powered omnichannel CRM for modern teams.`}
             </h1>
             <p className="mt-3 text-hero-foreground-muted">
               {domainBrand?.login_subheadline ||

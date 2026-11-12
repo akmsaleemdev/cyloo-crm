@@ -1,4 +1,5 @@
 import { Brand, BrandWordmark, PlatformLogo } from "@/components/brand";
+import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { useBrandName } from "@/hooks/use-brand-name";
 import { usePlatformBranding } from "@/hooks/use-platform-branding";
 import { BRAND_NAME } from "@/lib/branding/brand";
@@ -225,6 +226,7 @@ function Nav() {
           ))}
         </nav>
         <div className="flex items-center gap-2 shrink-0">
+          <PwaInstallButton />
           <div className="hidden sm:block">
             <ThemeSwitcher />
           </div>

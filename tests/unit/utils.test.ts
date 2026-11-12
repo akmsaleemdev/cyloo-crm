@@ -13,7 +13,8 @@ describe("cn (class name merger)", () => {
   });
 
   it("should handle conditional classes", () => {
-    expect(cn("base", false && "hidden", "flex")).toBe("base flex");
+    const isHidden = false;
+    expect(cn("base", isHidden && "hidden", "flex")).toBe("base flex");
   });
 
   it("should handle undefined and null values", () => {

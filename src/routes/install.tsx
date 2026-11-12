@@ -206,7 +206,7 @@ function InstallWizard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Welcome to <Brand /></CardTitle>
                 <CardDescription>
-                  Enterprise WhatsApp CRM, marketing automation, sales pipelines, AI assistant, and BI — all in one platform.
+                  Enterprise omnichannel CRM, marketing automation, sales pipelines, AI assistant, and BI — all in one platform.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">

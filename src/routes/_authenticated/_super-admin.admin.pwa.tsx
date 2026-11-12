@@ -52,7 +52,7 @@ type PwaCfg = {
 const DEFAULTS: PwaCfg = {
   name: `${BRAND_NAME}`,
   short_name: `${BRAND_NAME}`,
-  description: "The AI-Powered WhatsApp CRM Platform",
+  description: "The AI-Powered Omnichannel CRM Platform",
   theme_color: "#075E54",
   background_color: "#ffffff",
   start_url: "/",

@@ -239,7 +239,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           content: `${brandName} is the modern, self-hosted omnichannel CRM for sales, support, marketing, and AI automation. Enterprise-grade, multi-tenant, production-ready.`,
         },
         { name: "author", content: brandName },
-        { name: "theme-color", content: "#2F40CF" },
+        { name: "theme-color", content: "#171717" },
         { property: "og:title", content: `${brandName} — The AI-Powered CRM Platform` },
         {
           property: "og:description",
@@ -261,9 +261,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       links: [
         { rel: "stylesheet", href: appCss },
+        { rel: "icon", href: "/favicon.ico", sizes: "any" },
+        { rel: "icon", href: brand?.faviconUrl ?? "/favicon.png", type: "image/png" },
         { rel: "icon", href: brand?.faviconUrl ?? "/cyloo-icon.svg", type: "image/svg+xml" },
         { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         { rel: "manifest", href: "/api/public/manifest.webmanifest" },
+        { rel: "preload", href: "/fonts/Ginto/Ginto-400.woff", as: "font", type: "font/woff", crossOrigin: "anonymous" },
+        { rel: "preload", href: "/fonts/Ginto-Nord/Ginto-Nord-600.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       ],
     };
   },

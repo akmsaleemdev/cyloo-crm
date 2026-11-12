@@ -9,6 +9,8 @@ import { useTheme } from "@/shared/providers/theme-provider";
 import type { ReactNode } from "react";
 import defaultLogo from "@/assets/cyloo-logo.svg";
 import defaultLogoDark from "@/assets/cyloo-logo-dark.svg";
+import defaultIcon from "@/assets/cyloo-icon.svg";
+import defaultIconDark from "@/assets/cyloo-icon-dark.svg";
 
 export function Brand({ children }: { children?: ReactNode }) {
   return (
@@ -32,5 +34,16 @@ export function PlatformLogo({ className = "", alt = "" }: { className?: string;
     resolvedTheme === "dark"
       ? (brand.logoDarkUrl ?? brand.logoUrl ?? defaultLogoDark)
       : (brand.logoUrl ?? brand.logoDarkUrl ?? defaultLogo);
+  return <img src={src} alt={alt} className={className} />;
+}
+
+/** Icon-only mark for compact spaces, collapsed sidebars, and mobile topbars. */
+export function PlatformMark({ className = "", alt = "" }: { className?: string; alt?: string }) {
+  const brand = usePlatformBranding();
+  const { resolvedTheme } = useTheme();
+  const src =
+    resolvedTheme === "dark"
+      ? (brand.faviconUrl ?? defaultIconDark)
+      : (brand.faviconUrl ?? defaultIcon);
   return <img src={src} alt={alt} className={className} />;
 }

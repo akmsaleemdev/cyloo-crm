@@ -219,7 +219,7 @@ function SetupWizard() {
 
   // Branding
   const [appName, setAppName] = useState(`${BRAND_NAME}`);
-  const [tagline, setTagline] = useState("The AI-powered WhatsApp CRM");
+  const [tagline, setTagline] = useState("The AI-powered Omnichannel CRM");
   const [primaryColor, setPrimaryColor] = useState("#B91C1C");
   const [logoUrl, setLogoUrl] = useState("");
   const [faviconUrl, setFaviconUrl] = useState("");

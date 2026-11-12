@@ -6,6 +6,7 @@ import { NotificationCenter } from "./notification-center";
 import { UserMenu } from "./user-menu";
 import { ThemeSwitcher } from "./theme-switcher";
 import { QuickActions } from "./quick-actions";
+import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { docsUrl } from "@/lib/docs/links";
 import { SHOW_RESOURCE_LINKS } from "@/lib/docs/visibility";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -116,6 +117,7 @@ export function AppTopbar({
             <BookOpen className="h-4 w-4" />
             <span className="hidden lg:inline">Docs</span>
           </a>}
+          <PwaInstallButton />
           <QuickActions />
           <ThemeSwitcher />
           <NotificationCenter />
