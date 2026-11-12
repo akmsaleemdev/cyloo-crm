@@ -171,3 +171,4 @@ export function PwaInstallButton({ className, variant = "topbar" }: PwaInstallBu
     </TooltipProvider>
   );
 }
+
