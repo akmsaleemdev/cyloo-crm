@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -746,7 +747,7 @@ function StatCard({
     amber: "bg-amber-500/10 text-amber-600",
   }[tone];
   const content = (
-    <div className="rounded-control border border-border bg-surface p-5 shadow-sm hover:shadow-md transition group">
+    <MotionCard interactive className="rounded-control p-5 group">
       <div className="flex items-start justify-between">
         <div className={`w-10 h-10 rounded-control grid place-items-center ${toneClass}`}>
           <Icon className="w-5 h-5" />
@@ -776,7 +777,7 @@ function StatCard({
           <div className="text-[11px] text-muted-foreground mt-2">{hint}</div>
         )}
       </div>
-    </div>
+    </MotionCard>
   );
   return to ? (
     <Link to={to} hash={hash}>
@@ -808,12 +809,12 @@ function Widget({
 }) {
   return (
     <section className="rounded-control border border-border bg-surface shadow-sm overflow-hidden">
-      <header className="px-4 py-3 border-b border-border flex items-center justify-between gap-3">
+      <header className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <Icon className="w-6 h-6 text-muted-foreground shrink-0" />
           <div className="min-w-0">
-            <h3 className="font-display font-semibold text-sm truncate">{title}</h3>
-            {subtitle && <p className="text-[11px] text-muted-foreground truncate">{subtitle}</p>}
+            <h3 className="font-display font-semibold text-sm">{title}</h3>
+            {subtitle && <p className="text-[11px] text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
         {to && (
@@ -934,9 +935,11 @@ function PipelineSummary({
                 </span>
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
-                <div
+                <motion.div
                   className="h-full bg-gradient-to-r from-accent to-primary transition-all"
-                  style={{ width: `${(s.count / max) * 100}%` }}
+                  initial={{ width: 0, opacity: 0.6 }}
+                  animate={{ width: `${(s.count / max) * 100}%`, opacity: 1 }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
                 />
               </div>
             </div>

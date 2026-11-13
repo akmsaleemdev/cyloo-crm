@@ -133,7 +133,7 @@ export function WebhookConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] sm:w-full overflow-hidden p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
@@ -145,7 +145,7 @@ export function WebhookConfigDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[65vh] pr-3">
+        <ScrollArea className="min-h-0 max-h-[calc(100dvh-13rem)] pr-3">
           <div className="space-y-6 py-1">
             {/* Endpoint */}
             <div className="space-y-2">
@@ -252,7 +252,7 @@ export function WebhookConfigDialog({
             {/* Test */}
             <div className="space-y-2">
               <Label>Test delivery</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <select
                   value={testEvent}
                   onChange={(e) => setTestEvent(e.target.value)}
@@ -333,7 +333,7 @@ export function WebhookConfigDialog({
           </div>
         </ScrollArea>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0 pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>

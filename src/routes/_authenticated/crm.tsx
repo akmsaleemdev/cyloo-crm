@@ -61,13 +61,13 @@ function CrmPage() {
 
   return (
     <Tabs value={tab} onValueChange={onTabChange} className="w-full">
-      <div className="px-4 pt-4 md:px-6">
+      <div className="border-b border-border/70 px-4 pb-3 pt-4 md:px-6">
         <h1 className="text-xl font-semibold tracking-tight">CRM</h1>
         <p className="text-sm text-muted-foreground">
           Contacts, leads and messaging in one place — social leads land in your inbox
           automatically.
         </p>
-        <TabsList className="mt-3">
+        <TabsList className="mt-3 w-full justify-start overflow-x-auto sm:w-fit">
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="messaging">Messaging</TabsTrigger>

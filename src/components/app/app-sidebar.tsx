@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -472,6 +473,7 @@ function SidebarLink({
   collapsed: boolean;
 }) {
   const Icon = item.icon;
+  const reduceMotion = useReducedMotion();
   const linkClass = cn(
     "group relative flex items-center rounded-control text-sm transition-all",
     collapsed ? "mx-auto h-10 w-10 justify-center p-0" : "gap-3 px-3 py-2",
@@ -490,13 +492,20 @@ function SidebarLink({
           aria-hidden
         />
       )}
-      <Icon
-        className={cn(
-          "shrink-0 transition-transform",
-          collapsed ? "h-5 w-5" : "h-4 w-4",
-          active && "text-accent",
-        )}
-      />
+      <motion.span
+        whileHover={reduceMotion ? undefined : { rotate: -6, scale: 1.08 }}
+        whileTap={reduceMotion ? undefined : { scale: 0.94 }}
+        transition={{ duration: 0.16 }}
+        className="shrink-0"
+      >
+        <Icon
+          className={cn(
+            "transition-transform",
+            collapsed ? "h-5 w-5" : "h-4 w-4",
+            active && "text-accent",
+          )}
+        />
+      </motion.span>
       {!collapsed && (
         <>
           <span className="flex-1 truncate">{item.label}</span>

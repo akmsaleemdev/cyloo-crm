@@ -112,12 +112,12 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[calc(100dvh-1rem)] overflow-hidden p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit company" : "New company"}</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="profile">
-          <TabsList className="w-full">
+        <Tabs defaultValue="profile" className="min-h-0 flex flex-col overflow-hidden">
+          <TabsList className="w-full shrink-0 overflow-x-auto justify-start sm:justify-center">
             <TabsTrigger value="profile" className="flex-1">
               Profile
             </TabsTrigger>
@@ -135,309 +135,321 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="profile" className="grid gap-3 pt-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Name*">
-                <Input value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} />
-              </Field>
-              <Field label="Legal name">
-                <Input
-                  value={form.legal_name ?? ""}
-                  onChange={(e) => set("legal_name", e.target.value)}
+          <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
+            <TabsContent value="profile" className="grid gap-3 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Name*">
+                  <Input value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} />
+                </Field>
+                <Field label="Legal name">
+                  <Input
+                    value={form.legal_name ?? ""}
+                    onChange={(e) => set("legal_name", e.target.value)}
+                  />
+                </Field>
+                <Field label="Logo URL">
+                  <Input
+                    value={form.logo_url ?? ""}
+                    onChange={(e) => set("logo_url", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </Field>
+                <Field label="Website">
+                  <Input
+                    value={form.website ?? ""}
+                    onChange={(e) => set("website", e.target.value)}
+                    placeholder="https://..."
+                  />
+                </Field>
+                <Field label="Domain">
+                  <Input
+                    value={form.domain ?? ""}
+                    onChange={(e) => set("domain", e.target.value)}
+                    placeholder="acme.com"
+                  />
+                </Field>
+                <Field label="Email">
+                  <Input
+                    value={form.email ?? ""}
+                    onChange={(e) => set("email", e.target.value)}
+                    type="email"
+                  />
+                </Field>
+                <Field label="Phone">
+                  <Input value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} />
+                </Field>
+                <Field label="LinkedIn URL">
+                  <Input
+                    value={form.linkedin_url ?? ""}
+                    onChange={(e) => set("linkedin_url", e.target.value)}
+                  />
+                </Field>
+                <Field label="Twitter handle">
+                  <Input
+                    value={form.twitter_handle ?? ""}
+                    onChange={(e) => set("twitter_handle", e.target.value)}
+                    placeholder="@acme"
+                  />
+                </Field>
+              </div>
+              <Field label="Short description">
+                <RichTextarea
+                  rows={2}
+                  value={form.description ?? ""}
+                  onChange={(v) => set("description", v)}
                 />
               </Field>
-              <Field label="Logo URL">
-                <Input
-                  value={form.logo_url ?? ""}
-                  onChange={(e) => set("logo_url", e.target.value)}
-                  placeholder="https://..."
-                />
+              <Field label="About">
+                <RichTextarea rows={4} value={form.about ?? ""} onChange={(v) => set("about", v)} />
               </Field>
-              <Field label="Website">
-                <Input
-                  value={form.website ?? ""}
-                  onChange={(e) => set("website", e.target.value)}
-                  placeholder="https://..."
-                />
-              </Field>
-              <Field label="Domain">
-                <Input
-                  value={form.domain ?? ""}
-                  onChange={(e) => set("domain", e.target.value)}
-                  placeholder="acme.com"
-                />
-              </Field>
-              <Field label="Email">
-                <Input
-                  value={form.email ?? ""}
-                  onChange={(e) => set("email", e.target.value)}
-                  type="email"
-                />
-              </Field>
-              <Field label="Phone">
-                <Input value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} />
-              </Field>
-              <Field label="LinkedIn URL">
-                <Input
-                  value={form.linkedin_url ?? ""}
-                  onChange={(e) => set("linkedin_url", e.target.value)}
-                />
-              </Field>
-              <Field label="Twitter handle">
-                <Input
-                  value={form.twitter_handle ?? ""}
-                  onChange={(e) => set("twitter_handle", e.target.value)}
-                  placeholder="@acme"
-                />
-              </Field>
-            </div>
-            <Field label="Short description">
-              <RichTextarea
-                rows={2}
-                value={form.description ?? ""}
-                onChange={(v) => set("description", v)}
-              />
-            </Field>
-            <Field label="About">
-              <RichTextarea rows={4} value={form.about ?? ""} onChange={(v) => set("about", v)} />
-            </Field>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="details" className="grid gap-3 pt-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Industry">
-                <Select
-                  value={form.industry ?? ""}
-                  onValueChange={(v) => set("industry", v || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {INDUSTRIES.map((i) => (
-                      <SelectItem key={i} value={i}>
-                        {i}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Business type">
-                <Select
-                  value={form.business_type ?? ""}
-                  onValueChange={(v) => set("business_type", v || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BUSINESS_TYPES.map((i) => (
-                      <SelectItem key={i} value={i}>
-                        {i}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Company size">
-                <Select
-                  value={form.company_size ?? ""}
-                  onValueChange={(v) => set("company_size", v || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COMPANY_SIZES.map((i) => (
-                      <SelectItem key={i} value={i}>
-                        {i}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Annual revenue">
-                <Input
-                  type="number"
-                  value={form.annual_revenue ?? ""}
-                  onChange={(e) =>
-                    set("annual_revenue", e.target.value ? Number(e.target.value) : null)
-                  }
-                />
-              </Field>
-              <Field label="Currency">
-                <Select
-                  value={form.currency ?? tenantCurrency}
-                  onValueChange={(v) => set("currency", v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCIES.map((i) => (
-                      <SelectItem key={i} value={i}>
-                        {i}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Source">
-                <Input
-                  value={form.source ?? ""}
-                  onChange={(e) => set("source", e.target.value)}
-                  placeholder="referral, web, manual"
-                />
-              </Field>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="address" className="grid gap-3 pt-3">
-            <Field label="Line 1">
-              <Input
-                value={form.address?.line1 ?? ""}
-                onChange={(e) => setAddr("line1", e.target.value)}
-              />
-            </Field>
-            <Field label="Line 2">
-              <Input
-                value={form.address?.line2 ?? ""}
-                onChange={(e) => setAddr("line2", e.target.value)}
-              />
-            </Field>
-            <div className="grid grid-cols-3 gap-3">
-              <Field label="City">
-                <Input
-                  value={form.address?.city ?? ""}
-                  onChange={(e) => setAddr("city", e.target.value)}
-                />
-              </Field>
-              <Field label="State">
-                <Input
-                  value={form.address?.state ?? ""}
-                  onChange={(e) => setAddr("state", e.target.value)}
-                />
-              </Field>
-              <Field label="Postal code">
-                <Input
-                  value={form.address?.postal_code ?? ""}
-                  onChange={(e) => setAddr("postal_code", e.target.value)}
-                />
-              </Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Country">
-                <Input
-                  value={form.address?.country ?? ""}
-                  onChange={(e) => {
-                    setAddr("country", e.target.value);
-                    set("country", e.target.value || null);
-                  }}
-                />
-              </Field>
-              <Field label="Timezone">
-                <Input
-                  value={form.timezone ?? ""}
-                  onChange={(e) => set("timezone", e.target.value || null)}
-                  placeholder="Europe/Oslo"
-                />
-              </Field>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="crm" className="grid gap-3 pt-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Owner">
-                <Select
-                  value={form.owner_id ?? ""}
-                  onValueChange={(v) => set("owner_id", v || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Unassigned" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(members ?? []).map((m) => (
-                      <SelectItem key={m.user_id} value={m.user_id}>
-                        {m.display_name || m.user_id.slice(0, 8)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Status">
-                <Select value={form.status ?? "active"} onValueChange={(v) => set("status", v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label="Assigned team (id)">
-                <Input
-                  value={form.assigned_team_id ?? ""}
-                  onChange={(e) => set("assigned_team_id", e.target.value || null)}
-                  placeholder="Optional"
-                />
-              </Field>
-            </div>
-            <Field label="Tags">
-              <div className="flex flex-wrap gap-1.5 mb-2">
-                {(form.tags ?? []).map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center gap-1 rounded-control bg-accent/10 text-accent text-xs px-2 py-1"
+            <TabsContent value="details" className="grid gap-3 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Industry">
+                  <Select
+                    value={form.industry ?? ""}
+                    onValueChange={(v) => set("industry", v || null)}
                   >
-                    {t}
-                    <button type="button" onClick={() => removeTag(t)} className="hover:opacity-70">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INDUSTRIES.map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Business type">
+                  <Select
+                    value={form.business_type ?? ""}
+                    onValueChange={(v) => set("business_type", v || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BUSINESS_TYPES.map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Company size">
+                  <Select
+                    value={form.company_size ?? ""}
+                    onValueChange={(v) => set("company_size", v || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMPANY_SIZES.map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Annual revenue">
+                  <Input
+                    type="number"
+                    value={form.annual_revenue ?? ""}
+                    onChange={(e) =>
+                      set("annual_revenue", e.target.value ? Number(e.target.value) : null)
+                    }
+                  />
+                </Field>
+                <Field label="Currency">
+                  <Select
+                    value={form.currency ?? tenantCurrency}
+                    onValueChange={(v) => set("currency", v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((i) => (
+                        <SelectItem key={i} value={i}>
+                          {i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Source">
+                  <Input
+                    value={form.source ?? ""}
+                    onChange={(e) => set("source", e.target.value)}
+                    placeholder="referral, web, manual"
+                  />
+                </Field>
               </div>
-              <div className="flex gap-2">
-                <Input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                  placeholder="Add tag"
-                />
-                <Button type="button" variant="secondary" onClick={addTag}>
-                  Add
-                </Button>
-              </div>
-            </Field>
-            <div className="flex items-center justify-between rounded-control border p-3">
-              <div>
-                <div className="text-sm font-medium">Favorite</div>
-                <div className="text-xs text-muted-foreground">Pin to your favorites list.</div>
-              </div>
-              <Switch checked={!!form.is_favorite} onCheckedChange={(v) => set("is_favorite", v)} />
-            </div>
-            <div className="flex items-center justify-between rounded-control border p-3">
-              <div>
-                <div className="text-sm font-medium">Archived</div>
-                <div className="text-xs text-muted-foreground">Hide from default lists.</div>
-              </div>
-              <Switch checked={!!form.is_archived} onCheckedChange={(v) => set("is_archived", v)} />
-            </div>
-          </TabsContent>
+            </TabsContent>
 
-          <TabsContent value="custom" className="grid gap-3 pt-3">
-            <CustomFieldsSection
-              entity="company"
-              values={(form.custom_fields ?? {}) as Record<string, unknown>}
-              onChange={(v: Record<string, unknown>) => set("custom_fields", v)}
-            />
-          </TabsContent>
+            <TabsContent value="address" className="grid gap-3 pt-3">
+              <Field label="Line 1">
+                <Input
+                  value={form.address?.line1 ?? ""}
+                  onChange={(e) => setAddr("line1", e.target.value)}
+                />
+              </Field>
+              <Field label="Line 2">
+                <Input
+                  value={form.address?.line2 ?? ""}
+                  onChange={(e) => setAddr("line2", e.target.value)}
+                />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="City">
+                  <Input
+                    value={form.address?.city ?? ""}
+                    onChange={(e) => setAddr("city", e.target.value)}
+                  />
+                </Field>
+                <Field label="State">
+                  <Input
+                    value={form.address?.state ?? ""}
+                    onChange={(e) => setAddr("state", e.target.value)}
+                  />
+                </Field>
+                <Field label="Postal code">
+                  <Input
+                    value={form.address?.postal_code ?? ""}
+                    onChange={(e) => setAddr("postal_code", e.target.value)}
+                  />
+                </Field>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Country">
+                  <Input
+                    value={form.address?.country ?? ""}
+                    onChange={(e) => {
+                      setAddr("country", e.target.value);
+                      set("country", e.target.value || null);
+                    }}
+                  />
+                </Field>
+                <Field label="Timezone">
+                  <Input
+                    value={form.timezone ?? ""}
+                    onChange={(e) => set("timezone", e.target.value || null)}
+                    placeholder="Europe/Oslo"
+                  />
+                </Field>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="crm" className="grid gap-3 pt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Owner">
+                  <Select
+                    value={form.owner_id ?? ""}
+                    onValueChange={(v) => set("owner_id", v || null)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(members ?? []).map((m) => (
+                        <SelectItem key={m.user_id} value={m.user_id}>
+                          {m.display_name || m.user_id.slice(0, 8)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Status">
+                  <Select value={form.status ?? "active"} onValueChange={(v) => set("status", v)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label="Assigned team (id)">
+                  <Input
+                    value={form.assigned_team_id ?? ""}
+                    onChange={(e) => set("assigned_team_id", e.target.value || null)}
+                    placeholder="Optional"
+                  />
+                </Field>
+              </div>
+              <Field label="Tags">
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {(form.tags ?? []).map((t) => (
+                    <span
+                      key={t}
+                      className="inline-flex items-center gap-1 rounded-control bg-accent/10 text-accent text-xs px-2 py-1"
+                    >
+                      {t}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(t)}
+                        className="hover:opacity-70"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
+                    placeholder="Add tag"
+                  />
+                  <Button type="button" variant="secondary" onClick={addTag}>
+                    Add
+                  </Button>
+                </div>
+              </Field>
+              <div className="flex items-center justify-between rounded-control border p-3">
+                <div>
+                  <div className="text-sm font-medium">Favorite</div>
+                  <div className="text-xs text-muted-foreground">Pin to your favorites list.</div>
+                </div>
+                <Switch
+                  checked={!!form.is_favorite}
+                  onCheckedChange={(v) => set("is_favorite", v)}
+                />
+              </div>
+              <div className="flex items-center justify-between rounded-control border p-3">
+                <div>
+                  <div className="text-sm font-medium">Archived</div>
+                  <div className="text-xs text-muted-foreground">Hide from default lists.</div>
+                </div>
+                <Switch
+                  checked={!!form.is_archived}
+                  onCheckedChange={(v) => set("is_archived", v)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="custom" className="grid gap-3 pt-3">
+              <CustomFieldsSection
+                entity="company"
+                values={(form.custom_fields ?? {}) as Record<string, unknown>}
+                onChange={(v: Record<string, unknown>) => set("custom_fields", v)}
+              />
+            </TabsContent>
+          </div>
         </Tabs>
 
-        <DialogFooter>
+        <DialogFooter className="shrink-0 pt-2">
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

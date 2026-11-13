@@ -448,14 +448,14 @@ export function CampaignWizard({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl max-h-[calc(100dvh-2rem)] p-0 gap-0 overflow-hidden bg-background">
+      <DialogContent className="max-w-7xl max-h-[calc(100dvh-1rem)] w-[calc(100%-1rem)] sm:w-full p-0 gap-0 overflow-hidden bg-background">
         <DialogTitle className="sr-only">
           {isBroadcast ? "Create a broadcast" : "Create a campaign"}
         </DialogTitle>
         <DialogDescription className="sr-only">
           Choose the audience, template, preview, and delivery schedule before launching.
         </DialogDescription>
-        <div className="grid md:grid-cols-[240px_1fr] h-[min(720px,calc(100dvh-2rem))] min-h-0">
+        <div className="grid md:grid-cols-[240px_1fr] h-[min(720px,calc(100dvh-1rem))] min-h-0">
           {/* Rail */}
           <aside className="hidden md:flex flex-col gap-1 p-5 overflow-y-auto border-r border-border bg-gradient-to-br from-primary/5 via-accent/5 to-transparent">
             <div className="flex items-center gap-2 mb-6">
@@ -515,12 +515,6 @@ export function CampaignWizard({
                 </div>
                 <div className="text-lg font-semibold">{STEPS[step].label}</div>
               </div>
-              <button
-                onClick={() => onOpenChange(false)}
-                className="p-2 rounded-control hover:bg-muted text-muted-foreground"
-              >
-                <X className="w-4 h-4" />
-              </button>
             </header>
 
             <div
