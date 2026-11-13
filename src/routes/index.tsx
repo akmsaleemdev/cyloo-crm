@@ -1,4 +1,4 @@
-import { Brand, BrandWordmark, PlatformLogo } from "@/components/brand";
+import { Brand, BrandWordmark, PlatformLogo, PlatformMark } from "@/components/brand";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { useBrandName } from "@/hooks/use-brand-name";
 import { usePlatformBranding } from "@/hooks/use-platform-branding";
@@ -209,9 +209,8 @@ function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container-marketing grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 h-18 md:flex md:justify-between py-4">
-        <Link to="/" className="flex min-w-0 items-center gap-2 cursor-pointer">
-          <PlatformLogo alt="" className="size-6 shrink-0 object-contain" />
-          <BrandWordmark className="brand-wordmark min-w-0 truncate text-xl" />
+        <Link to="/" className="flex min-w-0 items-center gap-2.5 cursor-pointer" aria-label="CYLOO Home">
+          <PlatformLogo alt="CYLOO" className="h-8 md:h-9 w-auto shrink-0 object-contain" />
         </Link>
         <nav className="hidden items-center gap-5 text-base text-muted-foreground lg:flex xl:gap-8">
           {links.map((l) => (
@@ -293,9 +292,9 @@ function Hero() {
         <CornerPlus corner="br" />
         <div className="mx-auto max-w-3xl text-center">
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary inline-flex items-center gap-1.5">
-            <PlatformLogo
+            <PlatformMark
               alt=""
-              className="size-4 shrink-0 object-contain hidden sm:inline rounded-full"
+              className="size-3.5 shrink-0 object-contain hidden sm:inline"
             />
             WhatsApp, Messenger &amp; Instagram APIs · Self-hosted
           </span>
@@ -2780,7 +2779,7 @@ function PlatformStackIllustration() {
 
         {/* Brand badge overlaid on the stock illustration */}
         <span className="absolute left-[8%] top-[6%] inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-[11px] font-semibold text-foreground ">
-          <PlatformLogo alt="" className="size-3.5 shrink-0 object-contain" />
+          <PlatformMark alt="" className="size-3.5 shrink-0 object-contain" />
           <BrandWordmark /> Platform
         </span>
 
@@ -8077,9 +8076,8 @@ function Footer() {
         <div className="row-bleed-marketing px-0 border-y border-white/5 ">
           <div className="grid gap-8 md:gap-y-0 lg:gap-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
             <div className="min-w-0 border-b lg:border-b-0 md:border-r border-white/5 px-8 py-12 lg:px-12">
-              <Link to="/" className="flex min-w-0 items-center gap-2 cursor-pointer">
-                <PlatformLogo alt="" className="size-6 shrink-0 object-contain" />
-                <BrandWordmark className="brand-wordmark min-w-0 truncate text-xl text-background dark:text-foreground" />
+              <Link to="/" className="flex min-w-0 items-center gap-2.5 cursor-pointer" aria-label="CYLOO Home">
+                <PlatformLogo alt="CYLOO" className="h-8 w-auto shrink-0 object-contain" />
               </Link>
               <p className="mt-4 max-w-xs text-sm text-background/70 dark:text-foreground/70">
                 The self-hosted omnichannel CRM for sales, support and marketing teams.
@@ -8290,7 +8288,7 @@ function ConnectionMap() {
 
       <div className="absolute left-1/2 top-1/2 z-20 flex size-28 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-control border border-border bg-background p-4 pt-6 text-center">
         <div className="flex size-16 items-center justify-center rounded-control border border-border bg-muted/35 p-2.5">
-          <PlatformLogo alt="" className="size-10 object-contain" />
+          <PlatformMark alt="" className="size-10 object-contain" />
         </div>
         <p className="mt-2 text-[11px] font-semibold text-foreground">
           <BrandWordmark /> Hub

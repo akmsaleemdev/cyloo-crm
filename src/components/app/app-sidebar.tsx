@@ -42,6 +42,8 @@ import { OrganizationSwitcherConnected } from "./organization-switcher-connected
 import { useTenantBrand } from "@/hooks/use-tenant-brand";
 import cylooLogo from "@/assets/cyloo-logo.svg";
 import cylooIcon from "@/assets/cyloo-icon.svg";
+import cylooIconDark from "@/assets/cyloo-icon-dark.svg";
+import { useTheme } from "@/shared/providers/theme-provider";
 import { NAV_ITEMS, NAV_GROUPS, API_CONFIG_CHILDREN, navKey, type NavItem } from "./nav-config";
 import { NestedNavItem, NestedNavGroup, type NestedNavNode } from "./nested-nav-item";
 import { SidebarGroupFlyout, type SidebarFlyoutSection } from "./sidebar-group-flyout";
@@ -66,6 +68,8 @@ export function AppSidebar() {
   const { can, isSuperAdmin, loading: permsLoading, orgRole, platformRole } = usePermissions();
   const { active: activeWorkspace } = useCurrentWorkspace();
   const { data: workspaceRole } = useWorkspaceRole(activeWorkspace?.id);
+  const { resolvedTheme } = useTheme();
+  const defaultSidebarIcon = resolvedTheme === "dark" ? cylooIconDark : cylooIcon;
   const brand = useTenantBrand();
   const { user } = useAuth();
   const { data: profile } = useMyProfile();
@@ -211,12 +215,12 @@ export function AppSidebar() {
           <a href="/" className="flex items-center gap-2.5 min-w-0 group">
             <div className="grid place-items-center shrink-0 overflow-hidden">
               <img
-                src={brand.logoUrl ?? cylooIcon}
+                src={brand.logoUrl ?? defaultSidebarIcon}
                 alt={`${brand.name} logo`}
                 className="size-6 object-contain"
                 onError={(e) => {
                   const img = e.currentTarget;
-                  if (img.src !== cylooIcon) img.src = cylooIcon;
+                  if (img.src !== defaultSidebarIcon) img.src = defaultSidebarIcon;
                 }}
               />
             </div>

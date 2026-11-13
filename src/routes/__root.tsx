@@ -266,8 +266,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "icon", href: brand?.faviconUrl ?? "/cyloo-icon.svg", type: "image/svg+xml" },
         { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
         { rel: "manifest", href: "/api/public/manifest.webmanifest" },
-        { rel: "preload", href: "/fonts/Ginto/Ginto-400.woff", as: "font", type: "font/woff", crossOrigin: "anonymous" },
-        { rel: "preload", href: "/fonts/Ginto-Nord/Ginto-Nord-600.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       ],
     };
   },
