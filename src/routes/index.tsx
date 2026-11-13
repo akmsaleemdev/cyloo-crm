@@ -1,4 +1,5 @@
 import { Brand, BrandWordmark, PlatformLogo, PlatformMark } from "@/components/brand";
+import { HeroInteractiveShowcase } from "@/components/marketing-redesign/hero-interactive-showcase";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { useBrandName } from "@/hooks/use-brand-name";
 import { usePlatformBranding } from "@/hooks/use-platform-branding";
@@ -339,7 +340,11 @@ function Hero() {
             </Button>
           </div>
         </div>
-        <div className="mt-20 flex flex-wrap items-center justify-center gap-6 lg:mt-28">
+
+        {/* Monday.com-Inspired Interactive Product Board Showcase */}
+        <HeroInteractiveShowcase />
+
+        <div className="mt-16 flex flex-wrap items-center justify-center gap-6 lg:mt-24">
           {[
             { Icon: SiWhatsapp, name: "WhatsApp", bg: "#25D366" },
             { Icon: SiMessenger, name: "Messenger", bg: "#0084FF" },
@@ -1125,18 +1130,23 @@ function StackReplacement() {
             {channelCards.map((c) => (
               <div
                 key={c.name}
-                className="group relative overflow-hidden rounded-none bg-surface p-6 transition-all duration-300 hover:bg-muted/50"
+                className="group relative overflow-hidden bg-surface p-7 transition-all duration-300 hover:bg-surface-elevated hover:shadow-lg hover:-translate-y-0.5"
               >
-                <span
-                  className="flex size-12 items-center justify-center rounded-control"
-                  style={{ background: `${c.bg}1A`, color: c.bg }}
-                >
-                  <c.Icon className="size-5" />
-                </span>
-                <h3 className="mt-4 font-display text-base font-semibold text-foreground">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="flex size-12 items-center justify-center rounded-2xl shadow-sm transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: `${c.bg}1A`, color: c.bg }}
+                  >
+                    <c.Icon className="size-6" />
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-border/80 text-muted-foreground group-hover:border-primary/40 group-hover:text-primary transition-colors">
+                    Active Gateway
+                  </span>
+                </div>
+                <h3 className="mt-4 font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">
                   {c.name}
                 </h3>
-                <p className="text-marketing-card-body mt-1.5">{c.desc}</p>
+                <p className="text-marketing-card-body mt-2 leading-relaxed">{c.desc}</p>
               </div>
             ))}
           </div>
@@ -7794,15 +7804,15 @@ function Pricing() {
               return (
                 <div
                   key={p.id}
-                  className={`group relative flex min-w-0 flex-col overflow-hidden rounded-0 border-r border-b border-border p-6 transition-all duration-300 ${isLastMobileRow ? "border-b-0" : ""} sm:border-b sm:[&:nth-child(2n)]:border-r-0 sm:p-4 ${isLastTabletRow ? "sm:border-b-0" : ""} lg:border-b lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 ${isLastDesktopRow ? "lg:border-b-0" : ""} ${
+                  className={`group relative flex min-w-0 flex-col overflow-hidden border-r border-b border-border p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 ${isLastMobileRow ? "border-b-0" : ""} sm:border-b sm:[&:nth-child(2n)]:border-r-0 sm:p-5 ${isLastTabletRow ? "sm:border-b-0" : ""} lg:border-b lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 ${isLastDesktopRow ? "lg:border-b-0" : ""} ${
                     p.highlight
-                    // ? "border-[#015941]/45 bg-[#eff9f2] dark:border-emerald-400/35 dark:bg-emerald-950/30"
-                    // : "border-border bg-background hover:shadow-xl"
+                      ? "bg-primary/[0.03] dark:bg-primary/[0.06] border-primary/40 ring-1 ring-primary/30"
+                      : "bg-background"
                   } ${currentPlan ? "ring-2 ring-inset ring-[#25D366]/60" : ""}`}
                 >
-                  {/* {p.highlight && (
-                    <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-primary" />
-                  )} */}
+                  {p.highlight && (
+                    <div aria-hidden className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary" />
+                  )}
                   <div className="mb-8 rounded-control border border-border bg-muted/50 p-6 sm:min-h-[18.25rem]">
                     <div className="flex min-h-7 items-start justify-between gap-3">
                       <span className="font-mono text-[11px] font-semibold text-muted-foreground">
@@ -7883,17 +7893,21 @@ function Pricing() {
                         href={`mailto:${supportEmail ?? "sales@cyloo.com"}?subject=Enterprise%20inquiry`}
                         {...ctaAttrs(`plan-${p.code}`, "home-pricing", "pricing_click", cta)}
                         data-analytics-plan={p.code}
-                        className="px-6 py-6 sm:-mx-4 sm:-mb-4 sm:px-8 flex items-center justify-between gap-2 text-base font-semibold  transition-colors hover:bg-muted"
+                        className={`px-6 py-4 flex items-center justify-between gap-2 text-sm font-bold transition-all duration-200 ${
+                          p.highlight
+                            ? "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                            : "hover:bg-muted text-foreground"
+                        }`}
                       >
-                        {cta} <ArrowRight className="size-3.5" />
+                        {cta} <ArrowRight className="size-4" />
                       </a>
                     ) : currentPlan ? (
                       <Link
                         to="/billing"
                         data-analytics-plan={p.code}
-                        className="px-6 py-6 sm:-mx-4 sm:-mb-4 sm:px-8 flex items-center justify-between gap-2 text-base font-semibold  transition-colors hover:bg-muted"
+                        className="px-6 py-4 flex items-center justify-between gap-2 text-sm font-bold text-foreground transition-colors hover:bg-muted"
                       >
-                        Manage your plan <ArrowRight className="size-3.5" />
+                        Manage your plan <ArrowRight className="size-4" />
                       </Link>
                     ) : (
                       <Link
@@ -7901,9 +7915,13 @@ function Pricing() {
                         search={{ plan: p.code, mode: "sign-up" } as never}
                         {...ctaAttrs(`plan-${p.code}`, "home-pricing", "pricing_click", cta)}
                         data-analytics-plan={p.code}
-                        className="px-6 py-6 sm:-mx-4 sm:-mb-4 sm:px-8 flex items-center justify-between gap-2 text-base font-semibold  transition-colors hover:bg-muted"
+                        className={`px-6 py-4 flex items-center justify-between gap-2 text-sm font-bold transition-all duration-200 ${
+                          p.highlight
+                            ? "bg-primary text-white hover:bg-primary/90 shadow-sm"
+                            : "hover:bg-muted text-foreground"
+                        }`}
                       >
-                        {cta} <ArrowRight className="size-3.5" />
+                        {cta} <ArrowRight className="size-4" />
                       </Link>
                     )}
                   </div>
