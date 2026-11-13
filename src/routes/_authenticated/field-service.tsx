@@ -190,7 +190,7 @@ export function FieldServicePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <AppTopbar />
+      <AppTopbar title="Field Service" showPageHeader={false} />
       <div className="flex-1 p-6 space-y-6 max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

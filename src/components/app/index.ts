@@ -14,7 +14,7 @@ export { ThemeSwitcher } from "./theme-switcher";
 export { UserMenu } from "./user-menu";
 export { WorkspaceSwitcher } from "./workspace-switcher";
 export { OrganizationSwitcher } from "./organization-switcher";
-export { FavoritesList, RecentList, FavoriteToggleButton } from "./favorites-and-recent";
+export { FavoritesList, RecentList } from "./favorites-and-recent";
 export { FloatingActionButton, type FabAction } from "./floating-action-button";
 export { NestedNavItem, type NestedNavNode } from "./nested-nav-item";
 export { NavContextMenu } from "./nav-context-menu";

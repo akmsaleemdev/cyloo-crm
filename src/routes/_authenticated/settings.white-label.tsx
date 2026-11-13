@@ -7,6 +7,7 @@ import {
   verifyCustomDomain,
 } from "@/lib/white-label/white-label.functions";
 import { SettingsLayout } from "@/components/app/settings/settings-layout";
+import { AppTopbar } from "@/components/app/app-topbar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

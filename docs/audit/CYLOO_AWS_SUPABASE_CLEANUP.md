@@ -72,6 +72,8 @@ Smoke checks cover public landing/auth form rendering, safe 404, metadata and vi
 
 ## Remaining release work
 
+Follow-up after publishing `85b4a19`: GitHub CI passed unit/integration/API tests but reported 14 TypeScript diagnostics; lint and the high Zod advisory also blocked CI. The follow-up corrects the template-preset callback shadowing its imported helper, a nonexistent favorites export, motion easing tuple inference, missing branding/topbar imports and six missing topbar titles. Existing page headings remain in place without adding duplicate heading rows. All 142 local tests passed again. A bounded local typecheck retry remained memory-heavy and was stopped; GitHub CI must verify the corrections. These fixes do not establish production readiness or resolve the dependency/lint/staging blockers.
+
 1. Resolve the Zod high advisory with a fully validated major-version migration. A controlled Zod 4 trial passed schema comparisons and local tests but was reverted when full compiler verification exceeded available memory. Do not hide it in the security baseline.
 2. Complete root typechecking on adequately provisioned CI and fix all resulting diagnostics. Resolve lint findings without weakening checks; retain/reconcile the user's installer edit.
 3. Configure approved isolated Supabase fixtures and test effective RLS/grants, storage/realtime, read/write tenant isolation, authentication/onboarding, CRM/pipelines, dashboards, billing, webhooks and enabled providers. Validate security controls and migrations against the effective staging database.

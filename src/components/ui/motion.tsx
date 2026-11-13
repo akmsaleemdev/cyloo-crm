@@ -13,8 +13,8 @@ export const MOTION_TIMINGS = {
 };
 
 export const MOTION_EASINGS = {
-  easeOut: [0.16, 1, 0.3, 1], // Fluid decel
-  easeInOut: [0.65, 0, 0.35, 1],
+  easeOut: [0.16, 1, 0.3, 1] satisfies [number, number, number, number], // Fluid decel
+  easeInOut: [0.65, 0, 0.35, 1] satisfies [number, number, number, number],
   spring: { type: "spring", damping: 25, stiffness: 300 },
   subtleSpring: { type: "spring", damping: 30, stiffness: 260 },
 };

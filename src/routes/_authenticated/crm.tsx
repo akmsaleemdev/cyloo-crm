@@ -1,4 +1,5 @@
 import { createFileRoute, useLocation, useNavigate, Link } from "@tanstack/react-router";
+import { BRAND_NAME } from "@/lib/branding/brand";
 import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
