@@ -44,6 +44,7 @@ supabase/.temp/
 supabase/.branches/
 deploy/certs/*
 !deploy/certs/.gitkeep
+deploy/acme/
 
 # Test artifacts
 coverage

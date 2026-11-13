@@ -77,6 +77,7 @@ services:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
       - ${CYLOO_CERTS_DIR:-./deploy/certs}:/etc/nginx/certs:ro
+      - ${CYLOO_ACME_WEBROOT:-./deploy/acme}:/var/www/certbot:ro
       - nginx-cache:/var/cache/nginx
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]

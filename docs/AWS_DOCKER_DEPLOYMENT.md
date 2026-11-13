@@ -178,6 +178,21 @@ backup for rollback. Delete the old checkout only after confirming no running
 container has a bind mount under it. This path preserves existing TLS management;
 check its certificate renewal service uses the shared certificate location.
 
+For Certbot, set `CYLOO_ACME_WEBROOT` to a persistent directory such as
+`/opt/cyloo/shared/acme-webroot`. The nginx Compose stack serves its
+`/.well-known/acme-challenge/` files on HTTP. Test a challenge file through the
+public hostname, then use `certbot reconfigure --cert-name YOUR_DOMAIN --webroot
+--webroot-path /opt/cyloo/shared/acme-webroot` to test and save webroot renewal.
+This avoids a standalone renewal trying to bind nginx's occupied port 80.
+
+Install [the deploy hook](../deploy/aws/certbot-deploy.sh) outside the source
+checkout, with a root-owned executable wrapper under
+`/etc/letsencrypt/renewal-hooks/deploy/` exporting `CYLOO_DOMAIN`,
+`CYLOO_CERTS_DIR`, and `CYLOO_PROXY_CONTAINER`. It copies renewed certificates to
+shared storage and validates/reloads nginx. Preserve existing certificate account
+configuration; test with `certbot renew --cert-name YOUR_DOMAIN --dry-run` before
+removing the old checkout. See [Certbot renewal documentation](https://eff-certbot.readthedocs.io/en/stable/using.html#renewing-certificates).
+
 ### New automatic HTTPS installations
 
 Inspect current listeners and containers before replacing an existing installation:

@@ -63,9 +63,23 @@ jobs:
       - name: Validate the automatic HTTPS proxy configuration
         run: |
           docker run --rm -e APP_DOMAIN -e ACME_EMAIL -v "$PWD/deploy/aws/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - name: Validate the existing nginx deployment configuration
+        run: |
+          sh -n deploy/aws/certbot-deploy.sh
+          mkdir -p "$RUNNER_TEMP/cyloo-certs"
+          openssl req -x509 -nodes -newkey rsa:2048 -days 1 -subj /CN=crm.example.test -keyout "$RUNNER_TEMP/cyloo-certs/privkey.pem" -out "$RUNNER_TEMP/cyloo-certs/fullchain.pem" 2>/dev/null
+          docker network create cyloo-nginx-verify
+          docker network connect --alias app cyloo-nginx-verify cyloo-docker-smoke
+          docker run --rm --network cyloo-nginx-verify \
+            -v "$PWD/deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" \
+            -v "$PWD/deploy/nginx/conf.d:/etc/nginx/conf.d:ro" \
+            -v "$RUNNER_TEMP/cyloo-certs:/etc/nginx/certs:ro" \
+            nginx:1.27-alpine nginx -t
       - name: Show container logs on failure
         if: failure()
         run: docker logs cyloo-docker-smoke 2>/dev/null || true
       - name: Remove the isolated test container
         if: always()
-        run: docker rm -f cyloo-docker-smoke 2>/dev/null || true
+        run: |
+          docker rm -f cyloo-docker-smoke 2>/dev/null || true
+          docker network rm cyloo-nginx-verify 2>/dev/null || true
