@@ -1,0 +1,78 @@
+/* Public marketing only; dashboard and billing tokens remain unchanged. */
+.public-marketing.dark {
+  --background: #151515;
+  --foreground: #ffffff;
+  --card: #202020;
+  --card-foreground: #ffffff;
+  --surface: #202020;
+  --primary: #2339cc;
+  --primary-foreground: #ffffff;
+  --accent: #3ece90;
+  --accent-foreground: #151515;
+  --muted: #202020;
+  --muted-foreground: rgb(255 255 255 / 0.7);
+  --gradient-hero: #151515;
+  --content-max-xl: 80rem;
+  --gutter-mobile: 1rem;
+  --gutter-tablet: 1.5rem;
+  --gutter-desktop: 2rem;
+  color-scheme: dark;
+}
+
+.public-marketing .container-marketing {
+  min-width: 0;
+  width: min(calc(100% - 32px), var(--content-max-xl));
+}
+@media (min-width: 768px) {
+  .public-marketing .container-marketing {
+    width: min(calc(100% - 48px), var(--content-max-xl));
+  }
+}
+@media (max-width: 479px) {
+  .public-marketing header .container-marketing {
+    column-gap: 0.5rem;
+  }
+  .public-marketing header .brand-wordmark {
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+}
+.public-marketing > header > .container-marketing {
+  padding-block: 0;
+}
+.public-marketing .landing-hero-wash,
+.public-marketing .landing-hero-glow {
+  background: none;
+}
+
+.public-marketing :is(a, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.public-marketing :is(a, button) {
+  -webkit-tap-highlight-color: transparent;
+}
+.public-marketing :is(a, button)[class*="control-motion"] {
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .public-marketing :is(a, button)[class*="control-motion"]:hover {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+.public-marketing :is(a, button)[class*="control-motion"]:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-marketing *,
+  .public-marketing *::before,
+  .public-marketing *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

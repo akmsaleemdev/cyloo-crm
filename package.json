@@ -34,6 +34,8 @@
     "test:api": "vitest run tests/api",
     "test:e2e": "playwright test --project=chromium",
     "test:e2e:ui": "playwright test --ui",
+    "test:ui:company-dialog": "playwright test --config tests/ui/company-dialog/playwright.config.ts",
+    "test:ui:public-marketing": "playwright test --config tests/ui/public-marketing/playwright.config.ts",
     "test:rls": "vitest run --config vitest.rls.config.ts",
     "test:rls:policies": "vitest run tests/unit/rls-policy-argument-order.test.ts tests/unit/rls-billing-invite-policies.test.ts",
     "test:smoke": "playwright test --project=smoke",

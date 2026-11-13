@@ -1,11 +1,15 @@
-import { useMemo, useState } from "react";
+import { Children, cloneElement, isValidElement, useEffect, useId, useRef, useState } from "react";
+import { Dialog, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { FormDialogBody, FormDialogContent } from "@/components/ui/form-dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextarea } from "@/shared/components/rich-textarea";
@@ -68,14 +72,29 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
 
   const [form, setForm] = useState<CompanyInput>(() => baseline(initial, tenantCurrency));
   const [tagInput, setTagInput] = useState("");
+  const [savedForm, setSavedForm] = useState(form);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const scrollArea = useRef<HTMLDivElement>(null);
+  const isPending = create.isPending || update.isPending;
+  const isDirty = JSON.stringify(form) !== JSON.stringify(savedForm) || !!tagInput.trim();
 
-  useMemo(() => {
+  useEffect(() => {
     if (open) {
-      setForm(baseline(initial, tenantCurrency));
+      const next = baseline(initial, tenantCurrency);
+      setForm(next);
+      setSavedForm(next);
       setTagInput("");
+      setConfirmDiscard(false);
     }
+    // Reset on a new editing session, not background refetches or currency changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, initial?.id]);
+
+  const requestOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && isPending) return;
+    if (!nextOpen && isDirty) setConfirmDiscard(true);
+    else onOpenChange(nextOpen);
+  };
 
   const set = <K extends keyof CompanyInput>(k: K, v: CompanyInput[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
@@ -111,33 +130,45 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[calc(100dvh-1rem)] overflow-hidden p-4 sm:p-6">
-        <DialogHeader>
+    <Dialog open={open} onOpenChange={requestOpenChange}>
+      <FormDialogContent open={open} aria-describedby={undefined}>
+        <DialogHeader className="shrink-0 border-b px-4 py-5 pr-14 text-left sm:px-6 sm:pr-14">
           <DialogTitle>{isEdit ? "Edit company" : "New company"}</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="profile" className="min-h-0 flex flex-col overflow-hidden">
-          <TabsList className="w-full shrink-0 overflow-x-auto justify-start sm:justify-center">
-            <TabsTrigger value="profile" className="flex-1">
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="details" className="flex-1">
-              Details
-            </TabsTrigger>
-            <TabsTrigger value="address" className="flex-1">
-              Address
-            </TabsTrigger>
-            <TabsTrigger value="crm" className="flex-1">
-              CRM
-            </TabsTrigger>
-            <TabsTrigger value="custom" className="flex-1">
-              Custom
-            </TabsTrigger>
-          </TabsList>
+        <Tabs
+          defaultValue="profile"
+          className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+          onValueChange={() => scrollArea.current?.scrollTo({ top: 0 })}
+        >
+          <div className="min-w-0 shrink-0 border-b px-4 py-3 sm:px-6">
+            <TabsList
+              aria-label="Company sections"
+              className="w-full max-w-full flex-nowrap overflow-x-auto justify-start"
+            >
+              <TabsTrigger value="profile" className="flex-1 shrink-0">
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="details" className="flex-1 shrink-0">
+                Details
+              </TabsTrigger>
+              <TabsTrigger value="address" className="flex-1 shrink-0">
+                Address
+              </TabsTrigger>
+              <TabsTrigger value="crm" className="flex-1 shrink-0">
+                CRM
+              </TabsTrigger>
+              <TabsTrigger value="custom" className="flex-1 shrink-0">
+                Custom
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
-            <TabsContent value="profile" className="grid gap-3 pt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <FormDialogBody ref={scrollArea} data-testid="company-form-body">
+            <TabsContent
+              value="profile"
+              className="mt-0 grid min-w-0 gap-4 data-[state=inactive]:hidden"
+            >
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Name*">
                   <Input value={form.name ?? ""} onChange={(e) => set("name", e.target.value)} />
                 </Field>
@@ -194,18 +225,27 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
               </div>
               <Field label="Short description">
                 <RichTextarea
+                  className="min-w-0 w-full [&>div:first-child]:flex-wrap"
                   rows={2}
                   value={form.description ?? ""}
                   onChange={(v) => set("description", v)}
                 />
               </Field>
               <Field label="About">
-                <RichTextarea rows={4} value={form.about ?? ""} onChange={(v) => set("about", v)} />
+                <RichTextarea
+                  className="min-w-0 w-full [&>div:first-child]:flex-wrap"
+                  rows={4}
+                  value={form.about ?? ""}
+                  onChange={(v) => set("about", v)}
+                />
               </Field>
             </TabsContent>
 
-            <TabsContent value="details" className="grid gap-3 pt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <TabsContent
+              value="details"
+              className="mt-0 grid min-w-0 gap-4 data-[state=inactive]:hidden"
+            >
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Industry">
                   <Select
                     value={form.industry ?? ""}
@@ -293,7 +333,10 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
               </div>
             </TabsContent>
 
-            <TabsContent value="address" className="grid gap-3 pt-3">
+            <TabsContent
+              value="address"
+              className="mt-0 grid min-w-0 gap-4 data-[state=inactive]:hidden"
+            >
               <Field label="Line 1">
                 <Input
                   value={form.address?.line1 ?? ""}
@@ -306,7 +349,7 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                   onChange={(e) => setAddr("line2", e.target.value)}
                 />
               </Field>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="City">
                   <Input
                     value={form.address?.city ?? ""}
@@ -326,7 +369,7 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                   />
                 </Field>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Country">
                   <Input
                     value={form.address?.country ?? ""}
@@ -346,8 +389,11 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
               </div>
             </TabsContent>
 
-            <TabsContent value="crm" className="grid gap-3 pt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <TabsContent
+              value="crm"
+              className="mt-0 grid min-w-0 gap-4 data-[state=inactive]:hidden"
+            >
+              <div className="grid min-w-0 grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Owner">
                   <Select
                     value={form.owner_id ?? ""}
@@ -392,11 +438,12 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                   {(form.tags ?? []).map((t) => (
                     <span
                       key={t}
-                      className="inline-flex items-center gap-1 rounded-control bg-accent/10 text-accent text-xs px-2 py-1"
+                      className="inline-flex max-w-full items-center gap-1 break-all rounded-control bg-accent/10 text-accent text-xs px-2 py-1"
                     >
                       {t}
                       <button
                         type="button"
+                        aria-label={`Remove tag ${t}`}
                         onClick={() => removeTag(t)}
                         className="hover:opacity-70"
                       >
@@ -408,6 +455,7 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                 <div className="flex gap-2">
                   <Input
                     value={tagInput}
+                    aria-label="Add tag"
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
                     placeholder="Add tag"
@@ -423,6 +471,7 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                   <div className="text-xs text-muted-foreground">Pin to your favorites list.</div>
                 </div>
                 <Switch
+                  aria-label="Favorite"
                   checked={!!form.is_favorite}
                   onCheckedChange={(v) => set("is_favorite", v)}
                 />
@@ -433,40 +482,87 @@ export function CompanyFormDialog({ open, onOpenChange, initial }: Props) {
                   <div className="text-xs text-muted-foreground">Hide from default lists.</div>
                 </div>
                 <Switch
+                  aria-label="Archived"
                   checked={!!form.is_archived}
                   onCheckedChange={(v) => set("is_archived", v)}
                 />
               </div>
             </TabsContent>
 
-            <TabsContent value="custom" className="grid gap-3 pt-3">
+            <TabsContent
+              value="custom"
+              className="mt-0 grid min-w-0 gap-4 data-[state=inactive]:hidden"
+            >
               <CustomFieldsSection
                 entity="company"
                 values={(form.custom_fields ?? {}) as Record<string, unknown>}
                 onChange={(v: Record<string, unknown>) => set("custom_fields", v)}
               />
             </TabsContent>
-          </div>
+          </FormDialogBody>
         </Tabs>
 
-        <DialogFooter className="shrink-0 pt-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="shrink-0 flex-row flex-wrap justify-end gap-2 border-t bg-background px-4 py-3 sm:space-x-0 sm:px-6 [&>button]:max-w-full [&>button]:whitespace-normal">
+          <Button variant="ghost" disabled={isPending} onClick={() => requestOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={submit} disabled={create.isPending || update.isPending}>
-            {isEdit ? "Save" : "Create"}
+          <Button onClick={submit} disabled={isPending}>
+            {isEdit ? "Save" : "Create Company"}
           </Button>
         </DialogFooter>
-      </DialogContent>
+      </FormDialogContent>
+      <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}>
+        <AlertDialogContent className="w-[calc(100%_-_32px)] max-h-[calc(100dvh_-_32px)] overflow-y-auto motion-reduce:animate-none">
+          <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Your company changes will be lost if you close this form.
+          </AlertDialogDescription>
+          <AlertDialogFooter className="gap-2 sm:space-x-0">
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction onClick={() => onOpenChange(false)}>
+              Discard changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
+  const isInput =
+    isValidElement<{ id?: string }>(children) &&
+    (children.type === Input || children.type === RichTextarea);
+  const isSelect =
+    isValidElement<{ children?: React.ReactNode }>(children) && children.type === Select;
+  const control = isInput
+    ? cloneElement(children, { id })
+    : isSelect
+      ? cloneElement(
+          children,
+          {},
+          Children.map(children.props.children, (child) =>
+            isValidElement<{ id?: string }>(child) && child.type === SelectTrigger
+              ? cloneElement(child, { id })
+              : child,
+          ),
+        )
+      : children;
   return (
-    <div className="grid gap-1.5">
-      <Label className="text-xs text-muted-foreground">{label}</Label>
-      {children}
+    <div
+      role={isInput || isSelect ? undefined : "group"}
+      aria-labelledby={isInput || isSelect ? undefined : `${id}-label`}
+      className="grid min-w-0 gap-1.5 [&_input]:min-w-0 [&_textarea]:min-h-20 [&_textarea]:min-w-0 [&_textarea]:max-w-full [&>div]:min-w-0 [&>button]:min-w-0"
+    >
+      <Label
+        id={`${id}-label`}
+        htmlFor={isInput || isSelect ? id : undefined}
+        className="text-xs text-muted-foreground"
+      >
+        {label}
+      </Label>
+      {control}
     </div>
   );
 }
