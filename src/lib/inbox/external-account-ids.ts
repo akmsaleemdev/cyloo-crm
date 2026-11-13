@@ -35,7 +35,6 @@ export function isExternalAccountChannel(c: string): c is ExternalAccountChannel
   return (EXTERNAL_ACCOUNT_CHANNELS as readonly string[]).includes(c);
 }
 
-
 /** `telegram:<uuid>` */
 export function externalAccountId(channel: ExternalAccountChannel, rowId: string): string {
   return `${channel}:${rowId}`;

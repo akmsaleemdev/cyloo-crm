@@ -16,8 +16,20 @@
 import { useMemo, useState } from "react";
 import { WhatsAppSecretsChecklist } from "@/components/app/whatsapp/whatsapp-secrets-checklist";
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, Copy, ExternalLink, Info,
-  KeyRound, Loader2, PartyPopper, RefreshCw, ShieldAlert, Sparkles, Webhook,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Info,
+  KeyRound,
+  Loader2,
+  PartyPopper,
+  RefreshCw,
+  ShieldAlert,
+  Sparkles,
+  Webhook,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,7 +43,10 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
-  DialogContent, DialogDescription, DialogHeader, DialogTitle,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
   useConnectChannelAccount,
@@ -40,9 +55,11 @@ import {
 } from "@/hooks/use-channel-accounts";
 import { registerWebhookVerifyToken } from "@/lib/messaging/verify-tokens.functions";
 import {
-  MetaSettingsHelpPanel, focusMetaField, metaFieldId, type MetaHelpTarget,
+  MetaSettingsHelpPanel,
+  focusMetaField,
+  metaFieldId,
+  type MetaHelpTarget,
 } from "@/components/app/whatsapp/meta-settings-help";
-
 
 const STEPS = [
   { id: "prereq", label: "Meta setup" },
@@ -128,7 +145,6 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
   const [registering, setRegistering] = useState(false);
   const [tokenRegistered, setTokenRegistered] = useState(false);
 
-
   // Step 2 — identifiers
   const [displayName, setDisplayName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -176,8 +192,18 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
         return false;
     }
   }, [
-    step, hasPortfolio, hasWaba, hasApp, webhookSaved, verifyToken,
-    displayName, phoneNumberId, wabaId, accessTokenSecretName, appSecretName, secretSaved,
+    step,
+    hasPortfolio,
+    hasWaba,
+    hasApp,
+    webhookSaved,
+    verifyToken,
+    displayName,
+    phoneNumberId,
+    wabaId,
+    accessTokenSecretName,
+    appSecretName,
+    secretSaved,
   ]);
 
   const busy = connect.isPending || test.isPending;
@@ -218,7 +244,7 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             ? `Live connection confirmed for ${result.phone?.display_phone_number ?? "your number"}${
                 result.phone?.verified_name ? ` (${result.phone.verified_name})` : ""
               }.`
-            : result?.error ?? "Verification failed. Check the token secret and IDs.",
+            : (result?.error ?? "Verification failed. Check the token secret and IDs."),
         });
       }
     } catch {
@@ -282,8 +308,9 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             title="1. Business Portfolio"
             body={
               <>
-                Open <StepLink href="https://business.facebook.com">business.facebook.com</StepLink> and
-                create (or select) a Business Portfolio for your company, then add your Facebook Page to it.
+                Open <StepLink href="https://business.facebook.com">business.facebook.com</StepLink>{" "}
+                and create (or select) a Business Portfolio for your company, then add your Facebook
+                Page to it.
               </>
             }
           />
@@ -293,9 +320,9 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             title="2. WhatsApp Business Account (WABA)"
             body={
               <>
-                In the portfolio go to <span className="font-medium">WhatsApp Accounts</span> and create a
-                WABA, then add a phone number. The number must not currently be active in the WhatsApp or
-                WhatsApp Business consumer app.
+                In the portfolio go to <span className="font-medium">WhatsApp Accounts</span> and
+                create a WABA, then add a phone number. The number must not currently be active in
+                the WhatsApp or WhatsApp Business consumer app.
               </>
             }
           />
@@ -305,9 +332,13 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             title="3. Meta app with the WhatsApp product"
             body={
               <>
-                At <StepLink href="https://developers.facebook.com/apps">developers.facebook.com</StepLink>{" "}
+                At{" "}
+                <StepLink href="https://developers.facebook.com/apps">
+                  developers.facebook.com
+                </StepLink>{" "}
                 create a <span className="font-medium">Business</span> type app, add the{" "}
-                <span className="font-medium">WhatsApp</span> product, and link the WABA from step 2.
+                <span className="font-medium">WhatsApp</span> product, and link the WABA from step
+                2.
               </>
             }
           />
@@ -316,8 +347,8 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             <Info className="w-4 h-4" />
             <AlertTitle>Before you can message real customers</AlertTitle>
             <AlertDescription className="text-xs">
-              Meta requires business verification on the portfolio. Until then you can only message the
-              test numbers listed in your app.
+              Meta requires business verification on the portfolio. Until then you can only message
+              the test numbers listed in your app.
             </AlertDescription>
           </Alert>
         </div>
@@ -327,8 +358,9 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
       {step === 1 && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            In your Meta app, open <span className="font-medium">WhatsApp → Configuration → Webhooks</span>{" "}
-            and click <span className="font-medium">Edit</span>. Paste these two values.
+            In your Meta app, open{" "}
+            <span className="font-medium">WhatsApp → Configuration → Webhooks</span> and click{" "}
+            <span className="font-medium">Edit</span>. Paste these two values.
           </p>
 
           <CopyField
@@ -345,7 +377,10 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
                 size="sm"
                 variant="ghost"
                 className="h-7 gap-1.5 text-xs"
-                onClick={() => { setVerifyToken(generateVerifyToken()); setTokenRegistered(false); }}
+                onClick={() => {
+                  setVerifyToken(generateVerifyToken());
+                  setTokenRegistered(false);
+                }}
               >
                 <RefreshCw className="w-3 h-3" /> Regenerate
               </Button>
@@ -394,7 +429,11 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
                   }
                 }}
               >
-                {registering ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldAlert className="w-3.5 h-3.5" />}
+                {registering ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                )}
                 {tokenRegistered ? "Registered" : "Register token"}
               </Button>
               {tokenRegistered && (
@@ -404,20 +443,27 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
               )}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Register the token here <span className="font-medium">before</span> clicking “Verify and save” in
-              Meta — otherwise the callback URL check fails with “couldn't be validated”. It is saved with the
-              account at the end of the wizard.
+              Register the token here <span className="font-medium">before</span> clicking “Verify
+              and save” in Meta — otherwise the callback URL check fails with “couldn't be
+              validated”. It is saved with the account at the end of the wizard.
             </p>
           </div>
-
 
           <div className="rounded-control border border-border bg-muted/30 p-3">
             <p className="text-xs font-medium flex items-center gap-1.5">
               <Webhook className="w-3.5 h-3.5" /> Subscribe to these webhook fields
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {["messages", "message_template_status_update", "phone_number_quality_update", "account_update"].map((f) => (
-                <code key={f} className="rounded bg-background border border-border px-1.5 py-0.5 text-[11px] font-mono">
+              {[
+                "messages",
+                "message_template_status_update",
+                "phone_number_quality_update",
+                "account_update",
+              ].map((f) => (
+                <code
+                  key={f}
+                  className="rounded bg-background border border-border px-1.5 py-0.5 text-[11px] font-mono"
+                >
                   {f}
                 </code>
               ))}
@@ -425,9 +471,14 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
           </div>
 
           <label className="flex items-start gap-2.5 cursor-pointer">
-            <Checkbox checked={webhookSaved} onCheckedChange={(v) => setWebhookSaved(v === true)} className="mt-0.5" />
+            <Checkbox
+              checked={webhookSaved}
+              onCheckedChange={(v) => setWebhookSaved(v === true)}
+              className="mt-0.5"
+            />
             <span className="text-sm">
-              I saved the callback URL and verify token in Meta and the webhook verified successfully.
+              I saved the callback URL and verify token in Meta and the webhook verified
+              successfully.
             </span>
           </label>
         </div>
@@ -437,7 +488,8 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
       {step === 2 && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Find these in your Meta app under <span className="font-medium">WhatsApp → API Setup</span>.
+            Find these in your Meta app under{" "}
+            <span className="font-medium">WhatsApp → API Setup</span>.
           </p>
           <div className="grid gap-3 sm:grid-cols-2">
             <Field
@@ -495,8 +547,9 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             <ShieldAlert className="w-4 h-4" />
             <AlertTitle>The token itself never touches this form</AlertTitle>
             <AlertDescription className="text-xs">
-              You create the token in Meta, paste it into <span className="font-medium">Cloud → Secrets</span>,
-              and type only the secret&apos;s <em>name</em> below. The value stays server-side.
+              You create the token in Meta, paste it into{" "}
+              <span className="font-medium">Cloud → Secrets</span>, and type only the secret&apos;s{" "}
+              <em>name</em> below. The value stays server-side.
             </AlertDescription>
           </Alert>
 
@@ -506,7 +559,8 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             </p>
 
             <NumberedStep n={1} title="Open Business Settings → System Users">
-              Go to <StepLink href="https://business.facebook.com/settings/system-users">
+              Go to{" "}
+              <StepLink href="https://business.facebook.com/settings/system-users">
                 business.facebook.com → Users → System users
               </StepLink>{" "}
               and click <span className="font-medium">Add</span>. Name it e.g.{" "}
@@ -515,8 +569,8 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             </NumberedStep>
 
             <NumberedStep n={2} title="Assign the app and the WhatsApp account">
-              With the system user selected, click <span className="font-medium">Add assets</span>. Under{" "}
-              <span className="font-medium">Apps</span> pick your Meta app and enable{" "}
+              With the system user selected, click <span className="font-medium">Add assets</span>.
+              Under <span className="font-medium">Apps</span> pick your Meta app and enable{" "}
               <span className="font-medium">Full control (Manage app)</span>. Repeat under{" "}
               <span className="font-medium">WhatsApp accounts</span> for your WABA with{" "}
               <span className="font-medium">Full control</span>.
@@ -529,21 +583,23 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
               Click <span className="font-medium">Generate new token</span>, choose your app, set{" "}
               <span className="font-medium">Token expiration: Never</span>, and tick both{" "}
               <code className="font-mono">whatsapp_business_messaging</code> and{" "}
-              <code className="font-mono">whatsapp_business_management</code>. Copy the token — Meta shows
-              it only once.
+              <code className="font-mono">whatsapp_business_management</code>. Copy the token — Meta
+              shows it only once.
             </NumberedStep>
 
             <NumberedStep n={4} title="Save it in Cloud → Secrets">
-              In this app open <span className="font-medium">Cloud → Secrets</span>, add a secret named{" "}
-              <code className="font-mono">{accessTokenSecretName || "WHATSAPP_ACCESS_TOKEN"}</code> and paste
-              the token as its value. Save.
+              In this app open <span className="font-medium">Cloud → Secrets</span>, add a secret
+              named{" "}
+              <code className="font-mono">{accessTokenSecretName || "WHATSAPP_ACCESS_TOKEN"}</code>{" "}
+              and paste the token as its value. Save.
             </NumberedStep>
 
             <NumberedStep n={5} title="Optional — app secret for webhook signatures">
-              In <StepLink href="https://developers.facebook.com/apps">your Meta app</StepLink> under{" "}
-              <span className="font-medium">Settings → Basic</span>, reveal the{" "}
+              In <StepLink href="https://developers.facebook.com/apps">your Meta app</StepLink>{" "}
+              under <span className="font-medium">Settings → Basic</span>, reveal the{" "}
               <span className="font-medium">App secret</span> and store it as a second secret (e.g.{" "}
-              <code className="font-mono">WHATSAPP_APP_SECRET</code>) so inbound webhooks are signature-verified.
+              <code className="font-mono">WHATSAPP_APP_SECRET</code>) so inbound webhooks are
+              signature-verified.
             </NumberedStep>
           </div>
 
@@ -570,7 +626,11 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
           />
 
           <label className="flex items-start gap-2.5 cursor-pointer">
-            <Checkbox checked={secretSaved} onCheckedChange={(v) => setSecretSaved(v === true)} className="mt-0.5" />
+            <Checkbox
+              checked={secretSaved}
+              onCheckedChange={(v) => setSecretSaved(v === true)}
+              className="mt-0.5"
+            />
             <span className="text-sm">
               I saved the token in Cloud → Secrets under exactly this name.
             </span>
@@ -586,17 +646,17 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             ]}
           />
 
-
           <div className="flex items-center justify-between rounded-control border border-border p-3">
             <div>
               <p className="text-sm font-medium">Make this the default account</p>
-              <p className="text-xs text-muted-foreground">Used when a send doesn&apos;t specify a number.</p>
+              <p className="text-xs text-muted-foreground">
+                Used when a send doesn&apos;t specify a number.
+              </p>
             </div>
             <Switch checked={isDefault} onCheckedChange={setIsDefault} />
           </div>
         </div>
       )}
-
 
       {/* ---------------------------------------------------------------- */}
       {step === 4 && (
@@ -618,7 +678,8 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
                 <ShieldAlert className="w-4 h-4" />
                 <AlertTitle>Saved, but verification did not pass</AlertTitle>
                 <AlertDescription className="text-xs">
-                  {verifyResult?.message ?? "The account was created but Meta could not be reached."}
+                  {verifyResult?.message ??
+                    "The account was created but Meta could not be reached."}
                 </AlertDescription>
               </Alert>
               <p className="text-xs text-muted-foreground">
@@ -632,14 +693,23 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
                   className="gap-1.5"
                   disabled={test.isPending}
                   onClick={async () => {
-                    const r = (await test.mutateAsync(createdId)) as { ok?: boolean; error?: string };
+                    const r = (await test.mutateAsync(createdId)) as {
+                      ok?: boolean;
+                      error?: string;
+                    };
                     setVerifyResult({
                       ok: !!r?.ok,
-                      message: r?.ok ? "Live connection confirmed." : r?.error ?? "Verification failed.",
+                      message: r?.ok
+                        ? "Live connection confirmed."
+                        : (r?.error ?? "Verification failed."),
                     });
                   }}
                 >
-                  {test.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                  {test.isPending ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  )}
                   Retry verification
                 </Button>
               )}
@@ -677,8 +747,18 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
             <CheckCircle2 className="w-3.5 h-3.5" /> Done
           </Button>
         ) : step === 3 ? (
-          <Button type="button" size="sm" disabled={!canAdvance || busy} onClick={handleFinish} className="gap-1.5">
-            {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5" />}
+          <Button
+            type="button"
+            size="sm"
+            disabled={!canAdvance || busy}
+            onClick={handleFinish}
+            className="gap-1.5"
+          >
+            {busy ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <KeyRound className="w-3.5 h-3.5" />
+            )}
             Save &amp; verify
           </Button>
         ) : (
@@ -700,7 +780,10 @@ export function WhatsAppSetupWizard({ workspaceId, onDone }: WizardProps) {
 // ---------------------------------------------------------------------------
 
 function ChecklistItem({
-  checked, onChange, title, body,
+  checked,
+  onChange,
+  title,
+  body,
 }: {
   checked: boolean;
   onChange: (v: boolean) => void;
@@ -713,7 +796,11 @@ function ChecklistItem({
         checked ? "border-success/40 bg-success/5" : "border-border hover:bg-muted/40"
       }`}
     >
-      <Checkbox checked={checked} onCheckedChange={(v) => onChange(v === true)} className="mt-0.5" />
+      <Checkbox
+        checked={checked}
+        onCheckedChange={(v) => onChange(v === true)}
+        className="mt-0.5"
+      />
       <div className="min-w-0">
         <p className="text-sm font-medium">{title}</p>
         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{body}</p>
@@ -723,7 +810,15 @@ function ChecklistItem({
 }
 
 function Field({
-  id, label, value, onChange, placeholder, hint, required, mono, invalid,
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  hint,
+  required,
+  mono,
+  invalid,
 }: {
   id?: string;
   label: string;
@@ -752,7 +847,15 @@ function Field({
   );
 }
 
-function NumberedStep({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
+function NumberedStep({
+  n,
+  title,
+  children,
+}: {
+  n: number;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-start gap-2.5">
       <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">

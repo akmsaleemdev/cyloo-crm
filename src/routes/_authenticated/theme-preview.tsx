@@ -4,13 +4,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/theme-preview")({
   head: () => ({
@@ -42,7 +55,15 @@ const BORDERS = [
   { name: "--primary", cls: "border-primary" },
 ];
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -60,14 +81,19 @@ function ThemePreview() {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Theme Preview</h1>
         <p className="text-sm text-muted-foreground">
-          Validate <code className="text-xs">--input</code>, <code className="text-xs">--border</code>, and surface tokens across the component library.
+          Validate <code className="text-xs">--input</code>,{" "}
+          <code className="text-xs">--border</code>, and surface tokens across the component
+          library.
         </p>
       </div>
 
       <Section title="Surface tokens" description="Backgrounds paired with their foreground token.">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {TOKENS.map((t) => (
-            <div key={t.name} className={`rounded-control border border-border p-4 text-sm ${t.cls}`}>
+            <div
+              key={t.name}
+              className={`rounded-control border border-border p-4 text-sm ${t.cls}`}
+            >
               <div className="font-medium">{t.name}</div>
               <div className="opacity-70">Aa — text sample</div>
             </div>
@@ -75,9 +101,15 @@ function ThemePreview() {
         </div>
       </Section>
 
-      <Section title="Border tokens" description="Border swatches on card, muted, and background surfaces.">
+      <Section
+        title="Border tokens"
+        description="Border swatches on card, muted, and background surfaces."
+      >
         {(["bg-background", "bg-card", "bg-muted"] as const).map((surface) => (
-          <div key={surface} className={`grid grid-cols-2 gap-3 rounded-control p-3 md:grid-cols-5 ${surface}`}>
+          <div
+            key={surface}
+            className={`grid grid-cols-2 gap-3 rounded-control p-3 md:grid-cols-5 ${surface}`}
+          >
             {BORDERS.map((b) => (
               <div key={b.name} className={`rounded-control border-2 p-3 text-xs ${b.cls}`}>
                 <div className="font-mono">{b.name}</div>
@@ -88,7 +120,10 @@ function ThemePreview() {
         ))}
       </Section>
 
-      <Section title="Form controls" description="Every field uses border-input via shadcn primitives.">
+      <Section
+        title="Form controls"
+        description="Every field uses border-input via shadcn primitives."
+      >
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="tp-name">Full name</Label>
@@ -105,7 +140,9 @@ function ThemePreview() {
           <div className="space-y-2">
             <Label htmlFor="tp-select">Select</Label>
             <Select>
-              <SelectTrigger id="tp-select"><SelectValue placeholder="Choose an option" /></SelectTrigger>
+              <SelectTrigger id="tp-select">
+                <SelectValue placeholder="Choose an option" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="a">Option A</SelectItem>
                 <SelectItem value="b">Option B</SelectItem>
@@ -129,8 +166,12 @@ function ThemePreview() {
             <Switch defaultChecked /> Switch
           </label>
           <RadioGroup defaultValue="one" className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm"><RadioGroupItem value="one" /> One</label>
-            <label className="flex items-center gap-2 text-sm"><RadioGroupItem value="two" /> Two</label>
+            <label className="flex items-center gap-2 text-sm">
+              <RadioGroupItem value="one" /> One
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <RadioGroupItem value="two" /> Two
+            </label>
           </RadioGroup>
         </div>
       </Section>
@@ -147,7 +188,10 @@ function ThemePreview() {
         </div>
       </Section>
 
-      <Section title="Elevation surfaces" description="Layered cards using border + surface tokens.">
+      <Section
+        title="Elevation surfaces"
+        description="Layered cards using border + surface tokens."
+      >
         <div className="grid gap-3 md:grid-cols-4">
           {[0, 1, 2, 3].map((n) => (
             <div key={n} className={`elevation-${n} rounded-control p-4 text-sm`}>
@@ -177,7 +221,9 @@ function ThemePreview() {
             ].map((r) => (
               <TableRow key={r.n}>
                 <TableCell>{r.n}</TableCell>
-                <TableCell><Badge variant="secondary">{r.s}</Badge></TableCell>
+                <TableCell>
+                  <Badge variant="secondary">{r.s}</Badge>
+                </TableCell>
                 <TableCell>{r.p}</TableCell>
                 <TableCell className="text-right">{r.m}</TableCell>
               </TableRow>

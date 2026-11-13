@@ -6,7 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import {
@@ -62,8 +68,8 @@ export function ContactRematchPanel() {
             Bulk re-match historical conversations
           </CardTitle>
           <CardDescription>
-            Re-run the current matching rules against past conversations and update linked
-            contacts when a better match is found.
+            Re-run the current matching rules against past conversations and update linked contacts
+            when a better match is found.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -117,7 +123,11 @@ export function ContactRematchPanel() {
               <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
               Refresh
             </Button>
-            <Button size="sm" onClick={onStart} disabled={!workspaceId || running || start.isPending}>
+            <Button
+              size="sm"
+              onClick={onStart}
+              disabled={!workspaceId || running || start.isPending}
+            >
               {start.isPending || running ? (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
               ) : (
@@ -154,14 +164,18 @@ export function ContactRematchPanel() {
 function JobRow({ job }: { job: ContactRematchJob }) {
   const started = job.started_at ? new Date(job.started_at) : new Date(job.created_at);
   const finished = job.completed_at ? new Date(job.completed_at) : null;
-  const duration = finished ? Math.max(0, Math.round((finished.getTime() - started.getTime()) / 1000)) : null;
+  const duration = finished
+    ? Math.max(0, Math.round((finished.getTime() - started.getTime()) / 1000))
+    : null;
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-control border p-3">
       <StatusBadge status={job.status} />
       <div className="flex-1 min-w-0">
         <p className="text-sm">
-          <span className="capitalize">{job.scope === "whatsapp" ? "WhatsApp" : "All channels"}</span>
+          <span className="capitalize">
+            {job.scope === "whatsapp" ? "WhatsApp" : "All channels"}
+          </span>
           {job.unlinked_only && <span className="text-muted-foreground"> · unlinked only</span>}
           {job.since && (
             <span className="text-muted-foreground">
@@ -215,24 +229,14 @@ function StatusBadge({ status }: { status: ContactRematchJob["status"] }) {
   );
 }
 
-function Metric({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone?: "primary";
-}) {
+function Metric({ label, value, tone }: { label: string; value: number; tone?: "primary" }) {
   return (
     <div
       className={`rounded-control border px-2 py-1 text-center ${
         tone === "primary" ? "border-primary/40 bg-primary/5" : ""
       }`}
     >
-      <p className="text-[11px] uppercase text-muted-foreground leading-none">
-        {label}
-      </p>
+      <p className="text-[11px] uppercase text-muted-foreground leading-none">{label}</p>
       <p className="text-sm font-medium  leading-tight mt-0.5">{value}</p>
     </div>
   );

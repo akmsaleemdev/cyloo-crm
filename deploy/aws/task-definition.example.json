@@ -1,0 +1,58 @@
+{
+  "family": "cyloo-staging",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT_ID:role/cyloo-task-execution",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT_ID:role/cyloo-task",
+  "runtimePlatform": { "operatingSystemFamily": "LINUX", "cpuArchitecture": "X86_64" },
+  "containerDefinitions": [
+    {
+      "name": "cyloo",
+      "image": "ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/cyloo-crm:COMMIT_SHA",
+      "essential": true,
+      "portMappings": [{ "containerPort": 3000, "protocol": "tcp" }],
+      "readonlyRootFilesystem": true,
+      "linuxParameters": { "initProcessEnabled": true },
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "APP_MODE", "value": "production" },
+        { "name": "HOST", "value": "0.0.0.0" },
+        { "name": "PORT", "value": "3000" },
+        { "name": "APP_ORIGIN", "value": "https://crm.example.com" },
+        { "name": "SUPABASE_URL", "value": "https://PROJECT.supabase.co" },
+        { "name": "SUPABASE_PUBLISHABLE_KEY", "value": "PUBLIC_KEY" }
+      ],
+      "secrets": [
+        {
+          "name": "SUPABASE_SERVICE_ROLE_KEY",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:cyloo-staging-SUFFIX:SUPABASE_SERVICE_ROLE_KEY::"
+        },
+        {
+          "name": "APP_USER_CONNECTION_KEY_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:cyloo-staging-SUFFIX:APP_USER_CONNECTION_KEY_SECRET::"
+        },
+        {
+          "name": "INTERNAL_CRON_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:cyloo-staging-SUFFIX:INTERNAL_CRON_TOKEN::"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/public/health || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/cyloo-staging",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "web"
+        }
+      }
+    }
+  ]
+}

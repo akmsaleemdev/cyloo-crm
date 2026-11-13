@@ -36,7 +36,9 @@ export function FloatingActionButton({
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", onClick);
     document.addEventListener("keydown", onKey);
     return () => {
@@ -87,7 +89,10 @@ export function FloatingActionButton({
               ) : (
                 <button
                   type="button"
-                  onClick={() => { action.onClick?.(); setOpen(false); }}
+                  onClick={() => {
+                    action.onClick?.();
+                    setOpen(false);
+                  }}
                   className="flex items-center"
                 >
                   {inner}

@@ -13,7 +13,8 @@ const UpdateContactSchema = z.object({
   tags: z.array(z.string().max(60)).max(50).optional(),
 });
 
-const SELECT = "id, first_name, last_name, email, phone, whatsapp_number, company, job_title, tags, created_at, updated_at";
+const SELECT =
+  "id, first_name, last_name, email, phone, whatsapp_number, company, job_title, tags, created_at, updated_at";
 
 export const Route = createFileRoute("/api/public/v1/contacts/$id")({
   server: {
@@ -35,7 +36,13 @@ export const Route = createFileRoute("/api/public/v1/contacts/$id")({
         const id = new URL(req.url).pathname.split("/").pop()!;
         const body = await parseJson<unknown>(req);
         const parsed = UpdateContactSchema.safeParse(body);
-        if (!parsed.success) return jsonError("validation_error", "Invalid payload", { issues: parsed.error.issues }, ctx.requestId);
+        if (!parsed.success)
+          return jsonError(
+            "validation_error",
+            "Invalid payload",
+            { issues: parsed.error.issues },
+            ctx.requestId,
+          );
         const { data, error } = await ctx.supabase
           .from("contacts")
           .update(parsed.data)

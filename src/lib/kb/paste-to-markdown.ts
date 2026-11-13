@@ -21,5 +21,8 @@ export function looksLikeHtml(text: string): boolean {
 }
 
 export function htmlToMarkdown(html: string): string {
-  return turndown.turndown(html).replace(/\n{3,}/g, "\n\n").trim();
+  return turndown
+    .turndown(html)
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }

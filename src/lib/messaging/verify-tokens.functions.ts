@@ -22,18 +22,16 @@ export const registerWebhookVerifyToken = createServerFn({ method: "POST" })
   .validator((input: unknown) => RegisterSchema.parse(input))
   .handler(async ({ data, context }) => {
     const provider = data.provider ?? "whatsapp_cloud";
-    const { error } = await context.supabase
-      .from("webhook_verify_tokens" as never)
-      .upsert(
-        {
-          workspace_id: data.workspaceId,
-          provider,
-          token: data.token,
-          created_by: context.userId,
-          expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
-        } as never,
-        { onConflict: "token" },
-      );
+    const { error } = await context.supabase.from("webhook_verify_tokens" as never).upsert(
+      {
+        workspace_id: data.workspaceId,
+        provider,
+        token: data.token,
+        created_by: context.userId,
+        expires_at: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+      } as never,
+      { onConflict: "token" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true, provider };
   });

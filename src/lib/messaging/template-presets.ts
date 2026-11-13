@@ -90,10 +90,7 @@ export function savePreset(
   return persist(templateId, next);
 }
 
-export function deletePreset(
-  templateId: string | undefined,
-  presetId: string,
-): TemplatePreset[] {
+export function deletePreset(templateId: string | undefined, presetId: string): TemplatePreset[] {
   if (!templateId || typeof window === "undefined") return [];
   return persist(
     templateId,

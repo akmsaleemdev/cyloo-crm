@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
 
           const results: Array<{ id: string; status: string; error?: string }> = [];
 
-          for (const row of ((due ?? []) as unknown) as Array<{
+          for (const row of (due ?? []) as unknown as Array<{
             id: string;
             workspace_id: string;
             conversation_id: string;
@@ -55,15 +55,18 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                 const pageId = String(meta.page_id ?? "");
                 const psid = String(meta.recipient_psid ?? "");
                 const messengerAccountId = String(meta.messenger_account_id ?? "");
-                const attachment = (meta.attachment ?? null) as
-                  | { type: "image" | "video" | "audio" | "file"; url: string }
-                  | null;
+                const attachment = (meta.attachment ?? null) as {
+                  type: "image" | "video" | "audio" | "file";
+                  url: string;
+                } | null;
 
                 if (!pageId || !psid || !messengerAccountId) {
                   throw new Error("Missing messenger routing metadata");
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { data: tokRow } = await (sbAny(supabaseAdmin).from("messenger_accounts" as any) as any)
+                const { data: tokRow } = await (
+                  sbAny(supabaseAdmin).from("messenger_accounts" as any) as any
+                )
                   .select("access_token_ciphertext, page_id, status")
                   .eq("id", messengerAccountId)
                   .maybeSingle();
@@ -82,7 +85,9 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                     recipientPsid: psid,
                     text: row.body,
                     attachment,
-                    messagingType: (meta.messaging_type as "RESPONSE" | "UPDATE" | "MESSAGE_TAG" | undefined) ?? "RESPONSE",
+                    messagingType:
+                      (meta.messaging_type as "RESPONSE" | "UPDATE" | "MESSAGE_TAG" | undefined) ??
+                      "RESPONSE",
                     tag: (meta.tag as string | null | undefined) ?? null,
                   });
                 } catch (sendErr) {
@@ -94,7 +99,9 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
               }
 
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { data: msg, error: mErr } = await (sbAny(supabaseAdmin).from("messages" as any) as any)
+              const { data: msg, error: mErr } = await (
+                sbAny(supabaseAdmin).from("messages" as any) as any
+              )
                 .insert({
                   workspace_id: row.workspace_id,
                   conversation_id: row.conversation_id,

@@ -23,11 +23,11 @@ export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
         const providerId = params.provider;
         const startedAt = Date.now();
         const rawBody = await request.text();
-        const signature = request.headers.get("stripe-signature") ?? request.headers.get("paddle-signature");
+        const signature =
+          request.headers.get("stripe-signature") ?? request.headers.get("paddle-signature");
 
-        const { recordGatewayWebhookDelivery, webhookRequestContext } = await import(
-          "@/lib/billing/gateway-webhook-log.server"
-        );
+        const { recordGatewayWebhookDelivery, webhookRequestContext } =
+          await import("@/lib/billing/gateway-webhook-log.server");
         const reqCtx = webhookRequestContext(request);
         const log = (extra: {
           status: "processed" | "duplicate" | "failed" | "invalid_signature" | "misconfigured";
@@ -43,7 +43,6 @@ export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
             ...reqCtx,
             ...extra,
           });
-
 
         let event: { id: string; type: string; data: unknown; provider: string } | null = null;
 

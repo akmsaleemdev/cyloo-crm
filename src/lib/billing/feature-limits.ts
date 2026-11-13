@@ -18,7 +18,9 @@ export interface PlanCapabilityView {
   features: PlanFeatures;
 }
 
-export function capabilityView(plan: { features?: unknown; limits?: unknown } | null | undefined): PlanCapabilityView {
+export function capabilityView(
+  plan: { features?: unknown; limits?: unknown } | null | undefined,
+): PlanCapabilityView {
   return {
     limits: normalizeLimits(plan?.limits),
     features: normalizeFeatures(plan?.features),
@@ -44,7 +46,12 @@ export interface QuotaCheck {
   approaching: boolean; // >= 80% usage
 }
 
-export function checkQuota(view: PlanCapabilityView, meter_code: string, used: number, requested = 1): QuotaCheck {
+export function checkQuota(
+  view: PlanCapabilityView,
+  meter_code: string,
+  used: number,
+  requested = 1,
+): QuotaCheck {
   const limit = getLimit(view, meter_code);
   if (limit === null) {
     return {

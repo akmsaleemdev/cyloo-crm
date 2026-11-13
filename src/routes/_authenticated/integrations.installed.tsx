@@ -102,7 +102,10 @@ function InstalledPage() {
     return (
       <div className="p-6 space-y-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-16 rounded-control border border-border bg-muted/30 animate-pulse" />
+          <div
+            key={i}
+            className="h-16 rounded-control border border-border bg-muted/30 animate-pulse"
+          />
         ))}
       </div>
     );
@@ -223,8 +226,16 @@ function InstalledPage() {
                     {i.status === "active" ? (
                       <DropdownMenuItem
                         onClick={async () => {
-                          try { await setStatus(i.providerId, "disabled"); toast.success(`${p.name} disabled`); }
-                          catch (error) { toast.error(error instanceof Error ? error.message : "Could not disable integration"); }
+                          try {
+                            await setStatus(i.providerId, "disabled");
+                            toast.success(`${p.name} disabled`);
+                          } catch (error) {
+                            toast.error(
+                              error instanceof Error
+                                ? error.message
+                                : "Could not disable integration",
+                            );
+                          }
                         }}
                       >
                         <PauseCircle className="h-4 w-4 mr-2" /> Disable
@@ -232,21 +243,31 @@ function InstalledPage() {
                     ) : i.status === "disabled" ? (
                       <DropdownMenuItem
                         onClick={async () => {
-                          try { await setStatus(i.providerId, "active"); toast.success(`${p.name} enabled`); }
-                          catch (error) { toast.error(error instanceof Error ? error.message : "Could not enable integration"); }
+                          try {
+                            await setStatus(i.providerId, "active");
+                            toast.success(`${p.name} enabled`);
+                          } catch (error) {
+                            toast.error(
+                              error instanceof Error
+                                ? error.message
+                                : "Could not enable integration",
+                            );
+                          }
                         }}
                       >
                         <PlayCircle className="h-4 w-4 mr-2" /> Enable
                       </DropdownMenuItem>
                     ) : null}
-                    {i.providerId !== "google-workspace" && <DropdownMenuItem
-                      onClick={() => {
-                        markSynced(i.providerId);
-                        toast.success(`${p.name} local metadata refreshed`);
-                      }}
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" /> Sync now
-                    </DropdownMenuItem>}
+                    {i.providerId !== "google-workspace" && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          markSynced(i.providerId);
+                          toast.success(`${p.name} local metadata refreshed`);
+                        }}
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" /> Sync now
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={() => setWebhookId(i.providerId)}>
                       <Webhook className="h-4 w-4 mr-2" />
                       {i.webhook ? "Manage webhook" : "Configure webhook"}

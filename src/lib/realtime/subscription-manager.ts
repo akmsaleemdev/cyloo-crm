@@ -49,9 +49,7 @@ export interface PostgresBinding {
   filter?: string;
 }
 
-export type PostgresChangePayload = RealtimePostgresChangesPayload<
-  Record<string, unknown>
->;
+export type PostgresChangePayload = RealtimePostgresChangesPayload<Record<string, unknown>>;
 
 export interface SubscribeOptions {
   /**

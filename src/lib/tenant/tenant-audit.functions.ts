@@ -9,7 +9,6 @@ export type TenantAccessOutcome =
   | "tenant_realigned"
   | "redirected";
 
-
 export type TenantAccessLogInput = {
   outcome: TenantAccessOutcome;
   resourceType: string;
@@ -43,21 +42,17 @@ export const logTenantAccessEvent = createServerFn({ method: "POST" })
 
     const event = buildTenantAuditEvent(data, context.userId);
 
-    console.warn(
-      `[tenant-guard] ${data.outcome} ${data.resourceType}:${data.resourceId}`,
-      {
-        actor: context.userId,
-        owner_workspace_id: data.ownerWorkspaceId ?? null,
-        active_workspace_id: data.activeWorkspaceId ?? null,
-        url_org_id: data.urlOrgId ?? null,
-        probe_type: data.probe ?? "none",
-        request_id: data.requestId ?? null,
-        path: data.path ?? null,
-      },
-    );
+    console.warn(`[tenant-guard] ${data.outcome} ${data.resourceType}:${data.resourceId}`, {
+      actor: context.userId,
+      owner_workspace_id: data.ownerWorkspaceId ?? null,
+      active_workspace_id: data.activeWorkspaceId ?? null,
+      url_org_id: data.urlOrgId ?? null,
+      probe_type: data.probe ?? "none",
+      request_id: data.requestId ?? null,
+      path: data.path ?? null,
+    });
 
     await recordServerAuditEvent(event);
-
 
     return { ok: true } as const;
   });

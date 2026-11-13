@@ -31,10 +31,7 @@ const MAX_FLUSH_FAILURES = 3;
 
 function debugEnabled(): boolean {
   try {
-    return (
-      typeof window !== "undefined" &&
-      window.localStorage.getItem("debug:counts") === "1"
-    );
+    return typeof window !== "undefined" && window.localStorage.getItem("debug:counts") === "1";
   } catch {
     return false;
   }
@@ -71,9 +68,7 @@ function summarize(samples: Sample[]) {
     },
     payload: {
       avgBytes:
-        bytes.length === 0
-          ? 0
-          : Math.round(bytes.reduce((a, b) => a + b, 0) / bytes.length),
+        bytes.length === 0 ? 0 : Math.round(bytes.reduce((a, b) => a + b, 0) / bytes.length),
       maxBytes: Math.max(0, ...bytes),
     },
     errorSample,
@@ -139,8 +134,7 @@ export async function measureCountsRpc<T>(
   ctx: { workspaceId: string | null; inboxId: string | null },
   run: () => Promise<{ data: T; error: unknown }>,
 ): Promise<{ data: T; error: unknown }> {
-  const t0 =
-    typeof performance !== "undefined" ? performance.now() : Date.now();
+  const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
   const startMark = `counts-rpc:start:${t0}`;
   try {
     performance.mark?.(startMark);
@@ -151,8 +145,7 @@ export async function measureCountsRpc<T>(
   try {
     res = await run();
   } catch (err) {
-    const t1 =
-      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
     recordCountsRpc({
       ms: t1 - t0,
       bytes: 0,
@@ -163,8 +156,7 @@ export async function measureCountsRpc<T>(
     });
     throw err;
   }
-  const t1 =
-    typeof performance !== "undefined" ? performance.now() : Date.now();
+  const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
   let bytes = 0;
   try {
     bytes = res.data ? JSON.stringify(res.data).length : 0;

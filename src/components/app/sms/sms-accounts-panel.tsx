@@ -95,7 +95,9 @@ export function SmsAccountsPanel() {
   });
 
   const canSubmit =
-    !!workspaceId && displayName.trim().length > 0 && /^\+?[0-9 ()\-.]{6,24}$/.test(phoneNumber.trim());
+    !!workspaceId &&
+    displayName.trim().length > 0 &&
+    /^\+?[0-9 ()\-.]{6,24}$/.test(phoneNumber.trim());
 
   return (
     <div className="space-y-6">

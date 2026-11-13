@@ -83,9 +83,7 @@ export function broadcastOrgChange(orgId: string | null) {
  * only for foreign events (never for the current tab's own broadcasts).
  * Returns an unsubscribe fn.
  */
-export function onRemoteOrgChange(
-  handler: (orgId: string | null) => void,
-): () => void {
+export function onRemoteOrgChange(handler: (orgId: string | null) => void): () => void {
   if (typeof window === "undefined") return () => {};
 
   const ch = getChannel();

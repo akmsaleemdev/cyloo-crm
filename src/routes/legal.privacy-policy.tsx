@@ -3,8 +3,7 @@ import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPageShell } from "@/components/app/legal-page-shell";
 
-const DESCRIPTION =
-  `${BRAND_NAME}'s Privacy Policy: how we collect, use, share, and protect your personal data.`;
+const DESCRIPTION = `${BRAND_NAME}'s Privacy Policy: how we collect, use, share, and protect your personal data.`;
 const TITLE = "Privacy Policy";
 
 export const Route = createFileRoute("/legal/privacy-policy")({
@@ -27,10 +26,7 @@ export const Route = createFileRoute("/legal/privacy-policy")({
 
 function PrivacyPolicyPage() {
   return (
-    <LegalPageShell
-      title="Privacy Policy"
-      subtitle="Last updated: July 30, 2026"
-    >
+    <LegalPageShell title="Privacy Policy" subtitle="Last updated: July 30, 2026">
       <p>
         This Privacy Policy explains how <Brand /> ("we", "us", or "our") collects, uses, shares,
         and protects your personal information when you use our website, mobile applications, and
@@ -102,9 +98,9 @@ function PrivacyPolicyPage() {
 
       <h2>8. Children's privacy</h2>
       <p>
-        The Services are not intended for children under 16 years of age. We do not knowingly collect
-        personal information from children. If you believe we have collected information from a
-        child, please contact us.
+        The Services are not intended for children under 16 years of age. We do not knowingly
+        collect personal information from children. If you believe we have collected information
+        from a child, please contact us.
       </p>
 
       <h2>9. Changes to this policy</h2>

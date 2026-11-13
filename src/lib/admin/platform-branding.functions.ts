@@ -116,7 +116,11 @@ function sanitizeAttributes(tag: string, raw: string): string {
     if (name === "target" && value !== "_blank" && value !== "_self") continue;
     out.push(`${name}="${escapeText(value).slice(0, 2048)}"`);
   }
-  if (tag === "a" && out.some((a) => a.startsWith('target="_blank"')) && !out.some((a) => a.startsWith("rel="))) {
+  if (
+    tag === "a" &&
+    out.some((a) => a.startsWith('target="_blank"')) &&
+    !out.some((a) => a.startsWith("rel="))
+  ) {
     out.push('rel="noopener noreferrer"');
   }
   return out.length ? ` ${out.join(" ")}` : "";

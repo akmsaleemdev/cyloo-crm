@@ -37,7 +37,9 @@ export const getUsageSummary = createServerFn({ method: "POST" })
 
     const now = new Date();
     const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
-    const monthEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
+    const monthEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    ).toISOString();
 
     const subRes = await supabase
       .from("subscriptions")
@@ -65,15 +67,24 @@ export const getUsageSummary = createServerFn({ method: "POST" })
       filesRes,
       quotasRes,
     ] = await Promise.all([
-      sbAny(supabase).from("organization_members").select("user_id", { count: "exact", head: true }).eq("organization_id", orgId),
+      sbAny(supabase)
+        .from("organization_members")
+        .select("user_id", { count: "exact", head: true })
+        .eq("organization_id", orgId),
       supabase
         .from("audit_logs")
         .select("actor_id")
         .eq("organization_id", orgId)
         .gte("created_at", thirtyDaysAgo),
 
-      sbAny(supabase).from("contacts").select("id", { count: "exact", head: true }).eq("workspace_id", wsId),
-      sbAny(supabase).from("channel_accounts").select("id", { count: "exact", head: true }).eq("workspace_id", wsId),
+      sbAny(supabase)
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId),
+      sbAny(supabase)
+        .from("channel_accounts")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId),
       supabase
         .from("messages")
         .select("id", { count: "exact", head: true })
@@ -178,8 +189,20 @@ export const getUsageSummary = createServerFn({ method: "POST" })
       seats: membersRes.count ?? 0,
     };
 
-    const metersRes = await sbAny(supabase).from("usage_meters").select("code, name, unit").eq("is_active", true);
-    const quotaByMeter = new Map<string, { used: number; included: number | null; hard_limit: number | null; period_start: string; period_end: string }>();
+    const metersRes = await sbAny(supabase)
+      .from("usage_meters")
+      .select("code, name, unit")
+      .eq("is_active", true);
+    const quotaByMeter = new Map<
+      string,
+      {
+        used: number;
+        included: number | null;
+        hard_limit: number | null;
+        period_start: string;
+        period_end: string;
+      }
+    >();
     for (const q of quotasRes.data ?? []) {
       quotaByMeter.set(q.meter_code, {
         used: Number(q.used ?? 0),
@@ -190,27 +213,27 @@ export const getUsageSummary = createServerFn({ method: "POST" })
       });
     }
 
-    const rows: UsageMeterRow[] = ((metersRes.data ?? []) as Array<{ code: string; name: string; unit: string }>).map(
-      (m) => {
-        const q = quotaByMeter.get(m.code);
-        const used = realtimeUsed[m.code] ?? (q?.used ?? 0);
-        const included = q?.included ?? null;
-        const hard_limit = q?.hard_limit ?? null;
-        const cap = hard_limit ?? included;
-        const percent = cap && cap > 0 ? Math.min(100, (used / cap) * 100) : null;
-        return {
-          code: m.code,
-          name: m.name,
-          unit: m.unit,
-          used,
-          included,
-          hard_limit,
-          percent,
-          period_start: q?.period_start ?? periodStart,
-          period_end: q?.period_end ?? periodEnd,
-        };
-      },
-    );
+    const rows: UsageMeterRow[] = (
+      (metersRes.data ?? []) as Array<{ code: string; name: string; unit: string }>
+    ).map((m) => {
+      const q = quotaByMeter.get(m.code);
+      const used = realtimeUsed[m.code] ?? q?.used ?? 0;
+      const included = q?.included ?? null;
+      const hard_limit = q?.hard_limit ?? null;
+      const cap = hard_limit ?? included;
+      const percent = cap && cap > 0 ? Math.min(100, (used / cap) * 100) : null;
+      return {
+        code: m.code,
+        name: m.name,
+        unit: m.unit,
+        used,
+        included,
+        hard_limit,
+        percent,
+        period_start: q?.period_start ?? periodStart,
+        period_end: q?.period_end ?? periodEnd,
+      };
+    });
 
     return { period_start: periodStart, period_end: periodEnd, meters: rows };
   });
@@ -288,7 +311,11 @@ export const evaluateUsageAlerts = createServerFn({ method: "POST" })
     ]);
     if (alertsRes.error) throw alertsRes.error;
     const meterMap = new Map(summary.meters.map((m) => [m.code, m]));
-    const triggered: Array<{ alert: (typeof alertsRes.data)[number]; meter: UsageMeterRow; value: number }> = [];
+    const triggered: Array<{
+      alert: (typeof alertsRes.data)[number];
+      meter: UsageMeterRow;
+      value: number;
+    }> = [];
     for (const a of alertsRes.data ?? []) {
       const meter = meterMap.get(a.meter_code);
       if (!meter) continue;
@@ -311,21 +338,27 @@ export const evaluateUsageAlerts = createServerFn({ method: "POST" })
         ) {
           if (a.notify_in_app) {
             const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-            const { error: notificationError } = await sbAny(supabaseAdmin).from("notifications").insert({
-              user_id: userId,
-              organization_id: data.organization_id,
-              channel: "in_app",
-              title: `Usage alert: ${meter.name}`,
-              body: `${meter.name} reached ${a.threshold_type === "percent" ? currentValue.toFixed(1) + "%" : currentValue.toLocaleString()} of your limit.`,
-              category: "usage_alert",
-              action_url: "/usage",
-              data: { meter_code: a.meter_code, threshold: a.threshold_value },
-            });
-            if (notificationError) throw new Error(`Usage notification failed: ${notificationError.message}`);
+            const { error: notificationError } = await sbAny(supabaseAdmin)
+              .from("notifications")
+              .insert({
+                user_id: userId,
+                organization_id: data.organization_id,
+                channel: "in_app",
+                title: `Usage alert: ${meter.name}`,
+                body: `${meter.name} reached ${a.threshold_type === "percent" ? currentValue.toFixed(1) + "%" : currentValue.toLocaleString()} of your limit.`,
+                category: "usage_alert",
+                action_url: "/usage",
+                data: { meter_code: a.meter_code, threshold: a.threshold_value },
+              });
+            if (notificationError)
+              throw new Error(`Usage notification failed: ${notificationError.message}`);
           }
           const { error: updateError } = await supabase
             .from("usage_alerts")
-            .update({ last_triggered_at: new Date().toISOString(), last_triggered_value: currentValue })
+            .update({
+              last_triggered_at: new Date().toISOString(),
+              last_triggered_value: currentValue,
+            })
             .eq("id", a.id);
           if (updateError) throw updateError;
         }

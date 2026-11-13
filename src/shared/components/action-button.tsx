@@ -21,7 +21,11 @@ export const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProp
     { loading, loadingText, leadingIcon, trailingIcon, disabled, children, className, ...rest },
     ref,
   ) => {
-    const showLeading = loading ? <Loader2 className="animate-spin" aria-hidden="true" /> : leadingIcon;
+    const showLeading = loading ? (
+      <Loader2 className="animate-spin" aria-hidden="true" />
+    ) : (
+      leadingIcon
+    );
     const label = loading && loadingText ? loadingText : children;
     return (
       <Button

@@ -30,8 +30,7 @@ export type TemplateRejectionHint = {
   suggestion?: string;
 };
 
-const PARAM_RE =
-  /components\[(\d+)\]\['buttons'\]\[(\d+)\]\['(url|phone_number)'\]/i;
+const PARAM_RE = /components\[(\d+)\]\['buttons'\]\[(\d+)\]\['(url|phone_number)'\]/i;
 
 export function parseTemplateRejection(
   rejectionReason: string | null | undefined,
@@ -53,10 +52,10 @@ export function parseTemplateRejection(
 
   const detail =
     field === "phone_number"
-      ? validateTemplateButtonPhone(value) ??
-        "Meta could not dial this number. Re-enter it in international E.164 format, e.g. +14155551234."
-      : validateTemplateButtonUrl(value) ??
-        "Meta could not parse this link. Use a complete absolute URL starting with https://";
+      ? (validateTemplateButtonPhone(value) ??
+        "Meta could not dial this number. Re-enter it in international E.164 format, e.g. +14155551234.")
+      : (validateTemplateButtonUrl(value) ??
+        "Meta could not parse this link. Use a complete absolute URL starting with https://");
 
   let suggestion: string | undefined;
   if (field === "phone_number") {
@@ -67,9 +66,7 @@ export function parseTemplateRejection(
   }
 
   const which =
-    field === "phone_number"
-      ? `Call button #${buttonIndex + 1}`
-      : `URL button #${buttonIndex + 1}`;
+    field === "phone_number" ? `Call button #${buttonIndex + 1}` : `URL button #${buttonIndex + 1}`;
 
   return {
     path,

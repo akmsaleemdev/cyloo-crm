@@ -321,7 +321,11 @@ function PluginCard({ plugin: p, installed }: { plugin: any; installed: boolean 
         <CardHeader className="pb-3">
           <div className="flex items-start gap-3">
             {p.icon_url ? (
-              <img src={p.icon_url} alt="" className="size-11 rounded-control object-cover shrink-0" />
+              <img
+                src={p.icon_url}
+                alt=""
+                className="size-11 rounded-control object-cover shrink-0"
+              />
             ) : (
               <div className="size-11 rounded-control bg-muted flex items-center justify-center shrink-0">
                 <Package className="size-5" />

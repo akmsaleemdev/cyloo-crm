@@ -42,10 +42,13 @@ export interface DrainResult {
 
 export async function drainOutbox(worker: string, batch = 25): Promise<DrainResult> {
   const result: DrainResult = { claimed: 0, sent: 0, failed: 0, retried: 0, dead: 0 };
-  const { data, error } = await sbAny(supabaseAdmin).rpc("outbox_claim_batch" as never, {
-    _worker: worker,
-    _limit: batch,
-  } as never);
+  const { data, error } = await sbAny(supabaseAdmin).rpc(
+    "outbox_claim_batch" as never,
+    {
+      _worker: worker,
+      _limit: batch,
+    } as never,
+  );
   if (error) throw new Error(`outbox_claim_batch failed: ${error.message}`);
   const rows = (data ?? []) as unknown as OutboxRow[];
   result.claimed = rows.length;
@@ -60,10 +63,17 @@ export async function drainOutbox(worker: string, batch = 25): Promise<DrainResu
         account,
         credentials: creds,
         correlationId,
-        log: (level, scope, message, extra) => log({
-          workspaceId: row.workspace_id, channelAccountId: row.channel_account_id,
-          provider: row.provider, level, scope, message, data: extra, correlationId,
-        }),
+        log: (level, scope, message, extra) =>
+          log({
+            workspaceId: row.workspace_id,
+            channelAccountId: row.channel_account_id,
+            provider: row.provider,
+            level,
+            scope,
+            message,
+            data: extra,
+            correlationId,
+          }),
       });
 
       await supabaseAdmin
@@ -124,9 +134,12 @@ export async function drainOutbox(worker: string, batch = 25): Promise<DrainResu
         result.retried++;
       }
       await log({
-        workspaceId: row.workspace_id, channelAccountId: row.channel_account_id,
-        provider: row.provider, level: dead ? "error" : "warn",
-        scope: "send", message: pErr.message,
+        workspaceId: row.workspace_id,
+        channelAccountId: row.channel_account_id,
+        provider: row.provider,
+        level: dead ? "error" : "warn",
+        scope: "send",
+        message: pErr.message,
         data: { kind: pErr.kind, code: pErr.code, attempts: row.attempts },
         correlationId,
       });

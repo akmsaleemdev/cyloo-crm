@@ -120,7 +120,10 @@ export function useCompany(companyId: string | undefined) {
     queryKey: ["company", companyId],
     enabled: !!companyId,
     queryFn: async (): Promise<CompanyRow | null> => {
-      const { data, error } = await anyFrom("companies").select("*").eq("id", companyId).maybeSingle();
+      const { data, error } = await anyFrom("companies")
+        .select("*")
+        .eq("id", companyId)
+        .maybeSingle();
       if (error) throw error;
       return (data ?? null) as CompanyRow | null;
     },
@@ -133,15 +136,24 @@ export function useCompanyContacts(companyId: string | undefined) {
     enabled: !!companyId,
     queryFn: async () => {
       const { data, error } = await anyFrom("contacts")
-        .select("id, first_name, last_name, display_name, name, email, phone, job_title, avatar_url, lifecycle_stage")
+        .select(
+          "id, first_name, last_name, display_name, name, email, phone, job_title, avatar_url, lifecycle_stage",
+        )
         .eq("company_id", companyId)
         .is("deleted_at", null)
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Array<{
-        id: string; first_name: string | null; last_name: string | null; display_name: string | null;
-        name: string | null; email: string | null; phone: string | null; job_title: string | null;
-        avatar_url: string | null; lifecycle_stage: string | null;
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        display_name: string | null;
+        name: string | null;
+        email: string | null;
+        phone: string | null;
+        job_title: string | null;
+        avatar_url: string | null;
+        lifecycle_stage: string | null;
       }>;
     },
   });
@@ -153,7 +165,9 @@ export function useCompanyDeals(companyId: string | undefined) {
     enabled: !!companyId,
     queryFn: async () => {
       const { data, error } = await anyFrom("deals")
-        .select("id, title, amount, currency, status, stage_id, probability, expected_close_date, updated_at")
+        .select(
+          "id, title, amount, currency, status, stage_id, probability, expected_close_date, updated_at",
+        )
         .eq("company_id", companyId)
         .is("deleted_at", null)
         .order("updated_at", { ascending: false });
@@ -192,7 +206,14 @@ export function useCompanyNotes(companyId: string | undefined) {
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; body: string; is_pinned: boolean; author_id: string | null; created_at: string; updated_at: string }>;
+      return (data ?? []) as Array<{
+        id: string;
+        body: string;
+        is_pinned: boolean;
+        author_id: string | null;
+        created_at: string;
+        updated_at: string;
+      }>;
     },
   });
 }
@@ -203,7 +224,9 @@ export function useCompanyAttachments(companyId: string | undefined) {
     enabled: !!companyId,
     queryFn: async () => {
       const { data, error } = await anyFrom("attachments")
-        .select("id, file_id, attached_by, created_at, files(id, name, mime_type, size_bytes, bucket, path, is_public)")
+        .select(
+          "id, file_id, attached_by, created_at, files(id, name, mime_type, size_bytes, bucket, path, is_public)",
+        )
         .eq("entity_type", "company")
         .eq("entity_id", companyId)
         .order("created_at", { ascending: false });
@@ -219,7 +242,10 @@ export function useCompanyConversations(companyId: string | undefined) {
     queryKey: ["company-conversations", companyId],
     enabled: !!companyId,
     queryFn: async () => {
-      const { data: contacts } = await anyFrom("contacts").select("id").eq("company_id", companyId).is("deleted_at", null);
+      const { data: contacts } = await anyFrom("contacts")
+        .select("id")
+        .eq("company_id", companyId)
+        .is("deleted_at", null);
       const ids = (contacts ?? []).map((c: { id: string }) => c.id);
       if (!ids.length) return [] as Array<Record<string, unknown>>;
       const { data, error } = await anyFrom("conversations")
@@ -239,11 +265,16 @@ export function useCompanyCampaigns(companyId: string | undefined) {
     enabled: !!companyId,
     queryFn: async () => {
       // Company doesn't link directly to campaigns; return campaigns that share tags with the company.
-      const { data: comp } = await anyFrom("companies").select("tags, workspace_id").eq("id", companyId).maybeSingle();
+      const { data: comp } = await anyFrom("companies")
+        .select("tags, workspace_id")
+        .eq("id", companyId)
+        .maybeSingle();
       const tags: string[] = (comp?.tags ?? []) as string[];
       if (!tags.length) return [] as Array<Record<string, unknown>>;
       const { data, error } = await anyFrom("campaigns")
-        .select("id, name, status, scheduled_at, sent_count, delivered_count, read_count, audience_tags, updated_at")
+        .select(
+          "id, name, status, scheduled_at, sent_count, delivered_count, read_count, audience_tags, updated_at",
+        )
         .eq("workspace_id", comp!.workspace_id)
         .overlaps("audience_tags", tags)
         .order("updated_at", { ascending: false })
@@ -266,14 +297,22 @@ export function useCompanyTimeline(companyId: string | undefined) {
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; action: string; actor_id: string | null; changes: Record<string, unknown>; created_at: string }>;
+      return (data ?? []) as Array<{
+        id: string;
+        action: string;
+        actor_id: string | null;
+        changes: Record<string, unknown>;
+        created_at: string;
+      }>;
     },
   });
 }
 
 /* ------------------------------ Mutations ------------------------------ */
 
-export type CompanyInput = Partial<Omit<CompanyRow, "id" | "workspace_id" | "created_at" | "updated_at" | "deleted_at">>;
+export type CompanyInput = Partial<
+  Omit<CompanyRow, "id" | "workspace_id" | "created_at" | "updated_at" | "deleted_at">
+>;
 
 export function useCreateCompany() {
   const tenantCurrency = useTenantCurrency();
@@ -350,7 +389,9 @@ export function useDeleteCompany() {
         const { error } = await anyFrom("companies").delete().eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await anyFrom("companies").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+        const { error } = await anyFrom("companies")
+          .update({ deleted_at: new Date().toISOString() })
+          .eq("id", id);
         if (error) throw error;
       }
     },
@@ -393,7 +434,9 @@ export function useDeleteCompanyNote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id }: { id: string; companyId: string }) => {
-      const { error } = await anyFrom("notes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await anyFrom("notes")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_r, v) => qc.invalidateQueries({ queryKey: ["company-notes", v.companyId] }),
@@ -412,7 +455,12 @@ export function useCompaniesRealtime() {
       .channel(`companies:${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "companies", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "companies",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => {
           qc.invalidateQueries({ queryKey: ["companies"] });
           qc.invalidateQueries({ queryKey: ["company"] });
@@ -433,28 +481,71 @@ export function useCompanyDetailRealtime(companyId: string | undefined) {
     if (!workspaceId || !companyId || typeof window === "undefined") return;
     const channel = supabase
       .channel(`company-detail:${companyId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contacts", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-contacts", companyId] });
-        qc.invalidateQueries({ queryKey: ["company-conversations", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "deals", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-deals", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-tasks", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "notes", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-notes", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversations", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-conversations", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "campaigns", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company-campaigns", companyId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "companies", filter: `id=eq.${companyId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["company", companyId] });
-      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "contacts",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-contacts", companyId] });
+          qc.invalidateQueries({ queryKey: ["company-conversations", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-deals", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-tasks", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-notes", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "conversations",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-conversations", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "campaigns",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company-campaigns", companyId] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "companies", filter: `id=eq.${companyId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["company", companyId] });
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -466,8 +557,21 @@ export function useCompanyDetailRealtime(companyId: string | undefined) {
 
 export function companiesToCsv(rows: CompanyRow[]): string {
   const headers = [
-    "name","legal_name","domain","website","industry","business_type","company_size",
-    "annual_revenue","currency","phone","email","country","timezone","status","tags",
+    "name",
+    "legal_name",
+    "domain",
+    "website",
+    "industry",
+    "business_type",
+    "company_size",
+    "annual_revenue",
+    "currency",
+    "phone",
+    "email",
+    "country",
+    "timezone",
+    "status",
+    "tags",
   ];
   const esc = (v: unknown) => {
     const s = v == null ? "" : String(v);
@@ -475,11 +579,27 @@ export function companiesToCsv(rows: CompanyRow[]): string {
   };
   const lines = [headers.join(",")];
   for (const r of rows) {
-    lines.push([
-      r.name, r.legal_name, r.domain, r.website, r.industry, r.business_type, r.company_size,
-      r.annual_revenue, r.currency, r.phone, r.email, r.country, r.timezone, r.status,
-      (r.tags ?? []).join("|"),
-    ].map(esc).join(","));
+    lines.push(
+      [
+        r.name,
+        r.legal_name,
+        r.domain,
+        r.website,
+        r.industry,
+        r.business_type,
+        r.company_size,
+        r.annual_revenue,
+        r.currency,
+        r.phone,
+        r.email,
+        r.country,
+        r.timezone,
+        r.status,
+        (r.tags ?? []).join("|"),
+      ]
+        .map(esc)
+        .join(","),
+    );
   }
   return lines.join("\n");
 }

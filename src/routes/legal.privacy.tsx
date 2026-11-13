@@ -2,8 +2,7 @@ import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPageShell } from "@/components/app/legal-page-shell";
 
-const DESCRIPTION =
-  `How ${BRAND_NAME} collects, uses, stores, and protects your data, including retention and your privacy rights.`;
+const DESCRIPTION = `How ${BRAND_NAME} collects, uses, stores, and protects your data, including retention and your privacy rights.`;
 const TITLE = "Privacy Policy";
 
 export const Route = createFileRoute("/legal/privacy")({

@@ -2,7 +2,14 @@ import { useMemo, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Columns3, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 export type ColumnDef<T> = {
@@ -31,9 +38,18 @@ type Props<T extends { id: string }> = {
 };
 
 export function DataTable<T extends { id: string }>({
-  columns, rows, loading, emptyLabel = "No results",
-  sortKey, sortDir = "asc", onSort,
-  selected, onSelectionChange, bulkActions, onRowClick, stickyHeader,
+  columns,
+  rows,
+  loading,
+  emptyLabel = "No results",
+  sortKey,
+  sortDir = "asc",
+  onSort,
+  selected,
+  onSelectionChange,
+  bulkActions,
+  onRowClick,
+  stickyHeader,
 }: Props<T>) {
   const [visible, setVisible] = useState<Set<string>>(
     () => new Set(columns.filter((c) => c.defaultVisible !== false).map((c) => c.id)),
@@ -65,7 +81,12 @@ export function DataTable<T extends { id: string }>({
           <>
             <span className="text-xs px-2 text-muted-foreground">{selected.size} selected</span>
             {bulkActions}
-            <Button size="sm" variant="ghost" className="ml-auto" onClick={() => onSelectionChange(new Set())}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="ml-auto"
+              onClick={() => onSelectionChange(new Set())}
+            >
               <X className="w-3.5 h-3.5 " /> Clear
             </Button>
           </>
@@ -73,7 +94,9 @@ export function DataTable<T extends { id: string }>({
           <div className="ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline"><Columns3 className="w-3.5 h-3.5 mr-1.5" /> Columns</Button>
+                <Button size="sm" variant="outline">
+                  <Columns3 className="w-3.5 h-3.5 mr-1.5" /> Columns
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel>Show columns</DropdownMenuLabel>
@@ -113,29 +136,55 @@ export function DataTable<T extends { id: string }>({
               {cols.map((c) => (
                 <th key={c.id} className={cn("px-3 py-2 text-left font-medium", c.className)}>
                   {c.sortable ? (
-                    <button className="inline-flex items-center gap-1 hover:text-foreground" onClick={() => clickSort(c.id)}>
+                    <button
+                      className="inline-flex items-center gap-1 hover:text-foreground"
+                      onClick={() => clickSort(c.id)}
+                    >
                       {c.header}
                       {sortKey === c.id ? (
-                        sortDir === "asc" ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
-                      ) : <ChevronsUpDown className="w-3 h-3 opacity-40" />}
+                        sortDir === "asc" ? (
+                          <ChevronUp className="w-3 h-3" />
+                        ) : (
+                          <ChevronDown className="w-3 h-3" />
+                        )
+                      ) : (
+                        <ChevronsUpDown className="w-3 h-3 opacity-40" />
+                      )}
                     </button>
-                  ) : c.header}
+                  ) : (
+                    c.header
+                  )}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={cols.length + 1} className="p-6 text-center text-xs text-muted-foreground">Loading</td></tr>
+              <tr>
+                <td
+                  colSpan={cols.length + 1}
+                  className="p-6 text-center text-xs text-muted-foreground"
+                >
+                  Loading
+                </td>
+              </tr>
             )}
             {!loading && rows.length === 0 && (
-              <tr><td colSpan={cols.length + 1} className="p-8 text-center text-sm text-muted-foreground">{emptyLabel}</td></tr>
+              <tr>
+                <td
+                  colSpan={cols.length + 1}
+                  className="p-8 text-center text-sm text-muted-foreground"
+                >
+                  {emptyLabel}
+                </td>
+              </tr>
             )}
             {rows.map((r) => (
               <tr
                 key={r.id}
                 onClick={(e) => {
-                  if ((e.target as HTMLElement).closest("[data-nostop]") === null && onRowClick) onRowClick(r);
+                  if ((e.target as HTMLElement).closest("[data-nostop]") === null && onRowClick)
+                    onRowClick(r);
                 }}
                 className={cn(
                   "border-b border-border/70 hover:bg-muted/30 transition-colors",
@@ -151,7 +200,15 @@ export function DataTable<T extends { id: string }>({
                   />
                 </td>
                 {cols.map((c) => (
-                  <td key={c.id} className={cn("px-3 py-2 align-middle", c.align === "right" && "text-right", c.align === "center" && "text-center", c.className)}>
+                  <td
+                    key={c.id}
+                    className={cn(
+                      "px-3 py-2 align-middle",
+                      c.align === "right" && "text-right",
+                      c.align === "center" && "text-center",
+                      c.className,
+                    )}
+                  >
                     {c.cell(r)}
                   </td>
                 ))}
@@ -167,7 +224,11 @@ export function DataTable<T extends { id: string }>({
 /* --------------------------- Pagination bar --------------------------- */
 
 export function Pagination({
-  page, pageSize, total, onPage, onPageSize,
+  page,
+  pageSize,
+  total,
+  onPage,
+  onPageSize,
   pageSizes = [25, 50, 100, 250],
 }: {
   page: number;
@@ -182,22 +243,62 @@ export function Pagination({
   const to = Math.min(total, page * pageSize);
   return (
     <div className="flex flex-wrap items-center gap-3 px-3 py-2 border-t border-border text-xs">
-      <span className="text-muted-foreground">{from}–{to} of {total.toLocaleString()}</span>
+      <span className="text-muted-foreground">
+        {from}–{to} of {total.toLocaleString()}
+      </span>
       {onPageSize && (
         <select
           className="ml-2 h-7 rounded-control border border-border bg-background px-2"
           value={pageSize}
           onChange={(e) => onPageSize(Number(e.target.value))}
         >
-          {pageSizes.map((s) => <option key={s} value={s}>{s} / page</option>)}
+          {pageSizes.map((s) => (
+            <option key={s} value={s}>
+              {s} / page
+            </option>
+          ))}
         </select>
       )}
       <div className="ml-auto flex items-center gap-1">
-        <Button variant="outline" size="sm" className="h-7" onClick={() => onPage(1)} disabled={page <= 1}>First</Button>
-        <Button variant="outline" size="sm" className="h-7" onClick={() => onPage(page - 1)} disabled={page <= 1}>Prev</Button>
-        <span className="px-2">Page {page} / {totalPages}</span>
-        <Button variant="outline" size="sm" className="h-7" onClick={() => onPage(page + 1)} disabled={page >= totalPages}>Next</Button>
-        <Button variant="outline" size="sm" className="h-7" onClick={() => onPage(totalPages)} disabled={page >= totalPages}>Last</Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7"
+          onClick={() => onPage(1)}
+          disabled={page <= 1}
+        >
+          First
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7"
+          onClick={() => onPage(page - 1)}
+          disabled={page <= 1}
+        >
+          Prev
+        </Button>
+        <span className="px-2">
+          Page {page} / {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7"
+          onClick={() => onPage(page + 1)}
+          disabled={page >= totalPages}
+        >
+          Next
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7"
+          onClick={() => onPage(totalPages)}
+          disabled={page >= totalPages}
+        >
+          Last
+        </Button>
       </div>
     </div>
   );

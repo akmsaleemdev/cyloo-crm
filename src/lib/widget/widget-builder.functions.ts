@@ -39,7 +39,8 @@ export const getWidgetConfig = createServerFn({ method: "POST" })
         ...merged,
         agentName: merged.agentName || bot.name,
         agentAvatarUrl: merged.agentAvatarUrl ?? bot.avatar_url,
-        welcomeMessage: merged.welcomeMessage || bot.welcome_message || DEFAULT_WIDGET_CONFIG.welcomeMessage,
+        welcomeMessage:
+          merged.welcomeMessage || bot.welcome_message || DEFAULT_WIDGET_CONFIG.welcomeMessage,
       } as WidgetConfig,
     };
   });

@@ -23,10 +23,10 @@ export async function extractText(file: File): Promise<ExtractResult> {
   if (name.endsWith(".pdf") || type === "application/pdf") {
     const pdfjs = await import("pdfjs-dist");
     // Point worker to the CDN copy (avoids Vite bundling snags).
-    const workerUrl =
-      "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs";
-    (pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } })
-      .GlobalWorkerOptions.workerSrc = workerUrl;
+    const workerUrl = "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs";
+    (
+      pdfjs as unknown as { GlobalWorkerOptions: { workerSrc: string } }
+    ).GlobalWorkerOptions.workerSrc = workerUrl;
 
     const buf = await readFileAsArrayBuffer(file);
     const pdf = await pdfjs.getDocument({ data: buf }).promise;
@@ -76,10 +76,13 @@ export async function extractText(file: File): Promise<ExtractResult> {
       for (let i = 0; i < line.length; i++) {
         const ch = line[i];
         if (ch === '"') {
-          if (inQ && line[i + 1] === '"') { cur += '"'; i++; }
-          else inQ = !inQ;
+          if (inQ && line[i + 1] === '"') {
+            cur += '"';
+            i++;
+          } else inQ = !inQ;
         } else if (ch === "," && !inQ) {
-          cells.push(cur); cur = "";
+          cells.push(cur);
+          cur = "";
         } else cur += ch;
       }
       cells.push(cur);

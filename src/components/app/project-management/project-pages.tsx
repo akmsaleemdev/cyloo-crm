@@ -257,7 +257,11 @@ export function ProjectsOverviewPage() {
                     style={{ backgroundColor: project.color || "var(--primary)" }}
                   >
                     {project.logo_url ? (
-                      <img src={project.logo_url} alt={`${project.name} logo`} className="h-full w-full object-contain" />
+                      <img
+                        src={project.logo_url}
+                        alt={`${project.name} logo`}
+                        className="h-full w-full object-contain"
+                      />
                     ) : (
                       <FolderKanban className="h-5 w-5" />
                     )}
@@ -276,7 +280,9 @@ export function ProjectsOverviewPage() {
                     </Link>
                   </h2>
                   <p className="mt-1 line-clamp-2 min-h-10 text-sm text-muted-foreground">
-                    {project.description ? stripFormatting(project.description).replace(/\s+/g, " ") : "No description yet."}
+                    {project.description
+                      ? stripFormatting(project.description).replace(/\s+/g, " ")
+                      : "No description yet."}
                   </p>
                 </div>
                 <ProjectTaskStats project={project} tasks={tasks} />
@@ -451,12 +457,22 @@ export function ProjectTasksPage({ view }: { view: "board" | "list" }) {
             Assigned to me
           </Button>
           <div className="flex rounded-control border p-0.5 h-9">
-            <Button variant={view === "list" ? "secondary" : "ghost"} size="sm" className="h-7.5" asChild>
+            <Button
+              variant={view === "list" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7.5"
+              asChild
+            >
               <Link to="/projects/tasks">
                 <ListTodo className="h-4 w-4" /> List
               </Link>
             </Button>
-            <Button variant={view === "board" ? "secondary" : "ghost"} size="sm" className="h-7.5" asChild>
+            <Button
+              variant={view === "board" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7.5"
+              asChild
+            >
               <Link to="/projects/board">
                 <LayoutDashboard className="h-4 w-4" /> Board
               </Link>

@@ -117,7 +117,12 @@ export function SettingsLayout({ title, description, children, actions }: Settin
                             : "text-[#a0a0a0] hover:text-[#e0e0e0] hover:bg-[#262626]",
                         )}
                       >
-                        <Icon className={cn("h-3.5 w-3.5 shrink-0", active ? "text-accent" : "text-[#777777]")} />
+                        <Icon
+                          className={cn(
+                            "h-3.5 w-3.5 shrink-0",
+                            active ? "text-accent" : "text-[#777777]",
+                          )}
+                        />
                         <span className="truncate">{item.label}</span>
                       </Link>
                     );
@@ -149,7 +154,9 @@ export function SettingsLayout({ title, description, children, actions }: Settin
       <main className="flex-1 p-6 lg:p-10 max-w-4xl overflow-y-auto">
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl lg:text-3xl font-medium tracking-tight text-[#e0e0e0]">{title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-medium tracking-tight text-[#e0e0e0]">
+              {title}
+            </h1>
             {description && <p className="text-xs text-[#888888] mt-1">{description}</p>}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -217,4 +224,3 @@ export function SettingsRow({
     </div>
   );
 }
-

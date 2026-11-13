@@ -8,10 +8,7 @@ import { useRouterState } from "@tanstack/react-router";
 import { usePlatformRuntime } from "@/hooks/use-platform-runtime";
 import { configureAnalytics, trackEvent, trackPageView } from "@/lib/analytics/client";
 import type { MarketingEvent } from "@/lib/analytics/events";
-import {
-  COOKIE_CONSENT_CHANGED_EVENT,
-  hasCookieConsentFor,
-} from "@/lib/compliance/cookie-consent";
+import { COOKIE_CONSENT_CHANGED_EVENT, hasCookieConsentFor } from "@/lib/compliance/cookie-consent";
 import { useState } from "react";
 
 function useAnalyticsConsent(): boolean {

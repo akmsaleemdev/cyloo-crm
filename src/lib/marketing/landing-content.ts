@@ -7,8 +7,6 @@ import { BRAND_NAME } from "@/lib/branding/brand";
  */
 
 // Canonical production host, matching sitemap.xml, robots.txt and DOCS_BASE_URL.
-// Not a lovable.app preview subdomain: those are assigned by the platform and
-// cannot be renamed from here.
 export const SITE_URL = "https://cyloo.ai";
 export const OG_IMAGE_URL = `${SITE_URL}/api/public/og.png`;
 

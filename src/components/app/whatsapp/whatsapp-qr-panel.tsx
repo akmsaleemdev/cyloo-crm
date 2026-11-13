@@ -640,7 +640,9 @@ function QrDialog({
               </div>
             )}
           </div>
-          <span className={`text-xs px-2 py-1 rounded-control ${badge.className}`}>{badge.label}</span>
+          <span className={`text-xs px-2 py-1 rounded-control ${badge.className}`}>
+            {badge.label}
+          </span>
           {state.error && (
             <div className="text-xs text-destructive flex items-center gap-1">
               <AlertTriangle className="w-3 h-3" /> {state.error}

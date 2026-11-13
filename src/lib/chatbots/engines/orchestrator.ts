@@ -31,21 +31,38 @@ import type { ChatMessage, TurnRequest, TurnResult } from "./types";
 export interface OrchestratorDeps {
   /** Persist a user message row; returns nothing. */
   saveMessage: (row: {
-    sessionId: string; role: "user" | "assistant" | "system" | "tool";
-    content: string; citations?: unknown; latencyMs?: number; model?: string; providerKind?: string;
+    sessionId: string;
+    role: "user" | "assistant" | "system" | "tool";
+    content: string;
+    citations?: unknown;
+    latencyMs?: number;
+    model?: string;
+    providerKind?: string;
   }) => Promise<void>;
   /** Persist / restore session state. */
   loadSession: (
-    sessionId: string | undefined, seed: { chatbotId: string; workspaceId: string; channel: string; externalId?: string | null }
+    sessionId: string | undefined,
+    seed: { chatbotId: string; workspaceId: string; channel: string; externalId?: string | null },
   ) => Promise<{ id: string; flowState: FlowState; unknownStreak: number; negativeStreak: number }>;
   saveSession: (
-    id: string, patch: { flowState?: FlowState; unknownStreak?: number; negativeStreak?: number; handoff?: { reason: string; teamId?: string | null }; lastMessageAt?: string; messageCount?: number }
+    id: string,
+    patch: {
+      flowState?: FlowState;
+      unknownStreak?: number;
+      negativeStreak?: number;
+      handoff?: { reason: string; teamId?: string | null };
+      lastMessageAt?: string;
+      messageCount?: number;
+    },
   ) => Promise<void>;
   /** Load the last N turns for context building. */
   loadHistory: (sessionId: string, limit: number) => Promise<ChatMessage[]>;
   memory: MemoryStore;
   /** Supabase RPC handle for KB retrieval. */
-  supabaseRpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  supabaseRpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
 }
 
 export interface RunTurnInput {
@@ -59,12 +76,16 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
 
   // 1. Session + history
   const session = await deps.loadSession(request.sessionId, {
-    chatbotId: bot.id, workspaceId: bot.workspace_id,
-    channel: request.channel, externalId: request.externalId ?? null,
+    chatbotId: bot.id,
+    workspaceId: bot.workspace_id,
+    channel: request.channel,
+    externalId: request.externalId ?? null,
   });
 
   await deps.saveMessage({
-    sessionId: session.id, role: "user", content: request.message,
+    sessionId: session.id,
+    role: "user",
+    content: request.message,
   });
 
   const history = ContextEngine.trim(await deps.loadHistory(session.id, 20), 2500);
@@ -97,7 +118,8 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
     handoffEnabled: bot.handoff_enabled,
     keywords: bot.handoff_keywords ?? [],
     message: request.message,
-    intent, sentiment,
+    intent,
+    sentiment,
     consecutiveUnknown: unknownStreak,
     consecutiveNegative: negativeStreak,
   });
@@ -109,15 +131,29 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
 
   if (handoff.handoff) {
     const msg = "Connecting you with a human agent — one moment.";
-    await deps.saveMessage({ sessionId: session.id, role: "assistant", content: msg, latencyMs: Date.now() - started });
+    await deps.saveMessage({
+      sessionId: session.id,
+      role: "assistant",
+      content: msg,
+      latencyMs: Date.now() - started,
+    });
     await deps.saveSession(session.id, {
-      flowState: nextFlowState, unknownStreak, negativeStreak,
+      flowState: nextFlowState,
+      unknownStreak,
+      negativeStreak,
       handoff: { reason: handoff.reason ?? "manual", teamId: handoff.targetTeamId ?? null },
       lastMessageAt: new Date().toISOString(),
     });
     return {
-      sessionId: session.id, reply: msg, citations: [], intent, sentiment, handoff,
-      latencyMs: Date.now() - started, model: "", providerKind: "",
+      sessionId: session.id,
+      reply: msg,
+      citations: [],
+      intent,
+      sentiment,
+      handoff,
+      latencyMs: Date.now() - started,
+      model: "",
+      providerKind: "",
     };
   }
 
@@ -144,7 +180,8 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
     systemPrompt: bot.system_prompt,
     ragContext,
     citations,
-    intent, sentiment,
+    intent,
+    sentiment,
     shortMemory: shortMemory ?? undefined,
     longMemory: longMemory ?? undefined,
     locale: request.locale,
@@ -177,13 +214,22 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
   const latencyMs = Date.now() - started;
 
   await deps.saveMessage({
-    sessionId: session.id, role: "assistant", content: finalReply,
-    citations, latencyMs, model, providerKind,
+    sessionId: session.id,
+    role: "assistant",
+    content: finalReply,
+    citations,
+    latencyMs,
+    model,
+    providerKind,
   });
 
   // 9. Memory persistence
   const updatedShort = MemoryEngine.summarize(
-    [...history, { role: "user", content: request.message }, { role: "assistant", content: finalReply }],
+    [
+      ...history,
+      { role: "user", content: request.message },
+      { role: "assistant", content: finalReply },
+    ],
     shortMemory,
   );
   await deps.memory.saveShort(session.id, updatedShort);
@@ -191,14 +237,22 @@ export async function runChatbotTurn({ bot, request, deps }: RunTurnInput): Prom
   if (nextFacts) await deps.memory.saveLong(session.id, nextFacts);
 
   await deps.saveSession(session.id, {
-    flowState: nextFlowState, unknownStreak, negativeStreak,
+    flowState: nextFlowState,
+    unknownStreak,
+    negativeStreak,
     lastMessageAt: new Date().toISOString(),
   });
 
   return {
-    sessionId: session.id, reply: finalReply, citations, intent, sentiment,
+    sessionId: session.id,
+    reply: finalReply,
+    citations,
+    intent,
+    sentiment,
     handoff: { handoff: false },
-    latencyMs, model, providerKind,
+    latencyMs,
+    model,
+    providerKind,
     suggestions: quickReplies,
   };
 }

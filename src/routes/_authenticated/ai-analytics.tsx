@@ -3,13 +3,41 @@ import { useMemo, useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import {
-  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart,
-  Pie, PieChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import {
-  Sparkles, TrendingUp, TrendingDown, Minus, Activity, Zap, DollarSign,
-  Clock, CheckCircle2, Timer, Cpu, Download, Loader2, AlertTriangle,
-  ArrowUpRight, LineChart as LineIcon, PieChart as PieIcon,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Activity,
+  Zap,
+  DollarSign,
+  Clock,
+  CheckCircle2,
+  Timer,
+  Cpu,
+  Download,
+  Loader2,
+  AlertTriangle,
+  ArrowUpRight,
+  LineChart as LineIcon,
+  PieChart as PieIcon,
 } from "lucide-react";
 
 import { AppTopbar } from "@/components/app/app-topbar";
@@ -17,8 +45,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-  DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useAiAnalytics, type AiAnalyticsReport } from "@/hooks/use-ai-analytics";
@@ -46,7 +78,10 @@ export const Route = createFileRoute("/_authenticated/ai-analytics")({
   head: () => ({
     meta: [
       { title: "AI Analytics" },
-      { name: "description", content: "Usage, cost, quality, and outcome analytics for your AI features." },
+      {
+        name: "description",
+        content: "Usage, cost, quality, and outcome analytics for your AI features.",
+      },
     ],
   }),
   validateSearch: zodValidator(searchSchema),
@@ -99,7 +134,10 @@ function AiAnalyticsPage() {
         {query.isError && (
           <div className="rounded-control border border-destructive/40 bg-destructive/5 p-4 flex items-start gap-2 text-sm">
             <AlertTriangle className="w-4 h-4 text-destructive mt-0.5" />
-            <p>Failed to load analytics: {query.error instanceof Error ? query.error.message : "Unknown error"}</p>
+            <p>
+              Failed to load analytics:{" "}
+              {query.error instanceof Error ? query.error.message : "Unknown error"}
+            </p>
           </div>
         )}
         {query.data && (
@@ -153,7 +191,9 @@ function RangePicker({ value, onChange }: { value: number; onChange: (d: number)
           onClick={() => onChange(d)}
           className={cn(
             "px-2.5 py-1 text-xs rounded-control transition-colors",
-            value === d ? "bg-accent/15 text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+            value === d
+              ? "bg-accent/15 text-foreground font-medium"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           {d}d
@@ -164,7 +204,10 @@ function RangePicker({ value, onChange }: { value: number; onChange: (d: number)
 }
 
 function ExportMenu({
-  report, disabled, open, onOpenChange,
+  report,
+  disabled,
+  open,
+  onOpenChange,
 }: {
   report: AiAnalyticsReport | undefined;
   disabled: boolean;
@@ -203,37 +246,49 @@ function ExportMenu({
         <DropdownMenuLabel>CSV</DropdownMenuLabel>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-usage.csv", "text/csv", toCsv(asRows(report.usage)))}
+          onClick={() =>
+            report && download("ai-usage.csv", "text/csv", toCsv(asRows(report.usage)))
+          }
         >
           Daily usage
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-providers.csv", "text/csv", toCsv(asRows(report.providers)))}
+          onClick={() =>
+            report && download("ai-providers.csv", "text/csv", toCsv(asRows(report.providers)))
+          }
         >
           Provider breakdown
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-latency.csv", "text/csv", toCsv(asRows(report.latency)))}
+          onClick={() =>
+            report && download("ai-latency.csv", "text/csv", toCsv(asRows(report.latency)))
+          }
         >
           Latency
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-acceptance.csv", "text/csv", toCsv(asRows(report.acceptance)))}
+          onClick={() =>
+            report && download("ai-acceptance.csv", "text/csv", toCsv(asRows(report.acceptance)))
+          }
         >
           Acceptance rate
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-sentiment.csv", "text/csv", toCsv(asRows(report.sentiment)))}
+          onClick={() =>
+            report && download("ai-sentiment.csv", "text/csv", toCsv(asRows(report.sentiment)))
+          }
         >
           Sentiment trends
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-topics.csv", "text/csv", toCsv(asRows(report.topics)))}
+          onClick={() =>
+            report && download("ai-topics.csv", "text/csv", toCsv(asRows(report.topics)))
+          }
         >
           Topic trends
         </DropdownMenuItem>
@@ -241,7 +296,10 @@ function ExportMenu({
         <DropdownMenuLabel>JSON</DropdownMenuLabel>
         <DropdownMenuItem
           disabled={!report}
-          onClick={() => report && download("ai-analytics.json", "application/json", JSON.stringify(report, null, 2))}
+          onClick={() =>
+            report &&
+            download("ai-analytics.json", "application/json", JSON.stringify(report, null, 2))
+          }
         >
           Full report
         </DropdownMenuItem>
@@ -256,18 +314,58 @@ function KpiRow({ r }: { r: AiAnalyticsReport }) {
   const k = r.kpis;
   return (
     <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-2">
-      <Kpi icon={Zap} label="AI requests" value={k.totalRequests.toLocaleString()} delta={k.requestsDelta} deltaGoodDir="up" />
-      <Kpi icon={Cpu} label="Tokens" value={fmtCompact(k.totalTokens)} sub={`${fmtCompact(k.totalTokens)} total`} />
-      <Kpi icon={DollarSign} label="Cost (USD)" value={`$${k.totalCostUsd.toFixed(2)}`} delta={k.costDelta} deltaGoodDir="down" />
-      <Kpi icon={Timer} label="Avg latency" value={`${k.avgLatencyMs} ms`} delta={k.latencyDelta} deltaGoodDir="down" />
-      <Kpi icon={Clock} label="Saved time" value={fmtDuration(k.savedMinutes)} sub={`${k.savedMinutes.toLocaleString()} min`} />
-      <Kpi icon={CheckCircle2} label="Acceptance" value={`${k.acceptanceRate}%`} sub={`${k.resolvedConversations} resolved`} delta={k.acceptanceDelta} deltaGoodDir="up" />
+      <Kpi
+        icon={Zap}
+        label="AI requests"
+        value={k.totalRequests.toLocaleString()}
+        delta={k.requestsDelta}
+        deltaGoodDir="up"
+      />
+      <Kpi
+        icon={Cpu}
+        label="Tokens"
+        value={fmtCompact(k.totalTokens)}
+        sub={`${fmtCompact(k.totalTokens)} total`}
+      />
+      <Kpi
+        icon={DollarSign}
+        label="Cost (USD)"
+        value={`$${k.totalCostUsd.toFixed(2)}`}
+        delta={k.costDelta}
+        deltaGoodDir="down"
+      />
+      <Kpi
+        icon={Timer}
+        label="Avg latency"
+        value={`${k.avgLatencyMs} ms`}
+        delta={k.latencyDelta}
+        deltaGoodDir="down"
+      />
+      <Kpi
+        icon={Clock}
+        label="Saved time"
+        value={fmtDuration(k.savedMinutes)}
+        sub={`${k.savedMinutes.toLocaleString()} min`}
+      />
+      <Kpi
+        icon={CheckCircle2}
+        label="Acceptance"
+        value={`${k.acceptanceRate}%`}
+        sub={`${k.resolvedConversations} resolved`}
+        delta={k.acceptanceDelta}
+        deltaGoodDir="up"
+      />
     </section>
   );
 }
 
 function Kpi({
-  icon: Icon, label, value, sub, delta, deltaGoodDir,
+  icon: Icon,
+  label,
+  value,
+  sub,
+  delta,
+  deltaGoodDir,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -277,20 +375,27 @@ function Kpi({
   deltaGoodDir?: "up" | "down";
 }) {
   const showDelta = typeof delta === "number" && delta !== 0;
-  const good = showDelta && ((deltaGoodDir === "up" && delta! > 0) || (deltaGoodDir === "down" && delta! < 0));
-  const bad = showDelta && ((deltaGoodDir === "up" && delta! < 0) || (deltaGoodDir === "down" && delta! > 0));
-  const Arrow = !showDelta ? Minus : (delta! > 0 ? TrendingUp : TrendingDown);
+  const good =
+    showDelta && ((deltaGoodDir === "up" && delta! > 0) || (deltaGoodDir === "down" && delta! < 0));
+  const bad =
+    showDelta && ((deltaGoodDir === "up" && delta! < 0) || (deltaGoodDir === "down" && delta! > 0));
+  const Arrow = !showDelta ? Minus : delta! > 0 ? TrendingUp : TrendingDown;
   return (
     <div className="rounded-control border border-border bg-surface p-3">
       <div className="flex items-center justify-between text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5"><Icon className="h-3.5 w-3.5" />{label}</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Icon className="h-3.5 w-3.5" />
+          {label}
+        </span>
         {showDelta && (
-          <span className={cn(
-            "inline-flex items-center gap-0.5 text-[11px] font-medium",
-            good && "text-emerald-500",
-            bad && "text-destructive",
-            !good && !bad && "text-muted-foreground",
-          )}>
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 text-[11px] font-medium",
+              good && "text-emerald-500",
+              bad && "text-destructive",
+              !good && !bad && "text-muted-foreground",
+            )}
+          >
             <Arrow className="h-3 w-3" />
             {Math.abs(delta!)}%
           </span>
@@ -305,7 +410,12 @@ function Kpi({
 // ==================== Cards ====================
 
 function Card({
-  title, subtitle, icon: Icon, actions, className, children,
+  title,
+  subtitle,
+  icon: Icon,
+  actions,
+  className,
+  children,
 }: {
   title: string;
   subtitle?: string;
@@ -337,7 +447,12 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
   return (
     <>
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card title="AI Usage" subtitle="Requests per day" icon={Activity} className="lg:col-span-2">
+        <Card
+          title="AI Usage"
+          subtitle="Requests per day"
+          icon={Activity}
+          className="lg:col-span-2"
+        >
           <ChartWrap>
             <AreaChart data={r.usage} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <defs>
@@ -347,11 +462,28 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <Tooltip content={<TT format={(v) => Number(v).toLocaleString()} />} />
-              <Area type="monotone" dataKey="requests" stroke={PALETTE[0]} strokeWidth={2} fill="url(#reqGradient)" />
-              <Area type="monotone" dataKey="errors" stroke={PALETTE[4]} strokeWidth={1} fillOpacity={0} />
+              <Area
+                type="monotone"
+                dataKey="requests"
+                stroke={PALETTE[0]}
+                strokeWidth={2}
+                fill="url(#reqGradient)"
+              />
+              <Area
+                type="monotone"
+                dataKey="errors"
+                stroke={PALETTE[4]}
+                strokeWidth={1}
+                fillOpacity={0}
+              />
             </AreaChart>
           </ChartWrap>
         </Card>
@@ -363,12 +495,15 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
                 data={r.providers}
                 dataKey="requests"
                 nameKey="providerKind"
-                cx="50%" cy="50%"
+                cx="50%"
+                cy="50%"
                 innerRadius={45}
                 outerRadius={80}
                 paddingAngle={2}
               >
-                {r.providers.map((_, i) => <Cell key={i} fill={PALETTE[i % PALETTE.length]} />)}
+                {r.providers.map((_, i) => (
+                  <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                ))}
               </Pie>
               <Tooltip content={<TT />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -382,11 +517,25 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
           <ChartWrap>
             <BarChart data={r.usage} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={fmtCompact} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={fmtCompact}
+              />
               <Tooltip content={<TT format={fmtCompact} />} />
               <Bar dataKey="promptTokens" stackId="tok" fill={PALETTE[1]} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="completionTokens" stackId="tok" fill={PALETTE[2]} radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="completionTokens"
+                stackId="tok"
+                fill={PALETTE[2]}
+                radius={[4, 4, 0, 0]}
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </BarChart>
           </ChartWrap>
@@ -402,10 +551,25 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${Number(v).toFixed(2)}`} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
+              />
               <Tooltip content={<TT format={(v) => `$${Number(v).toFixed(4)}`} />} />
-              <Area type="monotone" dataKey="costUsd" stroke={PALETTE[3]} strokeWidth={2} fill="url(#costGradient)" />
+              <Area
+                type="monotone"
+                dataKey="costUsd"
+                stroke={PALETTE[3]}
+                strokeWidth={2}
+                fill="url(#costGradient)"
+              />
             </AreaChart>
           </ChartWrap>
         </Card>
@@ -414,11 +578,33 @@ function OverviewTab({ r }: { r: AiAnalyticsReport }) {
           <ChartWrap>
             <LineChart data={r.latency} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}ms`} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(v) => `${v}ms`}
+              />
               <Tooltip content={<TT format={(v) => `${v} ms`} />} />
-              <Line type="monotone" dataKey="avgLatencyMs" stroke={PALETTE[0]} strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="p95LatencyMs" stroke={PALETTE[4]} strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
+              <Line
+                type="monotone"
+                dataKey="avgLatencyMs"
+                stroke={PALETTE[0]}
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="p95LatencyMs"
+                stroke={PALETTE[4]}
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                dot={false}
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </LineChart>
           </ChartWrap>
@@ -439,19 +625,48 @@ function UsageTab({ r }: { r: AiAnalyticsReport }) {
         <ChartWrap height={280}>
           <LineChart data={r.usage} margin={{ top: 4, right: 40, bottom: 0, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={fmtDay}
+              fontSize={11}
+              stroke="hsl(var(--muted-foreground))"
+            />
             <YAxis yAxisId="left" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-            <YAxis yAxisId="right" orientation="right" fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `$${Number(v).toFixed(2)}`} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              fontSize={11}
+              stroke="hsl(var(--muted-foreground))"
+              tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
+            />
             <Tooltip content={<TT />} />
-            <Line yAxisId="left" type="monotone" dataKey="requests" stroke={PALETTE[0]} strokeWidth={2} dot={false} />
-            <Line yAxisId="right" type="monotone" dataKey="costUsd" stroke={PALETTE[3]} strokeWidth={2} dot={false} />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey="requests"
+              stroke={PALETTE[0]}
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="costUsd"
+              stroke={PALETTE[3]}
+              strokeWidth={2}
+              dot={false}
+            />
             <Legend wrapperStyle={{ fontSize: 11 }} />
           </LineChart>
         </ChartWrap>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Provider Breakdown" subtitle="Requests · tokens · cost per provider" icon={Cpu}>
+        <Card
+          title="Provider Breakdown"
+          subtitle="Requests · tokens · cost per provider"
+          icon={Cpu}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -466,20 +681,29 @@ function UsageTab({ r }: { r: AiAnalyticsReport }) {
               </thead>
               <tbody>
                 {r.providers.length === 0 && (
-                  <tr><td colSpan={6} className="py-6 text-center text-xs text-muted-foreground">No provider activity in this window.</td></tr>
+                  <tr>
+                    <td colSpan={6} className="py-6 text-center text-xs text-muted-foreground">
+                      No provider activity in this window.
+                    </td>
+                  </tr>
                 )}
                 {r.providers.map((p, i) => (
                   <tr key={p.providerKind} className="border-b border-border/40">
                     <td className="py-2">
                       <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} />
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ background: PALETTE[i % PALETTE.length] }}
+                        />
                         {p.providerKind}
                       </span>
                     </td>
                     <td className="text-right ">{p.requests.toLocaleString()}</td>
                     <td className="text-right ">{fmtCompact(p.tokens)}</td>
                     <td className="text-right ">${p.costUsd.toFixed(4)}</td>
-                    <td className={cn("text-right ", p.errorRate > 0 && "text-destructive")}>{p.errorRate}%</td>
+                    <td className={cn("text-right ", p.errorRate > 0 && "text-destructive")}>
+                      {p.errorRate}%
+                    </td>
                     <td className="text-right ">{p.avgLatencyMs}</td>
                   </tr>
                 ))}
@@ -534,12 +758,19 @@ function PerformanceTab({ r }: { r: AiAnalyticsReport }) {
             <div className="flex-1 text-center">
               <p className="text-3xl font-semibold">{successRate}%</p>
               <p className="text-xs text-muted-foreground">success rate</p>
-              <p className="text-xs text-muted-foreground mt-2">{errors.toLocaleString()} errors of {total.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-2">
+                {errors.toLocaleString()} errors of {total.toLocaleString()}
+              </p>
             </div>
           </div>
         </Card>
 
-        <Card title="Latency distribution" subtitle="Average & p95 over time" icon={Timer} className="lg:col-span-2">
+        <Card
+          title="Latency distribution"
+          subtitle="Average & p95 over time"
+          icon={Timer}
+          className="lg:col-span-2"
+        >
           <ChartWrap>
             <AreaChart data={r.latency} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <defs>
@@ -549,28 +780,78 @@ function PerformanceTab({ r }: { r: AiAnalyticsReport }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}ms`} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(v) => `${v}ms`}
+              />
               <Tooltip content={<TT format={(v) => `${v} ms`} />} />
-              <Area type="monotone" dataKey="p95LatencyMs" stroke={PALETTE[4]} strokeWidth={1.5} fillOpacity={0} strokeDasharray="4 4" />
-              <Area type="monotone" dataKey="avgLatencyMs" stroke={PALETTE[0]} strokeWidth={2} fill="url(#latGradient)" />
+              <Area
+                type="monotone"
+                dataKey="p95LatencyMs"
+                stroke={PALETTE[4]}
+                strokeWidth={1.5}
+                fillOpacity={0}
+                strokeDasharray="4 4"
+              />
+              <Area
+                type="monotone"
+                dataKey="avgLatencyMs"
+                stroke={PALETTE[0]}
+                strokeWidth={2}
+                fill="url(#latGradient)"
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </AreaChart>
           </ChartWrap>
         </Card>
       </div>
 
-      <Card title="AI Acceptance Rate" subtitle="Applied vs rejected suggestions" icon={CheckCircle2}>
+      <Card
+        title="AI Acceptance Rate"
+        subtitle="Applied vs rejected suggestions"
+        icon={CheckCircle2}
+      >
         <ChartWrap height={260}>
           <BarChart data={r.acceptance} margin={{ top: 4, right: 40, bottom: 0, left: -20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={fmtDay}
+              fontSize={11}
+              stroke="hsl(var(--muted-foreground))"
+            />
             <YAxis yAxisId="left" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-            <YAxis yAxisId="right" orientation="right" fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}%`} />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              fontSize={11}
+              stroke="hsl(var(--muted-foreground))"
+              tickFormatter={(v) => `${v}%`}
+            />
             <Tooltip content={<TT />} />
             <Bar yAxisId="left" dataKey="applied" stackId="a" fill={PALETTE[2]} />
-            <Bar yAxisId="left" dataKey="rejected" stackId="a" fill={PALETTE[4]} radius={[4, 4, 0, 0]} />
-            <Line yAxisId="right" type="monotone" dataKey="acceptanceRate" stroke={PALETTE[0]} strokeWidth={2} dot={false} />
+            <Bar
+              yAxisId="left"
+              dataKey="rejected"
+              stackId="a"
+              fill={PALETTE[4]}
+              radius={[4, 4, 0, 0]}
+            />
+            <Line
+              yAxisId="right"
+              type="monotone"
+              dataKey="acceptanceRate"
+              stroke={PALETTE[0]}
+              strokeWidth={2}
+              dot={false}
+            />
             <Legend wrapperStyle={{ fontSize: 11 }} />
           </BarChart>
         </ChartWrap>
@@ -585,7 +866,11 @@ function QualityTab({ r }: { r: AiAnalyticsReport }) {
   return (
     <>
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Customer Satisfaction Trends" subtitle="Predicted CSAT (0-1)" icon={CheckCircle2}>
+        <Card
+          title="Customer Satisfaction Trends"
+          subtitle="Predicted CSAT (0-1)"
+          icon={CheckCircle2}
+        >
           <ChartWrap>
             <AreaChart data={r.satisfaction} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <defs>
@@ -595,11 +880,22 @@ function QualityTab({ r }: { r: AiAnalyticsReport }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <YAxis fontSize={11} domain={[0, 1]} stroke="hsl(var(--muted-foreground))" />
               <Tooltip content={<TT />} />
               <ReferenceLine y={0.7} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
-              <Area type="monotone" dataKey="avgScore" stroke={PALETTE[2]} strokeWidth={2} fill="url(#satGrad)" />
+              <Area
+                type="monotone"
+                dataKey="avgScore"
+                stroke={PALETTE[2]}
+                strokeWidth={2}
+                fill="url(#satGrad)"
+              />
             </AreaChart>
           </ChartWrap>
         </Card>
@@ -608,14 +904,38 @@ function QualityTab({ r }: { r: AiAnalyticsReport }) {
           <ChartWrap>
             <BarChart data={r.leadQuality} margin={{ top: 4, right: 40, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <YAxis yAxisId="left" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis yAxisId="right" orientation="right" fontSize={11} stroke="hsl(var(--muted-foreground))" domain={[0, 100]} />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                domain={[0, 100]}
+              />
               <Tooltip content={<TT />} />
               <Bar yAxisId="left" dataKey="hot" stackId="t" fill={PALETTE[4]} />
               <Bar yAxisId="left" dataKey="warm" stackId="t" fill={PALETTE[3]} />
-              <Bar yAxisId="left" dataKey="cold" stackId="t" fill={PALETTE[6]} radius={[4, 4, 0, 0]} />
-              <Line yAxisId="right" type="monotone" dataKey="avgScore" stroke={PALETTE[0]} strokeWidth={2} dot={false} />
+              <Bar
+                yAxisId="left"
+                dataKey="cold"
+                stackId="t"
+                fill={PALETTE[6]}
+                radius={[4, 4, 0, 0]}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="avgScore"
+                stroke={PALETTE[0]}
+                strokeWidth={2}
+                dot={false}
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </BarChart>
           </ChartWrap>
@@ -623,17 +943,62 @@ function QualityTab({ r }: { r: AiAnalyticsReport }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card title="Sentiment Trends" subtitle="Positive / neutral / negative / mixed" icon={Sparkles}>
+        <Card
+          title="Sentiment Trends"
+          subtitle="Positive / neutral / negative / mixed"
+          icon={Sparkles}
+        >
           <ChartWrap>
-            <AreaChart data={r.sentiment} margin={{ top: 4, right: 6, bottom: 0, left: -20 }} stackOffset="expand">
+            <AreaChart
+              data={r.sentiment}
+              margin={{ top: 4, right: 6, bottom: 0, left: -20 }}
+              stackOffset="expand"
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} tickFormatter={(v) => `${Math.round(Number(v) * 100)}%`} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                tickFormatter={(v) => `${Math.round(Number(v) * 100)}%`}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <Tooltip content={<TT />} />
-              <Area type="monotone" dataKey="positive" stackId="s" stroke={PALETTE[2]} fill={PALETTE[2]} fillOpacity={0.7} />
-              <Area type="monotone" dataKey="neutral" stackId="s" stroke={PALETTE[6]} fill={PALETTE[6]} fillOpacity={0.7} />
-              <Area type="monotone" dataKey="mixed" stackId="s" stroke={PALETTE[3]} fill={PALETTE[3]} fillOpacity={0.7} />
-              <Area type="monotone" dataKey="negative" stackId="s" stroke={PALETTE[4]} fill={PALETTE[4]} fillOpacity={0.7} />
+              <Area
+                type="monotone"
+                dataKey="positive"
+                stackId="s"
+                stroke={PALETTE[2]}
+                fill={PALETTE[2]}
+                fillOpacity={0.7}
+              />
+              <Area
+                type="monotone"
+                dataKey="neutral"
+                stackId="s"
+                stroke={PALETTE[6]}
+                fill={PALETTE[6]}
+                fillOpacity={0.7}
+              />
+              <Area
+                type="monotone"
+                dataKey="mixed"
+                stackId="s"
+                stroke={PALETTE[3]}
+                fill={PALETTE[3]}
+                fillOpacity={0.7}
+              />
+              <Area
+                type="monotone"
+                dataKey="negative"
+                stackId="s"
+                stroke={PALETTE[4]}
+                fill={PALETTE[4]}
+                fillOpacity={0.7}
+              />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </AreaChart>
           </ChartWrap>
@@ -641,13 +1006,29 @@ function QualityTab({ r }: { r: AiAnalyticsReport }) {
 
         <Card title="Topic Trends" subtitle="Most discussed topics" icon={Activity}>
           {r.topics.length === 0 ? (
-            <p className="text-xs text-muted-foreground py-6 text-center">No topics detected yet.</p>
+            <p className="text-xs text-muted-foreground py-6 text-center">
+              No topics detected yet.
+            </p>
           ) : (
             <ChartWrap>
-              <BarChart data={r.topics} layout="vertical" margin={{ top: 4, right: 12, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+              <BarChart
+                data={r.topics}
+                layout="vertical"
+                margin={{ top: 4, right: 12, bottom: 0, left: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="hsl(var(--border))"
+                  horizontal={false}
+                />
                 <XAxis type="number" fontSize={11} stroke="hsl(var(--muted-foreground))" />
-                <YAxis type="category" dataKey="topic" fontSize={11} width={110} stroke="hsl(var(--muted-foreground))" />
+                <YAxis
+                  type="category"
+                  dataKey="topic"
+                  fontSize={11}
+                  width={110}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <Tooltip content={<TT />} />
                 <Bar dataKey="positive" stackId="tp" fill={PALETTE[2]} />
                 <Bar dataKey="negative" stackId="tp" fill={PALETTE[4]} />
@@ -672,10 +1053,7 @@ function OutcomesTab({ r }: { r: AiAnalyticsReport }) {
             <AreaChart
               data={r.acceptance.map((a, i) => ({
                 date: a.date,
-                savedMin: Math.round(
-                  (a.applied * 3.5) +
-                  (r.usage[i]?.requests ?? 0) * 0.5,
-                ),
+                savedMin: Math.round(a.applied * 3.5 + (r.usage[i]?.requests ?? 0) * 0.5),
               }))}
               margin={{ top: 4, right: 6, bottom: 0, left: -20 }}
             >
@@ -686,19 +1064,44 @@ function OutcomesTab({ r }: { r: AiAnalyticsReport }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
-              <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}m`} />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
+              <YAxis
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+                tickFormatter={(v) => `${v}m`}
+              />
               <Tooltip content={<TT format={(v) => `${v} min`} />} />
-              <Area type="monotone" dataKey="savedMin" stroke={PALETTE[5]} strokeWidth={2} fill="url(#savedGrad)" />
+              <Area
+                type="monotone"
+                dataKey="savedMin"
+                stroke={PALETTE[5]}
+                strokeWidth={2}
+                fill="url(#savedGrad)"
+              />
             </AreaChart>
           </ChartWrap>
         </Card>
 
-        <Card title="Resolved Conversations" subtitle="Total & AI-assisted" icon={CheckCircle2} className="lg:col-span-2">
+        <Card
+          title="Resolved Conversations"
+          subtitle="Total & AI-assisted"
+          icon={CheckCircle2}
+          className="lg:col-span-2"
+        >
           <ChartWrap>
             <BarChart data={r.resolutions} margin={{ top: 4, right: 6, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-              <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={fmtDay}
+                fontSize={11}
+                stroke="hsl(var(--muted-foreground))"
+              />
               <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" />
               <Tooltip content={<TT />} />
               <Bar dataKey="aiAssisted" stackId="r" fill={PALETTE[0]} />
@@ -716,10 +1119,16 @@ function OutcomesTab({ r }: { r: AiAnalyticsReport }) {
 
 function RecommendedActions({ actions }: { actions: AiAnalyticsReport["recommendedActions"] }) {
   return (
-    <Card title="Recommended Actions" subtitle="Top AI suggestions pending review" icon={Sparkles}
+    <Card
+      title="Recommended Actions"
+      subtitle="Top AI suggestions pending review"
+      icon={Sparkles}
       actions={
         actions.length > 0 ? (
-          <a href="/automations" className="text-xs text-accent hover:underline inline-flex items-center gap-1">
+          <a
+            href="/automations"
+            className="text-xs text-accent hover:underline inline-flex items-center gap-1"
+          >
             Open queue <ArrowUpRight className="h-3 w-3" />
           </a>
         ) : null
@@ -738,9 +1147,13 @@ function RecommendedActions({ actions }: { actions: AiAnalyticsReport["recommend
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{a.title}</p>
-                {a.summary && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{a.summary}</p>}
+                {a.summary && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{a.summary}</p>
+                )}
                 <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <Badge variant="outline" className="text-[11px]">{a.type.replace(/_/g, " ")}</Badge>
+                  <Badge variant="outline" className="text-[11px]">
+                    {a.type.replace(/_/g, " ")}
+                  </Badge>
                   {a.confidence !== null && (
                     <span>· confidence {Math.round((a.confidence ?? 0) * 100)}%</span>
                   )}
@@ -770,14 +1183,30 @@ function ForecastsTab({ r }: { r: AiAnalyticsReport }) {
 function ForecastCard({ forecast }: { forecast: AiAnalyticsReport["forecasts"][number] }) {
   const combined = useMemo(() => {
     const hist = forecast.history.map((h) => ({ date: h.date, historical: h.value }));
-    const fut = forecast.forecast.map((f) => ({ date: f.date, forecast: f.value, lower: f.lower, upper: f.upper }));
+    const fut = forecast.forecast.map((f) => ({
+      date: f.date,
+      forecast: f.value,
+      lower: f.lower,
+      upper: f.upper,
+    }));
     return [...hist, ...fut];
   }, [forecast]);
 
-  const label = forecast.metric === "cost" ? "Cost (USD)" : forecast.metric === "tokens" ? "Tokens" : "Requests";
+  const label =
+    forecast.metric === "cost"
+      ? "Cost (USD)"
+      : forecast.metric === "tokens"
+        ? "Tokens"
+        : "Requests";
   const fmt = forecast.metric === "cost" ? (v: number) => `$${v.toFixed(2)}` : fmtCompact;
-  const TrendIcon = forecast.trend === "up" ? TrendingUp : forecast.trend === "down" ? TrendingDown : Minus;
-  const trendColor = forecast.trend === "up" ? "text-emerald-500" : forecast.trend === "down" ? "text-destructive" : "text-muted-foreground";
+  const TrendIcon =
+    forecast.trend === "up" ? TrendingUp : forecast.trend === "down" ? TrendingDown : Minus;
+  const trendColor =
+    forecast.trend === "up"
+      ? "text-emerald-500"
+      : forecast.trend === "down"
+        ? "text-destructive"
+        : "text-muted-foreground";
 
   return (
     <Card
@@ -788,7 +1217,8 @@ function ForecastCard({ forecast }: { forecast: AiAnalyticsReport["forecasts"][n
         <div className="flex items-center gap-3 text-xs">
           <span className={cn("inline-flex items-center gap-1 font-medium", trendColor)}>
             <TrendIcon className="h-3.5 w-3.5" />
-            {forecast.changePct > 0 ? "+" : ""}{forecast.changePct}%
+            {forecast.changePct > 0 ? "+" : ""}
+            {forecast.changePct}%
           </span>
           <div className="text-right">
             <p className="text-muted-foreground">Next 7d</p>
@@ -814,13 +1244,36 @@ function ForecastCard({ forecast }: { forecast: AiAnalyticsReport["forecasts"][n
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-          <XAxis dataKey="date" tickFormatter={fmtDay} fontSize={11} stroke="hsl(var(--muted-foreground))" />
+          <XAxis
+            dataKey="date"
+            tickFormatter={fmtDay}
+            fontSize={11}
+            stroke="hsl(var(--muted-foreground))"
+          />
           <YAxis fontSize={11} stroke="hsl(var(--muted-foreground))" tickFormatter={fmt} />
           <Tooltip content={<TT format={(v) => fmt(Number(v))} />} />
-          <Area type="monotone" dataKey="upper" stroke="transparent" fill={`url(#band-${forecast.metric})`} />
+          <Area
+            type="monotone"
+            dataKey="upper"
+            stroke="transparent"
+            fill={`url(#band-${forecast.metric})`}
+          />
           <Area type="monotone" dataKey="lower" stroke="transparent" fill="hsl(var(--surface))" />
-          <Area type="monotone" dataKey="historical" stroke={PALETTE[0]} strokeWidth={2} fill={`url(#hist-${forecast.metric})`} />
-          <Line type="monotone" dataKey="forecast" stroke={PALETTE[3]} strokeWidth={2} strokeDasharray="5 4" dot={false} />
+          <Area
+            type="monotone"
+            dataKey="historical"
+            stroke={PALETTE[0]}
+            strokeWidth={2}
+            fill={`url(#hist-${forecast.metric})`}
+          />
+          <Line
+            type="monotone"
+            dataKey="forecast"
+            stroke={PALETTE[3]}
+            strokeWidth={2}
+            strokeDasharray="5 4"
+            dot={false}
+          />
           <Legend wrapperStyle={{ fontSize: 11 }} />
         </AreaChart>
       </ChartWrap>
@@ -830,7 +1283,15 @@ function ForecastCard({ forecast }: { forecast: AiAnalyticsReport["forecasts"][n
 
 // ==================== Chart primitives ====================
 
-function ChartWrap({ children, height = 220, width = "100%" }: { children: React.ReactElement; height?: number; width?: string | number }) {
+function ChartWrap({
+  children,
+  height = 220,
+  width = "100%",
+}: {
+  children: React.ReactElement;
+  height?: number;
+  width?: string | number;
+}) {
   return (
     <div style={{ width, height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -840,7 +1301,12 @@ function ChartWrap({ children, height = 220, width = "100%" }: { children: React
   );
 }
 
-function TT({ active, payload, label, format }: {
+function TT({
+  active,
+  payload,
+  label,
+  format,
+}: {
   active?: boolean;
   payload?: Array<{ name: string; value: number | string; color?: string }>;
   label?: string | number;
@@ -849,7 +1315,11 @@ function TT({ active, payload, label, format }: {
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="rounded-control border border-border bg-popover shadow-md px-2.5 py-1.5 text-xs">
-      {label !== undefined && <p className="font-medium mb-1">{typeof label === "string" && /^\d{4}-\d{2}-\d{2}$/.test(label) ? fmtDay(label) : label}</p>}
+      {label !== undefined && (
+        <p className="font-medium mb-1">
+          {typeof label === "string" && /^\d{4}-\d{2}-\d{2}$/.test(label) ? fmtDay(label) : label}
+        </p>
+      )}
       {payload.map((p, i) => (
         <div key={i} className="flex items-center gap-2 ">
           <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />

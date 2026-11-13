@@ -16,9 +16,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 
 export const listQrSessions = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { workspaceId: string }) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { workspaceId: string }) => z.object({ workspaceId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("whatsapp_qr_sessions")
@@ -34,9 +32,7 @@ export const listQrSessions = createServerFn({ method: "GET" })
 
 export const startQrSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { workspaceId: string }) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { workspaceId: string }) => z.object({ workspaceId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await sbAny(context.supabase)
       .from("whatsapp_qr_sessions")
@@ -74,9 +70,7 @@ export const startQrSession = createServerFn({ method: "POST" })
 
 export const pollQrSession = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { sessionId: string }) =>
-    z.object({ sessionId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { sessionId: string }) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await sbAny(context.supabase)
       .from("whatsapp_qr_sessions")
@@ -110,12 +104,10 @@ export const pollQrSession = createServerFn({ method: "GET" })
         if (worker.data.display_name) patch.display_name = worker.data.display_name;
         if (worker.data.device_platform) patch.device_platform = worker.data.device_platform;
         if (nextStatus === "connected") patch.connected_at = new Date().toISOString();
-        if (nextStatus === "error") patch.error_message = worker.data.error ?? "Worker reported error";
+        if (nextStatus === "error")
+          patch.error_message = worker.data.error ?? "Worker reported error";
         if (Object.keys(patch).length > 1) {
-          await sbAny(context.supabase)
-            .from("whatsapp_qr_sessions")
-            .update(patch)
-            .eq("id", row.id);
+          await sbAny(context.supabase).from("whatsapp_qr_sessions").update(patch).eq("id", row.id);
           Object.assign(row, patch);
         }
       }
@@ -125,9 +117,7 @@ export const pollQrSession = createServerFn({ method: "GET" })
 
 export const revokeQrSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { sessionId: string }) =>
-    z.object({ sessionId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { sessionId: string }) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     await callWorker(`/sessions/${data.sessionId}`, { method: "DELETE" });
     const { error } = await sbAny(context.supabase)
@@ -147,9 +137,7 @@ export const revokeQrSession = createServerFn({ method: "POST" })
  */
 export const reconnectQrSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { sessionId: string }) =>
-    z.object({ sessionId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { sessionId: string }) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await sbAny(context.supabase)
       .from("whatsapp_qr_sessions")
@@ -184,9 +172,7 @@ export const reconnectQrSession = createServerFn({ method: "POST" })
 /** Permanently remove a session row (and its worker session, if any). */
 export const deleteQrSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { sessionId: string }) =>
-    z.object({ sessionId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { sessionId: string }) => z.object({ sessionId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     await callWorker(`/sessions/${data.sessionId}`, { method: "DELETE" });
     const { error } = await sbAny(context.supabase)
@@ -201,9 +187,7 @@ export const deleteQrSession = createServerFn({ method: "POST" })
 export const renameQrSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((i: { sessionId: string; label: string }) =>
-    z
-      .object({ sessionId: z.string().uuid(), label: z.string().trim().max(80) })
-      .parse(i),
+    z.object({ sessionId: z.string().uuid(), label: z.string().trim().max(80) }).parse(i),
   )
   .handler(async ({ data, context }) => {
     const { data: row, error } = await sbAny(context.supabase)
@@ -229,9 +213,7 @@ export const renameQrSession = createServerFn({ method: "POST" })
 /** Bulk revoke every non-revoked session in a workspace. */
 export const revokeAllQrSessions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((i: { workspaceId: string }) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(i),
-  )
+  .validator((i: { workspaceId: string }) => z.object({ workspaceId: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("whatsapp_qr_sessions")
@@ -247,7 +229,10 @@ export const revokeAllQrSessions = createServerFn({ method: "POST" })
       const { error: upErr } = await sbAny(context.supabase)
         .from("whatsapp_qr_sessions")
         .update({ status: "revoked", revoked_at: new Date().toISOString() })
-        .in("id", (rows ?? []).map((r) => r.id));
+        .in(
+          "id",
+          (rows ?? []).map((r) => r.id),
+        );
       if (upErr) throw new Error(upErr.message);
     }
     return { revoked: (rows ?? []).length };

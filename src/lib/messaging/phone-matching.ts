@@ -73,9 +73,18 @@ export function lastNDigits(raw: string, n: number): string | null {
 interface SupabaseLike {
   from: (table: string) => {
     select: (cols: string) => {
-      eq: (c: string, v: unknown) => {
-        eq: (c: string, v: unknown) => {
-          order: (c: string, o: { ascending: boolean }) => Promise<{ data: unknown; error: unknown }>;
+      eq: (
+        c: string,
+        v: unknown,
+      ) => {
+        eq: (
+          c: string,
+          v: unknown,
+        ) => {
+          order: (
+            c: string,
+            o: { ascending: boolean },
+          ) => Promise<{ data: unknown; error: unknown }>;
         };
       };
     };

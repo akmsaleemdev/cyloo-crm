@@ -31,10 +31,9 @@ export const runIntegrationActionFn = createServerFn({ method: "POST" })
     });
   });
 
-export const listProvidersFn = createServerFn({ method: "GET" })
-  .handler(async () => {
-    await import("./index");
-    const { listProviders } = await import("./core");
-    // Strip icon (non-serializable) before returning to client.
-    return listProviders().map(({ icon: _icon, ...rest }) => rest);
-  });
+export const listProvidersFn = createServerFn({ method: "GET" }).handler(async () => {
+  await import("./index");
+  const { listProviders } = await import("./core");
+  // Strip icon (non-serializable) before returning to client.
+  return listProviders().map(({ icon: _icon, ...rest }) => rest);
+});

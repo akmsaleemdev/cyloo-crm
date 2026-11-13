@@ -13,13 +13,19 @@ const optUrl = z
   .string()
   .trim()
   .max(2048)
-  .refine((v) => v === "" || /^https?:\/\//i.test(v) || (v.startsWith("/") && !v.startsWith("//")), "Must be an https URL or a /path")
+  .refine(
+    (v) => v === "" || /^https?:\/\//i.test(v) || (v.startsWith("/") && !v.startsWith("//")),
+    "Must be an https URL or a /path",
+  )
   .optional()
   .nullable();
 const optHex = z
   .string()
   .trim()
-  .refine((v) => v === "" || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v), "Must be a hex color like #1a2b3c")
+  .refine(
+    (v) => v === "" || /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v),
+    "Must be a hex color like #1a2b3c",
+  )
   .optional()
   .nullable();
 
@@ -30,7 +36,10 @@ const GeneralSchema = z.object({
   support_email: z
     .string()
     .trim()
-    .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), "Enter a valid email address")
+    .refine(
+      (v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v),
+      "Enter a valid email address",
+    )
     .optional()
     .nullable(),
   default_org_size: z.coerce.number().int().min(1).max(10000).optional(),
@@ -41,7 +50,10 @@ const GeneralSchema = z.object({
     .trim()
     .max(200)
     .refine(
-      (v) => v === "" || /^[+\d][\d\s().-]{6,}$/.test(v) || /^(https?:\/\/)?(wa\.me|api\.whatsapp\.com|chat\.whatsapp\.com)\//i.test(v),
+      (v) =>
+        v === "" ||
+        /^[+\d][\d\s().-]{6,}$/.test(v) ||
+        /^(https?:\/\/)?(wa\.me|api\.whatsapp\.com|chat\.whatsapp\.com)\//i.test(v),
       "Enter a phone number with country code, or a wa.me link",
     )
     .optional()
@@ -106,7 +118,6 @@ export function validatePlatformSettingValue(key: string, value: Record<string, 
   }
   return { ...value, ...(parsed.data as Record<string, unknown>) };
 }
-
 
 /** Per-field errors for inline display in the admin panels. */
 export function platformFieldErrors(

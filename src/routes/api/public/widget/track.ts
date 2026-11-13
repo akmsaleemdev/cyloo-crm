@@ -122,7 +122,6 @@ export const Route = createFileRoute("/api/public/widget/track")({
           console.warn("[widget/track] automation dispatch error:", err);
         }
 
-
         return json(200, {
           visitorId: visitor.id,
           returning: visitor.visits_count > 1,

@@ -89,10 +89,7 @@ function logInvalid(context: string, detail: string) {
  * Parse an array of raw rows, dropping (and counting) the ones that don't
  * match the contract. Valid rows always survive a few bad neighbours.
  */
-export function parseChannelAccountRows(
-  raw: unknown,
-  context = "rows",
-): ChannelAccountsResult {
+export function parseChannelAccountRows(raw: unknown, context = "rows"): ChannelAccountsResult {
   if (raw == null) return { ...EMPTY };
   if (!Array.isArray(raw)) {
     logInvalid(context, `expected an array, received ${typeof raw}`);

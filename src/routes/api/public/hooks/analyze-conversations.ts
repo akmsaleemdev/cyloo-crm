@@ -8,7 +8,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { guardCronRequest } from "@/lib/api/request-guards";
 
-
 export const Route = createFileRoute("/api/public/hooks/analyze-conversations")({
   server: {
     handlers: {
@@ -34,10 +33,10 @@ export const Route = createFileRoute("/api/public/hooks/analyze-conversations")(
           const rows = await fetchPendingConversations(workspaceId, limit);
 
           return new Response(
-            JSON.stringify({ 
-              ok: true, 
-              pending: rows.length, 
-              ids: rows.map((r) => r.conversation_id) 
+            JSON.stringify({
+              ok: true,
+              pending: rows.length,
+              ids: rows.map((r) => r.conversation_id),
             }),
             { headers: { "Content-Type": "application/json" } },
           );

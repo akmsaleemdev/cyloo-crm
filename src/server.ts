@@ -9,6 +9,11 @@ type ServerEntry = {
 
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
+function isDataRequest(request: Request): boolean {
+  const { pathname } = new URL(request.url);
+  return pathname === "/api" || pathname.startsWith("/api/") || pathname.startsWith("/_serverFn/");
+}
+
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
     serverEntryPromise = import("@tanstack/react-start/server-entry").then(
@@ -24,6 +29,7 @@ async function normalizeCatastrophicSsrResponse(
   request: Request,
   response: Response,
 ): Promise<Response> {
+  if (isDataRequest(request)) return response;
   if (response.status < 500) return response;
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return response;
@@ -70,6 +76,9 @@ export default {
       return await normalizeCatastrophicSsrResponse(request, response);
     } catch (error) {
       console.error(error);
+      if (isDataRequest(request)) {
+        return Response.json({ error: "Internal server error" }, { status: 500 });
+      }
       return new Response(renderErrorPage(), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },

@@ -1,7 +1,16 @@
 import { downloadRemoteFile } from "@/lib/files/download-file";
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Download, ExternalLink, Minus, Plus, RotateCw, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  Minus,
+  Plus,
+  RotateCw,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -80,7 +89,9 @@ function LightboxOverlay({
     (delta: number) => {
       setZoom(1);
       setRotation(0);
-      setState((s) => (s ? { ...s, index: (s.index + delta + s.items.length) % s.items.length } : s));
+      setState((s) =>
+        s ? { ...s, index: (s.index + delta + s.items.length) % s.items.length } : s,
+      );
     },
     [setState],
   );
@@ -129,14 +140,34 @@ function LightboxOverlay({
         </div>
         {kind === "image" && (
           <>
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(z - 0.25, 0.25))}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label="Zoom out"
+              onClick={() => setZoom((z) => Math.max(z - 0.25, 0.25))}
+            >
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="w-12 text-center text-xs  text-muted-foreground">{Math.round(zoom * 100)}%</span>
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(z + 0.25, 5))}>
+            <span className="w-12 text-center text-xs  text-muted-foreground">
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label="Zoom in"
+              onClick={() => setZoom((z) => Math.min(z + 0.25, 5))}
+            >
               <Plus className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Rotate" onClick={() => setRotation((r) => (r + 90) % 360)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label="Rotate"
+              onClick={() => setRotation((r) => (r + 90) % 360)}
+            >
               <RotateCw className="h-4 w-4" />
             </Button>
           </>
@@ -151,12 +182,24 @@ function LightboxOverlay({
           <Download className="h-4 w-4" />
         </Button>
 
-        <Button asChild variant="ghost" size="icon" className="h-9 w-9" aria-label="Open in new tab">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          aria-label="Open in new tab"
+        >
           <a href={item.url} target="_blank" rel="noreferrer">
             <ExternalLink className="h-4 w-4" />
           </a>
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Close" onClick={onClose}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          aria-label="Close"
+          onClick={onClose}
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -183,12 +226,19 @@ function LightboxOverlay({
             <img
               src={item.url}
               alt={item.caption || item.name || "Media preview"}
-              className={cn("max-h-[80vh] max-w-full select-none object-contain transition-transform")}
+              className={cn(
+                "max-h-[80vh] max-w-full select-none object-contain transition-transform",
+              )}
               style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
             />
           )}
           {kind === "video" && (
-            <video src={item.url} controls autoPlay className="max-h-[80vh] max-w-full rounded-control" />
+            <video
+              src={item.url}
+              controls
+              autoPlay
+              className="max-h-[80vh] max-w-full rounded-control"
+            />
           )}
           {kind === "audio" && (
             <div className="rounded-control border border-border bg-card p-6">
@@ -214,7 +264,10 @@ function LightboxOverlay({
       </div>
 
       {item.caption && (
-        <div className="border-t border-border/60 px-4 py-2 text-sm text-muted-foreground" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="border-t border-border/60 px-4 py-2 text-sm text-muted-foreground"
+          onClick={(e) => e.stopPropagation()}
+        >
           {item.caption}
         </div>
       )}

@@ -171,11 +171,14 @@ export function useDeals(filters: DealFilters = {}) {
       if (filters.tags?.length) q = q.overlaps("tags", filters.tags);
       if (filters.search?.trim()) {
         const s = filters.search.trim().replace(/[%,]/g, " ");
-        q = q.or([`title.ilike.%${sanitizeSearchTerm(s)}%`, `description.ilike.%${sanitizeSearchTerm(s)}%`].join(","));
+        q = q.or(
+          [
+            `title.ilike.%${sanitizeSearchTerm(s)}%`,
+            `description.ilike.%${sanitizeSearchTerm(s)}%`,
+          ].join(","),
+        );
       }
-      const { data, error } = await q
-        .order("updated_at", { ascending: false })
-        .limit(1000);
+      const { data, error } = await q.order("updated_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return (data ?? []) as DealRow[];
     },
@@ -518,7 +521,11 @@ export function useDeleteDealTask() {
 /** `currency` is required on purpose: an omitted one used to silently mean USD. */
 export function formatMoney(n: number, currency: string) {
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(n);
   } catch {
     return `${currency} ${Math.round(n).toLocaleString()}`;
   }

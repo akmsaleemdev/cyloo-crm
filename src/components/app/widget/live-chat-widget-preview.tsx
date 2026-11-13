@@ -129,7 +129,10 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
     >
       {open && (
         <div
-          className={cn("pointer-events-auto overflow-hidden border shadow-2xl flex flex-col", ANIM_CLASS[config.animation])}
+          className={cn(
+            "pointer-events-auto overflow-hidden border shadow-2xl flex flex-col",
+            ANIM_CLASS[config.animation],
+          )}
           style={{
             width: config.width,
             height: config.height,
@@ -179,7 +182,11 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
           <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ background: surfaceBg }}>
             <div className="flex items-start gap-2">
               {config.agentAvatarUrl ? (
-                <img src={config.agentAvatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" />
+                <img
+                  src={config.agentAvatarUrl}
+                  alt=""
+                  className="h-7 w-7 rounded-full object-cover"
+                />
               ) : (
                 <div
                   className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold"
@@ -215,7 +222,11 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
             </div>
             <div className="flex items-start gap-2">
               {config.agentAvatarUrl ? (
-                <img src={config.agentAvatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" />
+                <img
+                  src={config.agentAvatarUrl}
+                  alt=""
+                  className="h-7 w-7 rounded-full object-cover"
+                />
               ) : (
                 <div
                   className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold"
@@ -239,7 +250,10 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
           </div>
 
           {/* Composer */}
-          <div className="p-3 border-t flex items-center gap-2" style={{ borderColor: isDark ? "#2A2F33" : "#E5E7EB" }}>
+          <div
+            className="p-3 border-t flex items-center gap-2"
+            style={{ borderColor: isDark ? "#2A2F33" : "#E5E7EB" }}
+          >
             <input
               type="text"
               placeholder={config.inputPlaceholder}
@@ -266,7 +280,10 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
           </div>
 
           {config.showBrandingFooter && (
-            <div className="px-4 py-2 text-[11px] text-center" style={{ color: mutedFg, background: surfaceBg }}>
+            <div
+              className="px-4 py-2 text-[11px] text-center"
+              style={{ color: mutedFg, background: surfaceBg }}
+            >
               Powered by {brandName}
             </div>
           )}
@@ -291,7 +308,9 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
         ) : (
           <Icon className="h-6 w-6" />
         )}
-        {config.launcherLabel && <span className="font-medium text-sm">{config.launcherLabel}</span>}
+        {config.launcherLabel && (
+          <span className="font-medium text-sm">{config.launcherLabel}</span>
+        )}
       </button>
     </div>
   );

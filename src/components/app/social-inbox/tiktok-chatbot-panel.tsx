@@ -24,7 +24,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TikTokBot = {
   id: string;
@@ -103,7 +109,9 @@ export function TikTokChatbotPanel() {
   const accountLabel = (id?: string | null) => {
     if (!id) return "All TikTok accounts";
     const a = accounts.find((x) => x.id === id);
-    return a ? a.displayName || (a.username ? `@${a.username}` : "TikTok account") : "Disconnected account";
+    return a
+      ? a.displayName || (a.username ? `@${a.username}` : "TikTok account")
+      : "Disconnected account";
   };
 
   return (
@@ -114,8 +122,8 @@ export function TikTokChatbotPanel() {
           <div>
             <h2 className="font-bold text-xl">TikTok Chatbot</h2>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              An AI assistant that answers TikTok direct messages automatically. Replies appear in the Inbox
-              thread, and a handoff keyword passes the conversation to a human agent.
+              An AI assistant that answers TikTok direct messages automatically. Replies appear in
+              the Inbox thread, and a handoff keyword passes the conversation to a human agent.
             </p>
           </div>
         </div>
@@ -168,7 +176,9 @@ export function TikTokChatbotPanel() {
                     </Badge>
                   </div>
                   {bot.system_prompt && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">{bot.system_prompt}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {bot.system_prompt}
+                    </p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     {bot.total_sessions ?? 0} conversations · {bot.total_messages ?? 0} messages
@@ -178,7 +188,12 @@ export function TikTokChatbotPanel() {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => setEditing(bot)} aria-label="Edit chatbot">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditing(bot)}
+                    aria-label="Edit chatbot"
+                  >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
                   <Button
@@ -187,7 +202,11 @@ export function TikTokChatbotPanel() {
                     onClick={() => toggle.mutate(bot)}
                     aria-label={active ? "Pause chatbot" : "Activate chatbot"}
                   >
-                    {active ? <PowerOff className="h-3.5 w-3.5" /> : <Power className="h-3.5 w-3.5" />}
+                    {active ? (
+                      <PowerOff className="h-3.5 w-3.5" />
+                    ) : (
+                      <Power className="h-3.5 w-3.5" />
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
@@ -209,9 +228,18 @@ export function TikTokChatbotPanel() {
       <section className="rounded-control border border-border p-4 space-y-2">
         <h3 className="text-sm font-semibold">How it works</h3>
         <ul className="list-disc pl-5 space-y-1 text-xs text-muted-foreground">
-          <li>Every new text DM is answered by the active bot pinned to that account, or the bot set to all accounts.</li>
-          <li>Replies are written by the workspace AI provider (AI Settings) and sent within TikTok's 48-hour reply window.</li>
-          <li>When a customer writes a handoff keyword, the bot stops answering that customer and an agent takes over in the Inbox.</li>
+          <li>
+            Every new text DM is answered by the active bot pinned to that account, or the bot set
+            to all accounts.
+          </li>
+          <li>
+            Replies are written by the workspace AI provider (AI Settings) and sent within TikTok's
+            48-hour reply window.
+          </li>
+          <li>
+            When a customer writes a handoff keyword, the bot stops answering that customer and an
+            agent takes over in the Inbox.
+          </li>
           <li>If the AI is unavailable, the fallback message is sent instead.</li>
         </ul>
       </section>
@@ -250,7 +278,9 @@ function TikTokBotDialog({
   const [instructions, setInstructions] = useState(bot?.system_prompt ?? DEFAULT_INSTRUCTIONS);
   const [fallback, setFallback] = useState(bot?.fallback_message ?? DEFAULT_TEMPLATES.fallback);
   const [handoff, setHandoff] = useState(bot?.handoff_enabled ?? true);
-  const [keywords, setKeywords] = useState((bot?.handoff_keywords ?? ["human", "agent"]).join(", "));
+  const [keywords, setKeywords] = useState(
+    (bot?.handoff_keywords ?? ["human", "agent"]).join(", "),
+  );
 
   const save = useMutation({
     mutationFn: async () => {
@@ -265,7 +295,10 @@ function TikTokBotDialog({
           .split(",")
           .map((k) => k.trim())
           .filter(Boolean),
-        widget_config: { channel: "tiktok", tiktok_account_id: accountId === ALL_ACCOUNTS ? null : accountId },
+        widget_config: {
+          channel: "tiktok",
+          tiktok_account_id: accountId === ALL_ACCOUNTS ? null : accountId,
+        },
       };
       const { error } = bot
         ? await sbAny(supabase).from("chatbots").update(payload).eq("id", bot.id)
@@ -286,7 +319,9 @@ function TikTokBotDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{bot ? "Edit TikTok chatbot" : "New TikTok chatbot"}</DialogTitle>
-          <DialogDescription>Answers TikTok direct messages with your AI provider.</DialogDescription>
+          <DialogDescription>
+            Answers TikTok direct messages with your AI provider.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
@@ -323,19 +358,29 @@ function TikTokBotDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="tt-bot-fallback">Fallback message</Label>
-            <Input id="tt-bot-fallback" value={fallback} onChange={(e) => setFallback(e.target.value)} />
+            <Input
+              id="tt-bot-fallback"
+              value={fallback}
+              onChange={(e) => setFallback(e.target.value)}
+            />
           </div>
           <div className="flex items-center justify-between rounded-control border border-border p-3">
             <div>
               <div className="text-sm font-medium">Human handoff</div>
-              <div className="text-xs text-muted-foreground">Stop the bot when a customer asks for a person.</div>
+              <div className="text-xs text-muted-foreground">
+                Stop the bot when a customer asks for a person.
+              </div>
             </div>
             <Switch checked={handoff} onCheckedChange={setHandoff} />
           </div>
           {handoff && (
             <div className="space-y-1.5">
               <Label htmlFor="tt-bot-keywords">Handoff keywords (comma separated)</Label>
-              <Input id="tt-bot-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
+              <Input
+                id="tt-bot-keywords"
+                value={keywords}
+                onChange={(e) => setKeywords(e.target.value)}
+              />
             </div>
           )}
         </div>

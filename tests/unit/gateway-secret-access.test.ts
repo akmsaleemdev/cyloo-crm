@@ -53,13 +53,11 @@ describe("Gateway Secret Access", () => {
     for (const file of uiFiles) {
       const content = readFileSync(file, "utf-8");
       const hasServiceKey =
-        content.includes("SUPABASE_SERVICE_ROLE_KEY") ||
-        content.includes("service_role_key");
+        content.includes("SUPABASE_SERVICE_ROLE_KEY") || content.includes("service_role_key");
 
-      expect(
-        hasServiceKey,
-        `UI component "${file}" directly references service role key`,
-      ).toBe(false);
+      expect(hasServiceKey, `UI component "${file}" directly references service role key`).toBe(
+        false,
+      );
     }
   });
 
@@ -77,43 +75,26 @@ describe("Gateway Secret Access", () => {
       for (const pattern of secretPatterns) {
         if (content.includes(pattern)) {
           const isServer = isServerModule(file);
-          expect(
-            isServer,
-            `Secret access "${pattern}" in non-server module: ${file}`,
-          ).toBe(true);
+          expect(isServer, `Secret access "${pattern}" in non-server module: ${file}`).toBe(true);
         }
       }
     }
   });
 
-  it(
-    "should not hardcode API keys or secrets in source files",
-    () => {
-      // Focus on lib, server, routes, and config directories
-      const targetDirs = [
-        join(SRC_DIR, "lib"),
-        join(SRC_DIR, "server"),
-        join(SRC_DIR, "config"),
-      ];
-      const targetFiles = targetDirs.flatMap((dir) =>
-        walkDir(dir, [".ts", ".tsx"]),
-      );
+  it("should not hardcode API keys or secrets in source files", () => {
+    // Focus on lib, server, routes, and config directories
+    const targetDirs = [join(SRC_DIR, "lib"), join(SRC_DIR, "server"), join(SRC_DIR, "config")];
+    const targetFiles = targetDirs.flatMap((dir) => walkDir(dir, [".ts", ".tsx"]));
 
-      const secretRegexes = [
-        /sk_live_[a-zA-Z0-9]{20,}/,
-        /whsec_[a-zA-Z0-9]{20,}/,
-      ];
+    const secretRegexes = [/sk_live_[a-zA-Z0-9]{20,}/, /whsec_[a-zA-Z0-9]{20,}/];
 
-      for (const file of targetFiles) {
-        const content = readFileSync(file, "utf-8");
-        for (const regex of secretRegexes) {
-          expect(
-            regex.test(content),
-            `Potential hardcoded secret in ${file} matching ${regex}`,
-          ).toBe(false);
-        }
+    for (const file of targetFiles) {
+      const content = readFileSync(file, "utf-8");
+      for (const regex of secretRegexes) {
+        expect(regex.test(content), `Potential hardcoded secret in ${file} matching ${regex}`).toBe(
+          false,
+        );
       }
-    },
-    30_000,
-  );
+    }
+  }, 30_000);
 });

@@ -32,7 +32,10 @@ async function getZoomToken(a: MeetingAccount): Promise<string> {
 }
 
 function durationMinutes(req: MeetingRequest): number {
-  return Math.max(15, Math.round((new Date(req.end_at).getTime() - new Date(req.start_at).getTime()) / 60000));
+  return Math.max(
+    15,
+    Math.round((new Date(req.end_at).getTime() - new Date(req.start_at).getTime()) / 60000),
+  );
 }
 
 export const zoomProvider: MeetingProvider = {
@@ -105,9 +108,12 @@ export const zoomProvider: MeetingProvider = {
   async fetchAttendance(account, externalId): Promise<MeetingAttendee[]> {
     if (!account) return [];
     const token = await getZoomToken(account);
-    const res = await fetch(`${ZOOM_API}/report/meetings/${externalId}/participants?page_size=300`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await fetch(
+      `${ZOOM_API}/report/meetings/${externalId}/participants?page_size=300`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     if (!res.ok) return [];
     const j = (await res.json()) as {
       participants?: Array<{
@@ -137,7 +143,10 @@ export const zoomProvider: MeetingProvider = {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    const j = (await res.json()) as { share_url?: string; recording_files?: Array<{ play_url?: string }> };
+    const j = (await res.json()) as {
+      share_url?: string;
+      recording_files?: Array<{ play_url?: string }>;
+    };
     return j.share_url ?? j.recording_files?.[0]?.play_url ?? null;
   },
 };

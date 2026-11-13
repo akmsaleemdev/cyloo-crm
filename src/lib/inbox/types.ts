@@ -57,13 +57,7 @@ export type ChannelCapability =
 export type MessageDirection = "inbound" | "outbound";
 
 export type MessageStatus =
-  | "queued"
-  | "sending"
-  | "sent"
-  | "delivered"
-  | "read"
-  | "failed"
-  | "deleted";
+  "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "deleted";
 
 export type NormalizedMessageType =
   | "text"
@@ -83,7 +77,7 @@ export type NormalizedMessageType =
 
 /** A stable, cross-channel identity for one human. */
 export interface UnifiedCustomerRef {
-  customerId: string;         // internal uuid
+  customerId: string; // internal uuid
   workspaceId: string;
   displayName?: string;
   avatarUrl?: string;
@@ -94,7 +88,7 @@ export interface ChannelIdentity {
   id: string;
   customerId: string;
   channel: ChannelKind;
-  externalId: string;         // provider-scoped user id
+  externalId: string; // provider-scoped user id
   displayName?: string;
   avatarUrl?: string;
   verified?: boolean;
@@ -111,7 +105,7 @@ export interface UnifiedMessage {
   direction: MessageDirection;
   type: NormalizedMessageType;
   status: MessageStatus;
-  senderRef: string;          // externalId of sender
+  senderRef: string; // externalId of sender
   text?: string;
   media?: {
     url?: string;
@@ -142,7 +136,7 @@ export interface OutboundDraft {
   conversationId: string;
   channel: ChannelKind;
   channelAccountId: string;
-  to: string;                 // channel-scoped externalId
+  to: string; // channel-scoped externalId
   type: NormalizedMessageType;
   text?: string;
   media?: UnifiedMessage["media"];
@@ -152,7 +146,7 @@ export interface OutboundDraft {
   template?: { name: string; language: string; components?: unknown[] };
   reaction?: UnifiedMessage["reaction"];
   quotedMessageId?: string;
-  clientId?: string;          // optimistic id
+  clientId?: string; // optimistic id
   scheduledAt?: string;
   metadata?: Record<string, unknown>;
 }
@@ -186,7 +180,7 @@ export interface ChannelAccountRef {
   id: string;
   workspaceId: string;
   channel: ChannelKind;
-  externalAccountId: string;  // phone_number_id, IG page id, bot id, mailbox id
+  externalAccountId: string; // phone_number_id, IG page id, bot id, mailbox id
   displayName?: string;
   metadata?: Record<string, unknown>;
 }

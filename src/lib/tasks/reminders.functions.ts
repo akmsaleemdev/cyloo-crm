@@ -25,9 +25,11 @@ const LEGACY_SETTINGS_COLUMNS =
   "enabled, lead_minutes, notify_overdue, overdue_repeat_minutes, inapp_enabled, updated_at";
 
 function missingEmailColumn(error: { code?: string; message?: string } | null): boolean {
-  return !!error &&
+  return (
+    !!error &&
     (error.code === "PGRST204" || error.code === "42703") &&
-    !!error.message?.includes("email_enabled");
+    !!error.message?.includes("email_enabled")
+  );
 }
 
 export const getTaskReminderSettings = createServerFn({ method: "POST" })
@@ -36,7 +38,9 @@ export const getTaskReminderSettings = createServerFn({ method: "POST" })
     const { supabase, userId } = context as any;
     const { data, error } = await sbAny(supabase)
       .from("task_reminder_settings")
-      .select("enabled, lead_minutes, notify_overdue, overdue_repeat_minutes, inapp_enabled, email_enabled, updated_at")
+      .select(
+        "enabled, lead_minutes, notify_overdue, overdue_repeat_minutes, inapp_enabled, email_enabled, updated_at",
+      )
       .eq("user_id", userId)
       .maybeSingle();
     if (missingEmailColumn(error)) {
@@ -46,7 +50,13 @@ export const getTaskReminderSettings = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .maybeSingle();
       if (legacy.error) throw new Error(legacy.error.message);
-      return { ...DEFAULTS, ...legacy.data, email_enabled: false, email_available: false, updated_at: legacy.data?.updated_at ?? null };
+      return {
+        ...DEFAULTS,
+        ...legacy.data,
+        email_enabled: false,
+        email_available: false,
+        updated_at: legacy.data?.updated_at ?? null,
+      };
     }
     if (error) throw new Error(error.message);
     return { ...DEFAULTS, ...data, email_available: true, updated_at: data?.updated_at ?? null };
@@ -68,11 +78,13 @@ export const upsertTaskReminderSettings = createServerFn({ method: "POST" })
         inapp_enabled: data.inapp_enabled,
         email_enabled: data.email_enabled,
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id" },
     );
     if (missingEmailColumn(error)) {
       if (data.email_enabled) {
-        throw new Error("Email reminders need the task reminder email database migration before they can be enabled.");
+        throw new Error(
+          "Email reminders need the task reminder email database migration before they can be enabled.",
+        );
       }
       const legacy = await sbAny(supabase).from("task_reminder_settings").upsert(
         {
@@ -83,7 +95,7 @@ export const upsertTaskReminderSettings = createServerFn({ method: "POST" })
           overdue_repeat_minutes: data.overdue_repeat_minutes,
           inapp_enabled: data.inapp_enabled,
         },
-        { onConflict: "user_id" }
+        { onConflict: "user_id" },
       );
       if (legacy.error) throw new Error(legacy.error.message);
       return { ok: true };

@@ -94,10 +94,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
         .select("id, name, position, probability, is_won, is_lost")
         .eq("workspace_id", workspaceId)
         .order("position", { ascending: true }),
-      supabase
-        .from("workspace_members")
-        .select("user_id")
-        .eq("workspace_id", workspaceId),
+      supabase.from("workspace_members").select("user_id").eq("workspace_id", workspaceId),
       supabase
         .from("deal_stage_history")
         .select("deal_id, from_stage_id, to_stage_id, duration_seconds, created_at")
@@ -113,7 +110,9 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
 
     // Lookup owner names
     let ownerNames = new Map<string, string>();
-    const ownerIds = Array.from(new Set(deals.map((d: any) => d.owner_id).filter(Boolean))) as string[];
+    const ownerIds = Array.from(
+      new Set(deals.map((d: any) => d.owner_id).filter(Boolean)),
+    ) as string[];
     const allIds = Array.from(new Set([...ownerIds, ...memberIds])) as string[];
     if (allIds.length) {
       const { data: profiles } = await supabase
@@ -146,14 +145,24 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
 
     // Lead conversion
     const totalLeads = leads.length;
-    const qualifiedLeads = leads.filter((l: any) => l.qualified_at || l.status === "qualified" || l.converted_at).length;
+    const qualifiedLeads = leads.filter(
+      (l: any) => l.qualified_at || l.status === "qualified" || l.converted_at,
+    ).length;
     const convertedLeads = leads.filter((l: any) => !!l.converted_at).length;
-    const lostLeads = leads.filter((l: any) => l.status === "lost" || l.status === "unqualified").length;
+    const lostLeads = leads.filter(
+      (l: any) => l.status === "lost" || l.status === "unqualified",
+    ).length;
     const convertedTimes = leads
       .filter((l: any) => l.converted_at && l.created_at)
-      .map((l: any) => (new Date(l.converted_at as string).getTime() - new Date(l.created_at).getTime()) / 86400_000);
+      .map(
+        (l: any) =>
+          (new Date(l.converted_at as string).getTime() - new Date(l.created_at).getTime()) /
+          86400_000,
+      );
     const avgDaysToConvert =
-      convertedTimes.length > 0 ? convertedTimes.reduce((a: number, b: number) => a + b, 0) / convertedTimes.length : 0;
+      convertedTimes.length > 0
+        ? convertedTimes.reduce((a: number, b: number) => a + b, 0) / convertedTimes.length
+        : 0;
     const leadConversion = {
       total: totalLeads,
       qualified: qualifiedLeads,
@@ -204,27 +213,33 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
       .filter((h: any) => h.duration_seconds)
       .map((h: any) => Number(h.duration_seconds) / 86400);
     const avgVelocityDays =
-      durations.length > 0 ? durations.reduce((a: number, b: number) => a + b, 0) / durations.length : 0;
+      durations.length > 0
+        ? durations.reduce((a: number, b: number) => a + b, 0) / durations.length
+        : 0;
 
     // Stagnant deals: open > 30 days since last activity (using created_at as proxy)
     const stagnantCutoff = daysAgo(30).getTime();
-    const stagnantDeals = openDeals.filter((d: any) => new Date(d.created_at).getTime() < stagnantCutoff).length;
+    const stagnantDeals = openDeals.filter(
+      (d: any) => new Date(d.created_at).getTime() < stagnantCutoff,
+    ).length;
 
     // Sales cycle: avg from created to actual_close_date for won
     const cycles = wonDeals
       .filter((d: any) => d.actual_close_date)
       .map(
         (d: any) =>
-          (new Date(d.actual_close_date as string).getTime() - new Date(d.created_at).getTime()) / 86400_000,
+          (new Date(d.actual_close_date as string).getTime() - new Date(d.created_at).getTime()) /
+          86400_000,
       );
     const avgSalesCycleDays =
       cycles.length > 0 ? cycles.reduce((a: number, b: number) => a + b, 0) / cycles.length : 0;
 
     const wonValue = wonDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0);
     const lostValue = lostDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0);
-    const winRate = wonDeals.length + lostDeals.length > 0
-      ? (wonDeals.length / (wonDeals.length + lostDeals.length)) * 100
-      : 0;
+    const winRate =
+      wonDeals.length + lostDeals.length > 0
+        ? (wonDeals.length / (wonDeals.length + lostDeals.length)) * 100
+        : 0;
 
     // Loss reasons
     const lossMap = new Map<string, { count: number; value: number }>();
@@ -347,7 +362,11 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
       rec.weightedPipeline += weighted;
     }
     const forecast = Array.from(forecastMap.entries())
-      .map(([month, v]) => ({ month, projected: v.projected, weightedPipeline: v.weightedPipeline }))
+      .map(([month, v]) => ({
+        month,
+        projected: v.projected,
+        weightedPipeline: v.weightedPipeline,
+      }))
       .sort((a, b) => (a.month < b.month ? -1 : 1));
 
     return {

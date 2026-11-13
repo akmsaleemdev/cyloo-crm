@@ -5,7 +5,6 @@ import { readActiveWorkspaceId, readActiveOrgId } from "./tenant/active-tenant";
 export type PlatformRole = "superadmin" | "support";
 export type WorkspaceRole = "owner" | "admin" | "manager" | "agent" | "viewer";
 
-
 /**
  * Route-level gate. Use inside `createFileRoute({ beforeLoad })`. Throws a
  * TanStack `redirect` to `/403` when the signed-in user lacks any of the
@@ -86,7 +85,6 @@ export function requireWorkspaceRole(...allowed: WorkspaceRole[]) {
     return { workspaceRole: role, workspaceId };
   };
 }
-
 
 export type OrgRoleName = "owner" | "admin" | "member" | "billing" | "guest";
 

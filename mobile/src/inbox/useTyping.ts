@@ -2,8 +2,8 @@
  * Typing indicators via a broadcast channel scoped to a conversation.
  * No table required — pure ephemeral broadcast, same pattern as Slack/Intercom.
  */
-import { useEffect, useState, useRef } from 'react';
-import { supabase } from '@/api/supabase';
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "@/api/supabase";
 
 export function useTypingChannel(conversationId: string, meUserId?: string) {
   const [typingUsers, setTypingUsers] = useState<Record<string, number>>({});
@@ -11,8 +11,10 @@ export function useTypingChannel(conversationId: string, meUserId?: string) {
 
   useEffect(() => {
     if (!conversationId) return;
-    const ch = supabase.channel(`typing:${conversationId}`, { config: { broadcast: { self: false } } });
-    ch.on('broadcast', { event: 'typing' }, (payload) => {
+    const ch = supabase.channel(`typing:${conversationId}`, {
+      config: { broadcast: { self: false } },
+    });
+    ch.on("broadcast", { event: "typing" }, (payload) => {
       const uid = (payload.payload as any)?.user_id as string | undefined;
       if (!uid) return;
       setTypingUsers((prev) => ({ ...prev, [uid]: Date.now() }));
@@ -36,7 +38,11 @@ export function useTypingChannel(conversationId: string, meUserId?: string) {
 
   const sendTyping = () => {
     if (!chRef.current || !meUserId) return;
-    chRef.current.send({ type: 'broadcast', event: 'typing', payload: { user_id: meUserId, at: Date.now() } });
+    chRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { user_id: meUserId, at: Date.now() },
+    });
   };
 
   return { typingUserIds: Object.keys(typingUsers), sendTyping };

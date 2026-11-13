@@ -33,7 +33,8 @@ async function tweet(token: string, body: Record<string, unknown>): Promise<{ id
   if (!res.ok) {
     const detail =
       (json["detail"] as string) ??
-      ((json["errors"] as { message?: string }[] | undefined)?.[0]?.message ?? `X error ${res.status}`);
+      (json["errors"] as { message?: string }[] | undefined)?.[0]?.message ??
+      `X error ${res.status}`;
     throw new Error(detail);
   }
   return (json["data"] ?? {}) as { id: string };
@@ -48,13 +49,20 @@ export async function publishToX(input: XPublishInput): Promise<ProviderPublishR
       "X media posts are not supported with this connection. Post text or a poll, or include the media as a link.",
     );
   }
-  if (input.contentType === "story" || input.contentType === "reel" || input.contentType === "short") {
+  if (
+    input.contentType === "story" ||
+    input.contentType === "reel" ||
+    input.contentType === "short"
+  ) {
     throw new Error("X does not support stories, reels or shorts.");
   }
 
   const body: Record<string, unknown> = { text: caption };
   if (input.contentType === "poll") {
-    const options = (input.pollOptions ?? []).map((o) => o.trim()).filter(Boolean).slice(0, 4);
+    const options = (input.pollOptions ?? [])
+      .map((o) => o.trim())
+      .filter(Boolean)
+      .slice(0, 4);
     if (options.length < 2) throw new Error("An X poll needs at least two options.");
     const minutes = Math.min(Math.max(Math.round((input.pollDurationHours ?? 24) * 60), 5), 10080);
     body["poll"] = { options, duration_minutes: minutes };

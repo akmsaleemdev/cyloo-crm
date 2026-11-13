@@ -1,10 +1,6 @@
 import { useMemo, useState } from "react";
 import { Plus, Search, Check } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,10 +33,7 @@ export function TagSelector({ entityType, entityId, compact }: Props) {
   const [search, setSearch] = useState("");
 
   const assignedIds = useMemo(() => new Set(assigns.map((a) => a.tag_id)), [assigns]);
-  const assigned = useMemo(
-    () => tags.filter((t) => assignedIds.has(t.id)),
-    [tags, assignedIds]
-  );
+  const assigned = useMemo(() => tags.filter((t) => assignedIds.has(t.id)), [tags, assignedIds]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -80,18 +73,12 @@ export function TagSelector({ entityType, entityId, compact }: Props) {
         <TagBadge
           key={t.id}
           tag={t}
-          onRemove={() =>
-            unassign.mutate({ tagId: t.id, entityType, entityId })
-          }
+          onRemove={() => unassign.mutate({ tagId: t.id, entityType, entityId })}
         />
       ))}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size={compact ? "sm" : "sm"}
-            className="h-6 gap-1 px-2 text-xs"
-          >
+          <Button variant="outline" size={compact ? "sm" : "sm"} className="h-6 gap-1 px-2 text-xs">
             <Plus className="h-3 w-3" />
             Tag
           </Button>

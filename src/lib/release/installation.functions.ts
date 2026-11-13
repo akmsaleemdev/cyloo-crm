@@ -395,7 +395,11 @@ export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
     // A public first-run URL alone must never be enough to seize a fresh install.
     const expectedToken = process.env.SETUP_BOOTSTRAP_TOKEN;
     if (!expectedToken || expectedToken.length < 16) {
-      return { ok: false, message: "Set SETUP_BOOTSTRAP_TOKEN (at least 16 characters) on the server before creating the first administrator." };
+      return {
+        ok: false,
+        message:
+          "Set SETUP_BOOTSTRAP_TOKEN (at least 16 characters) on the server before creating the first administrator.",
+      };
     }
     const { timingSafeEqual } = await import("node:crypto");
     const expected = Buffer.from(expectedToken, "utf8");

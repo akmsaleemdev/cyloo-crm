@@ -3,12 +3,20 @@
 export type DashboardVisibility = "private" | "workspace" | "public";
 
 export type WidgetType =
-  | "kpi" | "line" | "bar" | "pie" | "area"
-  | "table" | "funnel" | "heatmap" | "gauge" | "number" | "map";
+  | "kpi"
+  | "line"
+  | "bar"
+  | "pie"
+  | "area"
+  | "table"
+  | "funnel"
+  | "heatmap"
+  | "gauge"
+  | "number"
+  | "map";
 
 export type ChartType =
-  | "table" | "line" | "bar" | "pie" | "area"
-  | "number" | "funnel" | "heatmap" | "gauge";
+  "table" | "line" | "bar" | "pie" | "area" | "number" | "funnel" | "heatmap" | "gauge";
 
 export type MetricKey =
   | "conversations.total"
@@ -37,9 +45,16 @@ export type MetricKey =
   | "leads.qualified";
 
 export type DateRangePreset =
-  | "today" | "yesterday"
-  | "last_7d" | "last_14d" | "last_30d" | "last_90d"
-  | "mtd" | "qtd" | "ytd" | "custom";
+  | "today"
+  | "yesterday"
+  | "last_7d"
+  | "last_14d"
+  | "last_30d"
+  | "last_90d"
+  | "mtd"
+  | "qtd"
+  | "ytd"
+  | "custom";
 
 export interface DateRange {
   preset: DateRangePreset;
@@ -104,7 +119,12 @@ export interface WidgetConfig {
   colorScheme?: string;
 }
 
-export interface ForecastPoint { t: string; y: number; low?: number; high?: number }
+export interface ForecastPoint {
+  t: string;
+  y: number;
+  low?: number;
+  high?: number;
+}
 
 export interface ForecastResult {
   metric: MetricKey;

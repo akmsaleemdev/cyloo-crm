@@ -281,16 +281,18 @@ export interface VisitorEventInput {
 
 export async function recordEvent(input: VisitorEventInput): Promise<void> {
   const admin = await getAdmin();
-  await sbAny(admin).from("livechat_visitor_events").insert({
-    workspace_id: input.workspaceId,
-    visitor_id: input.visitorId,
-    session_id: input.sessionId ?? null,
-    event_type: input.eventType,
-    event_name: input.eventName ?? null,
-    url: input.url ?? null,
-    referrer: input.referrer ?? null,
-    properties: input.properties ?? {},
-  } as never);
+  await sbAny(admin)
+    .from("livechat_visitor_events")
+    .insert({
+      workspace_id: input.workspaceId,
+      visitor_id: input.visitorId,
+      session_id: input.sessionId ?? null,
+      event_type: input.eventType,
+      event_name: input.eventName ?? null,
+      url: input.url ?? null,
+      referrer: input.referrer ?? null,
+      properties: input.properties ?? {},
+    } as never);
   if (input.eventType === "pageview") {
     // Fetch current page_views to increment.
     const { data: cur } = await admin
@@ -331,7 +333,12 @@ export async function mergeVisitorIntoContact(
     .maybeSingle();
   if (!contact) return null;
 
-  const c = contact as { id: string; name: string | null; email: string | null; phone: string | null };
+  const c = contact as {
+    id: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+  };
   const { data: updated } = await admin
     .from("livechat_visitors")
     .update({
@@ -347,4 +354,3 @@ export async function mergeVisitorIntoContact(
 
   return updated as VisitorRow | null;
 }
-

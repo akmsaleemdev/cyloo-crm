@@ -26,7 +26,10 @@ import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useWhatsAppHealth } from "@/hooks/use-whatsapp-health";
 import type { HealthStatus } from "@/lib/messaging/health.functions";
 
-const STATUS_META: Record<HealthStatus, { icon: typeof CheckCircle2; className: string; label: string }> = {
+const STATUS_META: Record<
+  HealthStatus,
+  { icon: typeof CheckCircle2; className: string; label: string }
+> = {
   ok: { icon: CheckCircle2, className: "text-emerald-600", label: "Healthy" },
   warn: { icon: AlertTriangle, className: "text-amber-600", label: "Needs attention" },
   error: { icon: XCircle, className: "text-destructive", label: "Action required" },
@@ -48,9 +51,12 @@ export function WhatsAppHealthChecks({ autoRun = true }: { autoRun?: boolean }) 
         a.checks.filter((c) => c.status === "error").map((c) => `${a.displayName}: ${c.label}`),
       );
       if (failing.length > 0) {
-        toast.error(`${failing.length} WhatsApp health check${failing.length === 1 ? "" : "s"} failing`, {
-          description: failing.slice(0, 3).join(" · "),
-        });
+        toast.error(
+          `${failing.length} WhatsApp health check${failing.length === 1 ? "" : "s"} failing`,
+          {
+            description: failing.slice(0, 3).join(" · "),
+          },
+        );
       } else if (report.problems > 0) {
         toast.warning(`${report.problems} WhatsApp warning${report.problems === 1 ? "" : "s"}`);
       } else if (report.accounts.length > 0) {
@@ -70,9 +76,11 @@ export function WhatsAppHealthChecks({ autoRun = true }: { autoRun?: boolean }) 
             <HeartPulse className="w-4 h-4" /> Integration health
           </h3>
           <p className="text-xs text-muted-foreground">
-            Live checks for token validity, permissions, webhook subscription, callback
-            URL, and the published app domain.
-            {report ? ` Last run ${formatDistanceToNow(new Date(report.checkedAt), { addSuffix: true })}.` : ""}
+            Live checks for token validity, permissions, webhook subscription, callback URL, and the
+            published app domain.
+            {report
+              ? ` Last run ${formatDistanceToNow(new Date(report.checkedAt), { addSuffix: true })}.`
+              : ""}
           </p>
         </div>
         <Button
@@ -82,7 +90,11 @@ export function WhatsAppHealthChecks({ autoRun = true }: { autoRun?: boolean }) 
           onClick={rerun}
           disabled={run.isPending || !workspaceId}
         >
-          {run.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          {run.isPending ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
           Run checks
         </Button>
       </div>
@@ -118,10 +130,18 @@ export function WhatsAppHealthChecks({ autoRun = true }: { autoRun?: boolean }) 
                     <Icon className={`w-4 h-4 ${meta.className}`} />
                     {account.displayName}
                     {account.phoneNumber && (
-                      <span className="font-normal text-xs text-muted-foreground">{account.phoneNumber}</span>
+                      <span className="font-normal text-xs text-muted-foreground">
+                        {account.phoneNumber}
+                      </span>
                     )}
                     <Badge
-                      variant={account.status === "error" ? "destructive" : account.status === "ok" ? "outline" : "secondary"}
+                      variant={
+                        account.status === "error"
+                          ? "destructive"
+                          : account.status === "ok"
+                            ? "outline"
+                            : "secondary"
+                      }
                       className="text-[11px]"
                     >
                       {meta.label}

@@ -35,7 +35,11 @@ export const PasswordInput = forwardRef<HTMLInputElement, Props>(function Passwo
         tabIndex={0}
         className="absolute inset-y-0 right-0 grid place-items-center w-10 text-muted-foreground hover:text-foreground transition-colors rounded-r-md"
       >
-        {visible ? <EyeOff className="w-4 h-4" aria-hidden="true" /> : <Eye className="w-4 h-4" aria-hidden="true" />}
+        {visible ? (
+          <EyeOff className="w-4 h-4" aria-hidden="true" />
+        ) : (
+          <Eye className="w-4 h-4" aria-hidden="true" />
+        )}
       </button>
     </div>
   );

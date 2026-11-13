@@ -22,9 +22,17 @@ export const Route = createFileRoute("/_authenticated/branding-check")({
   head: () => ({
     meta: [
       { title: "Branding Token Check" },
-      { name: "description", content: "Verify that every branding token resolves consistently across all application routes." },
+      {
+        name: "description",
+        content:
+          "Verify that every branding token resolves consistently across all application routes.",
+      },
       { property: "og:title", content: "Branding Token Check" },
-      { property: "og:description", content: "Verify that every branding token resolves consistently across all application routes." },
+      {
+        property: "og:description",
+        content:
+          "Verify that every branding token resolves consistently across all application routes.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -99,7 +107,8 @@ function BrandingCheckPage() {
     return new Promise((resolve) => {
       const frame = document.createElement("iframe");
       frame.setAttribute("aria-hidden", "true");
-      frame.style.cssText = "position:fixed;width:1024px;height:768px;left:-10000px;top:0;border:0;";
+      frame.style.cssText =
+        "position:fixed;width:1024px;height:768px;left:-10000px;top:0;border:0;";
       frame.src = route;
 
       const finish = (result: RouteResult) => {
@@ -165,7 +174,8 @@ function BrandingCheckPage() {
             <div>
               <CardTitle>Live token values</CardTitle>
               <CardDescription>
-                Resolved on this page from platform branding, workspace white-label and the active accent.
+                Resolved on this page from platform branding, workspace white-label and the active
+                accent.
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={refreshLocal} className="h-8 px-2 text-xs">
@@ -181,7 +191,10 @@ function BrandingCheckPage() {
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {TOKENS.map((t) => (
-                <div key={t.name} className="flex items-center gap-3 rounded-control border p-3 min-w-0">
+                <div
+                  key={t.name}
+                  className="flex items-center gap-3 rounded-control border p-3 min-w-0"
+                >
                   <span
                     className="h-8 w-8 shrink-0 rounded-control border"
                     style={{ background: swatch(local[t.name] ?? "") }}
@@ -230,7 +243,9 @@ function BrandingCheckPage() {
                       <div className="flex items-center justify-between gap-3 min-w-0">
                         <span className="text-sm font-medium truncate">{r.route}</span>
                         {r.status === "pending" ? (
-                          <Badge variant="outline" className="shrink-0">Pending</Badge>
+                          <Badge variant="outline" className="shrink-0">
+                            Pending
+                          </Badge>
                         ) : r.status === "ok" ? (
                           <Badge className="shrink-0 gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Match
@@ -242,15 +257,13 @@ function BrandingCheckPage() {
                           </Badge>
                         )}
                       </div>
-                      {r.error ? (
-                        <p className="text-xs text-muted-foreground">{r.error}</p>
-                      ) : null}
+                      {r.error ? <p className="text-xs text-muted-foreground">{r.error}</p> : null}
                       {r.diffs.length ? (
                         <ul className="space-y-1 text-xs text-muted-foreground">
                           {r.diffs.map((d) => (
                             <li key={d.token} className="break-words">
-                              <code>{d.token}</code>: expected <code>{d.expected || "unset"}</code>, got{" "}
-                              <code>{d.actual || "unset"}</code>
+                              <code>{d.token}</code>: expected <code>{d.expected || "unset"}</code>,
+                              got <code>{d.actual || "unset"}</code>
                             </li>
                           ))}
                         </ul>

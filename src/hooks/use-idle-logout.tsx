@@ -46,19 +46,23 @@ export function IdleLogoutSentinel() {
 
     function schedule() {
       clear();
-      const effective = minutes.current > 0 ? Math.min(minutes.current, maxRef.current) : maxRef.current;
+      const effective =
+        minutes.current > 0 ? Math.min(minutes.current, maxRef.current) : maxRef.current;
       if (!hasSession.current || effective <= 0) return;
-      timer.current = window.setTimeout(async () => {
-        const { error } = await supabase.auth.signOut({ scope: "local" });
-        if (error) {
-          // A temporary DNS/offline failure must not become an unhandled
-          // rejection or attempt a global remote logout repeatedly.
-          toast.error("Could not sign out while offline. Please try again.");
-          schedule();
-          return;
-        }
-        toast.info("Signed out due to inactivity");
-      }, effective * 60 * 1000);
+      timer.current = window.setTimeout(
+        async () => {
+          const { error } = await supabase.auth.signOut({ scope: "local" });
+          if (error) {
+            // A temporary DNS/offline failure must not become an unhandled
+            // rejection or attempt a global remote logout repeatedly.
+            toast.error("Could not sign out while offline. Please try again.");
+            schedule();
+            return;
+          }
+          toast.info("Signed out due to inactivity");
+        },
+        effective * 60 * 1000,
+      );
     }
 
     async function initSession() {

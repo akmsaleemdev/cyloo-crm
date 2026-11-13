@@ -1,7 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useAuth } from "@/hooks/use-auth";
-import { listGoogleWorkspaceConnections, disconnectGoogleWorkspace, setGoogleWorkspaceStatus } from "./google-workspace.functions";
+import {
+  listGoogleWorkspaceConnections,
+  disconnectGoogleWorkspace,
+  setGoogleWorkspaceStatus,
+} from "./google-workspace.functions";
 
 /**
  * Client-side installed-integrations store. Persists per-workspace demo state
@@ -92,8 +96,7 @@ function generateSecret(): string {
 function read(scope: string | null): InstalledIntegration[] {
   if (typeof window === "undefined" || !scope) return [];
   try {
-    const raw =
-      window.localStorage.getItem(`${STORAGE_KEY}.${scope}`);
+    const raw = window.localStorage.getItem(`${STORAGE_KEY}.${scope}`);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as InstalledIntegration[]) : [];
@@ -138,19 +141,31 @@ export function useInstalledIntegrations() {
   useEffect(() => {
     if (!scope || !active?.id) return;
     let cancelled = false;
-    void listGoogleWorkspaceConnections({ data: { workspaceId: active.id } }).then((rows) => {
-      if (cancelled) return;
-      const local = read(scope).filter((item) => item.providerId !== "google-workspace");
-      for (const row of rows) local.push({ providerId: row.provider_id, status: row.status,
-        installedAt: row.connected_at, meta: { accountLabel: row.account_email } });
-      write(scope, local);
-    }).catch(() => {
-      // Failed server verification must not render a local Google connection as active.
-      if (cancelled) return;
-      setItems(read(scope).map((item) => item.providerId === "google-workspace"
-        ? { ...item, status: "error" } : item));
-    });
-    return () => { cancelled = true; };
+    void listGoogleWorkspaceConnections({ data: { workspaceId: active.id } })
+      .then((rows) => {
+        if (cancelled) return;
+        const local = read(scope).filter((item) => item.providerId !== "google-workspace");
+        for (const row of rows)
+          local.push({
+            providerId: row.provider_id,
+            status: row.status,
+            installedAt: row.connected_at,
+            meta: { accountLabel: row.account_email },
+          });
+        write(scope, local);
+      })
+      .catch(() => {
+        // Failed server verification must not render a local Google connection as active.
+        if (cancelled) return;
+        setItems(
+          read(scope).map((item) =>
+            item.providerId === "google-workspace" ? { ...item, status: "error" } : item,
+          ),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [scope, active?.id]);
 
   const install = useCallback(
@@ -195,49 +210,63 @@ export function useInstalledIntegrations() {
     [scope],
   );
 
-  const update = useCallback((providerId: string, patch: Partial<InstalledIntegration>) => {
-    const list = read(scope).map((i) => (i.providerId === providerId ? { ...i, ...patch } : i));
-    write(scope, list);
-  }, [scope]);
+  const update = useCallback(
+    (providerId: string, patch: Partial<InstalledIntegration>) => {
+      const list = read(scope).map((i) => (i.providerId === providerId ? { ...i, ...patch } : i));
+      write(scope, list);
+    },
+    [scope],
+  );
 
-  const setStatus = useCallback(async (providerId: string, status: InstalledStatus, note?: string) => {
-    if (!scope || !active?.id) throw new Error("Select a workspace before changing integrations");
-    if (providerId === "google-workspace") {
-      if (status !== "active" && status !== "disabled") throw new Error("Reconnect Google Workspace to restore authorization");
-      await setGoogleWorkspaceStatus({ data: { workspaceId: active.id, status } });
-    }
-    const kind: ConnectionEvent["kind"] =
-      status === "active" ? "enabled" : status === "disabled" ? "disabled" : "error";
-    const now = new Date().toISOString();
-    const list = read(scope).map((i) =>
-      i.providerId === providerId ? appendEvent({ ...i, status }, { at: now, kind, note }) : i,
-    );
-    write(scope, list);
-  }, [scope, active?.id]);
+  const setStatus = useCallback(
+    async (providerId: string, status: InstalledStatus, note?: string) => {
+      if (!scope || !active?.id) throw new Error("Select a workspace before changing integrations");
+      if (providerId === "google-workspace") {
+        if (status !== "active" && status !== "disabled")
+          throw new Error("Reconnect Google Workspace to restore authorization");
+        await setGoogleWorkspaceStatus({ data: { workspaceId: active.id, status } });
+      }
+      const kind: ConnectionEvent["kind"] =
+        status === "active" ? "enabled" : status === "disabled" ? "disabled" : "error";
+      const now = new Date().toISOString();
+      const list = read(scope).map((i) =>
+        i.providerId === providerId ? appendEvent({ ...i, status }, { at: now, kind, note }) : i,
+      );
+      write(scope, list);
+    },
+    [scope, active?.id],
+  );
 
-  const markSynced = useCallback((providerId: string) => {
-    const now = new Date().toISOString();
-    const list = read(scope).map((i) =>
-      i.providerId === providerId
-        ? appendEvent({ ...i, lastSyncAt: now }, { at: now, kind: "synced" })
-        : i,
-    );
-    write(scope, list);
-  }, [scope]);
+  const markSynced = useCallback(
+    (providerId: string) => {
+      const now = new Date().toISOString();
+      const list = read(scope).map((i) =>
+        i.providerId === providerId
+          ? appendEvent({ ...i, lastSyncAt: now }, { at: now, kind: "synced" })
+          : i,
+      );
+      write(scope, list);
+    },
+    [scope],
+  );
 
-  const remove = useCallback(async (providerId: string, note?: string) => {
-    if (!scope || !active?.id) throw new Error("Select a workspace before disconnecting");
-    if (providerId === "google-workspace") await disconnectGoogleWorkspace({ data: { workspaceId: active.id } });
-    // Keep the event log-less remove for now; caller shows a toast with reason.
-    void note;
-    write(scope, read(scope).filter((i) => i.providerId !== providerId));
-  }, [scope, active?.id]);
+  const remove = useCallback(
+    async (providerId: string, note?: string) => {
+      if (!scope || !active?.id) throw new Error("Select a workspace before disconnecting");
+      if (providerId === "google-workspace")
+        await disconnectGoogleWorkspace({ data: { workspaceId: active.id } });
+      // Keep the event log-less remove for now; caller shows a toast with reason.
+      void note;
+      write(
+        scope,
+        read(scope).filter((i) => i.providerId !== providerId),
+      );
+    },
+    [scope, active?.id],
+  );
 
   const configureWebhook = useCallback(
-    (
-      providerId: string,
-      patch: { url?: string; events?: string[]; enabled?: boolean },
-    ) => {
+    (providerId: string, patch: { url?: string; events?: string[]; enabled?: boolean }) => {
       const now = new Date().toISOString();
       const list = read(scope).map((i) => {
         if (i.providerId !== providerId) return i;
@@ -253,32 +282,32 @@ export function useInstalledIntegrations() {
           rotatedAt: existing?.rotatedAt,
           deliveries: existing?.deliveries ?? [],
         };
-        return appendEvent(
-          { ...i, webhook },
-          { at: now, kind: "webhook_updated" },
-        );
+        return appendEvent({ ...i, webhook }, { at: now, kind: "webhook_updated" });
       });
       write(scope, list);
     },
     [scope],
   );
 
-  const rotateWebhookSecret = useCallback((providerId: string) => {
-    const now = new Date().toISOString();
-    const secret = generateSecret();
-    const list = read(scope).map((i) => {
-      if (i.providerId !== providerId || !i.webhook) return i;
-      const webhook: WebhookConfig = {
-        ...i.webhook,
-        secret,
-        secretLast4: secret.slice(-4),
-        rotatedAt: now,
-      };
-      return appendEvent({ ...i, webhook }, { at: now, kind: "webhook_rotated" });
-    });
-    write(scope, list);
-    return secret;
-  }, [scope]);
+  const rotateWebhookSecret = useCallback(
+    (providerId: string) => {
+      const now = new Date().toISOString();
+      const secret = generateSecret();
+      const list = read(scope).map((i) => {
+        if (i.providerId !== providerId || !i.webhook) return i;
+        const webhook: WebhookConfig = {
+          ...i.webhook,
+          secret,
+          secretLast4: secret.slice(-4),
+          rotatedAt: now,
+        };
+        return appendEvent({ ...i, webhook }, { at: now, kind: "webhook_rotated" });
+      });
+      write(scope, list);
+      return secret;
+    },
+    [scope],
+  );
 
   const testWebhook = useCallback(
     async (providerId: string, event: string): Promise<WebhookDelivery> => {

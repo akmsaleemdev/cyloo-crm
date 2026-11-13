@@ -14,30 +14,117 @@ interface MetricBinding {
 }
 
 const BINDINGS: Record<MetricKey, MetricBinding> = {
-  "conversations.total":   { table: "conversations", dateColumn: "created_at", aggregation: "count" },
-  "conversations.open":    { table: "conversations", dateColumn: "created_at", aggregation: "count", filter: { status: "open" } },
-  "conversations.resolved":{ table: "conversations", dateColumn: "created_at", aggregation: "count", filter: { status: "resolved" } },
-  "messages.sent":         { table: "messages", dateColumn: "created_at", aggregation: "count", filter: { direction: "outbound" } },
-  "messages.delivered":    { table: "messages", dateColumn: "created_at", aggregation: "count", filter: { status: "delivered" } },
-  "messages.read":         { table: "messages", dateColumn: "created_at", aggregation: "count", filter: { status: "read" } },
-  "messages.failed":       { table: "messages", dateColumn: "created_at", aggregation: "count", filter: { status: "failed" } },
-  "deals.count":           { table: "deals", dateColumn: "created_at", aggregation: "count" },
-  "deals.won":             { table: "deals", dateColumn: "closed_at", aggregation: "count", filter: { status: "won" } },
-  "deals.revenue":         { table: "deals", dateColumn: "closed_at", valueColumn: "amount", aggregation: "sum", filter: { status: "won" } },
-  "deals.pipeline_value":  { table: "deals", dateColumn: "created_at", valueColumn: "amount", aggregation: "sum", filter: { status: "open" } },
-  "campaigns.sent":        { table: "campaign_recipients", dateColumn: "created_at", aggregation: "count", filter: { status: "sent" } },
-  "campaigns.delivered":   { table: "campaign_recipients", dateColumn: "created_at", aggregation: "count", filter: { status: "delivered" } },
-  "campaigns.ctr":         { table: "campaign_events", dateColumn: "created_at", aggregation: "count", filter: { event: "click" } },
-  "ai.requests":           { table: "ai_request_logs", dateColumn: "created_at", aggregation: "count" },
-  "ai.tokens":             { table: "ai_request_logs", dateColumn: "created_at", valueColumn: "total_tokens", aggregation: "sum" },
-  "ai.cost":               { table: "ai_request_logs", dateColumn: "created_at", valueColumn: "cost_usd", aggregation: "sum" },
-  "workflow.runs":         { table: "workflow_runs", dateColumn: "created_at", aggregation: "count" },
-  "workflow.errors":       { table: "workflow_runs", dateColumn: "created_at", aggregation: "count", filter: { status: "failed" } },
-  "contacts.new":          { table: "contacts", dateColumn: "created_at", aggregation: "count" },
-  "contacts.total":        { table: "contacts", dateColumn: "created_at", aggregation: "count" },
-  "leads.new":             { table: "leads", dateColumn: "created_at", aggregation: "count" },
-  "leads.qualified":       { table: "leads", dateColumn: "created_at", aggregation: "count", filter: { status: "qualified" } },
-  "deals.lost":            { table: "deals", dateColumn: "closed_at", aggregation: "count", filter: { status: "lost" } },
+  "conversations.total": { table: "conversations", dateColumn: "created_at", aggregation: "count" },
+  "conversations.open": {
+    table: "conversations",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "open" },
+  },
+  "conversations.resolved": {
+    table: "conversations",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "resolved" },
+  },
+  "messages.sent": {
+    table: "messages",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { direction: "outbound" },
+  },
+  "messages.delivered": {
+    table: "messages",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "delivered" },
+  },
+  "messages.read": {
+    table: "messages",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "read" },
+  },
+  "messages.failed": {
+    table: "messages",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "failed" },
+  },
+  "deals.count": { table: "deals", dateColumn: "created_at", aggregation: "count" },
+  "deals.won": {
+    table: "deals",
+    dateColumn: "closed_at",
+    aggregation: "count",
+    filter: { status: "won" },
+  },
+  "deals.revenue": {
+    table: "deals",
+    dateColumn: "closed_at",
+    valueColumn: "amount",
+    aggregation: "sum",
+    filter: { status: "won" },
+  },
+  "deals.pipeline_value": {
+    table: "deals",
+    dateColumn: "created_at",
+    valueColumn: "amount",
+    aggregation: "sum",
+    filter: { status: "open" },
+  },
+  "campaigns.sent": {
+    table: "campaign_recipients",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "sent" },
+  },
+  "campaigns.delivered": {
+    table: "campaign_recipients",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "delivered" },
+  },
+  "campaigns.ctr": {
+    table: "campaign_events",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { event: "click" },
+  },
+  "ai.requests": { table: "ai_request_logs", dateColumn: "created_at", aggregation: "count" },
+  "ai.tokens": {
+    table: "ai_request_logs",
+    dateColumn: "created_at",
+    valueColumn: "total_tokens",
+    aggregation: "sum",
+  },
+  "ai.cost": {
+    table: "ai_request_logs",
+    dateColumn: "created_at",
+    valueColumn: "cost_usd",
+    aggregation: "sum",
+  },
+  "workflow.runs": { table: "workflow_runs", dateColumn: "created_at", aggregation: "count" },
+  "workflow.errors": {
+    table: "workflow_runs",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "failed" },
+  },
+  "contacts.new": { table: "contacts", dateColumn: "created_at", aggregation: "count" },
+  "contacts.total": { table: "contacts", dateColumn: "created_at", aggregation: "count" },
+  "leads.new": { table: "leads", dateColumn: "created_at", aggregation: "count" },
+  "leads.qualified": {
+    table: "leads",
+    dateColumn: "created_at",
+    aggregation: "count",
+    filter: { status: "qualified" },
+  },
+  "deals.lost": {
+    table: "deals",
+    dateColumn: "closed_at",
+    aggregation: "count",
+    filter: { status: "lost" },
+  },
 };
 
 interface AdminClient {
@@ -64,7 +151,8 @@ export async function runMetric(
 
   const buildQuery = (start: Date, end: Date) => {
     let q = sbAny(supabaseAdmin).from(binding.table).select(select);
-    q = q.eq("workspace_id", workspaceId)
+    q = q
+      .eq("workspace_id", workspaceId)
       .gte(binding.dateColumn, start.toISOString())
       .lte(binding.dateColumn, end.toISOString());
     if (binding.filter) for (const [k, v] of Object.entries(binding.filter)) q = q.eq(k, v);
@@ -98,7 +186,8 @@ export async function runMetric(
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([t, y]) => ({ t, y }));
 
-  const deltaPct = previousTotal === 0 ? (total > 0 ? 100 : 0) : ((total - previousTotal) / previousTotal) * 100;
+  const deltaPct =
+    previousTotal === 0 ? (total > 0 ? 100 : 0) : ((total - previousTotal) / previousTotal) * 100;
 
   return {
     metric: query.metric,

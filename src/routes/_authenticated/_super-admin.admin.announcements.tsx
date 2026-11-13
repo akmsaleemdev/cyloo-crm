@@ -5,7 +5,9 @@ import { AnnouncementsManager } from "@/components/admin/comms/announcements-man
 import { ReleaseNotesManager } from "@/components/admin/comms/release-notes-manager";
 
 export const Route = createFileRoute("/_authenticated/_super-admin/admin/announcements")({
-  head: () => ({ meta: [{ title: "Super Admin — Communications" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Super Admin — Communications" }, { name: "robots", content: "noindex" }],
+  }),
   component: AnnouncementsPage,
 });
 

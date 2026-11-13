@@ -14,7 +14,12 @@ import {
   type Json,
 } from "@/lib/search/global-search.functions";
 
-export function useGlobalSearch(workspaceId: string | undefined, query: string, scope: SearchScope = "all", enabled = true) {
+export function useGlobalSearch(
+  workspaceId: string | undefined,
+  query: string,
+  scope: SearchScope = "all",
+  enabled = true,
+) {
   const fn = useServerFn(globalSearch);
   const q = query.trim();
   return useQuery({
@@ -85,7 +90,11 @@ export function useUpdateSavedSearch(workspaceId: string | undefined) {
   const fn = useServerFn(updateSavedSearch);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: Partial<Omit<SavedSearch, "workspaceId" | "userId" | "createdAt" | "updatedAt" | "lastUsedAt">> & { id: string }) =>
+    mutationFn: (
+      input: Partial<
+        Omit<SavedSearch, "workspaceId" | "userId" | "createdAt" | "updatedAt" | "lastUsedAt">
+      > & { id: string },
+    ) =>
       fn({
         data: {
           id: input.id,

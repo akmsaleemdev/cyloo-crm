@@ -683,7 +683,11 @@ function BuilderInner({ botId }: { botId: string }) {
                   )}
                   {errorCount} errors · {warnCount} warnings
                 </summary>
-                <ScrollArea type="hover" className="border-t border-border" viewportClassName="max-h-56">
+                <ScrollArea
+                  type="hover"
+                  className="border-t border-border"
+                  viewportClassName="max-h-56"
+                >
                   <ul>
                     {issues.map((i, idx) => (
                       <li

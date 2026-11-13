@@ -146,7 +146,11 @@ export function useUpsertCampaign() {
     mutationFn: async (input: Partial<CampaignRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await sbAny(supabase).from("campaigns").upsert(payload as any).select().single();
+      const { data, error } = await sbAny(supabase)
+        .from("campaigns")
+        .upsert(payload as any)
+        .select()
+        .single();
       if (error) throw error;
       return data as unknown as CampaignRow;
     },
@@ -217,7 +221,11 @@ export function useUpsertSegment() {
     mutationFn: async (input: Partial<SegmentRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await sbAny(supabase).from("customer_segments").upsert(payload as any).select().single();
+      const { data, error } = await sbAny(supabase)
+        .from("customer_segments")
+        .upsert(payload as any)
+        .select()
+        .single();
       if (error) throw error;
       return data as unknown as SegmentRow;
     },
@@ -266,7 +274,11 @@ export function useRecordConsent() {
     mutationFn: async (input: Partial<ConsentRow>) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await sbAny(supabase).from("consent_records").insert(payload as any).select().single();
+      const { data, error } = await sbAny(supabase)
+        .from("consent_records")
+        .insert(payload as any)
+        .select()
+        .single();
       if (error) throw error;
       return data as unknown as ConsentRow;
     },
@@ -300,8 +312,17 @@ export function useDripSequence(sequenceId: string | undefined) {
     enabled: !!sequenceId && !!active?.id,
     queryFn: async () => {
       const [{ data: seq, error: seqErr }, { data: steps, error: stepsErr }] = await Promise.all([
-        sbAny(supabase).from("drip_sequences").select("*").eq("id", sequenceId!).eq("workspace_id", active!.id).maybeSingle(),
-        sbAny(supabase).from("drip_steps").select("*").eq("sequence_id", sequenceId!).order("step_order"),
+        sbAny(supabase)
+          .from("drip_sequences")
+          .select("*")
+          .eq("id", sequenceId!)
+          .eq("workspace_id", active!.id)
+          .maybeSingle(),
+        sbAny(supabase)
+          .from("drip_steps")
+          .select("*")
+          .eq("sequence_id", sequenceId!)
+          .order("step_order"),
       ]);
       if (seqErr) throw seqErr;
       if (stepsErr) throw stepsErr;
@@ -321,7 +342,10 @@ export function useUpsertDripSequence() {
       if (!active?.id) throw new Error("No workspace");
       const { id, workspace_id: _ignored, ...changes } = input;
       if (id && changes.status === "active") {
-        const { data, error } = await sbAny(supabase).rpc("activate_drip_sequence", { _sequence_id: id, _workspace_id: active.id });
+        const { data, error } = await sbAny(supabase).rpc("activate_drip_sequence", {
+          _sequence_id: id,
+          _workspace_id: active.id,
+        });
         if (error) throw error;
         return data as DripSequenceRow;
       }
@@ -354,7 +378,10 @@ export function useDeleteArchivedDripSequence() {
         .eq("sequence_id", id)
         .eq("status", "active");
       if (enrollmentError) throw enrollmentError;
-      if (count) throw new Error("This sequence still has active enrollments. Finish or cancel them before deleting it.");
+      if (count)
+        throw new Error(
+          "This sequence still has active enrollments. Finish or cancel them before deleting it.",
+        );
       const { data, error } = await sbAny(supabase)
         .from("drip_sequences")
         .delete()
@@ -363,7 +390,8 @@ export function useDeleteArchivedDripSequence() {
         .eq("status", "archived")
         .select("id");
       if (error) throw error;
-      if (!data?.length) throw new Error("Only an archived sequence in this workspace can be deleted.");
+      if (!data?.length)
+        throw new Error("Only an archived sequence in this workspace can be deleted.");
       return id;
     },
     onSuccess: (id) => {
@@ -377,11 +405,22 @@ export function useSaveDripSequence() {
   const { active } = useCurrentWorkspace();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; name: string; description: string; trigger_type: string; steps: Partial<DripStepRow>[] }) => {
+    mutationFn: async (input: {
+      id: string;
+      name: string;
+      description: string;
+      trigger_type: string;
+      steps: Partial<DripStepRow>[];
+    }) => {
       if (!active?.id) throw new Error("No workspace");
       const { data, error } = await sbAny(supabase).rpc("save_drip_sequence", {
-        _workspace_id: active.id, _sequence_id: input.id,
-        _header: { name: input.name.trim(), description: input.description, trigger_type: input.trigger_type },
+        _workspace_id: active.id,
+        _sequence_id: input.id,
+        _header: {
+          name: input.name.trim(),
+          description: input.description,
+          trigger_type: input.trigger_type,
+        },
         _steps: input.steps,
       });
       if (error) throw error;
@@ -396,15 +435,19 @@ export function useSaveDripSequence() {
 
 export function useEnrollDripContact() {
   const { active } = useCurrentWorkspace();
-  const qc=useQueryClient();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ sequenceId, contactId }: { sequenceId: string; contactId: string }) => {
       if (!active?.id) throw new Error("No workspace");
-      const { data,error }=await sbAny(supabase).rpc("enroll_drip_contact",{ _workspace_id:active.id,_sequence_id:sequenceId,_contact_id:contactId });
+      const { data, error } = await sbAny(supabase).rpc("enroll_drip_contact", {
+        _workspace_id: active.id,
+        _sequence_id: sequenceId,
+        _contact_id: contactId,
+      });
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey:["drip-sequences"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["drip-sequences"] }),
   });
 }
 
@@ -434,21 +477,37 @@ export function useMarketingRealtime() {
         qc.invalidateQueries({ queryKey: ["campaigns"] });
         qc.invalidateQueries({ queryKey: ["campaign"] });
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "campaign_recipients" }, () => {
-        qc.invalidateQueries({ queryKey: ["campaign-recipients"] });
-        invalidateCampaigns();
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "campaign_recipients" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["campaign-recipients"] });
+          invalidateCampaigns();
+        },
+      )
       .on("postgres_changes", { event: "*", schema: "public", table: "campaign_events" }, () => {
         qc.invalidateQueries({ queryKey: ["campaign-events"] });
         invalidateCampaigns();
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "campaign_dispatch_queue" }, () => {
-        qc.invalidateQueries({ queryKey: ["campaign-dispatch-pending"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "customer_segments" }, () => qc.invalidateQueries({ queryKey: ["segments"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "consent_records" }, () => qc.invalidateQueries({ queryKey: ["consent-records"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "drip_sequences" }, () => qc.invalidateQueries({ queryKey: ["drip-sequences"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "drip_steps" }, () => qc.invalidateQueries({ queryKey: ["drip-sequence"] }))
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "campaign_dispatch_queue" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["campaign-dispatch-pending"] });
+        },
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "customer_segments" }, () =>
+        qc.invalidateQueries({ queryKey: ["segments"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "consent_records" }, () =>
+        qc.invalidateQueries({ queryKey: ["consent-records"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "drip_sequences" }, () =>
+        qc.invalidateQueries({ queryKey: ["drip-sequences"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "drip_steps" }, () =>
+        qc.invalidateQueries({ queryKey: ["drip-sequence"] }),
+      )
       .subscribe();
     return () => {
       if (campaignsTimer) clearTimeout(campaignsTimer);
@@ -456,4 +515,3 @@ export function useMarketingRealtime() {
     };
   }, [active?.id, qc]);
 }
-

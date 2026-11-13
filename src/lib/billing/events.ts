@@ -38,7 +38,6 @@ export type BillingEventType =
   | "upgrade.recommended"
   | "coupon.applied";
 
-
 export interface BillingEvent<T = unknown> {
   type: BillingEventType;
   organization_id: string;
@@ -56,16 +55,22 @@ export function on(type: BillingEventType, handler: Handler): () => void {
   return () => handlers.get(type)!.delete(handler);
 }
 
-export async function emit<T>(evt: Omit<BillingEvent<T>, "occurred_at"> & { occurred_at?: string }): Promise<void> {
+export async function emit<T>(
+  evt: Omit<BillingEvent<T>, "occurred_at"> & { occurred_at?: string },
+): Promise<void> {
   const enriched: BillingEvent<T> = {
     ...evt,
     occurred_at: evt.occurred_at ?? new Date().toISOString(),
   };
   const subs = handlers.get(evt.type);
   if (!subs) return;
-  await Promise.all([...subs].map((h) => Promise.resolve(h(enriched as BillingEvent)).catch((err) => {
-    console.error(`[billing.events] handler failed for ${evt.type}:`, err);
-  })));
+  await Promise.all(
+    [...subs].map((h) =>
+      Promise.resolve(h(enriched as BillingEvent)).catch((err) => {
+        console.error(`[billing.events] handler failed for ${evt.type}:`, err);
+      }),
+    ),
+  );
 }
 
 /** Persist an event to `billing_events` for audit. Caller supplies a service-role client. */
@@ -74,11 +79,13 @@ export async function persistEvent(
   evt: BillingEvent,
   extra: { subscription_id?: string | null; provider?: string | null } = {},
 ): Promise<void> {
-  await sbAny(supabase).from("billing_events").insert({
-    organization_id: evt.organization_id,
-    subscription_id: extra.subscription_id ?? null,
-    provider: extra.provider ?? "internal",
-    event_type: evt.type,
-    payload: (evt.data ?? {}) as Record<string, unknown>,
-  });
+  await sbAny(supabase)
+    .from("billing_events")
+    .insert({
+      organization_id: evt.organization_id,
+      subscription_id: extra.subscription_id ?? null,
+      provider: extra.provider ?? "internal",
+      event_type: evt.type,
+      payload: (evt.data ?? {}) as Record<string, unknown>,
+    });
 }

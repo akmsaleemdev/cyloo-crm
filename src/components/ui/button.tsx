@@ -14,18 +14,17 @@ const buttonVariants = cva(
         primary:
           "bg-accent-strong text-accent-foreground hover:bg-primary hover:text-primary-foreground active:bg-primary active:text-primary-foreground",
         // Marketing accent: solid primary fill (used for highlighted pricing plans).
-        accent:
-          "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive",
-        outline:
-          "control-border control-hover bg-transparent text-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary border border-input",
+        accent: "bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90 active:bg-destructive",
+        outline: "control-border control-hover bg-transparent text-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary border border-input",
         ghost: "control-hover bg-transparent text-foreground",
         // Ghost outline for use on the dark hero / gradient surface.
         heroGhost: "btn-hero-ghost",
         // WhatsApp channel action (click-to-chat CTAs).
-        whatsapp:
-          "bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90 active:bg-whatsapp",
+        whatsapp: "bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90 active:bg-whatsapp",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -44,7 +43,6 @@ const buttonVariants = cva(
     },
   },
 );
-
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {

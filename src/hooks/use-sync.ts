@@ -11,9 +11,16 @@ import {
 } from "@/lib/messaging/sync.functions";
 
 export type SyncKind =
-  | "templates" | "business_profile" | "phone_numbers" | "media_cleanup"
-  | "webhook_drain" | "outbox_drain" | "scheduled_messages"
-  | "contacts_reconcile" | "conversations_reconcile" | "status_reconcile"
+  | "templates"
+  | "business_profile"
+  | "phone_numbers"
+  | "media_cleanup"
+  | "webhook_drain"
+  | "outbox_drain"
+  | "scheduled_messages"
+  | "contacts_reconcile"
+  | "conversations_reconcile"
+  | "status_reconcile"
   | "account_health";
 
 export interface SyncJobRow {
@@ -58,11 +65,18 @@ export function useSyncJobs(workspaceId: string | undefined) {
       .channel(`sync-jobs-${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "sync_jobs", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "sync_jobs",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["sync-jobs", workspaceId] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [workspaceId, qc]);
 
   return useQuery({
@@ -82,11 +96,18 @@ export function useSyncCursors(workspaceId: string | undefined) {
       .channel(`sync-cursors-${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "sync_cursors", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "sync_cursors",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["sync-cursors", workspaceId] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [workspaceId, qc]);
 
   return useQuery({

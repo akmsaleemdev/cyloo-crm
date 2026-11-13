@@ -457,7 +457,10 @@ function CheckoutPage() {
                 className="animate-in fade-in slide-in-from-bottom-1 duration-200 motion-reduce:animate-none"
               >
                 {addressQ.isError ? (
-                  <div role="alert" className="rounded-control border border-destructive/30 p-3 text-sm">
+                  <div
+                    role="alert"
+                    className="rounded-control border border-destructive/30 p-3 text-sm"
+                  >
                     Saved addresses could not be loaded. You can still enter a new address.
                   </div>
                 ) : null}

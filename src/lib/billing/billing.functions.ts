@@ -41,15 +41,17 @@ export const recordUsage = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { error } = await sbAny(supabase).from("usage_events").insert({
-      organization_id: data.organization_id,
-      meter_code: data.meter_code,
-      quantity: data.quantity,
-      occurred_at: data.occurred_at ?? new Date().toISOString(),
-      idempotency_key: data.idempotency_key ?? null,
-      subscription_id: data.subscription_id ?? null,
-      metadata: data.metadata ?? {},
-    });
+    const { error } = await sbAny(supabase)
+      .from("usage_events")
+      .insert({
+        organization_id: data.organization_id,
+        meter_code: data.meter_code,
+        quantity: data.quantity,
+        occurred_at: data.occurred_at ?? new Date().toISOString(),
+        idempotency_key: data.idempotency_key ?? null,
+        subscription_id: data.subscription_id ?? null,
+        metadata: data.metadata ?? {},
+      });
     if (error && !error.message.includes("duplicate key")) throw error;
     return { ok: true };
   });
@@ -57,13 +59,15 @@ export const recordUsage = createServerFn({ method: "POST" })
 /** Get an organization's current billing overview (customer, subscription, quotas). */
 export const getBillingOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input) =>
-    z.object({ organization_id: z.string().uuid() }).parse(input),
-  )
+  .validator((input) => z.object({ organization_id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const [customer, subscription, quotas] = await Promise.all([
-      sbAny(supabase).from("billing_customers").select("*").eq("organization_id", data.organization_id).maybeSingle(),
+      sbAny(supabase)
+        .from("billing_customers")
+        .select("*")
+        .eq("organization_id", data.organization_id)
+        .maybeSingle(),
       supabase
         .from("subscriptions")
         .select("*, plans(*)")
@@ -122,7 +126,6 @@ export const createCheckoutSession = createServerFn({ method: "POST" })
     });
   });
 
-
 /** Open the customer portal for self-service billing management. */
 export const createPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -148,7 +151,10 @@ export const createPortalSession = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!customer) throw new Error("No billing customer for this organization/provider");
     return provider.createCustomerPortalSession(
-      { provider: data.provider as BillingProviderId, provider_customer_id: customer.provider_customer_id },
+      {
+        provider: data.provider as BillingProviderId,
+        provider_customer_id: customer.provider_customer_id,
+      },
       data.return_url,
     );
   });
@@ -161,7 +167,9 @@ export const createPortalSession = createServerFn({ method: "POST" })
 
 async function assertOrgAdmin(supabase: any, org_id: string, user_id: string) {
   const { data, error } = await sbAny(supabase).rpc("has_org_role", {
-    _org_id: org_id, _user_id: user_id, _roles: ["owner", "admin"],
+    _org_id: org_id,
+    _user_id: user_id,
+    _roles: ["owner", "admin"],
   });
   if (error) throw error;
   if (!data) throw new Error("forbidden");
@@ -171,19 +179,25 @@ async function assertOrgAdmin(supabase: any, org_id: string, user_id: string) {
 export const cancelOrgSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({ organization_id: z.string().uuid(), at_period_end: z.boolean().optional() }).parse(input),
+    z
+      .object({ organization_id: z.string().uuid(), at_period_end: z.boolean().optional() })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(sbAny(context.supabase), data.organization_id, context.userId);
     const { cancelSubscription } = await import("./subscription-engine.server");
-    return cancelSubscription(sbAny(context.supabase), data.organization_id, { at_period_end: data.at_period_end });
+    return cancelSubscription(sbAny(context.supabase), data.organization_id, {
+      at_period_end: data.at_period_end,
+    });
   });
 
 /** Change seat count on the active subscription. */
 export const changeOrgSeats = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({ organization_id: z.string().uuid(), quantity: z.number().int().positive() }).parse(input),
+    z
+      .object({ organization_id: z.string().uuid(), quantity: z.number().int().positive() })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(sbAny(context.supabase), data.organization_id, context.userId);
@@ -195,14 +209,16 @@ export const changeOrgSeats = createServerFn({ method: "POST" })
 export const draftInvoiceForOrg = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({
-      organization_id: z.string().uuid(),
-      subscription_id: z.string().uuid(),
-      period_start: z.string().datetime(),
-      period_end: z.string().datetime(),
-      coupon_code: z.string().optional(),
-      finalize: z.boolean().optional(),
-    }).parse(input),
+    z
+      .object({
+        organization_id: z.string().uuid(),
+        subscription_id: z.string().uuid(),
+        period_start: z.string().datetime(),
+        period_end: z.string().datetime(),
+        coupon_code: z.string().optional(),
+        finalize: z.boolean().optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(sbAny(context.supabase), data.organization_id, context.userId);
@@ -214,12 +230,16 @@ export const draftInvoiceForOrg = createServerFn({ method: "POST" })
 export const listOrgInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({ organization_id: z.string().uuid(), limit: z.number().int().max(100).default(50) }).parse(input),
+    z
+      .object({ organization_id: z.string().uuid(), limit: z.number().int().max(100).default(50) })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("billing_invoices")
-      .select("id, number, status, total_cents, amount_paid_cents, amount_due_cents, currency, period_start, period_end, issued_at, due_at, paid_at, hosted_url, pdf_url")
+      .select(
+        "id, number, status, total_cents, amount_paid_cents, amount_due_cents, currency, period_start, period_end, issued_at, due_at, paid_at, hosted_url, pdf_url",
+      )
       .eq("organization_id", data.organization_id)
       .order("issued_at", { ascending: false, nullsFirst: false })
       .limit(data.limit);
@@ -231,22 +251,34 @@ export const listOrgInvoices = createServerFn({ method: "GET" })
 export const inspectOrgQuota = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({
-      organization_id: z.string().uuid(),
-      meter_code: z.string(),
-      requested: z.number().int().positive().optional(),
-    }).parse(input),
+    z
+      .object({
+        organization_id: z.string().uuid(),
+        meter_code: z.string(),
+        requested: z.number().int().positive().optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { inspectQuota } = await import("./quota-manager.server");
-    return inspectQuota(sbAny(context.supabase), data.organization_id, data.meter_code, data.requested ?? 1);
+    return inspectQuota(
+      sbAny(context.supabase),
+      data.organization_id,
+      data.meter_code,
+      data.requested ?? 1,
+    );
   });
 
 /** Read the org's revenue snapshots (admins only). */
 export const getRevenueSnapshots = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({ organization_id: z.string().uuid(), days: z.number().int().min(1).max(365).default(30) }).parse(input),
+    z
+      .object({
+        organization_id: z.string().uuid(),
+        days: z.number().int().min(1).max(365).default(30),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(sbAny(context.supabase), data.organization_id, context.userId);

@@ -33,11 +33,7 @@ export class HostedDomainResolutionError extends Error {
 // The SaaS application hosts are tenant-neutral. Treating one of them as a
 // white-label domain pins `readActiveOrgId()` to that domain's workspace and
 // makes every explicit organization switch appear to revert immediately.
-const PLATFORM_HOSTNAMES = new Set([
-  "cyloo.ai",
-  "www.cyloo.ai",
-  "cyloo.ai",
-]);
+const PLATFORM_HOSTNAMES = new Set(["cyloo.ai", "www.cyloo.ai", "cyloo.ai"]);
 
 export async function getHostedDomainBrand(hostname: string): Promise<HostedDomainBrand | null> {
   const host = hostname.trim().toLowerCase().replace(/\.$/, "");

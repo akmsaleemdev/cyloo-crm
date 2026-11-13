@@ -56,8 +56,13 @@ export function normalizeWhatsAppToken(raw: string | null | undefined): string |
   if (!value) return null;
 
   // A full link — trust the host allowlist, drop anything else.
-  if (/^(https?:)?\/\//i.test(value) || /^(wa\.me|api\.whatsapp\.com|chat\.whatsapp\.com)\//i.test(value)) {
-    const withScheme = /^https?:\/\//i.test(value) ? value : `https://${value.replace(/^\/\//, "")}`;
+  if (
+    /^(https?:)?\/\//i.test(value) ||
+    /^(wa\.me|api\.whatsapp\.com|chat\.whatsapp\.com)\//i.test(value)
+  ) {
+    const withScheme = /^https?:\/\//i.test(value)
+      ? value
+      : `https://${value.replace(/^\/\//, "")}`;
     try {
       const url = new URL(withScheme);
       if (!HOSTS.has(url.hostname.toLowerCase())) return null;
@@ -130,5 +135,11 @@ export function resolveWhatsAppCta(
   }
 
   const query = message ? `?text=${encodeURIComponent(message)}` : "";
-  return { href: `https://wa.me/${token}${query}`, label, message, isFallback: false, isInternal: false };
+  return {
+    href: `https://wa.me/${token}${query}`,
+    label,
+    message,
+    isFallback: false,
+    isInternal: false,
+  };
 }

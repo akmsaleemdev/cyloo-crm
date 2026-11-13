@@ -63,11 +63,16 @@ export const listTemplates = createServerFn({ method: "GET" })
     const [{ data: templates }, { data: favs }, { data: usage }] = await Promise.all([
       supabase
         .from("workflow_templates")
-        .select("id, workspace_id, owner_user_id, name, description, category, icon, tags, is_featured, is_public_in_workspace, share_slug, usage_count, forked_from_template_id, created_at, updated_at")
+        .select(
+          "id, workspace_id, owner_user_id, name, description, category, icon, tags, is_featured, is_public_in_workspace, share_slug, usage_count, forked_from_template_id, created_at, updated_at",
+        )
         .order("is_featured", { ascending: false })
         .order("updated_at", { ascending: false })
         .limit(500),
-      sbAny(supabase).from("workflow_template_favorites").select("template_id").eq("user_id", userId),
+      sbAny(supabase)
+        .from("workflow_template_favorites")
+        .select("template_id")
+        .eq("user_id", userId),
       supabase
         .from("workflow_template_usage")
         .select("template_id, used_at")
@@ -160,7 +165,10 @@ export const deleteTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    const { error } = await sbAny(context.supabase).from("workflow_templates").delete().eq("id", data.id);
+    const { error } = await sbAny(context.supabase)
+      .from("workflow_templates")
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -169,13 +177,18 @@ export const deleteTemplate = createServerFn({ method: "POST" })
 
 export const toggleFavorite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({ templateId: z.string().uuid(), favorite: z.boolean() }).parse(v))
+  .validator((v: unknown) =>
+    z.object({ templateId: z.string().uuid(), favorite: z.boolean() }).parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (data.favorite) {
       await supabase
         .from("workflow_template_favorites")
-        .upsert({ user_id: userId, template_id: data.templateId }, { onConflict: "user_id,template_id" });
+        .upsert(
+          { user_id: userId, template_id: data.templateId },
+          { onConflict: "user_id,template_id" },
+        );
     } else {
       await supabase
         .from("workflow_template_favorites")
@@ -225,8 +238,9 @@ export const cloneTemplateToWorkflow = createServerFn({ method: "POST" })
 
     const graph = GraphSchema.parse(tpl.graph ?? { nodes: [], edges: [] });
     const firstTrigger =
-      (graph.nodes as Array<{ type?: string }>).find((n) => typeof n.type === "string" && n.type.startsWith("trigger."))
-        ?.type ?? "trigger.manual";
+      (graph.nodes as Array<{ type?: string }>).find(
+        (n) => typeof n.type === "string" && n.type.startsWith("trigger."),
+      )?.type ?? "trigger.manual";
 
     const { data: inserted, error } = await supabase
       .from("automations")
@@ -338,10 +352,9 @@ export const ensureShareSlug = createServerFn({ method: "POST" })
       .maybeSingle();
     if (existing?.share_slug) return { slug: existing.share_slug as string };
     // 12-char base36 slug
-    const slug = Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 36)
-        .toString(36),
-    ).join("");
+    const slug = Array.from({ length: 12 }, () => Math.floor(Math.random() * 36).toString(36)).join(
+      "",
+    );
     const { error } = await supabase
       .from("workflow_templates")
       .update({ share_slug: slug })

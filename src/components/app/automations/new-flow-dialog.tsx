@@ -5,7 +5,16 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import * as Icons from "lucide-react";
-import { Loader2, Sparkles, FileText, Zap, ArrowRight, Check, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  FileText,
+  Zap,
+  ArrowRight,
+  Check,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 
 import { toast } from "sonner";
 import {
@@ -33,15 +42,69 @@ type TriggerOption = {
 };
 
 const CURATED_TRIGGERS: TriggerOption[] = [
-  { type: "trigger.message.received", label: "Message received", description: "When a customer sends a message on any channel.", icon: "MessageSquare", group: "Messaging" },
-  { type: "trigger.conversation.created", label: "Conversation started", description: "When a new conversation opens.", icon: "MessagesSquare", group: "Messaging" },
-  { type: "trigger.conversation.closed", label: "Conversation closed", description: "When a conversation is resolved or closed.", icon: "CheckCircle2", group: "Messaging" },
-  { type: "trigger.contact.created", label: "Contact created", description: "When a new contact is added.", icon: "UserPlus", group: "CRM" },
-  { type: "trigger.lead.created", label: "Lead created", description: "When a new lead is captured.", icon: "UserCheck", group: "CRM" },
-  { type: "trigger.deal.stage_changed", label: "Deal stage changed", description: "When a deal moves to a new pipeline stage.", icon: "TrendingUp", group: "Sales" },
-  { type: "trigger.deal.won", label: "Deal won", description: "When a deal is marked won.", icon: "Trophy", group: "Sales" },
-  { type: "trigger.schedule.cron", label: "On schedule", description: "Run on a recurring schedule (cron).", icon: "Clock", group: "Schedule" },
-  { type: "trigger.webhook", label: "Webhook", description: "Trigger from an inbound HTTP webhook.", icon: "Webhook", group: "Integration" },
+  {
+    type: "trigger.message.received",
+    label: "Message received",
+    description: "When a customer sends a message on any channel.",
+    icon: "MessageSquare",
+    group: "Messaging",
+  },
+  {
+    type: "trigger.conversation.created",
+    label: "Conversation started",
+    description: "When a new conversation opens.",
+    icon: "MessagesSquare",
+    group: "Messaging",
+  },
+  {
+    type: "trigger.conversation.closed",
+    label: "Conversation closed",
+    description: "When a conversation is resolved or closed.",
+    icon: "CheckCircle2",
+    group: "Messaging",
+  },
+  {
+    type: "trigger.contact.created",
+    label: "Contact created",
+    description: "When a new contact is added.",
+    icon: "UserPlus",
+    group: "CRM",
+  },
+  {
+    type: "trigger.lead.created",
+    label: "Lead created",
+    description: "When a new lead is captured.",
+    icon: "UserCheck",
+    group: "CRM",
+  },
+  {
+    type: "trigger.deal.stage_changed",
+    label: "Deal stage changed",
+    description: "When a deal moves to a new pipeline stage.",
+    icon: "TrendingUp",
+    group: "Sales",
+  },
+  {
+    type: "trigger.deal.won",
+    label: "Deal won",
+    description: "When a deal is marked won.",
+    icon: "Trophy",
+    group: "Sales",
+  },
+  {
+    type: "trigger.schedule.cron",
+    label: "On schedule",
+    description: "Run on a recurring schedule (cron).",
+    icon: "Clock",
+    group: "Schedule",
+  },
+  {
+    type: "trigger.webhook",
+    label: "Webhook",
+    description: "Trigger from an inbound HTTP webhook.",
+    icon: "Webhook",
+    group: "Integration",
+  },
 ];
 
 const VALID_TRIGGER_TYPES = CURATED_TRIGGERS.map((t) => t.type) as [string, ...string[]];
@@ -56,7 +119,10 @@ const basicsSchema = z.object({
     .trim()
     .min(3, "Name must be at least 3 characters")
     .max(NAME_MAX, `Name must be under ${NAME_MAX} characters`)
-    .regex(/^[\p{L}\p{N}][\p{L}\p{N} \-_.,'&()\/]*$/u, "Use letters, numbers and simple punctuation only"),
+    .regex(
+      /^[\p{L}\p{N}][\p{L}\p{N} \-_.,'&()\/]*$/u,
+      "Use letters, numbers and simple punctuation only",
+    ),
   description: z
     .string()
     .trim()
@@ -79,7 +145,13 @@ type FieldKey = "name" | "description" | "mode" | "trigger" | "templateId";
 type Errors = Partial<Record<FieldKey, string>>;
 type Touched = Partial<Record<FieldKey, boolean>>;
 
-export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function NewFlowDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [step, setStep] = React.useState<Step>("basics");
@@ -138,8 +210,7 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
     },
   });
 
-  const nameChecking =
-    nameSyntaxOk && (nameCheckQ.isFetching || debouncedName !== name.trim());
+  const nameChecking = nameSyntaxOk && (nameCheckQ.isFetching || debouncedName !== name.trim());
   const nameTaken = !!nameCheckQ.data;
 
   // Live validation — errors reflect current values regardless of touched state.
@@ -172,7 +243,6 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
   const basicsValid = !errors.name && !errors.description && !errors.mode && !nameChecking;
   const stepTwoValid = mode === "blank" ? !errors.trigger : !errors.templateId;
 
-
   const createMutation = useMutation({
     mutationFn: async () => {
       // Final full-schema validation before hitting the network.
@@ -188,7 +258,6 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
 
       if (nameTaken) throw new Error("Name already exists in this workspace");
       if (!workspaceId) throw new Error("No workspace found");
-
 
       let graph: WorkflowGraph = { nodes: [], edges: [] };
       let triggerType = trigger;
@@ -309,7 +378,9 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                 aria-invalid={!!showErr("name")}
                 aria-describedby={showErr("name") ? "wf-name-err" : undefined}
                 placeholder="e.g. Welcome new WhatsApp leads"
-                className={cn(showErr("name") && "border-destructive focus-visible:ring-destructive/30")}
+                className={cn(
+                  showErr("name") && "border-destructive focus-visible:ring-destructive/30",
+                )}
               />
               {touched.name && !errors.name && nameSyntaxOk && (
                 <p className="text-[11px] flex items-center gap-1 text-muted-foreground">
@@ -326,7 +397,6 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                 </p>
               )}
             </Field>
-
 
             <Field
               id="wf-desc"
@@ -356,18 +426,26 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             </Field>
 
             <div className="space-y-2">
-              <Label>Start from <span className="text-destructive">*</span></Label>
+              <Label>
+                Start from <span className="text-destructive">*</span>
+              </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <ModeCard
                   active={mode === "blank"}
-                  onClick={() => { setMode("blank"); markTouched("mode"); }}
+                  onClick={() => {
+                    setMode("blank");
+                    markTouched("mode");
+                  }}
                   icon={<Zap className="w-4 h-4" />}
                   title="Blank workflow"
                   subtitle="Pick a trigger and build from scratch."
                 />
                 <ModeCard
                   active={mode === "template"}
-                  onClick={() => { setMode("template"); markTouched("mode"); }}
+                  onClick={() => {
+                    setMode("template");
+                    markTouched("mode");
+                  }}
                   icon={<Sparkles className="w-4 h-4" />}
                   title="From template"
                   subtitle={`${WORKFLOW_TEMPLATES.length} ready-made patterns.`}
@@ -380,22 +458,33 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
         {step === "trigger" && (
           <div className="space-y-3">
             {showErr("trigger") && <InlineError message={errors.trigger!} />}
-            <ScrollArea type="hover" className="-mx-1" viewportClassName="max-h-[380px] [&>div]:!block">
+            <ScrollArea
+              type="hover"
+              className="-mx-1"
+              viewportClassName="max-h-[380px] [&>div]:!block"
+            >
               <div className="px-1 space-y-3">
                 {Object.entries(groupBy(CURATED_TRIGGERS, (t) => t.group)).map(([group, items]) => (
                   <div key={group}>
-                    <div className="text-[11px] font-semibold text-foreground mb-1.5">
-                      {group}
-                    </div>
+                    <div className="text-[11px] font-semibold text-foreground mb-1.5">{group}</div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {items.map((opt) => {
-                        const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[opt.icon] || Icons.Zap;
+                        const Icon =
+                          (
+                            Icons as unknown as Record<
+                              string,
+                              React.ComponentType<{ className?: string }>
+                            >
+                          )[opt.icon] || Icons.Zap;
                         const active = trigger === opt.type;
                         return (
                           <button
                             key={opt.type}
                             type="button"
-                            onClick={() => { setTrigger(opt.type); markTouched("trigger"); }}
+                            onClick={() => {
+                              setTrigger(opt.type);
+                              markTouched("trigger");
+                            }}
                             className={cn(
                               "text-left rounded-control border p-3 transition-all",
                               active
@@ -405,10 +494,14 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                             )}
                           >
                             <div className="flex items-start gap-2.5">
-                              <div className={cn(
-                                "w-8 h-8 rounded-control grid place-items-center shrink-0",
-                                active ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-                              )}>
+                              <div
+                                className={cn(
+                                  "w-8 h-8 rounded-control grid place-items-center shrink-0",
+                                  active
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-foreground",
+                                )}
+                              >
                                 <Icon className="w-4 h-4" />
                               </div>
                               <div className="min-w-0 flex-1">
@@ -440,7 +533,11 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               value={templateQuery}
               onChange={(e) => setTemplateQuery(e.target.value)}
             />
-            <ScrollArea type="hover" className="-mx-1" viewportClassName="max-h-[340px] [&>div]:!block">
+            <ScrollArea
+              type="hover"
+              className="-mx-1"
+              viewportClassName="max-h-[340px] [&>div]:!block"
+            >
               <div className="px-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {filteredTemplates.length === 0 ? (
                   <div className="col-span-full text-center text-sm text-muted-foreground py-8">
@@ -448,13 +545,22 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                   </div>
                 ) : (
                   filteredTemplates.map((tpl) => {
-                    const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[tpl.icon] || FileText;
+                    const Icon =
+                      (
+                        Icons as unknown as Record<
+                          string,
+                          React.ComponentType<{ className?: string }>
+                        >
+                      )[tpl.icon] || FileText;
                     const active = templateId === tpl.id;
                     return (
                       <button
                         key={tpl.id}
                         type="button"
-                        onClick={() => { setTemplateId(tpl.id); markTouched("templateId"); }}
+                        onClick={() => {
+                          setTemplateId(tpl.id);
+                          markTouched("templateId");
+                        }}
                         className={cn(
                           "text-left rounded-control border p-3 transition-all",
                           active
@@ -464,10 +570,14 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
                         )}
                       >
                         <div className="flex items-start gap-2.5">
-                          <div className={cn(
-                            "w-9 h-9 rounded-control grid place-items-center shrink-0",
-                            active ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary",
-                          )}>
+                          <div
+                            className={cn(
+                              "w-9 h-9 rounded-control grid place-items-center shrink-0",
+                              active
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 text-primary",
+                            )}
+                          >
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -498,20 +608,27 @@ export function NewFlowDialog({ open, onOpenChange }: { open: boolean; onOpenCha
         <DialogFooter className="flex-row justify-between sm:justify-between gap-2">
           <div>
             {step !== "basics" && (
-              <Button variant="ghost" onClick={() => setStep("basics")} disabled={createMutation.isPending}>
+              <Button
+                variant="ghost"
+                onClick={() => setStep("basics")}
+                disabled={createMutation.isPending}
+              >
                 Back
               </Button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={createMutation.isPending}>
+            <Button
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              disabled={createMutation.isPending}
+            >
               Cancel
             </Button>
             {step === "basics" ? (
               <Button onClick={handleContinue} disabled={nameChecking || nameTaken}>
                 {nameChecking ? <Loader2 className="w-4 h-4 animate-spin " /> : null}
                 Continue <ArrowRight className="w-4 h-4 ml-1" />
-
               </Button>
             ) : (
               <Button onClick={handleCreate} disabled={createMutation.isPending}>
@@ -552,7 +669,9 @@ function Field({
           {label} {required && <span className="text-destructive">*</span>}
         </Label>
         {hint && (
-          <span className={cn("text-[11px] ", error ? "text-destructive" : "text-muted-foreground")}>
+          <span
+            className={cn("text-[11px] ", error ? "text-destructive" : "text-muted-foreground")}
+          >
             {hint}
           </span>
         )}
@@ -601,10 +720,12 @@ function ModeCard({
       )}
     >
       <div className="flex items-start gap-2.5">
-        <div className={cn(
-          "w-8 h-8 rounded-control grid place-items-center shrink-0",
-          active ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-        )}>
+        <div
+          className={cn(
+            "w-8 h-8 rounded-control grid place-items-center shrink-0",
+            active ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+          )}
+        >
           {icon}
         </div>
         <div className="min-w-0 flex-1">
@@ -621,7 +742,12 @@ function ModeCard({
 
 function StepDot({ active, done, label }: { active: boolean; done: boolean; label: string }) {
   return (
-    <div className={cn("flex items-center gap-1.5", active ? "text-foreground font-medium" : done ? "text-primary" : "")}>
+    <div
+      className={cn(
+        "flex items-center gap-1.5",
+        active ? "text-foreground font-medium" : done ? "text-primary" : "",
+      )}
+    >
       <span
         className={cn(
           "w-1.5 h-1.5 rounded-full",
@@ -634,9 +760,12 @@ function StepDot({ active, done, label }: { active: boolean; done: boolean; labe
 }
 
 function groupBy<T, K extends string>(arr: T[], key: (item: T) => K): Record<K, T[]> {
-  return arr.reduce((acc, item) => {
-    const k = key(item);
-    (acc[k] ||= []).push(item);
-    return acc;
-  }, {} as Record<K, T[]>);
+  return arr.reduce(
+    (acc, item) => {
+      const k = key(item);
+      (acc[k] ||= []).push(item);
+      return acc;
+    },
+    {} as Record<K, T[]>,
+  );
 }

@@ -11,16 +11,27 @@ import { appleCalendarProvider } from "./apple.server";
 
 export const noopProvider: CalendarProvider = {
   kind: "none",
-  async listBusy() { return []; },
-  async listCalendars() { return []; },
-  async createEvent() { return { external_id: "" }; },
-  async updateEvent() { /* noop */ },
-  async deleteEvent() { /* noop */ },
+  async listBusy() {
+    return [];
+  },
+  async listCalendars() {
+    return [];
+  },
+  async createEvent() {
+    return { external_id: "" };
+  },
+  async updateEvent() {
+    /* noop */
+  },
+  async deleteEvent() {
+    /* noop */
+  },
 };
 
 export function providerForKind(kind: string): CalendarProvider {
   switch (kind) {
-    case "google": return googleCalendarProvider;
+    case "google":
+      return googleCalendarProvider;
     case "microsoft":
     case "microsoft365":
     case "outlook":
@@ -48,8 +59,11 @@ export type CalendarAccountRow = {
 export function contextFor(account: CalendarAccountRow, hostId?: string): ProviderContext {
   let key: string | null = null;
   if (account.connection_key_ciphertext) {
-    try { key = decryptConnectionKey(account.connection_key_ciphertext); }
-    catch { key = null; }
+    try {
+      key = decryptConnectionKey(account.connection_key_ciphertext);
+    } catch {
+      key = null;
+    }
   }
   return {
     accountId: account.id,
@@ -61,7 +75,11 @@ export function contextFor(account: CalendarAccountRow, hostId?: string): Provid
   };
 }
 
-export function providerKindsSupported(): { kind: CalendarProviderKind; label: string; auth: "oauth" | "ics" }[] {
+export function providerKindsSupported(): {
+  kind: CalendarProviderKind;
+  label: string;
+  auth: "oauth" | "ics";
+}[] {
   return [
     { kind: "google", label: "Google Calendar", auth: "oauth" },
     { kind: "microsoft", label: "Microsoft Outlook / 365", auth: "oauth" },

@@ -13,8 +13,8 @@ export interface BuildContextInput {
   citations?: KbCitation[];
   intent?: IntentResult | null;
   sentiment?: SentimentResult | null;
-  shortMemory?: string;   // rolling summary of the last N turns
-  longMemory?: string;    // durable facts about the contact
+  shortMemory?: string; // rolling summary of the last N turns
+  longMemory?: string; // durable facts about the contact
   locale?: string;
   history: ChatMessage[]; // recent history (oldest → newest)
   userMessage: string;
@@ -31,11 +31,16 @@ export const ContextEngine = {
     const parts: string[] = [];
     parts.push(input.systemPrompt.trim());
 
-    if (input.locale) parts.push(`Respond in the user's language (${input.locale}) unless asked otherwise.`);
+    if (input.locale)
+      parts.push(`Respond in the user's language (${input.locale}) unless asked otherwise.`);
     if (input.longMemory) parts.push(`Known facts about the user:\n${input.longMemory}`);
     if (input.shortMemory) parts.push(`Conversation summary so far:\n${input.shortMemory}`);
-    if (input.intent) parts.push(`Detected intent: ${input.intent.name} (confidence ${input.intent.confidence.toFixed(2)}).`);
-    if (input.sentiment) parts.push(`User sentiment: ${input.sentiment.label} (${input.sentiment.score.toFixed(2)}).`);
+    if (input.intent)
+      parts.push(
+        `Detected intent: ${input.intent.name} (confidence ${input.intent.confidence.toFixed(2)}).`,
+      );
+    if (input.sentiment)
+      parts.push(`User sentiment: ${input.sentiment.label} (${input.sentiment.score.toFixed(2)}).`);
     if (input.ragContext) {
       parts.push(
         `Knowledge base context — use it as the primary source of truth. Cite sources as [1], [2]:\n${input.ragContext}`,

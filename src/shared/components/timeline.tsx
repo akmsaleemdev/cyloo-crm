@@ -42,10 +42,7 @@ export function Timeline({
         return (
           <li key={item.id} className={cn("relative flex gap-4", compact ? "pb-4" : "pb-6")}>
             {!isLast && (
-              <span
-                aria-hidden="true"
-                className="absolute left-3 top-6 bottom-0 w-px bg-border"
-              />
+              <span aria-hidden="true" className="absolute left-3 top-6 bottom-0 w-px bg-border" />
             )}
             <span
               className={cn(
@@ -59,12 +56,12 @@ export function Timeline({
             <div className="min-w-0 flex-1 pt-0.5">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <div className="text-label-md text-foreground">{item.title}</div>
-                {item.timestamp && (
-                  <time className="text-caption shrink-0">{item.timestamp}</time>
-                )}
+                {item.timestamp && <time className="text-caption shrink-0">{item.timestamp}</time>}
               </div>
               {item.description && (
-                <p className="mt-1 text-body-sm text-muted-foreground text-pretty">{item.description}</p>
+                <p className="mt-1 text-body-sm text-muted-foreground text-pretty">
+                  {item.description}
+                </p>
               )}
               {item.meta && <div className="mt-2">{item.meta}</div>}
             </div>

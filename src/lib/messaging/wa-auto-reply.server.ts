@@ -59,17 +59,25 @@ function ruleMatches(rule: Rule, ctx: Ctx): boolean {
   const kws = (rule.keywords ?? []).map((k) => (rule.match_case ? k : k.toLowerCase()));
 
   switch (rule.trigger_type) {
-    case "welcome": return ctx.isFirstMessage;
-    case "offline": return ctx.isOffline;
-    case "any": return raw.trim().length > 0;
-    case "exact": return kws.some((k) => msg === k);
-    case "starts_with": return kws.some((k) => !!k && msg.startsWith(k));
-    case "contains": return kws.some((k) => !!k && msg.includes(k));
+    case "welcome":
+      return ctx.isFirstMessage;
+    case "offline":
+      return ctx.isOffline;
+    case "any":
+      return raw.trim().length > 0;
+    case "exact":
+      return kws.some((k) => msg === k);
+    case "starts_with":
+      return kws.some((k) => !!k && msg.startsWith(k));
+    case "contains":
+      return kws.some((k) => !!k && msg.includes(k));
     case "regex":
       for (const k of kws) {
         try {
           if (new RegExp(k, rule.match_case ? "" : "i").test(raw)) return true;
-        } catch { /* invalid regex — skip */ }
+        } catch {
+          /* invalid regex — skip */
+        }
       }
       return false;
     case "handoff":
@@ -202,12 +210,10 @@ export async function runAutoReplyForSession(
   const workerPayload = {
     to: from,
     type: (type === "location" ? "text" : type) as
-      | "text" | "image" | "video" | "audio" | "document",
+      "text" | "image" | "video" | "audio" | "document",
     text: winner.reply_text ? renderVars(winner.reply_text, ctx) : undefined,
     media_url: winner.media_url ?? undefined,
-    caption: winner.media_caption
-      ? renderVars(winner.media_caption, ctx)
-      : undefined,
+    caption: winner.media_caption ? renderVars(winner.media_caption, ctx) : undefined,
     client_message_id: clientMessageId,
   };
 
@@ -216,7 +222,11 @@ export async function runAutoReplyForSession(
     return { triggered: false, error: "Worker not configured" };
   }
   if (!result.ok) {
-    return { triggered: false, ruleId: winner.id, error: result.error || `Worker status ${result.status}` };
+    return {
+      triggered: false,
+      ruleId: winner.id,
+      error: result.error || `Worker status ${result.status}`,
+    };
   }
 
   // Mirror the bot reply into the conversation inbox so agents see it inline.
@@ -275,4 +285,3 @@ export async function runAutoReplyForSession(
 
   return { triggered: true, ruleId: winner.id, handoff };
 }
-

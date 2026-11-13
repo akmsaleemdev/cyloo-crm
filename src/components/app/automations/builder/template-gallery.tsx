@@ -20,16 +20,25 @@ export function TemplateGallery({
         <div className="p-4 border-b border-border flex items-center justify-between">
           <div>
             <div className="text-base font-semibold">Workflow templates</div>
-            <div className="text-xs text-muted-foreground">Start from a proven pattern or build from scratch.</div>
+            <div className="text-xs text-muted-foreground">
+              Start from a proven pattern or build from scratch.
+            </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded hover:bg-muted" aria-label="Close templates">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-muted"
+            aria-label="Close templates"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
         <ScrollArea type="hover" viewportClassName="max-h-[calc(85vh-6rem)] [&>div]:!block">
           <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
             {WORKFLOW_TEMPLATES.map((tpl) => {
-              const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[tpl.icon] || Icons.Workflow;
+              const Icon =
+                (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[
+                  tpl.icon
+                ] || Icons.Workflow;
               return (
                 <button
                   key={tpl.id}
@@ -41,10 +50,16 @@ export function TemplateGallery({
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[11px]  text-muted-foreground font-medium">{tpl.category}</div>
+                      <div className="text-[11px]  text-muted-foreground font-medium">
+                        {tpl.category}
+                      </div>
                       <div className="text-sm font-semibold truncate">{tpl.name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{tpl.description}</div>
-                      <div className="mt-2 text-[11px] text-muted-foreground">{tpl.graph.nodes.length} nodes</div>
+                      <div className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                        {tpl.description}
+                      </div>
+                      <div className="mt-2 text-[11px] text-muted-foreground">
+                        {tpl.graph.nodes.length} nodes
+                      </div>
                     </div>
                   </div>
                 </button>

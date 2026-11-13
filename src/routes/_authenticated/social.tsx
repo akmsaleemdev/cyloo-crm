@@ -275,23 +275,25 @@ function SocialTimeline({
                       <p className="text-xs text-destructive">{post.last_error}</p>
                     )}
                     {post.status !== "publishing" &&
-                      (post.social_post_targets ?? []).some((target) => target.status === "pending" || target.status === "failed") && (
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={!!publishingId}
-                          onClick={() => onPublish(post)}
-                        >
-                          {publishingId === post.id ? (
-                            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                          ) : (
-                            <Send className="h-3.5 w-3.5 " />
-                          )}
-                          Publish now
-                        </Button>
-                      </div>
-                    )}
+                      (post.social_post_targets ?? []).some(
+                        (target) => target.status === "pending" || target.status === "failed",
+                      ) && (
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={!!publishingId}
+                            onClick={() => onPublish(post)}
+                          >
+                            {publishingId === post.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <Send className="h-3.5 w-3.5 " />
+                            )}
+                            Publish now
+                          </Button>
+                        </div>
+                      )}
                   </Card>
                 </div>
               );
@@ -531,26 +533,44 @@ function ScheduledDashboard({
                     )}
                     <div className="flex flex-wrap gap-2">
                       {p.status !== "publishing" &&
-                        (p.social_post_targets ?? []).some((target) => target.status === "pending" || target.status === "failed") && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={bulkPublishing || publishingId === p.id}
-                          onClick={() => onPublish(p)}
-                        >
-                          {publishingId === p.id ? (
-                            <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
-                          ) : (
-                            <Send className="h-3.5 w-3.5 " />
-                          )}
-                          {p.status === "failed" ? "Retry now" : "Publish now"}
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline" onClick={() => onReschedule(p)} disabled={p.status === "publishing" || p.status === "published" || (p.social_post_targets ?? []).some((target) => target.status === "published")}>
+                        (p.social_post_targets ?? []).some(
+                          (target) => target.status === "pending" || target.status === "failed",
+                        ) && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={bulkPublishing || publishingId === p.id}
+                            onClick={() => onPublish(p)}
+                          >
+                            {publishingId === p.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                            ) : (
+                              <Send className="h-3.5 w-3.5 " />
+                            )}
+                            {p.status === "failed" ? "Retry now" : "Publish now"}
+                          </Button>
+                        )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => onReschedule(p)}
+                        disabled={
+                          p.status === "publishing" ||
+                          p.status === "published" ||
+                          (p.social_post_targets ?? []).some(
+                            (target) => target.status === "published",
+                          )
+                        }
+                      >
                         <CalendarClock className="h-3.5 w-3.5 " />
                         Reschedule
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => onEdit(p)} disabled={p.status === "publishing"}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onEdit(p)}
+                        disabled={p.status === "publishing"}
+                      >
                         <Pencil className="h-3.5 w-3.5 " />
                         Edit
                       </Button>
@@ -681,7 +701,12 @@ function SocialComposerPreview({ form, channel }: { form: PostInput; channel: So
   // uploader accepts video/* even in image mode, and rendering a video URL in
   // an <img> leaves the preview blank.
   const isVideo = form.media_kind === "video" || isVideoPreviewUrl(media ?? "");
-  const platform = channel.platform === "instagram" ? "Instagram" : channel.platform === "facebook" ? "Facebook" : "TikTok";
+  const platform =
+    channel.platform === "instagram"
+      ? "Instagram"
+      : channel.platform === "facebook"
+        ? "Facebook"
+        : "TikTok";
 
   return (
     <section className="space-y-2" aria-label={`${platform} post preview`}>
@@ -693,7 +718,13 @@ function SocialComposerPreview({ form, channel }: { form: PostInput; channel: So
       <div className="mx-auto max-w-sm overflow-hidden rounded border bg-background shadow-sm">
         <div className="flex items-center gap-2 border-b px-3 py-2.5">
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-            <span className="text-xs font-semibold">{channel.platform === "instagram" ? "IG" : channel.platform === "facebook" ? "f" : "TT"}</span>
+            <span className="text-xs font-semibold">
+              {channel.platform === "instagram"
+                ? "IG"
+                : channel.platform === "facebook"
+                  ? "f"
+                  : "TT"}
+            </span>
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{channel.name}</p>
@@ -702,10 +733,15 @@ function SocialComposerPreview({ form, channel }: { form: PostInput; channel: So
             )}
           </div>
         </div>
-        <div className={`${channel.platform === "tiktok" ? "aspect-[9/16] max-h-[340px]" : "aspect-square"} bg-muted`}>
+        <div
+          className={`${channel.platform === "tiktok" ? "aspect-[9/16] max-h-[340px]" : "aspect-square"} bg-muted`}
+        >
           {media ? (
             form.media_kind === "carousel" ? (
-              <div className="flex h-full gap-1 overflow-x-auto" aria-label={`${form.media_urls.length} carousel items`}>
+              <div
+                className="flex h-full gap-1 overflow-x-auto"
+                aria-label={`${form.media_urls.length} carousel items`}
+              >
                 {form.media_urls.map((url, index) =>
                   isVideoPreviewUrl(url) ? (
                     <video
@@ -874,7 +910,9 @@ function SocialStudio() {
   const previewChannels = useMemo(
     () =>
       channels.filter(
-        (channel) => ["instagram", "facebook", "tiktok"].includes(channel.platform) && form.channelIds.includes(channel.id),
+        (channel) =>
+          ["instagram", "facebook", "tiktok"].includes(channel.platform) &&
+          form.channelIds.includes(channel.id),
       ),
     [channels, form.channelIds],
   );
@@ -897,7 +935,9 @@ function SocialStudio() {
 
   const openComposer = (post?: SocialPost) => {
     if (post) {
-      const duplicate = post.status === "published" || post.status === "publishing" ||
+      const duplicate =
+        post.status === "published" ||
+        post.status === "publishing" ||
         (post.social_post_targets ?? []).some((target) => target.status === "published");
       setDuplicatingPost(duplicate);
       setEditingPost(duplicate ? null : post);
@@ -1227,7 +1267,9 @@ function SocialStudio() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {post.status !== "publishing" &&
-                      (post.social_post_targets ?? []).some((target) => target.status === "pending" || target.status === "failed") && (
+                      (post.social_post_targets ?? []).some(
+                        (target) => target.status === "pending" || target.status === "failed",
+                      ) && (
                         <Button
                           size="sm"
                           disabled={!!publishingId}
@@ -1244,11 +1286,17 @@ function SocialStudio() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      aria-label={post.status === "published" || (post.social_post_targets ?? []).some((t) => t.status === "published") ? "Duplicate post" : "Edit post"}
+                      aria-label={
+                        post.status === "published" ||
+                        (post.social_post_targets ?? []).some((t) => t.status === "published")
+                          ? "Duplicate post"
+                          : "Edit post"
+                      }
                       onClick={() => openComposer(post)}
                       disabled={post.status === "publishing"}
                     >
-                      {post.status === "published" || (post.social_post_targets ?? []).some((t) => t.status === "published") ? (
+                      {post.status === "published" ||
+                      (post.social_post_targets ?? []).some((t) => t.status === "published") ? (
                         <Copy className="h-3.5 w-3.5" />
                       ) : (
                         <Pencil className="h-3.5 w-3.5" />
@@ -1452,7 +1500,9 @@ function SocialStudio() {
           }}
         >
           <DialogHeader>
-            <DialogTitle>{duplicatingPost ? "Duplicate post" : editingPost ? "Edit post" : "New post"}</DialogTitle>
+            <DialogTitle>
+              {duplicatingPost ? "Duplicate post" : editingPost ? "Edit post" : "New post"}
+            </DialogTitle>
             <DialogDescription>
               Select channels, write your caption and publish or schedule.
             </DialogDescription>
@@ -1854,8 +1904,12 @@ function SocialStudio() {
               <SocialComposerPreview key={channel.id} form={form} channel={channel} />
             ))}
             {tiktokSelected && (
-              <p role="status" className="rounded border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-                TikTok direct posting is paused while privacy, disclosure and consent controls are completed. You can save this post as a draft.
+              <p
+                role="status"
+                className="rounded border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+              >
+                TikTok direct posting is paused while privacy, disclosure and consent controls are
+                completed. You can save this post as a draft.
               </p>
             )}
           </div>

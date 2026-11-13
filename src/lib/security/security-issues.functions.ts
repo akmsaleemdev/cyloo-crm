@@ -105,20 +105,26 @@ export const getSecurityScan = createServerFn({ method: "GET" })
 
     const { resolveActiveWorkspaceId } = await import("@/lib/auth/active-workspace.server");
     const workspaceId = await resolveActiveWorkspaceId(supabase, userId);
-    const scopeWs = <T,>(q: T) => {
+    const scopeWs = <T>(q: T) => {
       if (!workspaceId) return q;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      try { return (q as any).eq("workspace_id", workspaceId); } catch { return q; }
+      try {
+        return (q as any).eq("workspace_id", workspaceId);
+      } catch {
+        return q;
+      }
     };
     const r = createSignalReader(supabase);
 
     // API keys and the password policy belong to the ORGANIZATION (they have no
     // workspace_id column), so scope them through the workspace's organization.
     const orgRows = workspaceId
-      ? await r.select<{ organization_id: string | null }>("workspaces", "organization_id", (q) => q.eq("id", workspaceId))
+      ? await r.select<{ organization_id: string | null }>("workspaces", "organization_id", (q) =>
+          q.eq("id", workspaceId),
+        )
       : [];
     const organizationId = orgRows[0]?.organization_id ?? null;
-    const scopeOrg = <T,>(q: T) => {
+    const scopeOrg = <T>(q: T) => {
       if (!organizationId) return q;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (q as any).eq("organization_id", organizationId);
@@ -142,19 +148,28 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       gdprOpen,
     ] = await Promise.all([
       // Real columns: organization_id (not workspace_id) and ip_allowlist (not allowed_ips).
-      r.select("api_keys", "id, name, scopes, revoked_at, last_used_at, created_at, ip_allowlist",
-        (q) => scopeOrg(q).limit(200)),
+      r.select(
+        "api_keys",
+        "id, name, scopes, revoked_at, last_used_at, created_at, ip_allowlist",
+        (q) => scopeOrg(q).limit(200),
+      ),
       r.count("ip_allowlists", (q) => scopeWs(q)),
       // Rows, not a count: a policy only protects anything if something runs it.
       r.select<{ is_active: boolean; last_run_at: string | null }>(
-        "data_retention_policies", "is_active, last_run_at", (q) => scopeWs(q)),
+        "data_retention_policies",
+        "is_active, last_run_at",
+        (q) => scopeWs(q),
+      ),
       r.count("account_lockouts", (q) => q.gte("locked_until", now.toISOString())),
       r.count("login_history", (q) => q.eq("event", "failed").gte("created_at", d1)),
       r.count("security_events", (q) =>
-        scopeWs(q).in("severity", ["high", "critical"]).gte("created_at", d7)),
+        scopeWs(q).in("severity", ["high", "critical"]).gte("created_at", d7),
+      ),
       // Outbound webhook deliveries have a status column (no `success`):
       // pending / delivering / succeeded / failed / dead_letter / cancelled.
-      r.count("webhook_deliveries", (q) => q.in("status", ["failed", "dead_letter"]).gte("created_at", d1)),
+      r.count("webhook_deliveries", (q) =>
+        q.in("status", ["failed", "dead_letter"]).gte("created_at", d1),
+      ),
       r.count("api_gateway_logs", (q) => q.gte("status_code", 400).gte("created_at", d1)),
       r.count("webhook_verify_tokens", (q) => scopeWs(q)),
       r.count("gdpr_requests", (q) => scopeWs(q).eq("status", "pending")),
@@ -183,7 +198,8 @@ export const getSecurityScan = createServerFn({ method: "GET" })
     add({
       id: "cron-token",
       title: "Internal cron token configured",
-      detail: "All /api/public/hooks/* endpoints require the x-cron-token header and fail closed when the secret is missing.",
+      detail:
+        "All /api/public/hooks/* endpoints require the x-cron-token header and fail closed when the secret is missing.",
       category: "Secrets",
       severity: "critical",
       status: cronTokenSet ? "passing" : "action_required",
@@ -198,7 +214,8 @@ export const getSecurityScan = createServerFn({ method: "GET" })
     add({
       id: "meta-app-secret",
       title: "Meta webhook signature secret",
-      detail: "Inbound WhatsApp/Messenger webhooks are verified with an HMAC signature derived from META_APP_SECRET.",
+      detail:
+        "Inbound WhatsApp/Messenger webhooks are verified with an HMAC signature derived from META_APP_SECRET.",
       category: "Webhooks",
       severity: "high",
       status: metaAppSecretSet ? "passing" : "action_required",
@@ -213,13 +230,18 @@ export const getSecurityScan = createServerFn({ method: "GET" })
     add({
       id: "api-key-scopes",
       title: "API keys without scopes",
-      detail: "Keys with an empty scope list cannot be constrained by the gateway's permission checks.",
+      detail:
+        "Keys with an empty scope list cannot be constrained by the gateway's permission checks.",
       category: "API access",
       severity: "high",
       status: keysWithoutScopes.length > 0 ? "action_required" : "passing",
-      evidence: keysWithoutScopes.length > 0
-        ? `${keysWithoutScopes.length} active key(s) have no scopes: ${keysWithoutScopes.map((k) => k.name ?? k.id).slice(0, 5).join(", ")}.`
-        : `${activeKeys.length} active key(s), all with explicit scopes.`,
+      evidence:
+        keysWithoutScopes.length > 0
+          ? `${keysWithoutScopes.length} active key(s) have no scopes: ${keysWithoutScopes
+              .map((k) => k.name ?? k.id)
+              .slice(0, 5)
+              .join(", ")}.`
+          : `${activeKeys.length} active key(s), all with explicit scopes.`,
       remediation: "Edit each key in Settings → API keys and assign the minimum scopes it needs.",
     });
 
@@ -230,9 +252,10 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       category: "API access",
       severity: "medium",
       status: staleKeys.length > 0 ? "monitor" : "passing",
-      evidence: staleKeys.length > 0
-        ? `${staleKeys.length} active key(s) created more than 90 days ago.`
-        : "No active key is older than 90 days.",
+      evidence:
+        staleKeys.length > 0
+          ? `${staleKeys.length} active key(s) created more than 90 days ago.`
+          : "No active key is older than 90 days.",
       remediation: "Use the Rotate action on each aged key and update the consuming integration.",
     });
 
@@ -243,22 +266,25 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       category: "API access",
       severity: "low",
       status: unusedKeys.length > 0 ? "monitor" : "passing",
-      evidence: unusedKeys.length > 0
-        ? `${unusedKeys.length} active key(s) have never made a request.`
-        : "Every active key has been used at least once.",
+      evidence:
+        unusedKeys.length > 0
+          ? `${unusedKeys.length} active key(s) have never made a request.`
+          : "Every active key has been used at least once.",
       remediation: "Revoke keys that are no longer needed.",
     });
 
     add({
       id: "ip-allowlist",
       title: "IP allowlist rules",
-      detail: "Restricting API and admin access by source IP blocks credential reuse from unknown networks.",
+      detail:
+        "Restricting API and admin access by source IP blocks credential reuse from unknown networks.",
       category: "Network",
       severity: "medium",
       status: ipAllowlistRules > 0 ? "passing" : "monitor",
-      evidence: ipAllowlistRules > 0
-        ? `${ipAllowlistRules} allowlist rule(s) configured.`
-        : "No IP allowlist rules configured for this workspace.",
+      evidence:
+        ipAllowlistRules > 0
+          ? `${ipAllowlistRules} allowlist rule(s) configured.`
+          : "No IP allowlist rules configured for this workspace.",
       remediation: "Add allowlist entries for your office/CI egress IPs under Security settings.",
     });
 
@@ -283,7 +309,8 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       severity: failed24 >= 50 ? "high" : "medium",
       status: failed24 >= 50 ? "action_required" : failed24 > 0 ? "monitor" : "passing",
       evidence: `${failed24} failed sign-in attempt(s) in the last 24 hours; ${lockedAccounts} account(s) currently locked.`,
-      remediation: "Review the Security Center threat tab and block offending IPs via the allowlist.",
+      remediation:
+        "Review the Security Center threat tab and block offending IPs via the allowlist.",
     });
 
     add({
@@ -303,7 +330,8 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       detail: "Repeated delivery failures can hide rejected or tampered payloads.",
       category: "Webhooks",
       severity: "medium",
-      status: webhookFailures24 > 10 ? "action_required" : webhookFailures24 > 0 ? "monitor" : "passing",
+      status:
+        webhookFailures24 > 10 ? "action_required" : webhookFailures24 > 0 ? "monitor" : "passing",
       evidence: `${webhookFailures24} failed delivery attempt(s) in the last 24 hours.`,
       remediation: "Inspect the dead-letter queue and re-drive or disable the failing endpoint.",
     });
@@ -325,15 +353,18 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       detail: "Retention windows limit how long personal data is stored (GDPR art. 5).",
       category: "Compliance",
       severity: "medium",
-      status: retentionPolicies === 0 ? "action_required" : retentionEnforced ? "passing" : "monitor",
-      evidence: retentionPolicies === 0
-        ? "No retention policies defined for this workspace."
-        : retentionEnforced
-          ? `${activeRetention.length} active retention polic${activeRetention.length === 1 ? "y" : "ies"}; at least one ran in the last 7 days.`
-          : `${retentionPolicies} retention polic${retentionPolicies === 1 ? "y is" : "ies are"} defined but none has run in the last 7 days — nothing is enforcing them, so no data is being purged.`,
-      remediation: retentionPolicies === 0
-        ? "Define retention windows under Compliance → Data retention."
-        : "Schedule public.run_retention_policies() (for example daily with pg_cron). It exists in the database but is not scheduled by default.",
+      status:
+        retentionPolicies === 0 ? "action_required" : retentionEnforced ? "passing" : "monitor",
+      evidence:
+        retentionPolicies === 0
+          ? "No retention policies defined for this workspace."
+          : retentionEnforced
+            ? `${activeRetention.length} active retention polic${activeRetention.length === 1 ? "y" : "ies"}; at least one ran in the last 7 days.`
+            : `${retentionPolicies} retention polic${retentionPolicies === 1 ? "y is" : "ies are"} defined but none has run in the last 7 days — nothing is enforcing them, so no data is being purged.`,
+      remediation:
+        retentionPolicies === 0
+          ? "Define retention windows under Compliance → Data retention."
+          : "Schedule public.run_retention_policies() (for example daily with pg_cron). It exists in the database but is not scheduled by default.",
     });
 
     add({
@@ -374,9 +405,10 @@ export const getSecurityScan = createServerFn({ method: "GET" })
         kind: "endpoint",
         guard: "Bearer API key + scope enforcement + IP allowlist",
         status: keysWithoutScopes.length > 0 ? "degraded" : "protected",
-        note: keysWithoutScopes.length > 0
-          ? `${keysWithoutScopes.length} active key(s) carry no scopes.`
-          : `${activeKeys.length} active key(s), all scoped.`,
+        note:
+          keysWithoutScopes.length > 0
+            ? `${keysWithoutScopes.length} active key(s) carry no scopes.`
+            : `${activeKeys.length} active key(s), all scoped.`,
       },
       {
         id: "policy-rls",
@@ -409,12 +441,14 @@ export const getSecurityScan = createServerFn({ method: "GET" })
         name: "Data retention",
         kind: "policy",
         guard: "data_retention_policies table",
-        status: retentionPolicies === 0 ? "unprotected" : retentionEnforced ? "protected" : "degraded",
-        note: retentionPolicies === 0
-          ? "No policies configured."
-          : retentionEnforced
-            ? `${retentionPolicies} policy/policies configured and running.`
-            : `${retentionPolicies} policy/policies configured but none has run in 7 days — not enforced.`,
+        status:
+          retentionPolicies === 0 ? "unprotected" : retentionEnforced ? "protected" : "degraded",
+        note:
+          retentionPolicies === 0
+            ? "No policies configured."
+            : retentionEnforced
+              ? `${retentionPolicies} policy/policies configured and running.`
+              : `${retentionPolicies} policy/policies configured but none has run in 7 days — not enforced.`,
       },
     ];
 
@@ -427,7 +461,8 @@ export const getSecurityScan = createServerFn({ method: "GET" })
       if (failure) {
         issue.status = "monitor";
         issue.evidence = `Could not be checked — the ${failure.source} data could not be read (${failure.reason}).`;
-        issue.remediation = "Fix the failing query or the database permissions, then re-run the scan.";
+        issue.remediation =
+          "Fix the failing query or the database permissions, then re-run the scan.";
       }
     }
     const surfaceSources: Array<[string, string]> = [
@@ -457,8 +492,22 @@ export const getSecurityScan = createServerFn({ method: "GET" })
     };
 
     const order: Record<IssueStatus, number> = { action_required: 0, monitor: 1, passing: 2 };
-    const sevOrder: Record<IssueSeverity, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
-    issues.sort((a, b) => order[a.status] - order[b.status] || sevOrder[a.severity] - sevOrder[b.severity]);
+    const sevOrder: Record<IssueSeverity, number> = {
+      critical: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
+      info: 4,
+    };
+    issues.sort(
+      (a, b) => order[a.status] - order[b.status] || sevOrder[a.severity] - sevOrder[b.severity],
+    );
 
-    return { generated_at: now.toISOString(), summary, issues, surfaces, unavailable: r.unavailable };
+    return {
+      generated_at: now.toISOString(),
+      summary,
+      issues,
+      surfaces,
+      unavailable: r.unavailable,
+    };
   });

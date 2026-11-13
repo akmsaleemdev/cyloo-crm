@@ -3,7 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { fetchContactAttachments } from "@/lib/crm/contact-attachments";
-import { invalidateContactCaches, resolveDisplayName, resolveInitials } from "@/lib/crm/contact-identity";
+import {
+  invalidateContactCaches,
+  resolveDisplayName,
+  resolveInitials,
+} from "@/lib/crm/contact-identity";
 import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
 import { sbAny } from "@/lib/supabase/untyped";
 
@@ -65,26 +69,34 @@ export function useCustomers(filters: CustomerFilters = {}) {
     enabled: !!workspaceId,
     queryFn: async (): Promise<CustomerRow[]> => {
       let q = anyFrom("contacts")
-        .select("id, workspace_id, owner_id, company_id, first_name, last_name, display_name, name, email, phone, avatar_url, job_title, lifecycle_stage, customer_status, customer_lifetime_value, customer_health_score, segments, preferences, tags, first_customer_at, converted_from_lead_id, created_at, updated_at")
+        .select(
+          "id, workspace_id, owner_id, company_id, first_name, last_name, display_name, name, email, phone, avatar_url, job_title, lifecycle_stage, customer_status, customer_lifetime_value, customer_health_score, segments, preferences, tags, first_customer_at, converted_from_lead_id, created_at, updated_at",
+        )
         .eq("workspace_id", workspaceId)
         .eq("lifecycle_stage", "customer")
         .is("deleted_at", null);
       if (filters.customerStatus) q = q.eq("customer_status", filters.customerStatus);
       if (filters.ownerId) q = q.eq("owner_id", filters.ownerId);
       if (filters.segment) q = q.contains("segments", [filters.segment]);
-      if (typeof filters.minHealth === "number") q = q.gte("customer_health_score", filters.minHealth);
+      if (typeof filters.minHealth === "number")
+        q = q.gte("customer_health_score", filters.minHealth);
       if (typeof filters.minLtv === "number") q = q.gte("customer_lifetime_value", filters.minLtv);
       if (filters.search?.trim()) {
         const s = filters.search.trim().replace(/[%,]/g, " ");
-        q = q.or([
-          `display_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `first_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `last_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `email.ilike.%${sanitizeSearchTerm(s)}%`,
-          `phone.ilike.%${sanitizeSearchTerm(s)}%`,
-        ].join(","));
+        q = q.or(
+          [
+            `display_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `first_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `last_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `email.ilike.%${sanitizeSearchTerm(s)}%`,
+            `phone.ilike.%${sanitizeSearchTerm(s)}%`,
+          ].join(","),
+        );
       }
-      const { data, error } = await q.order("customer_lifetime_value", { ascending: false, nullsFirst: false }).order("updated_at", { ascending: false }).limit(500);
+      const { data, error } = await q
+        .order("customer_lifetime_value", { ascending: false, nullsFirst: false })
+        .order("updated_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return (data ?? []) as CustomerRow[];
     },
@@ -135,7 +147,13 @@ export function useCustomerTimeline(customerId: string | undefined) {
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data ?? []) as Array<{ id: string; action: string; actor_id: string | null; changes: Record<string, unknown>; created_at: string }>;
+      return (data ?? []) as Array<{
+        id: string;
+        action: string;
+        actor_id: string | null;
+        changes: Record<string, unknown>;
+        created_at: string;
+      }>;
     },
   });
 }
@@ -183,7 +201,6 @@ export type CustomerPatch = {
   job_title?: string | null;
 };
 
-
 export function useUpdateCustomer() {
   const qc = useQueryClient();
   return useMutation({
@@ -221,12 +238,21 @@ export function useCustomersRealtime() {
     if (!workspaceId || typeof window === "undefined") return;
     const channel = supabase
       .channel(`customers:${workspaceId}`)
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "contacts", filter: `workspace_id=eq.${workspaceId}` },
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "contacts",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => {
           invalidateContactCaches(qc);
-        })
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [workspaceId, qc]);
 }

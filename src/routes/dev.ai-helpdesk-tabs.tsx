@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  MessageSquareText, Gauge, BookOpen, ScrollText, UserPlus, CheckCircle2,
+  MessageSquareText,
+  Gauge,
+  BookOpen,
+  ScrollText,
+  UserPlus,
+  CheckCircle2,
 } from "lucide-react";
 
 /**
@@ -42,23 +47,43 @@ function AiHelpdeskTabsFixture() {
               <MessageSquareText className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">Reply</span>
             </TabsTrigger>
-            <TabsTrigger value="insight" data-testid="ai-helpdesk-tab-insight" className="min-w-0 px-2">
+            <TabsTrigger
+              value="insight"
+              data-testid="ai-helpdesk-tab-insight"
+              className="min-w-0 px-2"
+            >
               <Gauge className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">Insight</span>
             </TabsTrigger>
-            <TabsTrigger value="knowledge" data-testid="ai-helpdesk-tab-knowledge" className="min-w-0 px-2">
+            <TabsTrigger
+              value="knowledge"
+              data-testid="ai-helpdesk-tab-knowledge"
+              className="min-w-0 px-2"
+            >
               <BookOpen className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">KB</span>
             </TabsTrigger>
-            <TabsTrigger value="summary" data-testid="ai-helpdesk-tab-summary" className="min-w-0 px-2">
+            <TabsTrigger
+              value="summary"
+              data-testid="ai-helpdesk-tab-summary"
+              className="min-w-0 px-2"
+            >
               <ScrollText className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">Summary</span>
             </TabsTrigger>
-            <TabsTrigger value="routing" data-testid="ai-helpdesk-tab-routing" className="min-w-0 px-2">
+            <TabsTrigger
+              value="routing"
+              data-testid="ai-helpdesk-tab-routing"
+              className="min-w-0 px-2"
+            >
               <UserPlus className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">Route</span>
             </TabsTrigger>
-            <TabsTrigger value="resolve" data-testid="ai-helpdesk-tab-resolve" className="min-w-0 px-2">
+            <TabsTrigger
+              value="resolve"
+              data-testid="ai-helpdesk-tab-resolve"
+              className="min-w-0 px-2"
+            >
               <CheckCircle2 className="h-3.5 w-3.5 mr-1 shrink-0" />
               <span className="truncate">Resolve</span>
             </TabsTrigger>

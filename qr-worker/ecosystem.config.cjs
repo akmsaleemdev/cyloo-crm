@@ -3,21 +3,22 @@
 module.exports = {
   apps: [
     {
-      name: 'cyloo-wa-qr-worker',
-      script: 'src/index.js',
+      name: "cyloo-wa-qr-worker",
+      script: "src/index.js",
+      node_args: "--env-file-if-exists=.env",
       cwd: __dirname,
       instances: 1, // MUST stay 1 — Baileys sockets are stateful, not clusterable.
-      exec_mode: 'fork',
+      exec_mode: "fork",
       autorestart: true,
       max_restarts: 20,
       restart_delay: 5000,
-      max_memory_restart: '600M',
+      max_memory_restart: "600M",
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: "production",
         PORT: 8787,
       },
-      out_file: './logs/out.log',
-      error_file: './logs/error.log',
+      out_file: "./logs/out.log",
+      error_file: "./logs/error.log",
       time: true,
     },
   ],

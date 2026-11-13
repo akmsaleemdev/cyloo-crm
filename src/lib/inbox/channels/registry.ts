@@ -31,11 +31,44 @@ const channels: Record<ChannelKind, ChannelProvider> = {
   sms: smsChannel,
   // Future — scaffolded stubs; light them up by dropping a real implementation.
   discord: stubChannel("discord", "Discord", ["text", "emoji", "image", "reaction", "reply_quote"]),
-  slack: stubChannel("slack", "Slack", ["text", "emoji", "image", "document", "reaction", "reply_quote", "threads"]),
-  teams: stubChannel("teams", "Microsoft Teams", ["text", "emoji", "image", "document", "reaction", "reply_quote", "threads"]),
-  apple_business: stubChannel("apple_business", "Apple Business Messages", ["text", "image", "interactive_list", "interactive_buttons"]),
-  google_business: stubChannel("google_business", "Google Business Messages", ["text", "image", "interactive_buttons"]),
-  line: stubChannel("line", "LINE", ["text", "emoji", "image", "video", "audio", "location", "template"]),
+  slack: stubChannel("slack", "Slack", [
+    "text",
+    "emoji",
+    "image",
+    "document",
+    "reaction",
+    "reply_quote",
+    "threads",
+  ]),
+  teams: stubChannel("teams", "Microsoft Teams", [
+    "text",
+    "emoji",
+    "image",
+    "document",
+    "reaction",
+    "reply_quote",
+    "threads",
+  ]),
+  apple_business: stubChannel("apple_business", "Apple Business Messages", [
+    "text",
+    "image",
+    "interactive_list",
+    "interactive_buttons",
+  ]),
+  google_business: stubChannel("google_business", "Google Business Messages", [
+    "text",
+    "image",
+    "interactive_buttons",
+  ]),
+  line: stubChannel("line", "LINE", [
+    "text",
+    "emoji",
+    "image",
+    "video",
+    "audio",
+    "location",
+    "template",
+  ]),
   viber: stubChannel("viber", "Viber", ["text", "emoji", "image", "video", "audio", "location"]),
   wechat: stubChannel("wechat", "WeChat", ["text", "emoji", "image", "video", "audio", "location"]),
 };
@@ -54,6 +87,9 @@ export function listImplementedChannels(): ChannelProvider[] {
   return listChannels().filter((c) => c.implemented);
 }
 
-export function channelSupports(kind: ChannelKind, cap: Parameters<ChannelProvider["capabilities"]["has"]>[0]): boolean {
+export function channelSupports(
+  kind: ChannelKind,
+  cap: Parameters<ChannelProvider["capabilities"]["has"]>[0],
+): boolean {
   return getChannel(kind).capabilities.has(cap);
 }

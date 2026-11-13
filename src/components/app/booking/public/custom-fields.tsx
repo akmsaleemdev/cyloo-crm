@@ -66,7 +66,9 @@ export function CustomFieldsRenderer({
                 </SelectTrigger>
                 <SelectContent>
                   {(q.options ?? []).map((opt) => (
-                    <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    <SelectItem key={opt} value={opt}>
+                      {opt}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -88,7 +90,14 @@ export function CustomFieldsRenderer({
             </div>
           );
         }
-        const inputType = q.type === "email" ? "email" : q.type === "phone" ? "tel" : q.type === "number" ? "number" : "text";
+        const inputType =
+          q.type === "email"
+            ? "email"
+            : q.type === "phone"
+              ? "tel"
+              : q.type === "number"
+                ? "number"
+                : "text";
         return (
           <div key={key}>
             {label}

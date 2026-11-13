@@ -9,10 +9,9 @@ import { resolve } from "node:path";
 
 // Nitro writes the SSR chunks to a different folder per preset: `.output` for the
 // node / cloudflare builds, `.netlify/functions-internal` for the netlify preset.
-const candidateDirectories = [
-  ".output/server/_ssr",
-  ".netlify/functions-internal/server/_ssr",
-].map((dir) => resolve(process.cwd(), dir));
+const candidateDirectories = [".output/server/_ssr", ".netlify/functions-internal/server/_ssr"].map(
+  (dir) => resolve(process.cwd(), dir),
+);
 const helper = `var __exportAll = (all, no_symbols) => {
 \tlet target = {};
 \tfor (var name in all) Object.defineProperty(target, name, {
@@ -44,9 +43,7 @@ async function patchDirectory(ssrDirectory) {
     const source = await readFile(filePath, "utf8");
     if (!source.includes("var server_exports = /* @__PURE__ */ __exportAll(")) continue;
 
-    const match = source.match(
-      /import \{ n as __exportAll \} from "\.\/(server-[^"]+\.mjs)";/,
-    );
+    const match = source.match(/import \{ n as __exportAll \} from "\.\/(server-[^"]+\.mjs)";/);
     if (!match) {
       // A previous run (or an older build left in this folder) already inlined the helper.
       if (source.includes("var __exportAll = (all, no_symbols)")) alreadyPatched += 1;
@@ -75,7 +72,9 @@ for (const dir of candidateDirectories) {
 }
 
 if (directories.length === 0) {
-  console.log(`[fix-ssr-export-all-cycle] No separate _ssr directory found (node-server standalone output); skipping.`);
+  console.log(
+    `[fix-ssr-export-all-cycle] No separate _ssr directory found (node-server standalone output); skipping.`,
+  );
   process.exit(0);
 }
 

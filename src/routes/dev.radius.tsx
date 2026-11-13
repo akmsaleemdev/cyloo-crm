@@ -19,11 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -130,9 +126,7 @@ function RadiusFixture() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent data-testid="dropdown-content">
-              <DropdownMenuItem data-testid="dropdown-item">
-                Item one
-              </DropdownMenuItem>
+              <DropdownMenuItem data-testid="dropdown-item">Item one</DropdownMenuItem>
               <DropdownMenuItem>Item two</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -143,9 +137,7 @@ function RadiusFixture() {
                 Popover
               </Button>
             </PopoverTrigger>
-            <PopoverContent data-testid="popover-content">
-              Popover content
-            </PopoverContent>
+            <PopoverContent data-testid="popover-content">Popover content</PopoverContent>
           </Popover>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

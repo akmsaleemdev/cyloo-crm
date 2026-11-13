@@ -4,9 +4,9 @@
  */
 import { sbAny } from "@/lib/supabase/untyped";
 
-const ACCESS_TTL_S = 3600;              // 1h
+const ACCESS_TTL_S = 3600; // 1h
 const REFRESH_TTL_S = 60 * 60 * 24 * 30; // 30d
-const CODE_TTL_S = 300;                  // 5m
+const CODE_TTL_S = 300; // 5m
 
 export const OAUTH_TTL = { ACCESS_TTL_S, REFRESH_TTL_S, CODE_TTL_S };
 
@@ -78,7 +78,9 @@ export async function authenticateClient(
         clientId = decodeURIComponent(decoded.slice(0, idx));
         clientSecret = decodeURIComponent(decoded.slice(idx + 1));
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
   if (!clientId) return null;
   const { data: client } = await admin
@@ -98,22 +100,15 @@ export async function authenticateClient(
   return { client, authed: ok, publicOk: false };
 }
 
-export function oauthError(
-  error: string,
-  description?: string,
-  status = 400,
-): Response {
-  return new Response(
-    JSON.stringify({ error, error_description: description }),
-    {
-      status,
-      headers: {
-        "content-type": "application/json",
-        "cache-control": "no-store",
-        pragma: "no-cache",
-      },
+export function oauthError(error: string, description?: string, status = 400): Response {
+  return new Response(JSON.stringify({ error, error_description: description }), {
+    status,
+    headers: {
+      "content-type": "application/json",
+      "cache-control": "no-store",
+      pragma: "no-cache",
     },
-  );
+  });
 }
 
 export type MintedTokens = {
@@ -159,15 +154,17 @@ export async function mintTokenPair(
   if (atErr) throw atErr;
 
   if (refreshHash) {
-    const { error: rtErr } = await sbAny(admin).from("oauth_refresh_tokens").insert({
-      token_hash: refreshHash,
-      access_token_id: at.id,
-      client_id: args.clientId,
-      user_id: args.userId,
-      organization_id: args.organizationId,
-      scopes: args.scopes,
-      expires_at: new Date(now + REFRESH_TTL_S * 1000).toISOString(),
-    });
+    const { error: rtErr } = await sbAny(admin)
+      .from("oauth_refresh_tokens")
+      .insert({
+        token_hash: refreshHash,
+        access_token_id: at.id,
+        client_id: args.clientId,
+        user_id: args.userId,
+        organization_id: args.organizationId,
+        scopes: args.scopes,
+        expires_at: new Date(now + REFRESH_TTL_S * 1000).toISOString(),
+      });
     if (rtErr) throw rtErr;
   }
 
@@ -198,6 +195,9 @@ export async function validateAccessToken(admin: any, token: string) {
     .from("oauth_access_tokens")
     .update({ last_used_at: new Date().toISOString() })
     .eq("id", data.id)
-    .then(() => {}, () => {});
+    .then(
+      () => {},
+      () => {},
+    );
   return data;
 }

@@ -36,7 +36,10 @@ const boardKey = (workspaceId: string | null | undefined) => ["task-board", work
  * Any task change can affect the board, the inbox task badges and a conversation's
  * task list, so refresh all of them together.
  */
-function invalidateTaskCaches(qc: ReturnType<typeof useQueryClient>, workspaceId: string | null | undefined) {
+function invalidateTaskCaches(
+  qc: ReturnType<typeof useQueryClient>,
+  workspaceId: string | null | undefined,
+) {
   qc.invalidateQueries({ queryKey: boardKey(workspaceId) });
   qc.invalidateQueries({ queryKey: ["conversation-open-task-counts"] });
   qc.invalidateQueries({ queryKey: ["conversation-tasks"] });
@@ -49,7 +52,9 @@ export function useTaskBoard(workspaceId: string | null | undefined) {
     enabled: !!workspaceId,
     queryFn: async (): Promise<TaskBoardRow[]> => {
       const { data, error } = await anyFrom("tasks")
-        .select("id,title,description,status,priority,due_at,entity_type,entity_id,created_by,assigned_to,custom_fields")
+        .select(
+          "id,title,description,status,priority,due_at,entity_type,entity_id,created_by,assigned_to,custom_fields",
+        )
         .eq("workspace_id", workspaceId)
         .is("deleted_at", null)
         .order("due_at", { ascending: true, nullsFirst: false });
@@ -86,7 +91,10 @@ export function useMoveTask(workspaceId: string | null | undefined) {
 }
 
 /** Creates a standalone task (no linked customer or conversation). */
-export function useCreateTask(workspaceId: string | null | undefined, userId: string | null | undefined) {
+export function useCreateTask(
+  workspaceId: string | null | undefined,
+  userId: string | null | undefined,
+) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: TaskInput) => {
@@ -109,7 +117,10 @@ export function useUpdateTask(workspaceId: string | null | undefined) {
   return useMutation({
     mutationFn: async ({ id, input }: { id: string; input: TaskInput }) => {
       if (!workspaceId) throw new Error("No workspace");
-      const { error } = await anyFrom("tasks").update(input).eq("id", id).eq("workspace_id", workspaceId);
+      const { error } = await anyFrom("tasks")
+        .update(input)
+        .eq("id", id)
+        .eq("workspace_id", workspaceId);
       if (error) throw error;
     },
     onSuccess: () => invalidateTaskCaches(qc, workspaceId),

@@ -38,13 +38,12 @@ export function AIToolsPanel({ conversationId }: { conversationId?: string }) {
     },
   });
 
-  const grouped = ACTION_TOOL_CATALOG.reduce<Record<string, typeof ACTION_TOOL_CATALOG[number][]>>(
-    (acc, t) => {
-      (acc[t.group] ??= []).push(t);
-      return acc;
-    },
-    {},
-  );
+  const grouped = ACTION_TOOL_CATALOG.reduce<
+    Record<string, (typeof ACTION_TOOL_CATALOG)[number][]>
+  >((acc, t) => {
+    (acc[t.group] ??= []).push(t);
+    return acc;
+  }, {});
 
   return (
     <div className="flex h-full flex-col">

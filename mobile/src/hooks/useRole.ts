@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/api/supabase';
-import { useAuth } from '@/auth/AuthProvider';
-import { useAppStore } from '@/stores/appStore';
-import type { WorkspaceRole } from '@/lib/roles';
+import { useEffect, useState } from "react";
+import { supabase } from "@/api/supabase";
+import { useAuth } from "@/auth/AuthProvider";
+import { useAppStore } from "@/stores/appStore";
+import type { WorkspaceRole } from "@/lib/roles";
 
 /** Resolves the caller's role in the active workspace. */
 export function useRole(): { role: WorkspaceRole | null; loading: boolean } {
@@ -20,10 +20,10 @@ export function useRole(): { role: WorkspaceRole | null; loading: boolean } {
     }
     setLoading(true);
     supabase
-      .from('workspace_members')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('workspace_id', workspaceId)
+      .from("workspace_members")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", workspaceId)
       .maybeSingle()
       .then(({ data }) => {
         if (!alive) return;

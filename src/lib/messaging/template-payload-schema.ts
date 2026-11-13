@@ -50,7 +50,10 @@ const ButtonSchema = z
     text: z
       .string()
       .trim()
-      .max(TEMPLATE_LIMITS.buttonTextMax, `Button label must be at most ${TEMPLATE_LIMITS.buttonTextMax} characters`)
+      .max(
+        TEMPLATE_LIMITS.buttonTextMax,
+        `Button label must be at most ${TEMPLATE_LIMITS.buttonTextMax} characters`,
+      )
       .optional(),
     url: z.string().optional(),
     phone_number: z.string().optional(),
@@ -60,7 +63,11 @@ const ButtonSchema = z
   .superRefine((button, ctx) => {
     const label = (button.text ?? "").trim();
     if (button.type !== "COPY_CODE" && button.type !== "OTP" && !label) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Button label is required" });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["text"],
+        message: "Button label is required",
+      });
     }
     if (label) {
       if (/[\r\n\t]/.test(button.text ?? "")) {
@@ -83,7 +90,11 @@ const ButtonSchema = z
     }
     if (button.type === "QUICK_REPLY") {
       if (button.url?.trim()) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["url"], message: "Quick-reply buttons cannot carry a URL" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["url"],
+          message: "Quick-reply buttons cannot carry a URL",
+        });
       }
       if (button.phone_number?.trim()) {
         ctx.addIssue({
@@ -108,7 +119,11 @@ const ButtonSchema = z
       const example = Array.isArray(button.example) ? button.example[0] : button.example;
       const code = (example ?? "").trim();
       if (!code) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["example"], message: "Copy-code example is required" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["example"],
+          message: "Copy-code example is required",
+        });
       } else if (code.length > TEMPLATE_LIMITS.copyCodeMax) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -137,7 +152,11 @@ export const TemplateComponentSchema = z
       const format = component.format ?? "TEXT";
       if (format === "TEXT") {
         if (!text.trim()) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Header text is required" });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["text"],
+            message: "Header text is required",
+          });
         }
         if (text.length > TEMPLATE_LIMITS.headerTextMax) {
           ctx.addIssue({
@@ -147,20 +166,36 @@ export const TemplateComponentSchema = z
           });
         }
         if (/\n/.test(text)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Header text cannot contain line breaks" });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["text"],
+            message: "Header text cannot contain line breaks",
+          });
         }
         const vars = numericVars(text);
         if (vars.length > 1) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Header may contain at most one variable" });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["text"],
+            message: "Header may contain at most one variable",
+          });
         } else if (vars.length === 1 && vars[0] !== 1) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Header variable must be {{1}}" });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["text"],
+            message: "Header variable must be {{1}}",
+          });
         }
       }
     }
 
     if (component.type === "BODY") {
       if (!text.trim()) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Body text is required" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["text"],
+          message: "Body text is required",
+        });
       }
       if (text.length > TEMPLATE_LIMITS.bodyTextMax) {
         ctx.addIssue({
@@ -170,7 +205,11 @@ export const TemplateComponentSchema = z
         });
       }
       if (/\n{4,}/.test(text)) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Body cannot contain 4+ consecutive line breaks" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["text"],
+          message: "Body cannot contain 4+ consecutive line breaks",
+        });
       }
       if (text.trim()) {
         if (/^\s*\{\{\s*\d+\s*\}\}/.test(text) || /\{\{\s*\d+\s*\}\}\s*$/.test(text)) {
@@ -182,7 +221,11 @@ export const TemplateComponentSchema = z
         }
         const unique = [...new Set(numericVars(text))].sort((a, b) => a - b);
         if (unique.some((n) => n <= 0)) {
-          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Variables must be numbered starting at {{1}}" });
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["text"],
+            message: "Variables must be numbered starting at {{1}}",
+          });
         }
         for (let i = 0; i < unique.length; i++) {
           if (unique[i] !== i + 1) {
@@ -207,7 +250,11 @@ export const TemplateComponentSchema = z
       }
       if (VARIABLE_RE.test(text)) {
         VARIABLE_RE.lastIndex = 0;
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["text"], message: "Footer cannot contain variables" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["text"],
+          message: "Footer cannot contain variables",
+        });
       }
       VARIABLE_RE.lastIndex = 0;
     }
@@ -215,7 +262,11 @@ export const TemplateComponentSchema = z
     if (component.type === "BUTTONS") {
       const buttons = component.buttons ?? [];
       if (buttons.length === 0) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["buttons"], message: "A BUTTONS component needs at least one button" });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons"],
+          message: "A BUTTONS component needs at least one button",
+        });
       }
       if (buttons.length > TEMPLATE_LIMITS.maxButtons) {
         ctx.addIssue({
@@ -241,13 +292,25 @@ export const TemplateComponentSchema = z
         }
       });
       if (counts.URL > TEMPLATE_LIMITS.maxUrlButtons) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["buttons"], message: `At most ${TEMPLATE_LIMITS.maxUrlButtons} URL buttons allowed` });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons"],
+          message: `At most ${TEMPLATE_LIMITS.maxUrlButtons} URL buttons allowed`,
+        });
       }
       if (counts.PHONE_NUMBER > TEMPLATE_LIMITS.maxPhoneButtons) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["buttons"], message: `At most ${TEMPLATE_LIMITS.maxPhoneButtons} phone button allowed` });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons"],
+          message: `At most ${TEMPLATE_LIMITS.maxPhoneButtons} phone button allowed`,
+        });
       }
       if (counts.COPY_CODE > TEMPLATE_LIMITS.maxCopyCodeButtons) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["buttons"], message: `At most ${TEMPLATE_LIMITS.maxCopyCodeButtons} copy-code button allowed` });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["buttons"],
+          message: `At most ${TEMPLATE_LIMITS.maxCopyCodeButtons} copy-code button allowed`,
+        });
       }
       // Quick replies: Meta allows up to 10, but they must all sit together —
       // a quick reply after a call-to-action button is rejected.
@@ -267,11 +330,11 @@ export const TemplateComponentSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["buttons", first, "type"],
-            message: "Quick-reply buttons must be grouped together — do not interleave them with URL or call buttons",
+            message:
+              "Quick-reply buttons must be grouped together — do not interleave them with URL or call buttons",
           });
         }
       }
-
     }
   });
 
@@ -282,11 +345,17 @@ export const TemplateComponentsSchema = z
   .superRefine((components, ctx) => {
     const count = (type: string) => components.filter((c) => c.type === type).length;
     if (count("BODY") !== 1) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A template must contain exactly one BODY component" });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A template must contain exactly one BODY component",
+      });
     }
     for (const type of ["HEADER", "FOOTER", "BUTTONS"]) {
       if (count(type) > 1) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: `A template may contain at most one ${type} component` });
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `A template may contain at most one ${type} component`,
+        });
       }
     }
   });
@@ -351,7 +420,10 @@ export function validateTemplateComponents(input: unknown): TemplatePayloadIssue
 }
 
 /** Format an issue as Meta would report it: title + description. */
-export function formatTemplatePayloadIssue(issue: TemplatePayloadIssue): { title: string; description: string } {
+export function formatTemplatePayloadIssue(issue: TemplatePayloadIssue): {
+  title: string;
+  description: string;
+} {
   return { title: `Param ${issue.path} is invalid`, description: issue.message };
 }
 

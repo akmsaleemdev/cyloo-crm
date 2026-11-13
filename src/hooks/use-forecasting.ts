@@ -63,7 +63,9 @@ export function useForecastDeals() {
         () => qc.invalidateQueries({ queryKey: ["forecast", "deals", workspaceId] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [workspaceId, qc]);
 
   return useQuery({
@@ -72,7 +74,9 @@ export function useForecastDeals() {
     queryFn: async (): Promise<DealLite[]> => {
       const { data, error } = await supabase
         .from("deals")
-        .select("id,amount,currency,probability,status,owner_id,pipeline_id,stage_id,expected_close_date,actual_close_date,created_at,updated_at")
+        .select(
+          "id,amount,currency,probability,status,owner_id,pipeline_id,stage_id,expected_close_date,actual_close_date,created_at,updated_at",
+        )
         .eq("workspace_id", workspaceId!)
         .is("deleted_at", null)
         .order("expected_close_date", { ascending: true, nullsFirst: false })
@@ -94,11 +98,18 @@ export function useForecastGoals() {
       .channel(`forecast-goals-${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "sales_goals", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "sales_goals",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["forecast", "goals", workspaceId] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [workspaceId, qc]);
 
   return useQuery({
@@ -107,7 +118,9 @@ export function useForecastGoals() {
     queryFn: async (): Promise<GoalRow[]> => {
       const { data, error } = await supabase
         .from("sales_goals")
-        .select("id,name,metric,period,target_amount,currency,scope,user_id,starts_on,ends_on,is_active")
+        .select(
+          "id,name,metric,period,target_amount,currency,scope,user_id,starts_on,ends_on,is_active",
+        )
         .eq("workspace_id", workspaceId!)
         .eq("is_active", true)
         .order("starts_on", { ascending: false });
@@ -145,7 +158,10 @@ export function useWorkspaceMembers() {
 
 /* ------------------------------- Helpers -------------------------------- */
 
-export function periodRange(period: ForecastPeriod, anchor = new Date()): { start: Date; end: Date; label: string } {
+export function periodRange(
+  period: ForecastPeriod,
+  anchor = new Date(),
+): { start: Date; end: Date; label: string } {
   const y = anchor.getFullYear();
   const m = anchor.getMonth();
   if (period === "month") {
@@ -175,7 +191,12 @@ function inRange(iso: string | null, start: Date, end: Date) {
 /* --------------------------- Derived metrics ----------------------------- */
 
 export function computeForecast(deals: DealLite[], start: Date, end: Date): ForecastBuckets {
-  let bestCase = 0, commit = 0, worstCase = 0, weighted = 0, closedWon = 0, openCount = 0;
+  let bestCase = 0,
+    commit = 0,
+    worstCase = 0,
+    weighted = 0,
+    closedWon = 0,
+    openCount = 0;
   for (const d of deals) {
     if (d.status === "won") {
       if (inRange(d.actual_close_date ?? d.updated_at, start, end)) closedWon += Number(d.amount);
@@ -202,7 +223,9 @@ export function computeKpis(deals: DealLite[]) {
 
   const cycleDays = won
     .map((d) => {
-      const closed = d.actual_close_date ? new Date(d.actual_close_date).getTime() : new Date(d.updated_at).getTime();
+      const closed = d.actual_close_date
+        ? new Date(d.actual_close_date).getTime()
+        : new Date(d.updated_at).getTime();
       const created = new Date(d.created_at).getTime();
       return (closed - created) / 86400000;
     })
@@ -217,7 +240,8 @@ export function computeKpis(deals: DealLite[]) {
   const conversionRate = totalCreated ? (won.length / totalCreated) * 100 : 0;
 
   // Sales velocity = (# open deals × avg deal size × win rate) / avg cycle length
-  const salesVelocity = avgCycle > 0 ? (openDeals.length * avgDealSize * (winRate / 100)) / avgCycle : 0;
+  const salesVelocity =
+    avgCycle > 0 ? (openDeals.length * avgDealSize * (winRate / 100)) / avgCycle : 0;
 
   return {
     winRate,
@@ -234,14 +258,17 @@ export function computeKpis(deals: DealLite[]) {
 
 export function computeMonthlyRevenue(deals: DealLite[], months = 12) {
   const now = new Date();
-  const buckets: { key: string; label: string; won: number; weighted: number; forecast: number }[] = [];
+  const buckets: { key: string; label: string; won: number; weighted: number; forecast: number }[] =
+    [];
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     buckets.push({
       key,
       label: d.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
-      won: 0, weighted: 0, forecast: 0,
+      won: 0,
+      weighted: 0,
+      forecast: 0,
     });
   }
   const idx = new Map(buckets.map((b, i) => [b.key, i]));
@@ -272,13 +299,17 @@ export function computeLeaderboard(
   start: Date,
   end: Date,
 ) {
-  const byUser = new Map<string, { revenue: number; wonCount: number; weighted: number; openCount: number }>();
+  const byUser = new Map<
+    string,
+    { revenue: number; wonCount: number; weighted: number; openCount: number }
+  >();
   for (const m of members) byUser.set(m.id, { revenue: 0, wonCount: 0, weighted: 0, openCount: 0 });
   for (const d of deals) {
     if (!d.owner_id) continue;
     const b = byUser.get(d.owner_id) ?? { revenue: 0, wonCount: 0, weighted: 0, openCount: 0 };
     if (d.status === "won" && inRange(d.actual_close_date ?? d.updated_at, start, end)) {
-      b.revenue += Number(d.amount); b.wonCount++;
+      b.revenue += Number(d.amount);
+      b.wonCount++;
     }
     if (d.status === "open" && inRange(d.expected_close_date, start, end)) {
       b.openCount++;
@@ -287,13 +318,22 @@ export function computeLeaderboard(
     byUser.set(d.owner_id, b);
   }
   return members
-    .map((m) => ({ ...m, ...(byUser.get(m.id) ?? { revenue: 0, wonCount: 0, weighted: 0, openCount: 0 }) }))
+    .map((m) => ({
+      ...m,
+      ...(byUser.get(m.id) ?? { revenue: 0, wonCount: 0, weighted: 0, openCount: 0 }),
+    }))
     .sort((a, b) => b.revenue - a.revenue);
 }
 
 export function computeForecastAccuracy(deals: DealLite[], months = 6) {
   const now = new Date();
-  const buckets: { key: string; label: string; predicted: number; actual: number; accuracy: number }[] = [];
+  const buckets: {
+    key: string;
+    label: string;
+    predicted: number;
+    actual: number;
+    accuracy: number;
+  }[] = [];
   for (let i = months - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
@@ -303,11 +343,14 @@ export function computeForecastAccuracy(deals: DealLite[], months = 6) {
     const actual = deals
       .filter((x) => x.status === "won" && inRange(x.actual_close_date ?? x.updated_at, d, end))
       .reduce((s, x) => s + Number(x.amount), 0);
-    const accuracy = predicted > 0 ? Math.min(100, (actual / predicted) * 100) : (actual > 0 ? 100 : 0);
+    const accuracy =
+      predicted > 0 ? Math.min(100, (actual / predicted) * 100) : actual > 0 ? 100 : 0;
     buckets.push({
       key: `${d.getFullYear()}-${d.getMonth() + 1}`,
       label: d.toLocaleDateString(undefined, { month: "short", year: "2-digit" }),
-      predicted, actual, accuracy,
+      predicted,
+      actual,
+      accuracy,
     });
   }
   return buckets;
@@ -328,34 +371,66 @@ export function useForecasting(period: ForecastPeriod = "month") {
   const forecast = useMemo(() => computeForecast(deals, range.start, range.end), [deals, range]);
   const kpis = useMemo(() => computeKpis(deals), [deals]);
   const monthly = useMemo(() => computeMonthlyRevenue(deals, 12), [deals]);
-  const leaderboard = useMemo(() => computeLeaderboard(deals, members, range.start, range.end), [deals, members, range]);
+  const leaderboard = useMemo(
+    () => computeLeaderboard(deals, members, range.start, range.end),
+    [deals, members, range],
+  );
   const accuracy = useMemo(() => computeForecastAccuracy(deals, 6), [deals]);
 
   const monthRange = useMemo(() => periodRange("month"), []);
   const quarterRange = useMemo(() => periodRange("quarter"), []);
   const yearRange = useMemo(() => periodRange("year"), []);
   const monthly_revenue = useMemo(
-    () => deals.filter((d) => d.status === "won" && inRange(d.actual_close_date ?? d.updated_at, monthRange.start, monthRange.end))
-      .reduce((s, d) => s + Number(d.amount), 0),
+    () =>
+      deals
+        .filter(
+          (d) =>
+            d.status === "won" &&
+            inRange(d.actual_close_date ?? d.updated_at, monthRange.start, monthRange.end),
+        )
+        .reduce((s, d) => s + Number(d.amount), 0),
     [deals, monthRange],
   );
   const quarterly_revenue = useMemo(
-    () => deals.filter((d) => d.status === "won" && inRange(d.actual_close_date ?? d.updated_at, quarterRange.start, quarterRange.end))
-      .reduce((s, d) => s + Number(d.amount), 0),
+    () =>
+      deals
+        .filter(
+          (d) =>
+            d.status === "won" &&
+            inRange(d.actual_close_date ?? d.updated_at, quarterRange.start, quarterRange.end),
+        )
+        .reduce((s, d) => s + Number(d.amount), 0),
     [deals, quarterRange],
   );
   const yearly_revenue = useMemo(
-    () => deals.filter((d) => d.status === "won" && inRange(d.actual_close_date ?? d.updated_at, yearRange.start, yearRange.end))
-      .reduce((s, d) => s + Number(d.amount), 0),
+    () =>
+      deals
+        .filter(
+          (d) =>
+            d.status === "won" &&
+            inRange(d.actual_close_date ?? d.updated_at, yearRange.start, yearRange.end),
+        )
+        .reduce((s, d) => s + Number(d.amount), 0),
     [deals, yearRange],
   );
 
   return {
     isLoading: dealsQ.isLoading || membersQ.isLoading,
-    deals, goals, members, range,
-    forecast, kpis, monthly, leaderboard, accuracy,
-    monthly_revenue, quarterly_revenue, yearly_revenue,
-    monthRange, quarterRange, yearRange,
+    deals,
+    goals,
+    members,
+    range,
+    forecast,
+    kpis,
+    monthly,
+    leaderboard,
+    accuracy,
+    monthly_revenue,
+    quarterly_revenue,
+    yearly_revenue,
+    monthRange,
+    quarterRange,
+    yearRange,
   };
 }
 
@@ -368,7 +443,9 @@ export function toCsv(rows: Record<string, string | number>[]): string {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  return [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join("\n");
+  return [headers.join(","), ...rows.map((r) => headers.map((h) => esc(r[h])).join(","))].join(
+    "\n",
+  );
 }
 
 export function downloadCsv(filename: string, rows: Record<string, string | number>[]) {
@@ -376,6 +453,8 @@ export function downloadCsv(filename: string, rows: Record<string, string | numb
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = filename; a.click();
+  a.href = url;
+  a.download = filename;
+  a.click();
   URL.revokeObjectURL(url);
 }

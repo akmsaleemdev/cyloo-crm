@@ -230,46 +230,46 @@ function ApiConfigPage() {
             onValueChange={setOpenGroup}
             className="space-y-1"
           >
-          {NAV_GROUPS.map((group) => {
-            const items = group.ids
-              .map((id) => getApiConfigSection(id))
-              .filter((s): s is NonNullable<typeof s> => !!s);
-            if (!items.length) return null;
-            const active = group.ids.includes(section);
-            return (
-              <AccordionItem key={group.label} value={group.label} className="border-b-0">
-                <AccordionTrigger
-                  className={cn(
-                    "rounded-control px-3 py-2 text-[11px] font-semibold uppercase tracking-wide hover:bg-muted hover:no-underline [&>svg]:h-3.5 [&>svg]:w-3.5",
-                    active ? "text-foreground" : "text-muted-foreground/80",
-                  )}
-                >
-                  {group.label}
-                </AccordionTrigger>
-                <AccordionContent className="pb-1 pt-0.5">
-                <div className="space-y-px">
-                  {items.map((s) => (
-                    <Link
-                      key={s.id}
-                      to="/api-config/$section"
-                      params={{ section: s.id }}
-                      className={cn(
-                        "w-full flex items-center gap-2 px-3 py-2 rounded-control text-xs font-medium text-left transition-colors",
-                        section === s.id
-                          ? "bg-primary text-primary-foreground"
-                          : "hover:bg-muted text-foreground/80",
-                      )}
-                      aria-current={section === s.id ? "page" : undefined}
-                    >
-                      <s.icon className="w-4 h-4 shrink-0" />
-                      {s.label}
-                    </Link>
-                  ))}
-                </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
+            {NAV_GROUPS.map((group) => {
+              const items = group.ids
+                .map((id) => getApiConfigSection(id))
+                .filter((s): s is NonNullable<typeof s> => !!s);
+              if (!items.length) return null;
+              const active = group.ids.includes(section);
+              return (
+                <AccordionItem key={group.label} value={group.label} className="border-b-0">
+                  <AccordionTrigger
+                    className={cn(
+                      "rounded-control px-3 py-2 text-[11px] font-semibold uppercase tracking-wide hover:bg-muted hover:no-underline [&>svg]:h-3.5 [&>svg]:w-3.5",
+                      active ? "text-foreground" : "text-muted-foreground/80",
+                    )}
+                  >
+                    {group.label}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-1 pt-0.5">
+                    <div className="space-y-px">
+                      {items.map((s) => (
+                        <Link
+                          key={s.id}
+                          to="/api-config/$section"
+                          params={{ section: s.id }}
+                          className={cn(
+                            "w-full flex items-center gap-2 px-3 py-2 rounded-control text-xs font-medium text-left transition-colors",
+                            section === s.id
+                              ? "bg-primary text-primary-foreground"
+                              : "hover:bg-muted text-foreground/80",
+                          )}
+                          aria-current={section === s.id ? "page" : undefined}
+                        >
+                          <s.icon className="w-4 h-4 shrink-0" />
+                          {s.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
           </Accordion>
         </nav>
 

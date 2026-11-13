@@ -225,8 +225,7 @@ function AccountCard({
   const tokenExpiresAt = (meta as { token_expires_at?: string | null }).token_expires_at;
   const tokenScopes = (meta as { token_scopes?: string[] | null }).token_scopes;
 
-  const publicOrigin =
-    typeof window !== "undefined" ? window.location.origin : "https://cyloo.ai";
+  const publicOrigin = typeof window !== "undefined" ? window.location.origin : "https://cyloo.ai";
   const webhookUrl = `${publicOrigin}/api/public/webhooks/whatsapp`;
 
   return (

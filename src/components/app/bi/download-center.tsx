@@ -47,7 +47,8 @@ export function DownloadCenter({ workspaceId }: Props) {
   const [filter, setFilter] = useState<Status | "all">("all");
   const list = useServerFn(listReportRuns);
   const fmtZoned = useZonedDateFormatter();
-  const formatDate = (iso?: string | null) => (iso ? fmtZoned(new Date(iso), { dateStyle: "medium", timeStyle: "short" }) : "—");
+  const formatDate = (iso?: string | null) =>
+    iso ? fmtZoned(new Date(iso), { dateStyle: "medium", timeStyle: "short" }) : "—";
   const {
     data: runs,
     isLoading,

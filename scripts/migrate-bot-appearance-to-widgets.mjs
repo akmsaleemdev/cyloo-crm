@@ -30,24 +30,44 @@ const db = createClient(url, key, { auth: { persistSession: false } });
 // Mirrors DEFAULT_WIDGET_CONFIG in src/lib/widget/widget-config.ts.
 // Keep these in sync if the defaults change.
 const DEFAULT_WIDGET_CONFIG = {
-  logoUrl: null, agentAvatarUrl: null, agentName: "Assistant",
-  brandColor: "#075E54", brandTextColor: "#FFFFFF", theme: "light",
-  radius: 16, bubbleStyle: "rounded", launcherPosition: "bottom-right",
-  launcherIcon: "chat", launcherIconUrl: null, launcherLabel: null,
-  welcomeTitle: "Hi there 👋", welcomeSubtitle: "How can we help?",
+  logoUrl: null,
+  agentAvatarUrl: null,
+  agentName: "Assistant",
+  brandColor: "#075E54",
+  brandTextColor: "#FFFFFF",
+  theme: "light",
+  radius: 16,
+  bubbleStyle: "rounded",
+  launcherPosition: "bottom-right",
+  launcherIcon: "chat",
+  launcherIconUrl: null,
+  launcherLabel: null,
+  welcomeTitle: "Hi there 👋",
+  welcomeSubtitle: "How can we help?",
   welcomeMessage: "Ask us anything — a real human is one message away.",
   inputPlaceholder: "Type your message",
-  fontFamily: "Inter, system-ui, -apple-system, sans-serif", fontSizeBase: 14,
-  width: 380, height: 620, animation: "slide", customCss: "", customJs: "",
-  showBrandingFooter: true, soundEnabled: false,
+  fontFamily: "Inter, system-ui, -apple-system, sans-serif",
+  fontSizeBase: 14,
+  width: 380,
+  height: 620,
+  animation: "slide",
+  customCss: "",
+  customJs: "",
+  showBrandingFooter: true,
+  soundEnabled: false,
 };
 
 const merge = (raw) =>
-  !raw || typeof raw !== "object" ? { ...DEFAULT_WIDGET_CONFIG } : { ...DEFAULT_WIDGET_CONFIG, ...raw };
+  !raw || typeof raw !== "object"
+    ? { ...DEFAULT_WIDGET_CONFIG }
+    : { ...DEFAULT_WIDGET_CONFIG, ...raw };
 
 const isDefault = (raw) => {
   const m = merge(raw);
-  return JSON.stringify(m, Object.keys(m).sort()) === JSON.stringify(DEFAULT_WIDGET_CONFIG, Object.keys(DEFAULT_WIDGET_CONFIG).sort());
+  return (
+    JSON.stringify(m, Object.keys(m).sort()) ===
+    JSON.stringify(DEFAULT_WIDGET_CONFIG, Object.keys(DEFAULT_WIDGET_CONFIG).sort())
+  );
 };
 
 const { data: widgets, error: wErr } = await db
@@ -68,10 +88,25 @@ const plan = [];
 const skipped = [];
 for (const w of widgets) {
   const bot = botById.get(w.chatbot_id);
-  if (!bot) { skipped.push({ widget: w.name, reason: "bot not found" }); continue; }
-  if (!isDefault(w.config)) { skipped.push({ widget: w.name, reason: "already customised" }); continue; }
-  if (isDefault(bot.widget_config)) { skipped.push({ widget: w.name, reason: "bot has default appearance" }); continue; }
-  plan.push({ widgetId: w.id, widgetName: w.name, botName: bot.name, before: w.config, after: merge(bot.widget_config) });
+  if (!bot) {
+    skipped.push({ widget: w.name, reason: "bot not found" });
+    continue;
+  }
+  if (!isDefault(w.config)) {
+    skipped.push({ widget: w.name, reason: "already customised" });
+    continue;
+  }
+  if (isDefault(bot.widget_config)) {
+    skipped.push({ widget: w.name, reason: "bot has default appearance" });
+    continue;
+  }
+  plan.push({
+    widgetId: w.id,
+    widgetName: w.name,
+    botName: bot.name,
+    before: w.config,
+    after: merge(bot.widget_config),
+  });
 }
 
 console.log(`Widgets scanned: ${widgets.length}`);
@@ -84,12 +119,18 @@ if (!APPLY) {
   console.log("\nDry run only. Re-run with --apply to write changes.");
   process.exit(0);
 }
-if (plan.length === 0) { console.log("Nothing to update."); process.exit(0); }
+if (plan.length === 0) {
+  console.log("Nothing to update.");
+  process.exit(0);
+}
 
 const here = dirname(fileURLToPath(import.meta.url));
 const backupDir = join(here, ".backups");
 mkdirSync(backupDir, { recursive: true });
-const backupFile = join(backupDir, `appearance-${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
+const backupFile = join(
+  backupDir,
+  `appearance-${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
+);
 writeFileSync(backupFile, JSON.stringify(plan, null, 2));
 console.log(`Backup written: ${backupFile}`);
 

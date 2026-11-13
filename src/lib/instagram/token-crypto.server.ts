@@ -10,12 +10,17 @@ function key(): Buffer {
     process.env.APP_USER_CONNECTION_KEY_SECRET ||
     process.env.META_TOKEN_ENCRYPTION_KEY ||
     process.env.SESSION_SECRET;
-  if (!raw) throw new Error("Missing encryption key (APP_USER_CONNECTION_KEY_SECRET or META_TOKEN_ENCRYPTION_KEY)");
+  if (!raw)
+    throw new Error(
+      "Missing encryption key (APP_USER_CONNECTION_KEY_SECRET or META_TOKEN_ENCRYPTION_KEY)",
+    );
   // Accept base64 or arbitrary string; derive 32 bytes.
   try {
     const b = Buffer.from(raw, "base64");
     if (b.length === 32) return b;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return createHash("sha256").update(raw).digest();
 }
 

@@ -46,7 +46,9 @@ export async function fetchHostBusyBlocks(
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const { data: accounts } = await supabaseAdmin
     .from("calendar_accounts")
-    .select("id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status,sync_direction")
+    .select(
+      "id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status,sync_direction",
+    )
     .eq("user_id", hostId)
     .eq("enabled", true);
 
@@ -61,21 +63,27 @@ export async function fetchHostBusyBlocks(
       // Best-effort cache; ignore failure
       await sbAny(supabaseAdmin).from("calendar_busy_cache").delete().eq("account_id", acc.id);
       if (blocks.length) {
-        await sbAny(supabaseAdmin).from("calendar_busy_cache").insert(
-          blocks.map((b) => ({
-            workspace_id: acc.workspace_id,
-            account_id: acc.id,
-            host_id: hostId,
-            external_id: b.external_id ?? null,
-            start_at: b.start_at,
-            end_at: b.end_at,
-            title: b.title ?? null,
-          })),
-        );
+        await sbAny(supabaseAdmin)
+          .from("calendar_busy_cache")
+          .insert(
+            blocks.map((b) => ({
+              workspace_id: acc.workspace_id,
+              account_id: acc.id,
+              host_id: hostId,
+              external_id: b.external_id ?? null,
+              start_at: b.start_at,
+              end_at: b.end_at,
+              title: b.title ?? null,
+            })),
+          );
       }
       await supabaseAdmin
         .from("calendar_accounts")
-        .update({ last_synced_at: new Date().toISOString(), status: "connected", last_sync_error: null })
+        .update({
+          last_synced_at: new Date().toISOString(),
+          status: "connected",
+          last_sync_error: null,
+        })
         .eq("id", acc.id);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -97,12 +105,16 @@ export async function fetchHostBusyBlocks(
 }
 
 /** Push a new appointment to every writable calendar for the host. */
-export async function pushAppointmentToCalendars(a: BookingAppointment): Promise<Record<string, string>> {
+export async function pushAppointmentToCalendars(
+  a: BookingAppointment,
+): Promise<Record<string, string>> {
   if (!a.host_id) return {};
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const { data: accounts } = await supabaseAdmin
     .from("calendar_accounts")
-    .select("id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status,sync_direction")
+    .select(
+      "id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status,sync_direction",
+    )
     .eq("user_id", a.host_id)
     .eq("enabled", true);
 
@@ -115,24 +127,28 @@ export async function pushAppointmentToCalendars(a: BookingAppointment): Promise
     try {
       const { external_id } = await provider.createEvent(contextFor(acc, a.host_id), event);
       results[acc.id] = external_id;
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id,
-        account_id: acc.id,
-        direction: "outbound",
-        operation: "create_event",
-        status: "success",
-        payload: { appointment_id: a.id, external_id },
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "create_event",
+          status: "success",
+          payload: { appointment_id: a.id, external_id },
+        });
     } catch (err) {
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id,
-        account_id: acc.id,
-        direction: "outbound",
-        operation: "create_event",
-        status: "error",
-        message: err instanceof Error ? err.message : String(err),
-        payload: { appointment_id: a.id },
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "create_event",
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+          payload: { appointment_id: a.id },
+        });
     }
   }
   await supabaseAdmin
@@ -149,7 +165,9 @@ export async function updateAppointmentInCalendars(a: BookingAppointment): Promi
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const { data: accounts } = await supabaseAdmin
     .from("calendar_accounts")
-    .select("id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status")
+    .select(
+      "id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status",
+    )
     .in("id", Object.keys(map));
   const event = appointmentToEvent(a);
   for (const acc of (accounts ?? []) as Array<CalendarAccountRow>) {
@@ -158,18 +176,28 @@ export async function updateAppointmentInCalendars(a: BookingAppointment): Promi
     const provider = providerForKind(acc.provider);
     try {
       await provider.updateEvent(contextFor(acc, a.host_id ?? undefined), externalId, event);
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id, account_id: acc.id,
-        direction: "outbound", operation: "update_event", status: "success",
-        payload: { appointment_id: a.id, external_id: externalId },
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "update_event",
+          status: "success",
+          payload: { appointment_id: a.id, external_id: externalId },
+        });
     } catch (err) {
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id, account_id: acc.id,
-        direction: "outbound", operation: "update_event", status: "error",
-        message: err instanceof Error ? err.message : String(err),
-        payload: { appointment_id: a.id },
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "update_event",
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+          payload: { appointment_id: a.id },
+        });
     }
   }
 }
@@ -181,7 +209,9 @@ export async function cancelAppointmentInCalendars(a: BookingAppointment): Promi
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const { data: accounts } = await supabaseAdmin
     .from("calendar_accounts")
-    .select("id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status")
+    .select(
+      "id,workspace_id,user_id,provider,calendar_id,connection_key_ciphertext,ics_url,enabled,status",
+    )
     .in("id", Object.keys(map));
   for (const acc of (accounts ?? []) as Array<CalendarAccountRow>) {
     const externalId = map[acc.id];
@@ -189,17 +219,27 @@ export async function cancelAppointmentInCalendars(a: BookingAppointment): Promi
     const provider = providerForKind(acc.provider);
     try {
       await provider.deleteEvent(contextFor(acc, a.host_id ?? undefined), externalId);
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id, account_id: acc.id,
-        direction: "outbound", operation: "delete_event", status: "success",
-        payload: { appointment_id: a.id, external_id: externalId },
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "delete_event",
+          status: "success",
+          payload: { appointment_id: a.id, external_id: externalId },
+        });
     } catch (err) {
-      await sbAny(supabaseAdmin).from("calendar_sync_log").insert({
-        workspace_id: acc.workspace_id, account_id: acc.id,
-        direction: "outbound", operation: "delete_event", status: "error",
-        message: err instanceof Error ? err.message : String(err),
-      });
+      await sbAny(supabaseAdmin)
+        .from("calendar_sync_log")
+        .insert({
+          workspace_id: acc.workspace_id,
+          account_id: acc.id,
+          direction: "outbound",
+          operation: "delete_event",
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+        });
     }
   }
   await supabaseAdmin

@@ -5,20 +5,20 @@
  * drains the queue when connectivity returns. Each entry is idempotent —
  * server functions should accept a client-generated `client_id` to dedupe.
  */
-import { kv } from '@/lib/storage';
-import { supabase } from '@/api/supabase';
+import { kv } from "@/lib/storage";
+import { supabase } from "@/api/supabase";
 
 export type OutboxEntry = {
   id: string;
   createdAt: number;
   table: string;
-  op: 'insert' | 'update' | 'delete';
+  op: "insert" | "update" | "delete";
   payload: Record<string, unknown>;
   match?: Record<string, unknown>;
   attempts: number;
 };
 
-const KEY = 'outbox:v1';
+const KEY = "outbox:v1";
 
 function read(): OutboxEntry[] {
   const raw = kv.getString(KEY);
@@ -28,7 +28,7 @@ function write(entries: OutboxEntry[]) {
   kv.set(KEY, JSON.stringify(entries));
 }
 
-export function enqueue(entry: Omit<OutboxEntry, 'id' | 'createdAt' | 'attempts'>) {
+export function enqueue(entry: Omit<OutboxEntry, "id" | "createdAt" | "attempts">) {
   const list = read();
   list.push({
     ...entry,
@@ -53,8 +53,9 @@ export async function flush(): Promise<{ ok: number; failed: number }> {
     try {
       const t = supabase.from(entry.table);
       let error: unknown = null;
-      if (entry.op === 'insert') ({ error } = await t.insert(entry.payload));
-      else if (entry.op === 'update') ({ error } = await t.update(entry.payload).match(entry.match ?? {}));
+      if (entry.op === "insert") ({ error } = await t.insert(entry.payload));
+      else if (entry.op === "update")
+        ({ error } = await t.update(entry.payload).match(entry.match ?? {}));
       else ({ error } = await t.delete().match(entry.match ?? {}));
 
       if (error) throw error;

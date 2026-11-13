@@ -317,7 +317,9 @@ function TagEditor({ existing, onClose }: { existing: TagRow | null; onClose: ()
   const [parentId, setParentId] = useState<string | "none">(existing?.parent_id ?? "none");
   const [isFavorite, setIsFavorite] = useState(existing?.is_favorite ?? false);
   const [isSmart, setIsSmart] = useState(existing?.is_smart ?? false);
-  const [smartEntity, setSmartEntity] = useState<TagEntity>(existing?.rules?.entity_type ?? "contact");
+  const [smartEntity, setSmartEntity] = useState<TagEntity>(
+    existing?.rules?.entity_type ?? "contact",
+  );
   const [rules, setRules] = useState<SegmentRules>(
     existing?.rules && (existing.rules as SegmentRules).conditions
       ? (existing.rules as SegmentRules)

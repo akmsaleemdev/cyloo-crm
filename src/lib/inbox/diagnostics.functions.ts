@@ -88,7 +88,7 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
       };
     }
 
-    const c = (row as unknown) as ConversationRow;
+    const c = row as unknown as ConversationRow;
     const meta = (c.metadata ?? {}) as Record<string, unknown>;
     const isWebchat = WEBCHAT_CHANNELS.has(c.channel);
 
@@ -105,7 +105,8 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
         id: "workspace",
         label: "Workspace",
         status: "fail",
-        detail: "The conversation belongs to a different workspace than the one selected in the Inbox.",
+        detail:
+          "The conversation belongs to a different workspace than the one selected in the Inbox.",
         action: "Switch workspace in the top bar to see this thread in its natural context.",
       });
     }
@@ -156,9 +157,11 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
           .select("id, name, disabled_at, deleted_at, workspace_id")
           .eq("id", chatbotId)
           .maybeSingle();
-        const b = bot as
-          | { name?: string | null; disabled_at?: string | null; deleted_at?: string | null }
-          | null;
+        const b = bot as {
+          name?: string | null;
+          disabled_at?: string | null;
+          deleted_at?: string | null;
+        } | null;
         if (!b) {
           checks.push({
             id: "account",
@@ -173,7 +176,8 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
             label: "Live Chat account mapping",
             status: "warn",
             detail: `Mapped to "${b.name ?? "Website widget"}", which is currently ${b.deleted_at ? "deleted" : "disabled"}.`,
-            action: "Re-enable the bot under Communications → Live Chat Bots so it appears as a connected account.",
+            action:
+              "Re-enable the bot under Communications → Live Chat Bots so it appears as a connected account.",
           });
         } else {
           checks.push({
@@ -191,7 +195,7 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
         .select("id, status, handoff_reason, message_count")
         .eq("conversation_id", c.id)
         .limit(1);
-      const sess = ((sessions ?? []) as unknown) as {
+      const sess = (sessions ?? []) as unknown as {
         id: string;
         status: string | null;
         message_count: number | null;
@@ -234,9 +238,11 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
           .select("id, display_name, provider, status")
           .eq("id", accountId)
           .maybeSingle();
-        const a = acct as
-          | { display_name?: string | null; provider?: string | null; status?: string | null }
-          | null;
+        const a = acct as {
+          display_name?: string | null;
+          provider?: string | null;
+          status?: string | null;
+        } | null;
         if (!a) {
           checks.push({
             id: "account",
@@ -252,7 +258,9 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
             label: "Channel account",
             status: bad ? "warn" : "ok",
             detail: `Mapped to "${a.display_name ?? a.provider ?? "account"}" (status: ${a.status ?? "unknown"}).`,
-            action: bad ? "Re-authenticate the account so outbound replies can be delivered." : undefined,
+            action: bad
+              ? "Re-authenticate the account so outbound replies can be delivered."
+              : undefined,
           });
         }
       }
@@ -295,8 +303,8 @@ export const diagnoseConversation = createServerFn({ method: "POST" })
     const summary = failed.length
       ? `${failed.length} blocking issue${failed.length > 1 ? "s" : ""} keep this conversation from being fully linked.`
       : warned.length
-      ? `Linked, with ${warned.length} thing${warned.length > 1 ? "s" : ""} worth checking.`
-      : "Fully linked — routing, account mapping and message mirroring all look correct.";
+        ? `Linked, with ${warned.length} thing${warned.length > 1 ? "s" : ""} worth checking.`
+        : "Fully linked — routing, account mapping and message mirroring all look correct.";
 
     return {
       conversationId: c.id,

@@ -51,17 +51,14 @@ export function LocaleMultiSelect({
     onChange(Array.from(next));
   };
 
-  const optionLabel = (value: string) =>
-    options.find((o) => o.value === value)?.label ?? value;
+  const optionLabel = (value: string) => options.find((o) => o.value === value)?.label ?? value;
 
   return (
     <div className="grid gap-2">
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <div className="min-w-0">
           <Label className="truncate">{label}</Label>
-          {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
-          )}
+          {description && <p className="text-xs text-muted-foreground">{description}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Badge variant="secondary" className="">
@@ -112,9 +109,7 @@ export function LocaleMultiSelect({
       </div>
 
       <div className="max-h-64 overflow-y-auto rounded-control border border-border">
-        {filtered.length === 0 && (
-          <p className="p-3 text-xs text-muted-foreground">No matches.</p>
-        )}
+        {filtered.length === 0 && <p className="p-3 text-xs text-muted-foreground">No matches.</p>}
         {filtered.map((o) => {
           const active = selectedSet.has(o.value);
           return (
@@ -136,9 +131,7 @@ export function LocaleMultiSelect({
                 {active && <Check className="h-3 w-3" />}
               </span>
               <span className="min-w-0 flex-1 truncate">{o.label}</span>
-              {o.hint && (
-                <span className="shrink-0 text-xs text-muted-foreground">{o.hint}</span>
-              )}
+              {o.hint && <span className="shrink-0 text-xs text-muted-foreground">{o.hint}</span>}
             </button>
           );
         })}

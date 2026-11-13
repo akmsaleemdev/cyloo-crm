@@ -11,8 +11,15 @@ import { sbAny } from "@/lib/supabase/untyped";
 export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
 export type PromptCategory =
-  | "system" | "organization" | "department" | "personality" | "tone"
-  | "greeting" | "fallback" | "escalation" | "custom";
+  | "system"
+  | "organization"
+  | "department"
+  | "personality"
+  | "tone"
+  | "greeting"
+  | "fallback"
+  | "escalation"
+  | "custom";
 
 export interface ChatbotPrompt {
   id: string;
@@ -59,13 +66,17 @@ export interface ChatbotPromptTest {
 
 export const listPrompts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    chatbotId: z.string().uuid().nullable().optional(),
-    category: z.string().optional(),
-    search: z.string().optional(),
-    onlyShared: z.boolean().optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        chatbotId: z.string().uuid().nullable().optional(),
+        category: z.string().optional(),
+        search: z.string().optional(),
+        onlyShared: z.boolean().optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }): Promise<ChatbotPrompt[]> => {
     let q = context.supabase
       .from("chatbot_prompts" as never)
@@ -95,7 +106,9 @@ export const getPrompt = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("chatbot_prompts" as never)
-      .select("*").eq("id", data.id).maybeSingle();
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return (row ?? null) as unknown as ChatbotPrompt | null;
   });
@@ -106,13 +119,26 @@ const upsertPromptInput = z.object({
   chatbotId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(200),
   category: z.enum([
-    "system","organization","department","personality","tone",
-    "greeting","fallback","escalation","custom",
+    "system",
+    "organization",
+    "department",
+    "personality",
+    "tone",
+    "greeting",
+    "fallback",
+    "escalation",
+    "custom",
   ]),
   content: z.string().min(1).max(16000),
-  variables: z.array(z.object({
-    key: z.string(), label: z.string().optional(), default: z.string().optional(),
-  })).optional(),
+  variables: z
+    .array(
+      z.object({
+        key: z.string(),
+        label: z.string().optional(),
+        default: z.string().optional(),
+      }),
+    )
+    .optional(),
   tags: z.array(z.string()).optional(),
   language: z.string().max(10).nullable().optional(),
   is_shared: z.boolean().optional(),
@@ -134,13 +160,18 @@ export const upsertPrompt = createServerFn({ method: "POST" })
     if (id) {
       const { data: row, error } = await context.supabase
         .from("chatbot_prompts" as never)
-        .update(payload as never).eq("id", id).select("*").maybeSingle();
+        .update(payload as never)
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
       if (error) throw new Error(error.message);
       return row as unknown as ChatbotPrompt;
     }
     const { data: row, error } = await context.supabase
       .from("chatbot_prompts" as never)
-      .insert(payload as never).select("*").maybeSingle();
+      .insert(payload as never)
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return row as unknown as ChatbotPrompt;
   });
@@ -148,14 +179,21 @@ export const upsertPrompt = createServerFn({ method: "POST" })
 /** Create a new version — clones the current prompt with parent_id + version+1. */
 export const forkPromptVersion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(),
-    content: z.string().min(1).max(16000),
-    notes: z.string().max(2000).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        content: z.string().min(1).max(16000),
+        notes: z.string().max(2000).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: src, error: e1 } = await context.supabase
-      .from("chatbot_prompts" as never).select("*").eq("id", data.id).maybeSingle();
+      .from("chatbot_prompts" as never)
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     if (e1) throw new Error(e1.message);
     if (!src) throw new Error("Prompt not found");
     const s = src as unknown as ChatbotPrompt;
@@ -165,10 +203,8 @@ export const forkPromptVersion = createServerFn({ method: "POST" })
       .from("chatbot_prompts" as never)
       .select("version")
       .or(`id.eq.${parentId},parent_id.eq.${parentId}`);
-    const nextVersion = Math.max(
-      1,
-      ...((siblings ?? []) as { version: number }[]).map((r) => r.version),
-    ) + 1;
+    const nextVersion =
+      Math.max(1, ...((siblings ?? []) as { version: number }[]).map((r) => r.version)) + 1;
     const { data: row, error } = await context.supabase
       .from("chatbot_prompts" as never)
       .insert({
@@ -187,7 +223,8 @@ export const forkPromptVersion = createServerFn({ method: "POST" })
         notes: data.notes ?? null,
         created_by: context.userId,
       } as never)
-      .select("*").maybeSingle();
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return row as unknown as ChatbotPrompt;
   });
@@ -198,7 +235,10 @@ export const listPromptVersions = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<ChatbotPrompt[]> => {
     // Find root: either self or its parent_id
     const { data: seed } = await context.supabase
-      .from("chatbot_prompts" as never).select("id,parent_id").eq("id", data.id).maybeSingle();
+      .from("chatbot_prompts" as never)
+      .select("id,parent_id")
+      .eq("id", data.id)
+      .maybeSingle();
     if (!seed) return [];
     const s = seed as unknown as { id: string; parent_id: string | null };
     const root = s.parent_id ?? s.id;
@@ -216,16 +256,23 @@ export const deletePrompt = createServerFn({ method: "POST" })
   .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("chatbot_prompts" as never).delete().eq("id", data.id);
+      .from("chatbot_prompts" as never)
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const setPromptShared = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(), is_shared: z.boolean(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        is_shared: z.boolean(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("chatbot_prompts" as never)
@@ -302,17 +349,22 @@ export const runPromptTest = createServerFn({ method: "POST" })
         error: errorMsg,
         created_by: context.userId,
       } as never)
-      .select("*").maybeSingle();
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
 
     // Bump usage counter (non-transactional)
     if (data.promptId) {
       const { data: cur } = await context.supabase
         .from("chatbot_prompts" as never)
-        .select("usage_count").eq("id", data.promptId).maybeSingle();
+        .select("usage_count")
+        .eq("id", data.promptId)
+        .maybeSingle();
       const usage = ((cur as { usage_count?: number } | null)?.usage_count ?? 0) + 1;
-      await sbAny(context.supabase).from("chatbot_prompts" as never)
-        .update({ usage_count: usage } as never).eq("id", data.promptId);
+      await sbAny(context.supabase)
+        .from("chatbot_prompts" as never)
+        .update({ usage_count: usage } as never)
+        .eq("id", data.promptId);
     }
 
     return row as unknown as ChatbotPromptTest;
@@ -320,15 +372,21 @@ export const runPromptTest = createServerFn({ method: "POST" })
 
 export const listPromptTests = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    promptId: z.string().uuid().optional(),
-    chatbotId: z.string().uuid().optional(),
-    limit: z.number().int().min(1).max(200).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        promptId: z.string().uuid().optional(),
+        chatbotId: z.string().uuid().optional(),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }): Promise<ChatbotPromptTest[]> => {
-    let q = sbAny(context.supabase).from("chatbot_prompt_tests" as never)
-      .select("*").eq("workspace_id", data.workspaceId)
+    let q = sbAny(context.supabase)
+      .from("chatbot_prompt_tests" as never)
+      .select("*")
+      .eq("workspace_id", data.workspaceId)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 50);
     if (data.promptId) q = q.eq("prompt_id", data.promptId);
@@ -340,11 +398,15 @@ export const listPromptTests = createServerFn({ method: "POST" })
 
 export const ratePromptTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(),
-    rating: z.number().int().min(1).max(5),
-    notes: z.string().max(2000).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        rating: z.number().int().min(1).max(5),
+        notes: z.string().max(2000).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("chatbot_prompt_tests" as never)
@@ -355,16 +417,22 @@ export const ratePromptTest = createServerFn({ method: "POST" })
     // Recompute avg rating for the prompt
     const { data: test } = await context.supabase
       .from("chatbot_prompt_tests" as never)
-      .select("prompt_id").eq("id", data.id).maybeSingle();
+      .select("prompt_id")
+      .eq("id", data.id)
+      .maybeSingle();
     const promptId = (test as { prompt_id?: string | null } | null)?.prompt_id;
     if (promptId) {
       const { data: ratings } = await context.supabase
         .from("chatbot_prompt_tests" as never)
-        .select("rating").eq("prompt_id", promptId).not("rating", "is", null);
+        .select("rating")
+        .eq("prompt_id", promptId)
+        .not("rating", "is", null);
       const nums = ((ratings ?? []) as { rating: number }[]).map((r) => r.rating);
       const avg = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
-      await sbAny(context.supabase).from("chatbot_prompts" as never)
-        .update({ avg_rating: avg } as never).eq("id", promptId);
+      await sbAny(context.supabase)
+        .from("chatbot_prompts" as never)
+        .update({ avg_rating: avg } as never)
+        .eq("id", promptId);
     }
     return { ok: true };
   });
@@ -373,36 +441,49 @@ export const ratePromptTest = createServerFn({ method: "POST" })
 
 export const promptAnalytics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    chatbotId: z.string().uuid().optional(),
-    days: z.number().int().min(1).max(90).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        chatbotId: z.string().uuid().optional(),
+        days: z.number().int().min(1).max(90).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const since = new Date(Date.now() - (data.days ?? 30) * 86400000).toISOString();
-    let q = sbAny(context.supabase).from("chatbot_prompt_tests" as never)
+    let q = sbAny(context.supabase)
+      .from("chatbot_prompt_tests" as never)
       .select("prompt_id,latency_ms,rating,success,created_at")
-      .eq("workspace_id", data.workspaceId).gte("created_at", since);
+      .eq("workspace_id", data.workspaceId)
+      .gte("created_at", since);
     if (data.chatbotId) q = q.eq("chatbot_id", data.chatbotId);
     const { data: rows } = await q;
 
     const list = (rows ?? []) as {
-      prompt_id: string | null; latency_ms: number | null;
-      rating: number | null; success: boolean;
+      prompt_id: string | null;
+      latency_ms: number | null;
+      rating: number | null;
+      success: boolean;
     }[];
     const total = list.length;
     const failed = list.filter((r) => !r.success).length;
     const rated = list.filter((r) => r.rating != null);
     const avgRating = rated.length
-      ? rated.reduce((a, b) => a + (b.rating ?? 0), 0) / rated.length : 0;
+      ? rated.reduce((a, b) => a + (b.rating ?? 0), 0) / rated.length
+      : 0;
     const latencies = list.map((r) => r.latency_ms ?? 0).filter((n) => n > 0);
     const avgLatency = latencies.length
-      ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0;
+      ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+      : 0;
 
     // Top prompts
     const byPrompt = new Map<string, number>();
-    for (const r of list) if (r.prompt_id) byPrompt.set(r.prompt_id, (byPrompt.get(r.prompt_id) ?? 0) + 1);
-    const top = Array.from(byPrompt.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    for (const r of list)
+      if (r.prompt_id) byPrompt.set(r.prompt_id, (byPrompt.get(r.prompt_id) ?? 0) + 1);
+    const top = Array.from(byPrompt.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
 
     return {
       totalTests: total,

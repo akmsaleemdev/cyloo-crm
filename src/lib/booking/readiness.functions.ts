@@ -63,7 +63,10 @@ export const getBookingReadiness = createServerFn({ method: "POST" })
       category: "Availability",
       label: "Availability schedules defined",
       status: schedules > 0 ? "pass" : "warn",
-      detail: schedules > 0 ? `${schedules} schedule(s)` : "Define working hours to prevent double-booking",
+      detail:
+        schedules > 0
+          ? `${schedules} schedule(s)`
+          : "Define working hours to prevent double-booking",
     });
 
     // ---- Calendar sync ----
@@ -96,7 +99,10 @@ export const getBookingReadiness = createServerFn({ method: "POST" })
       category: "Meeting providers",
       label: "Meeting providers connected",
       status: providers > 0 ? "pass" : "info",
-      detail: providers > 0 ? `${providers} provider(s) (Zoom / Meet / Teams / Jitsi)` : "Connect a video provider for virtual meetings",
+      detail:
+        providers > 0
+          ? `${providers} provider(s) (Zoom / Meet / Teams / Jitsi)`
+          : "Connect a video provider for virtual meetings",
     });
 
     // ---- Notifications ----
@@ -110,14 +116,20 @@ export const getBookingReadiness = createServerFn({ method: "POST" })
     });
 
     // ---- AI scheduling ----
-    const { data: aiProviders } = await sbAny(supabase).from("ai_providers").select("id, is_active").limit(5);
+    const { data: aiProviders } = await sbAny(supabase)
+      .from("ai_providers")
+      .select("id, is_active")
+      .limit(5);
     const activeAi = (aiProviders ?? []).filter((p: any) => p.is_active).length;
     push({
       id: "ai-scheduling",
       category: "AI scheduling",
       label: "AI provider available for scheduling",
       status: activeAi > 0 ? "pass" : "warn",
-      detail: activeAi > 0 ? `${activeAi} active provider(s)` : "Configure an AI provider to enable smart scheduling",
+      detail:
+        activeAi > 0
+          ? `${activeAi} active provider(s)`
+          : "Configure an AI provider to enable smart scheduling",
     });
 
     // ---- Analytics realtime ----
@@ -144,7 +156,10 @@ export const getBookingReadiness = createServerFn({ method: "POST" })
       category: "Integrations",
       label: "Omnichannel Inbox linked",
       status: inboxes > 0 ? "pass" : "info",
-      detail: inboxes > 0 ? "Booking events post to unified timeline" : "Configure an inbox to route booking messages",
+      detail:
+        inboxes > 0
+          ? "Booking events post to unified timeline"
+          : "Configure an inbox to route booking messages",
     });
     const workflows = await count(supabase, "workflow_templates");
     push({

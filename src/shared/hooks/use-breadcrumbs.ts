@@ -50,9 +50,10 @@ export function useBreadcrumbs(): Crumb[] {
     if (m.routeId.split("/").at(-1)?.startsWith("_")) continue;
     const seg = m.pathname.split("/").filter(Boolean).at(-1);
     if (!seg) continue;
-    const label = seg.startsWith(":") || seg.match(/^[0-9a-f-]{8,}$/i)
-      ? `#${seg.slice(0, 6)}`
-      : seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
+    const label =
+      seg.startsWith(":") || seg.match(/^[0-9a-f-]{8,}$/i)
+        ? `#${seg.slice(0, 6)}`
+        : seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, " ");
     crumbs.push({ label, to: m.pathname });
   }
   return crumbs;

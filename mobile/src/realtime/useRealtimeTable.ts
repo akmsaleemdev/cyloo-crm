@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { supabase } from '@/api/supabase';
-import { queryClient } from '@/api/queryClient';
+import { useEffect } from "react";
+import { supabase } from "@/api/supabase";
+import { queryClient } from "@/api/queryClient";
 
 /**
  * Subscribe to Postgres CDC on a table and invalidate the given query key
@@ -10,11 +10,9 @@ import { queryClient } from '@/api/queryClient';
 export function useRealtimeTable(table: string, queryKey: unknown[], filter?: string) {
   useEffect(() => {
     const channel = supabase
-      .channel(`rt:${table}:${filter ?? 'all'}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table, filter },
-        () => queryClient.invalidateQueries({ queryKey }),
+      .channel(`rt:${table}:${filter ?? "all"}`)
+      .on("postgres_changes", { event: "*", schema: "public", table, filter }, () =>
+        queryClient.invalidateQueries({ queryKey }),
       )
       .subscribe();
     return () => {

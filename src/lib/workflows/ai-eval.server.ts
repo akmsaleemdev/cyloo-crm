@@ -2,7 +2,7 @@
  * AI workflow node evaluators.
  *
  * Every AI-powered node routes through `runChat` from the AI Provider Engine,
- * so users can pick provider (OpenAI, Gemini, Claude, Lovable, ) and model
+ * so users can pick a provider (OpenAI, Gemini, Claude, etc.) and model
  * per node. The workflow-level `provider_id` / `model` inputs override the
  * workspace default; leaving them blank uses the workspace default provider.
  */
@@ -45,15 +45,27 @@ function s(v: unknown): string {
 
 function extractJson(text: string): unknown {
   const trimmed = text.trim();
-  try { return JSON.parse(trimmed); } catch { /* try fenced */ }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    /* try fenced */
+  }
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
   if (fenced) {
-    try { return JSON.parse(fenced[1]); } catch { /* fallthrough */ }
+    try {
+      return JSON.parse(fenced[1]);
+    } catch {
+      /* fallthrough */
+    }
   }
   const start = trimmed.indexOf("{");
   const end = trimmed.lastIndexOf("}");
   if (start >= 0 && end > start) {
-    try { return JSON.parse(trimmed.slice(start, end + 1)); } catch { /* fallthrough */ }
+    try {
+      return JSON.parse(trimmed.slice(start, end + 1));
+    } catch {
+      /* fallthrough */
+    }
   }
   return null;
 }
@@ -65,7 +77,14 @@ async function callAI(
   userPrompt: string,
   common: CommonInputs,
   jsonMode = false,
-): Promise<{ content: string; parsed: unknown | null; providerId: string; providerKind: string; model: string; usage: unknown }> {
+): Promise<{
+  content: string;
+  parsed: unknown | null;
+  providerId: string;
+  providerKind: string;
+  model: string;
+  usage: unknown;
+}> {
   const messages: AIMessage[] = [];
   const sys = common.system?.trim() || systemPrompt;
   if (sys) messages.push({ role: "system", content: sys });
@@ -140,7 +159,14 @@ export async function evalAiSentiment(input: Record<string, unknown>, ctx: AiEva
 
 export async function evalAiIntent(input: Record<string, unknown>, ctx: AiEvalCtx) {
   const common = pickCommon(input);
-  const intents = (input.intents as string[]) ?? ["question", "complaint", "purchase_interest", "cancellation", "support_request", "small_talk"];
+  const intents = (input.intents as string[]) ?? [
+    "question",
+    "complaint",
+    "purchase_interest",
+    "cancellation",
+    "support_request",
+    "small_talk",
+  ];
   const sys = `You detect the primary intent from a customer message. Choose EXACTLY ONE from: ${intents.join(", ")}. Respond ONLY as JSON: {"intent":"...","confidence":0..1,"entities":{...}}.`;
   const user = `Message:\n${s(input.text) || s(input.message)}`;
   const r = await callAI(ctx, "workflow.ai.intent", sys, user, common, true);
@@ -195,7 +221,14 @@ export async function evalAiTranslate(input: Record<string, unknown>, ctx: AiEva
 
 export async function evalAiCategorize(input: Record<string, unknown>, ctx: AiEvalCtx) {
   const common = pickCommon(input);
-  const categories = (input.categories as string[]) ?? ["sales", "support", "billing", "feedback", "spam", "other"];
+  const categories = (input.categories as string[]) ?? [
+    "sales",
+    "support",
+    "billing",
+    "feedback",
+    "spam",
+    "other",
+  ];
   const sys = `Categorize the conversation. Choose EXACTLY ONE from: ${categories.join(", ")}. Respond ONLY as JSON: {"category":"...","confidence":0..1,"tags":["..."]}.`;
   const user = `Conversation:\n${s(input.conversation) || s(input.text)}`;
   const r = await callAI(ctx, "workflow.ai.categorize", sys, user, common, true);
@@ -224,7 +257,8 @@ export async function evalAiClassifyLead(input: Record<string, unknown>, ctx: Ai
 
 export async function evalAiExtract(input: Record<string, unknown>, ctx: AiEvalCtx) {
   const common = pickCommon(input);
-  const fields = (input.fields as Array<{ name: string; description?: string; type?: string }>) ?? [];
+  const fields =
+    (input.fields as Array<{ name: string; description?: string; type?: string }>) ?? [];
   const schemaHint = fields.length
     ? fields.map((f) => `- ${f.name} (${f.type ?? "string"}): ${f.description ?? ""}`).join("\n")
     : "- email\n- phone\n- full_name\n- company\n- intent";
@@ -281,9 +315,12 @@ export function matchClassifyLabel(raw: string, labels: string[]): string | null
 
 export async function evalAiClassify(input: Record<string, unknown>, ctx: AiEvalCtx) {
   const text = s(input.text);
-  const labels = (Array.isArray(input.labels)
-    ? (input.labels as unknown[]).map((l) => s(l).trim())
-    : s(input.labels).split(",").map((l) => l.trim())
+  const labels = (
+    Array.isArray(input.labels)
+      ? (input.labels as unknown[]).map((l) => s(l).trim())
+      : s(input.labels)
+          .split(",")
+          .map((l) => l.trim())
   ).filter((l) => l.length > 0);
   if (labels.length === 0) throw new Error("ai.classify: at least one label is required");
   const fallback = s(input.fallback).trim() || null;
@@ -299,7 +336,11 @@ export async function evalAiClassify(input: Record<string, unknown>, ctx: AiEval
     return { label: matched, provider_kind: r.providerKind, model: r.model };
   }
   if (fallback && labels.some((l) => l.toLowerCase() === fallback.toLowerCase())) {
-    return { label: labels.find((l) => l.toLowerCase() === fallback.toLowerCase())!, provider_kind: r.providerKind, model: r.model };
+    return {
+      label: labels.find((l) => l.toLowerCase() === fallback.toLowerCase())!,
+      provider_kind: r.providerKind,
+      model: r.model,
+    };
   }
   throw new Error(
     `ai.classify: model reply "${r.content.trim().slice(0, 120)}" did not match any label (${labels.join(", ")})`,

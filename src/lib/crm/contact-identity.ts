@@ -31,7 +31,10 @@ const clean = (v: unknown): string | null => {
 };
 
 /** Resolve the human label for a contact-like row, identically everywhere. */
-export function resolveDisplayName(c: ContactLike | null | undefined, fallback = "Unnamed contact"): string {
+export function resolveDisplayName(
+  c: ContactLike | null | undefined,
+  fallback = "Unnamed contact",
+): string {
   if (!c) return fallback;
   const joined = [clean(c.first_name), clean(c.last_name)].filter(Boolean).join(" ").trim();
   return (
@@ -50,7 +53,10 @@ export function resolveDisplayName(c: ContactLike | null | undefined, fallback =
 }
 
 /** Two-letter initials derived from the same resolved display name. */
-export function resolveInitials(c: ContactLike | null | undefined, fallback = "Unnamed contact"): string {
+export function resolveInitials(
+  c: ContactLike | null | undefined,
+  fallback = "Unnamed contact",
+): string {
   return resolveDisplayName(c, fallback)
     .split(/\s+/)
     .map((w) => w[0])

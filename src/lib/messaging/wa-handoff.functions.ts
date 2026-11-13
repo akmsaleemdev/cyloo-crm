@@ -1,10 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  WA_HANDOFF_DEFAULTS,
-  type WaHandoffSettings,
-} from "./wa-handoff-config";
+import { WA_HANDOFF_DEFAULTS, type WaHandoffSettings } from "./wa-handoff-config";
 import { sbAny } from "@/lib/supabase/untyped";
 
 /**
@@ -17,10 +14,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 
 const strategySchema = z.enum(["round_robin", "least_busy", "skill", "auto"]);
 
-export const WA_HANDOFF_STRATEGY_LABEL: Record<
-  z.infer<typeof strategySchema>,
-  string
-> = {
+export const WA_HANDOFF_STRATEGY_LABEL: Record<z.infer<typeof strategySchema>, string> = {
   round_robin: "Round robin",
   least_busy: "Least busy",
   skill: "Skills based",
@@ -41,9 +35,7 @@ export interface WaHandoffAgent {
 
 export const getWaHandoffOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(input),
-  )
+  .inputValidator((input: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { workspaceId } = data;
@@ -104,9 +96,9 @@ export const getWaHandoffOverview = createServerFn({ method: "POST" })
           rows.map((r) => r.user_id),
         );
       names = Object.fromEntries(
-        ((profs ?? []) as Array<{ id: string; display_name: string | null; email: string | null }>).map(
-          (p) => [p.id, p.display_name || p.email || "Agent"],
-        ),
+        (
+          (profs ?? []) as Array<{ id: string; display_name: string | null; email: string | null }>
+        ).map((p) => [p.id, p.display_name || p.email || "Agent"]),
       );
     }
 
@@ -115,9 +107,7 @@ export const getWaHandoffOverview = createServerFn({ method: "POST" })
     const agents: WaHandoffAgent[] = rows.map((r) => {
       const last = r.last_assigned_at ? Date.parse(r.last_assigned_at) : 0;
       const remaining =
-        cooldownMs > 0 && last > 0
-          ? Math.max(0, Math.ceil((last + cooldownMs - now) / 1000))
-          : 0;
+        cooldownMs > 0 && last > 0 ? Math.max(0, Math.ceil((last + cooldownMs - now) / 1000)) : 0;
       return {
         userId: r.user_id,
         name: names[r.user_id] ?? "Agent",
@@ -157,22 +147,24 @@ export const updateWaHandoffSettings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
-    const { error } = await sbAny(supabase).from("wa_handoff_settings").upsert(
-      {
-        workspace_id: data.workspaceId,
-        enabled: data.enabled,
-        strategy: data.strategy,
-        required_skills: data.requiredSkills,
-        match_language: data.matchLanguage,
-        respect_max_concurrent: data.respectMaxConcurrent,
-        agent_cooldown_seconds: data.agentCooldownSeconds,
-        conversation_cooldown_seconds: data.conversationCooldownSeconds,
-        pause_bot_on_handoff: data.pauseBotOnHandoff,
-        queue_when_unavailable: data.queueWhenUnavailable,
-        notify_message: data.notifyMessage,
-      } as never,
-      { onConflict: "workspace_id" },
-    );
+    const { error } = await sbAny(supabase)
+      .from("wa_handoff_settings")
+      .upsert(
+        {
+          workspace_id: data.workspaceId,
+          enabled: data.enabled,
+          strategy: data.strategy,
+          required_skills: data.requiredSkills,
+          match_language: data.matchLanguage,
+          respect_max_concurrent: data.respectMaxConcurrent,
+          agent_cooldown_seconds: data.agentCooldownSeconds,
+          conversation_cooldown_seconds: data.conversationCooldownSeconds,
+          pause_bot_on_handoff: data.pauseBotOnHandoff,
+          queue_when_unavailable: data.queueWhenUnavailable,
+          notify_message: data.notifyMessage,
+        } as never,
+        { onConflict: "workspace_id" },
+      );
     if (error) throw new Error(error.message);
     return { ok: true as const };
   });

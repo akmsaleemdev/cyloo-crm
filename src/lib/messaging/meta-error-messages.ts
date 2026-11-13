@@ -8,11 +8,7 @@
  * This module is client-safe: no server-only imports.
  */
 
-export type MetaStage =
-  | "resolve_app"
-  | "upload_session"
-  | "upload_bytes"
-  | "template_submit";
+export type MetaStage = "resolve_app" | "upload_session" | "upload_bytes" | "template_submit";
 
 export type ParsedMetaError = {
   /** Raw message returned by Meta, if any. */
@@ -35,7 +31,8 @@ export type ParsedMetaError = {
 /** Extract the useful diagnostic fields from a Graph API error body. */
 export function parseMetaError(status: number, body: unknown): ParsedMetaError {
   const err = (body as { error?: Record<string, unknown> } | null)?.error;
-  const num = (v: unknown) => (typeof v === "number" ? v : typeof v === "string" && v !== "" ? Number(v) : undefined);
+  const num = (v: unknown) =>
+    typeof v === "number" ? v : typeof v === "string" && v !== "" ? Number(v) : undefined;
   const str = (v: unknown) => (typeof v === "string" && v !== "" ? v : undefined);
   return {
     status,
@@ -187,7 +184,10 @@ export function splitFriendlyMessage(message: string): { title: string; descript
 }
 
 /** Compact, log-safe representation of a Meta failure (never includes tokens). */
-export function metaErrorLogData(stage: MetaStage, parsed: ParsedMetaError): Record<string, unknown> {
+export function metaErrorLogData(
+  stage: MetaStage,
+  parsed: ParsedMetaError,
+): Record<string, unknown> {
   return {
     stage,
     status: parsed.status,

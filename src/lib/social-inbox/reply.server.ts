@@ -2,7 +2,12 @@
  * Deliver an Inbox reply on a social comment thread as a public comment reply.
  */
 import { isSocialInboxPlatform, type SocialInboxPlatform } from "./normalize";
-import { loadSocialInboxAccount, replyToSocialComment, type Admin, type FetchImpl } from "./platforms.server";
+import {
+  loadSocialInboxAccount,
+  replyToSocialComment,
+  type Admin,
+  type FetchImpl,
+} from "./platforms.server";
 
 interface ConversationLike {
   id: string;
@@ -75,7 +80,10 @@ export async function deliverSocialCommentReply(args: {
     accountId,
     platform,
   });
-  if (!account) throw new Error("The connected account for this thread was not found or is disconnected. Reconnect it.");
+  if (!account)
+    throw new Error(
+      "The connected account for this thread was not found or is disconnected. Reconnect it.",
+    );
 
   const target = await resolveReplyTarget(admin, conv, msg);
   if (!target) throw new Error("Could not find the comment this reply belongs to.");

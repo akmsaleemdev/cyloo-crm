@@ -25,7 +25,8 @@ export function AudienceResultsTable({
 
   const sorted = useMemo(() => {
     const copy = [...rows];
-    if (sortKey === "name") copy.sort((a, b) => (a.display_name ?? "").localeCompare(b.display_name ?? ""));
+    if (sortKey === "name")
+      copy.sort((a, b) => (a.display_name ?? "").localeCompare(b.display_name ?? ""));
     else if (sortKey === "clv")
       copy.sort((a, b) => (b.customer_lifetime_value ?? 0) - (a.customer_lifetime_value ?? 0));
     return copy;
@@ -82,7 +83,8 @@ export function AudienceResultsTable({
         )}
         <ul className="divide-y">
           {sorted.map((r) => {
-            const name = r.display_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || "Unnamed";
+            const name =
+              r.display_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || "Unnamed";
             const isSel = selected.has(r.id);
             return (
               <li
@@ -90,10 +92,16 @@ export function AudienceResultsTable({
                 className={`flex items-center gap-3 px-3 py-2 hover:bg-muted/50 cursor-pointer ${isSel ? "bg-primary/5" : ""}`}
                 onClick={() => toggleOne(r.id)}
               >
-                <Checkbox checked={isSel} onCheckedChange={() => toggleOne(r.id)} onClick={(e) => e.stopPropagation()} />
+                <Checkbox
+                  checked={isSel}
+                  onCheckedChange={() => toggleOne(r.id)}
+                  onClick={(e) => e.stopPropagation()}
+                />
                 <Avatar className="h-9 w-9">
                   {r.avatar_url ? <AvatarImage src={r.avatar_url} /> : null}
-                  <AvatarFallback className="text-xs">{name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xs">
+                    {name.slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -101,8 +109,16 @@ export function AudienceResultsTable({
                     <Badge variant="outline" className="text-[11px] px-1 py-0">
                       {r.lifecycle_stage}
                     </Badge>
-                    {r.lead_status && <Badge variant="secondary" className="text-[11px] px-1 py-0">{r.lead_status}</Badge>}
-                    {r.do_not_contact && <Badge variant="destructive" className="text-[11px] px-1 py-0">DNC</Badge>}
+                    {r.lead_status && (
+                      <Badge variant="secondary" className="text-[11px] px-1 py-0">
+                        {r.lead_status}
+                      </Badge>
+                    )}
+                    {r.do_not_contact && (
+                      <Badge variant="destructive" className="text-[11px] px-1 py-0">
+                        DNC
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
                     {r.phone || r.whatsapp || "—"} · {r.email || "—"}
@@ -112,9 +128,15 @@ export function AudienceResultsTable({
                   {r.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {r.tags.slice(0, 4).map((t) => (
-                        <Badge key={t} variant="outline" className="text-[11px] px-1 py-0">{t}</Badge>
+                        <Badge key={t} variant="outline" className="text-[11px] px-1 py-0">
+                          {t}
+                        </Badge>
                       ))}
-                      {r.tags.length > 4 && <span className="text-[11px] text-muted-foreground">+{r.tags.length - 4}</span>}
+                      {r.tags.length > 4 && (
+                        <span className="text-[11px] text-muted-foreground">
+                          +{r.tags.length - 4}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>

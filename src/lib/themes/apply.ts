@@ -14,7 +14,7 @@ const applied = new Map<string, string>();
 const layers = new Map<string, ThemeTokens>();
 
 function syncThemeTokens() {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   const merged = Object.assign({}, ...layers.values()) as ThemeTokens;
   const root = document.documentElement;
   for (const name of applied.keys()) {
@@ -31,32 +31,35 @@ function syncThemeTokens() {
 
 /** Workspace branding sits above the base accent tokens. Removing a layer
  * restores any value supplied by the layer beneath it. */
-export function setThemeTokenLayer(layer: 'base' | 'workspace', tokens: ThemeTokens | null) {
+export function setThemeTokenLayer(layer: "base" | "workspace", tokens: ThemeTokens | null) {
   const normalized: ThemeTokens = {};
   for (const [key, value] of Object.entries(tokens ?? {})) {
     if (!value) continue;
-    normalized[key.startsWith('--') ? key : `--${key}`] = String(value);
+    normalized[key.startsWith("--") ? key : `--${key}`] = String(value);
   }
-  if (layer === 'base') {
-    const workspace = layers.get('workspace');
+  if (layer === "base") {
+    const workspace = layers.get("workspace");
     layers.clear();
-    layers.set('base', normalized);
-    if (workspace) layers.set('workspace', workspace);
+    layers.set("base", normalized);
+    if (workspace) layers.set("workspace", workspace);
   } else if (tokens) {
-    layers.set('workspace', normalized);
+    layers.set("workspace", normalized);
   } else {
-    layers.delete('workspace');
+    layers.delete("workspace");
   }
   syncThemeTokens();
 }
 
-export function applyThemeTokens(tokens: ThemeTokens | null | undefined, overrides?: ThemeTokens | null) {
-  setThemeTokenLayer('base', { ...(tokens ?? {}), ...(overrides ?? {}) });
+export function applyThemeTokens(
+  tokens: ThemeTokens | null | undefined,
+  overrides?: ThemeTokens | null,
+) {
+  setThemeTokenLayer("base", { ...(tokens ?? {}), ...(overrides ?? {}) });
 }
 
 export function clearThemeTokens(tokens: ThemeTokens | null | undefined) {
-  if (typeof document === 'undefined' || !tokens) return;
-  const base = { ...(layers.get('base') ?? {}) };
-  for (const key of Object.keys(tokens)) delete base[key.startsWith('--') ? key : `--${key}`];
-  setThemeTokenLayer('base', base);
+  if (typeof document === "undefined" || !tokens) return;
+  const base = { ...(layers.get("base") ?? {}) };
+  for (const key of Object.keys(tokens)) delete base[key.startsWith("--") ? key : `--${key}`];
+  setThemeTokenLayer("base", base);
 }

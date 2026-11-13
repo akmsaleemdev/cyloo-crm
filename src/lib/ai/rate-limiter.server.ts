@@ -18,15 +18,23 @@ export interface AIRateLimit {
 export async function enforceAIRateLimit(rl: AIRateLimit): Promise<void> {
   if (!rl.limit || rl.limit <= 0) return;
   const bucketKey = [
-    "ai", rl.workspaceId,
-    rl.providerId ?? "*", rl.userId ?? "*", rl.feature ?? "*",
+    "ai",
+    rl.workspaceId,
+    rl.providerId ?? "*",
+    rl.userId ?? "*",
+    rl.feature ?? "*",
   ].join(":");
 
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { data, error } = await sbAny(supabaseAdmin).rpc("enforce_rate_limit" as never, {
-      p_key: bucketKey, p_limit: rl.limit, p_window_seconds: 60,
-    } as never);
+    const { data, error } = await sbAny(supabaseAdmin).rpc(
+      "enforce_rate_limit" as never,
+      {
+        p_key: bucketKey,
+        p_limit: rl.limit,
+        p_window_seconds: 60,
+      } as never,
+    );
     if (error) return; // fail-open — the limiter shouldn't take the app down
     if (data === false) {
       throw new AIError("rate_limit", `Rate limit exceeded (${rl.limit}/min)`, { retryable: true });

@@ -216,7 +216,10 @@ export function AssignMessageTaskDialog({ open, onOpenChange, message, conversat
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="assign-task-project">Project</Label>
               <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger id="assign-task-project" className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate">
+                <SelectTrigger
+                  id="assign-task-project"
+                  className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate"
+                >
                   <SelectValue placeholder="Choose a project" />
                 </SelectTrigger>
                 <SelectContent className="w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]">

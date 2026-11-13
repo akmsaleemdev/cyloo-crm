@@ -15,10 +15,7 @@ const MIGRATIONS_DIR = resolve(__dirname, "../../supabase/migrations");
 
 describe("Security: Realtime RLS", () => {
   it("should have realtime subscription manager", () => {
-    const subManager = resolve(
-      SRC_DIR,
-      "lib/realtime/subscription-manager.ts",
-    );
+    const subManager = resolve(SRC_DIR, "lib/realtime/subscription-manager.ts");
     expect(existsSync(subManager)).toBe(true);
   });
 
@@ -35,24 +32,16 @@ describe("Security: Realtime RLS", () => {
         const content = readFileSync(fullPath, "utf-8");
         // Realtime subscriptions should reference workspace/org context
         const hasTenantScope =
-          content.includes("workspace") ||
-          content.includes("org") ||
-          content.includes("tenant");
-        expect(
-          hasTenantScope,
-          `Realtime file "${relPath}" should reference tenant context`,
-        ).toBe(true);
+          content.includes("workspace") || content.includes("org") || content.includes("tenant");
+        expect(hasTenantScope, `Realtime file "${relPath}" should reference tenant context`).toBe(
+          true,
+        );
       }
     }
   });
 
   it("should have RLS on tables commonly used with realtime", () => {
-    const realtimeTables = [
-      "conversations",
-      "messages",
-      "notifications",
-      "inbox_items",
-    ];
+    const realtimeTables = ["conversations", "messages", "notifications", "inbox_items"];
 
     let allSQL = "";
     try {
@@ -75,12 +64,8 @@ describe("Security: Realtime RLS", () => {
           `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
           "i",
         ).test(allSQL);
-        expect(
-          hasRLS,
-          `Realtime table "${table}" should have RLS enabled`,
-        ).toBe(true);
+        expect(hasRLS, `Realtime table "${table}" should have RLS enabled`).toBe(true);
       }
     }
   });
 });
-

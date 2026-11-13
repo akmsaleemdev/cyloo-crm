@@ -207,7 +207,10 @@ function ReleaseReadinessPage() {
               { l: "Backup & restore", h: docsUrl("index", "backup-restore") },
               { l: "Security hardening", h: docsUrl("index", "security-hardening") },
               { l: "GDPR compliance", h: docsUrl("index", "gdpr") },
-              { l: "Production deployment checklist", h: docsUrl("index", "production-deployment") },
+              {
+                l: "Production deployment checklist",
+                h: docsUrl("index", "production-deployment"),
+              },
               { l: "Incident response", h: docsUrl("index", "incident-response") },
             ].map((d) => (
               <a

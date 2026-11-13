@@ -33,7 +33,8 @@ export const runWorkflow = createServerFn({ method: "POST" })
       .select("id, workspace_id, graph, status, version, runs_count")
       .eq("id", data.automationId)
       .single();
-    if (error || !automation) throw new Error(`Automation not found: ${error?.message ?? "unknown"}`);
+    if (error || !automation)
+      throw new Error(`Automation not found: ${error?.message ?? "unknown"}`);
     if (automation.status !== "active" && data.triggerSource !== "manual") {
       throw new Error("Automation is not active");
     }
@@ -163,7 +164,10 @@ export const emitWorkflowEvent = createServerFn({ method: "POST" })
         .from("workflow_queue")
         .select("workspace_id, automation_id")
         .eq("idempotency_key", data.idempotencyKey)
-        .in("automation_id", rows.map((r) => r.automation_id));
+        .in(
+          "automation_id",
+          rows.map((r) => r.automation_id),
+        );
       if (exErr) throw new Error(exErr.message);
       const seen = new Set((existing ?? []).map((e) => `${e.workspace_id}:${e.automation_id}`));
       toInsert = rows.filter((r) => !seen.has(`${r.workspace_id}:${r.automation_id}`));
@@ -174,7 +178,6 @@ export const emitWorkflowEvent = createServerFn({ method: "POST" })
     if (qErr && qErr.code !== "23505") throw new Error(qErr.message);
     return { enqueued: toInsert.length };
   });
-
 
 /* ------------------------------- Publish / version ------------------------ */
 
@@ -201,22 +204,26 @@ export const publishWorkflow = createServerFn({ method: "POST" })
     const { validateGraph } = await import("./validation");
     const blocking = validateGraph(graph).filter((i) => i.level === "error");
     if (blocking.length > 0) {
-      throw new Error(`Cannot publish — fix ${blocking.length} validation error(s): ${blocking[0].message}`);
+      throw new Error(
+        `Cannot publish — fix ${blocking.length} validation error(s): ${blocking[0].message}`,
+      );
     }
 
     // Version numbers are unique per automation. Two concurrent publishes race
     // on that constraint, so retry with a re-read version instead of failing.
     let nextVersion = (automation.version ?? 1) + 1;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { error: vErr } = await sbAny(supabase).from("workflow_versions").insert({
-        workspace_id: automation.workspace_id,
-        automation_id: automation.id,
-        version: nextVersion,
-        graph: automation.graph as any,
-        trigger_type: automation.trigger_type,
-        trigger_config: automation.trigger_config as any,
-        created_by: userId,
-      });
+      const { error: vErr } = await sbAny(supabase)
+        .from("workflow_versions")
+        .insert({
+          workspace_id: automation.workspace_id,
+          automation_id: automation.id,
+          version: nextVersion,
+          graph: automation.graph as any,
+          trigger_type: automation.trigger_type,
+          trigger_config: automation.trigger_config as any,
+          created_by: userId,
+        });
       if (!vErr) break;
       const isConflict = vErr.code === "23505";
       if (!isConflict || attempt === 2) throw new Error(vErr.message);
@@ -227,7 +234,7 @@ export const publishWorkflow = createServerFn({ method: "POST" })
         .order("version", { ascending: false })
         .limit(1)
         .maybeSingle();
-      nextVersion = Math.max(nextVersion, (latest?.version ?? nextVersion)) + 1;
+      nextVersion = Math.max(nextVersion, latest?.version ?? nextVersion) + 1;
     }
 
     const { error: uErr } = await supabase
@@ -251,9 +258,7 @@ export const publishWorkflow = createServerFn({ method: "POST" })
 export const unpublishWorkflow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z
-      .object({ automationId: z.string().uuid(), cancelQueued: z.boolean().default(true) })
-      .parse(v),
+    z.object({ automationId: z.string().uuid(), cancelQueued: z.boolean().default(true) }).parse(v),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -369,14 +374,14 @@ export const recoverStuckRuns = createServerFn({ method: "POST" })
 
 /* --------------------------------- Test run ------------------------------- */
 
-
-
 const TestRunInput = z.object({
   automationId: z.string().uuid(),
-  graph: z.object({
-    nodes: z.array(z.record(z.unknown())),
-    edges: z.array(z.record(z.unknown())),
-  }).optional(),
+  graph: z
+    .object({
+      nodes: z.array(z.record(z.unknown())),
+      edges: z.array(z.record(z.unknown())),
+    })
+    .optional(),
   input: z.record(z.unknown()).default({}),
 });
 
@@ -397,7 +402,8 @@ export const testRunWorkflow = createServerFn({ method: "POST" })
       .single();
     if (error || !automation) throw new Error("Automation not found");
 
-    const graph = (data.graph as WorkflowGraph | undefined) ??
+    const graph =
+      (data.graph as WorkflowGraph | undefined) ??
       ((automation.graph ?? { nodes: [], edges: [] }) as WorkflowGraph);
 
     const { executeAutomation } = await import("./engine.server");

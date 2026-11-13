@@ -181,14 +181,15 @@ async function platformChecks(
             label: "Public domain",
             status: "error",
             detail: `${origin} uses HTTP; Meta requires an HTTPS webhook callback.`,
-            remedy: "Set APP_ORIGIN to this deployment's public HTTPS origin and use its HTTPS callback URL in Meta.",
+            remedy:
+              "Set APP_ORIGIN to this deployment's public HTTPS origin and use its HTTPS callback URL in Meta.",
           }
-      : {
-          id: "app_domain",
-          label: "Public domain",
-          status: "ok",
-          detail: `Serving on the public domain ${host}.`,
-        },
+        : {
+            id: "app_domain",
+            label: "Public domain",
+            status: "ok",
+            detail: `Serving on the public domain ${host}.`,
+          },
   );
 
   // 4. The subscription handshake, replayed exactly as Meta performs it.
@@ -228,7 +229,7 @@ async function platformChecks(
                 "Cloudflare Workers limitation with self-fetches, not a sign the webhook is broken " +
                 "for real callers — Meta reaches this same URL over the public internet, not from inside the Worker.",
               remedy:
-                "Use Meta's \"Verify and Save\" on this exact callback URL in the App Dashboard — " +
+                'Use Meta\'s "Verify and Save" on this exact callback URL in the App Dashboard — ' +
                 "that is the authoritative check, since it calls the URL the same way Meta's real webhook deliveries do.",
             }
           : {

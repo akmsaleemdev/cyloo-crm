@@ -14,15 +14,18 @@
 
 import { digitsOnly, toE164 } from "@/lib/messaging/phone-matching";
 
-export type PartialContactLike = {
-  name?: string | null;
-  display_name?: string | null;
-  first_name?: string | null;
-  last_name?: string | null;
-  phone?: string | null;
-  whatsapp?: string | null;
-  email?: string | null;
-} | null | undefined;
+export type PartialContactLike =
+  | {
+      name?: string | null;
+      display_name?: string | null;
+      first_name?: string | null;
+      last_name?: string | null;
+      phone?: string | null;
+      whatsapp?: string | null;
+      email?: string | null;
+    }
+  | null
+  | undefined;
 
 const PHONE_LIKE = /^\+?\d[\d\s().-]{5,}$/;
 
@@ -67,9 +70,7 @@ export function formatPhoneNumber(
   const cc = d.slice(0, ccLen);
   const rest = d.slice(ccLen);
   const grouped = rest
-    .replace(/(\d{3})(\d{3})(\d{0,4})/, (_, a, b, c) =>
-      [a, b, c].filter(Boolean).join(" "),
-    )
+    .replace(/(\d{3})(\d{3})(\d{0,4})/, (_, a, b, c) => [a, b, c].filter(Boolean).join(" "))
     .trim();
   return `+${cc}${grouped ? ` ${grouped}` : ""}`.trim();
 }
@@ -79,13 +80,7 @@ export function pickContactPhone(
   contact: PartialContactLike,
   fallback?: PartialContactLike,
 ): string | null {
-  return (
-    contact?.phone ??
-    contact?.whatsapp ??
-    fallback?.phone ??
-    fallback?.whatsapp ??
-    null
-  );
+  return contact?.phone ?? contact?.whatsapp ?? fallback?.phone ?? fallback?.whatsapp ?? null;
 }
 
 /** `tel:` href using canonical E.164 digits — never formatted with spaces. */
@@ -120,11 +115,7 @@ export function resolveContactDisplayName(
   for (const c of [contact, fallback]) {
     if (!c) continue;
     const composed = [c.first_name, c.last_name].filter(Boolean).join(" ").trim();
-    candidates.push(
-      c.name,
-      c.display_name,
-      composed || null,
-    );
+    candidates.push(c.name, c.display_name, composed || null);
   }
   for (const raw of candidates) {
     const v = (raw ?? "").trim();
@@ -180,4 +171,3 @@ export function resolveContactInitials(
       .join("") || "?"
   );
 }
-

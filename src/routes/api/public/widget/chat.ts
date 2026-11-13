@@ -29,7 +29,11 @@ const AttachmentSchema = z.object({
   url: z.string().url(),
   name: z.string().min(1).max(300),
   mime: z.string().min(1).max(120),
-  size: z.number().int().min(0).max(50 * 1024 * 1024),
+  size: z
+    .number()
+    .int()
+    .min(0)
+    .max(50 * 1024 * 1024),
   kind: z.enum(["image", "document", "audio"]),
 });
 

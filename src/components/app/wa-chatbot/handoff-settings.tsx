@@ -8,9 +8,7 @@ import {
   WA_HANDOFF_STRATEGY_LABEL,
 } from "@/lib/messaging/wa-handoff.functions";
 import type { WaHandoffStrategy } from "@/lib/messaging/wa-handoff-config";
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Users, Timer, Save, ShieldCheck, Clock } from "lucide-react";
 
@@ -87,7 +89,10 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
             .slice(0, 20),
           matchLanguage: form.matchLanguage,
           respectMaxConcurrent: form.respectMaxConcurrent,
-          agentCooldownSeconds: Math.max(0, Math.min(86400, Number(form.agentCooldownSeconds) || 0)),
+          agentCooldownSeconds: Math.max(
+            0,
+            Math.min(86400, Number(form.agentCooldownSeconds) || 0),
+          ),
           conversationCooldownSeconds: Math.max(
             0,
             Math.min(86400, Number(form.conversationCooldownSeconds) || 0),
@@ -166,10 +171,14 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
                 value={form.strategy}
                 onValueChange={(v) => setForm((f) => ({ ...f, strategy: v as WaHandoffStrategy }))}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(WA_HANDOFF_STRATEGY_LABEL).map(([k, label]) => (
-                    <SelectItem key={k} value={k}>{label}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -194,15 +203,17 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
                 <Timer className="h-3.5 w-3.5" /> Agent cooldown (seconds)
               </Label>
               <Input
-                type="number" min={0} max={86400}
+                type="number"
+                min={0}
+                max={86400}
                 value={form.agentCooldownSeconds}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, agentCooldownSeconds: Number(e.target.value) }))
                 }
               />
               <p className="text-xs text-muted-foreground">
-                Skip an agent for this long after they receive a chat. If everyone is cooling
-                down the least-recent agent still gets it.
+                Skip an agent for this long after they receive a chat. If everyone is cooling down
+                the least-recent agent still gets it.
               </p>
             </div>
             <div className="space-y-1.5">
@@ -210,7 +221,9 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
                 <Clock className="h-3.5 w-3.5" /> Conversation cooldown (seconds)
               </Label>
               <Input
-                type="number" min={0} max={86400}
+                type="number"
+                min={0}
+                max={86400}
                 value={form.conversationCooldownSeconds}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, conversationCooldownSeconds: Number(e.target.value) }))
@@ -279,8 +292,8 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
             </>
           ) : agents.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No agent availability records yet. Agents appear here once they set their
-              presence in the inbox.
+              No agent availability records yet. Agents appear here once they set their presence in
+              the inbox.
             </p>
           ) : (
             agents.map((a) => {
@@ -294,7 +307,9 @@ export function WaHandoffSettingsPanel({ workspaceId }: { workspaceId: string | 
                     </Badge>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span>Load {a.currentLoad}/{Math.max(1, a.maxConcurrent)}</span>
+                    <span>
+                      Load {a.currentLoad}/{Math.max(1, a.maxConcurrent)}
+                    </span>
                     {a.coolingDownFor > 0 && <span>Cooling down {a.coolingDownFor}s</span>}
                     {a.languages.length > 0 && <span>{a.languages.join(", ")}</span>}
                   </div>

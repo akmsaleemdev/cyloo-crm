@@ -15,16 +15,14 @@ export const Route = createFileRoute("/api/public/hooks/birthday-reminders")({
         const denied = guardCronRequest(request);
         if (denied) return denied;
         try {
-          const { runBirthdayReminders } = await import(
-            "@/lib/birthday/reminders-runner.server"
-          );
+          const { runBirthdayReminders } = await import("@/lib/birthday/reminders-runner.server");
           const result = await runBirthdayReminders();
           return Response.json({ ok: true, ...result });
         } catch (e: any) {
-          return new Response(
-            JSON.stringify({ ok: false, error: e?.message ?? String(e) }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-          );
+          return new Response(JSON.stringify({ ok: false, error: e?.message ?? String(e) }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },

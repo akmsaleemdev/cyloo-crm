@@ -16,7 +16,8 @@ const LEVELS: Record<Level, number> = { debug: 10, info: 20, warn: 30, error: 40
 
 const configuredLevel: Level =
   (typeof process !== "undefined" && (process.env?.LOG_LEVEL as Level)) ||
-  (typeof import.meta !== "undefined" && (import.meta as { env?: { MODE?: string } }).env?.MODE === "production"
+  (typeof import.meta !== "undefined" &&
+  (import.meta as { env?: { MODE?: string } }).env?.MODE === "production"
     ? "info"
     : "debug");
 
@@ -35,7 +36,9 @@ function emit(level: Level, event: string, context?: Record<string, unknown>) {
     ...context,
   };
 
-  const line = isProd ? JSON.stringify(payload) : `[${level.toUpperCase()}] ${event} ${context ? JSON.stringify(context) : ""}`;
+  const line = isProd
+    ? JSON.stringify(payload)
+    : `[${level.toUpperCase()}] ${event} ${context ? JSON.stringify(context) : ""}`;
 
   switch (level) {
     case "error":
@@ -67,7 +70,10 @@ export const logger = {
  * Wire the actual SDK here — this stub logs so callers can integrate now.
  */
 export function reportError(error: unknown, context?: Record<string, unknown>) {
-  const err = error instanceof Error ? { name: error.name, message: error.message, stack: error.stack } : { message: String(error) };
+  const err =
+    error instanceof Error
+      ? { name: error.name, message: error.message, stack: error.stack }
+      : { message: String(error) };
   logger.error("error.reported", { ...context, err });
   // TODO: Sentry.captureException(error, { extra: context })
 }

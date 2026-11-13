@@ -23,8 +23,7 @@ export const config = {
   /** HMAC secret for worker → app webhook signing. */
   webhookSecret: required("WA_QR_WEBHOOK_SECRET"),
   /** Absolute URL of the CYLOO webhook endpoint. */
-  webhookUrl:
-    process.env.CYLOO_WEBHOOK_URL || "https://cyloo.ai/api/public/whatsapp/qr-webhook",
+  webhookUrl: process.env.CYLOO_WEBHOOK_URL || "https://cyloo.ai/api/public/whatsapp/qr-webhook",
 
   /** Where Baileys auth state is persisted. MUST survive restarts. */
   authDir: process.env.WA_AUTH_DIR || "./data/auth",

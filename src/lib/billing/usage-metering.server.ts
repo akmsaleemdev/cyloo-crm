@@ -21,18 +21,27 @@ export interface RecordUsageInput {
   metadata?: Record<string, unknown>;
 }
 
-export async function recordUsage(supabase: SupabaseClient, input: RecordUsageInput): Promise<void> {
-  const { error } = await sbAny(supabase).from("usage_events").insert({
-    organization_id: input.organization_id,
-    meter_code: input.meter_code,
-    quantity: input.quantity ?? 1,
-    occurred_at: input.occurred_at ?? new Date().toISOString(),
-    idempotency_key: input.idempotency_key ?? null,
-    subscription_id: input.subscription_id ?? null,
-    metadata: input.metadata ?? {},
-  });
+export async function recordUsage(
+  supabase: SupabaseClient,
+  input: RecordUsageInput,
+): Promise<void> {
+  const { error } = await sbAny(supabase)
+    .from("usage_events")
+    .insert({
+      organization_id: input.organization_id,
+      meter_code: input.meter_code,
+      quantity: input.quantity ?? 1,
+      occurred_at: input.occurred_at ?? new Date().toISOString(),
+      idempotency_key: input.idempotency_key ?? null,
+      subscription_id: input.subscription_id ?? null,
+      metadata: input.metadata ?? {},
+    });
   if (error && !error.message.includes("duplicate key")) throw error;
-  await emit({ type: "usage.recorded", organization_id: input.organization_id, data: { meter_code: input.meter_code, quantity: input.quantity ?? 1 } });
+  await emit({
+    type: "usage.recorded",
+    organization_id: input.organization_id,
+    data: { meter_code: input.meter_code, quantity: input.quantity ?? 1 },
+  });
 }
 
 export interface MeterRollup {

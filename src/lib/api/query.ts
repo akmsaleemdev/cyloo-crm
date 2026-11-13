@@ -32,7 +32,10 @@ export interface ParsedQuery {
 
 export function parseQuery(url: URL, spec: QuerySpec): ParsedQuery {
   const maxLimit = spec.maxLimit ?? 200;
-  const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? "50") || 50, 1), maxLimit);
+  const limit = Math.min(
+    Math.max(Number(url.searchParams.get("limit") ?? "50") || 50, 1),
+    maxLimit,
+  );
   const offset = Math.max(Number(url.searchParams.get("offset") ?? "0") || 0, 0);
 
   const sortParam = url.searchParams.get("sort") ?? spec.defaultSort ?? "-created_at";
@@ -55,7 +58,14 @@ export function parseQuery(url: URL, spec: QuerySpec): ParsedQuery {
     const op = (m[2] ?? "eq") as ParsedQuery["filters"][number]["op"];
     if (!spec.filterable.includes(column)) return;
     if (op === "in") {
-      filters.push({ column, op, value: value.split(",").map((v) => v.trim()).filter(Boolean) });
+      filters.push({
+        column,
+        op,
+        value: value
+          .split(",")
+          .map((v) => v.trim())
+          .filter(Boolean),
+      });
     } else if (op === "ilike") {
       filters.push({ column, op, value: `%${value}%` });
     } else {
@@ -65,28 +75,41 @@ export function parseQuery(url: URL, spec: QuerySpec): ParsedQuery {
 
   const search = url.searchParams.get("search")?.trim() || null;
   const fieldsRaw = url.searchParams.get("fields");
-  const fields = fieldsRaw ? fieldsRaw.split(",").map((f) => f.trim()).filter(Boolean) : null;
+  const fields = fieldsRaw
+    ? fieldsRaw
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean)
+    : null;
 
   return { limit, offset, sort, filters, search, fields };
 }
 
-export function applyQuery<T>(
-  builder: any,
-  parsed: ParsedQuery,
-  spec: QuerySpec,
-): any {
+export function applyQuery<T>(builder: any, parsed: ParsedQuery, spec: QuerySpec): any {
   for (const f of parsed.filters) {
     switch (f.op) {
-      case "eq": builder = builder.eq(f.column, f.value); break;
-      case "in": builder = builder.in(f.column, f.value as unknown[]); break;
-      case "gte": builder = builder.gte(f.column, f.value); break;
-      case "lte": builder = builder.lte(f.column, f.value); break;
-      case "ilike": builder = builder.ilike(f.column, f.value); break;
+      case "eq":
+        builder = builder.eq(f.column, f.value);
+        break;
+      case "in":
+        builder = builder.in(f.column, f.value as unknown[]);
+        break;
+      case "gte":
+        builder = builder.gte(f.column, f.value);
+        break;
+      case "lte":
+        builder = builder.lte(f.column, f.value);
+        break;
+      case "ilike":
+        builder = builder.ilike(f.column, f.value);
+        break;
     }
   }
   if (parsed.search && spec.searchable && spec.searchable.length > 0) {
     const clean = parsed.search.replace(/[%,]/g, "");
-    const orExpr = spec.searchable.map((c) => `${c}.ilike.%${sanitizeSearchTerm(clean)}%`).join(",");
+    const orExpr = spec.searchable
+      .map((c) => `${c}.ilike.%${sanitizeSearchTerm(clean)}%`)
+      .join(",");
     builder = builder.or(orExpr);
   }
   if (parsed.sort.length === 0) {

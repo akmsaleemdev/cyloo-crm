@@ -6,9 +6,9 @@
  * change, so accent colours, white-label branding and the active theme apply
  * across every open tab immediately — no refresh required.
  */
-import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useThemeRealtime(workspaceId: string | null | undefined) {
   const qc = useQueryClient();
@@ -17,28 +17,28 @@ export function useThemeRealtime(workspaceId: string | null | undefined) {
     if (!workspaceId) return;
 
     const invalidate = () => {
-      void qc.invalidateQueries({ queryKey: ['white-label'] });
-      void qc.invalidateQueries({ queryKey: ['active-theme'] });
+      void qc.invalidateQueries({ queryKey: ["white-label"] });
+      void qc.invalidateQueries({ queryKey: ["active-theme"] });
     };
 
     const channel = supabase
       .channel(`theme-sync:${workspaceId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'white_label_configs',
+          event: "*",
+          schema: "public",
+          table: "white_label_configs",
           filter: `workspace_id=eq.${workspaceId}`,
         },
         invalidate,
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'theme_installations',
+          event: "*",
+          schema: "public",
+          table: "theme_installations",
           filter: `workspace_id=eq.${workspaceId}`,
         },
         invalidate,

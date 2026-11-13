@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
  * SearchBox — enterprise search input with icon, clear button, ⌘K badge.
  * Controlled: `value` + `onValueChange`. Debounce upstream if needed.
  */
-export interface SearchBoxProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "size"> {
+export interface SearchBoxProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "value" | "size"
+> {
   value: string;
   onValueChange: (next: string) => void;
   placeholder?: string;
@@ -35,7 +37,10 @@ export const SearchBox = React.forwardRef<HTMLInputElement, SearchBoxProps>(
     const iconSize = size === "lg" ? "h-4 w-4" : "h-4 w-4";
     return (
       <div className={cn("relative flex items-center", className)}>
-        <Search className={cn("absolute left-3 text-muted-foreground pointer-events-none", iconSize)} aria-hidden="true" />
+        <Search
+          className={cn("absolute left-3 text-muted-foreground pointer-events-none", iconSize)}
+          aria-hidden="true"
+        />
         <Input
           ref={ref}
           type="search"

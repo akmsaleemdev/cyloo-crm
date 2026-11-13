@@ -25,8 +25,14 @@ export type BrowserVitals = {
 };
 
 const EMPTY: BrowserVitals = {
-  supported: false, lcpMs: null, cls: null, inpMs: null, ttfbMs: null,
-  longTasks: 0, jsHeapMb: null, js: null,
+  supported: false,
+  lcpMs: null,
+  cls: null,
+  inpMs: null,
+  ttfbMs: null,
+  longTasks: 0,
+  jsHeapMb: null,
+  js: null,
 };
 
 type LayoutShiftEntry = PerformanceEntry & { value: number; hadRecentInput: boolean };
@@ -39,7 +45,9 @@ function readBundle(): BrowserVitals["js"] {
   if (scripts.length === 0) return null;
   // transferSize is 0 for cache hits and cross-origin without Timing-Allow-Origin;
   // fall back to the decoded body so a cached load does not read as "0 KB".
-  const sizes = scripts.map((r) => (r.transferSize > 0 ? r.transferSize : r.decodedBodySize) / 1024);
+  const sizes = scripts.map(
+    (r) => (r.transferSize > 0 ? r.transferSize : r.decodedBodySize) / 1024,
+  );
   return {
     transferKb: Math.round(sizes.reduce((s, n) => s + n, 0)),
     files: scripts.length,
@@ -60,7 +68,11 @@ export function useBrowserVitals(): BrowserVitals {
     let longTasks = 0;
     const observers: PerformanceObserver[] = [];
 
-    const observe = (type: string, cb: (entries: PerformanceEntry[]) => void, extra: PerformanceObserverInit = {}) => {
+    const observe = (
+      type: string,
+      cb: (entries: PerformanceEntry[]) => void,
+      extra: PerformanceObserverInit = {},
+    ) => {
       try {
         const po = new PerformanceObserver((list) => cb(list.getEntries()));
         po.observe({ type, buffered: true, ...extra } as PerformanceObserverInit);
@@ -80,15 +92,22 @@ export function useBrowserVitals(): BrowserVitals {
         if (!e.hadRecentInput) cls += e.value;
       }
     });
-    observe("event", (es) => {
-      for (const e of es as EventTimingEntry[]) {
-        if (e.interactionId && e.interactionId > 0) inp = Math.max(inp ?? 0, e.duration);
-      }
-    }, { durationThreshold: 40 } as PerformanceObserverInit);
-    observe("longtask", (es) => { longTasks += es.length; });
+    observe(
+      "event",
+      (es) => {
+        for (const e of es as EventTimingEntry[]) {
+          if (e.interactionId && e.interactionId > 0) inp = Math.max(inp ?? 0, e.duration);
+        }
+      },
+      { durationThreshold: 40 } as PerformanceObserverInit,
+    );
+    observe("longtask", (es) => {
+      longTasks += es.length;
+    });
 
     const snapshot = () => {
-      const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+      const nav = performance.getEntriesByType("navigation")[0] as
+        PerformanceNavigationTiming | undefined;
       const mem = (performance as unknown as { memory?: { usedJSHeapSize: number } }).memory;
       setVitals({
         supported: true,

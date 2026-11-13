@@ -30,7 +30,8 @@ export async function publishToYouTube(input: YouTubePublishInput): Promise<Prov
   const isShort = input.contentType === "short" || input.contentType === "reel";
 
   const source = await fetch(videoUrl);
-  if (!source.ok || !source.body) throw new Error(`Could not download the video (${source.status}).`);
+  if (!source.ok || !source.body)
+    throw new Error(`Could not download the video (${source.status}).`);
   const contentLength = source.headers.get("content-length");
   const mime = source.headers.get("content-type") ?? "video/*";
 
@@ -70,7 +71,9 @@ export async function publishToYouTube(input: YouTubePublishInput): Promise<Prov
   const text = await upload.text();
   const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   if (!upload.ok) {
-    const msg = (json["error"] as { message?: string } | undefined)?.message ?? `YouTube error ${upload.status}`;
+    const msg =
+      (json["error"] as { message?: string } | undefined)?.message ??
+      `YouTube error ${upload.status}`;
     throw new Error(msg);
   }
   const id = json["id"] as string | undefined;

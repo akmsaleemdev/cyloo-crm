@@ -7,7 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,7 +41,9 @@ export function UnsupportedProvidersPanel() {
   const disableFn = useServerFn(disableUnsupportedProvider);
 
   const [targets, setTargets] = useState<Record<string, string>>({});
-  const [pendingDisable, setPendingDisable] = useState<{ provider: string; count: number } | null>(null);
+  const [pendingDisable, setPendingDisable] = useState<{ provider: string; count: number } | null>(
+    null,
+  );
 
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
     queryKey: QUERY_KEY,
@@ -129,7 +137,9 @@ export function UnsupportedProvidersPanel() {
                       <CardTitle className="text-base flex items-center gap-2">
                         <PlugZap className="h-4 w-4 text-accent" />
                         <code className="font-mono">{g.provider}</code>
-                        <Badge variant="secondary">{g.count} account{g.count === 1 ? "" : "s"}</Badge>
+                        <Badge variant="secondary">
+                          {g.count} account{g.count === 1 ? "" : "s"}
+                        </Badge>
                         <Badge variant="outline">
                           {g.workspaceCount} workspace{g.workspaceCount === 1 ? "" : "s"}
                         </Badge>
@@ -237,26 +247,14 @@ export function UnsupportedProvidersPanel() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone?: "ok" | "warn";
-}) {
+function StatCard({ label, value, tone }: { label: string; value: number; tone?: "ok" | "warn" }) {
   return (
     <Card>
       <CardContent className="p-4">
         <p className="text-sm text-muted-foreground">{label}</p>
         <p
           className={`text-2xl font-semibold mt-1 ${
-            tone === "warn" && value > 0
-              ? "text-destructive"
-              : tone === "ok"
-                ? "text-accent"
-                : ""
+            tone === "warn" && value > 0 ? "text-destructive" : tone === "ok" ? "text-accent" : ""
           }`}
         >
           {value}

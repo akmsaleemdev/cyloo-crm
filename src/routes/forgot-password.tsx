@@ -76,7 +76,8 @@ function ForgotPasswordPage() {
           <div className="mt-6 rounded-control border border-border bg-surface p-4 text-sm">
             <p className="font-medium">Email sent</p>
             <p className="text-muted-foreground mt-1">
-              If an account exists for <span className="font-medium text-foreground">{email}</span>, you'll receive a reset link shortly.
+              If an account exists for <span className="font-medium text-foreground">{email}</span>,
+              you'll receive a reset link shortly.
             </p>
           </div>
         ) : (

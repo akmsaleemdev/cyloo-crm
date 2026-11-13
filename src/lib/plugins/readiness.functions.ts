@@ -4,12 +4,12 @@
  * Enterprise health probes across the plugin/theme/marketplace/licensing
  * surface. Used by the /_super-admin/admin/extension-readiness dashboard.
  *
- * All queries respect RLS via requireSupabaseAuth. Superadmin gate is
- * enforced in the UI (route lives under _super-admin) and by the fact
- * that only superadmins can read moderation/scan tables.
+ * The server verifies the platform role before any readiness queries.
+ * Database reads also use the authenticated client's RLS policies.
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { averageErrorRate } from "./health-metrics";
 
 export type CheckStatus = "pass" | "warn" | "fail" | "info";
 
@@ -25,6 +25,8 @@ export interface ReadinessCheck {
 export const getExtensionReadiness = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { assertSuperAdmin } = await import("@/lib/admin/platform-guard.server");
+    await assertSuperAdmin(context.supabase, context.userId);
     const { supabase } = context;
     const checks: ReadinessCheck[] = [];
     const add = (c: ReadinessCheck) => checks.push(c);
@@ -82,10 +84,7 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
           healthRows.reduce((s: number, r: any) => s + (r.latency_ms ?? 0), 0) / healthRows.length,
         )
       : 0;
-    const avgError = healthRows.length
-      ? healthRows.reduce((s: number, r: any) => s + (Number(r.error_rate) ?? 0), 0) /
-        healthRows.length
-      : 0;
+    const avgError = averageErrorRate(healthRows);
     add({
       id: "health.latency",
       category: "Runtime",

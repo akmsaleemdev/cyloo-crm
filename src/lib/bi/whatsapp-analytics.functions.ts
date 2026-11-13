@@ -37,7 +37,14 @@ export interface WhatsAppAnalytics {
     avgDurationSeconds: number;
   };
   csat: { avgScore: number; positive: number; neutral: number; negative: number; sampled: number };
-  volume: { date: string; sent: number; delivered: number; read: number; failed: number; inbound: number }[];
+  volume: {
+    date: string;
+    sent: number;
+    delivered: number;
+    read: number;
+    failed: number;
+    inbound: number;
+  }[];
   responseTrend: { date: string; avgResponseMinutes: number; avgResolutionMinutes: number }[];
   peakHours: { hour: number; messages: number; conversations: number }[];
   peakDayHour: { day: number; hour: number; messages: number }[];
@@ -90,7 +97,9 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
         .limit(20000),
       supabase
         .from("conversation_intelligence")
-        .select("conversation_id, category, topics, sentiment_score, satisfaction_score, sentiment, analyzed_at")
+        .select(
+          "conversation_id, category, topics, sentiment_score, satisfaction_score, sentiment, analyzed_at",
+        )
         .eq("workspace_id", workspaceId)
         .gte("analyzed_at", fromIso)
         .limit(20000),
@@ -103,7 +112,9 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     // Messages tallies
     const outbound = msgs.filter((m: any) => m.direction === "outbound");
     const inbound = msgs.filter((m: any) => m.direction === "inbound");
-    const sent = outbound.filter((m: any) => ["sent", "delivered", "read"].includes(m.status)).length;
+    const sent = outbound.filter((m: any) =>
+      ["sent", "delivered", "read"].includes(m.status),
+    ).length;
     const delivered = outbound.filter((m: any) => ["delivered", "read"].includes(m.status)).length;
     const read = outbound.filter((m: any) => m.status === "read").length;
     const failed = outbound.filter((m: any) => m.status === "failed").length;
@@ -121,10 +132,16 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     const resolutionRate = convs.length ? (resolved / convs.length) * 100 : 0;
 
     // Response / resolution / duration averages
-    let sumResp = 0, cntResp = 0, sumRes = 0, cntRes = 0, sumDur = 0, cntDur = 0;
+    let sumResp = 0,
+      cntResp = 0,
+      sumRes = 0,
+      cntRes = 0,
+      sumDur = 0,
+      cntDur = 0;
     for (const c of convs as any[]) {
       if (c.first_response_at && c.created_at) {
-        sumResp += (new Date(c.first_response_at).getTime() - new Date(c.created_at).getTime()) / 1000;
+        sumResp +=
+          (new Date(c.first_response_at).getTime() - new Date(c.created_at).getTime()) / 1000;
         cntResp++;
       }
       if (c.resolved_at && c.created_at) {
@@ -182,10 +199,14 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
         respMap.set(k, rec);
       }
       if (c.first_response_at) {
-        rec.resp.push((new Date(c.first_response_at).getTime() - new Date(c.created_at).getTime()) / 60000);
+        rec.resp.push(
+          (new Date(c.first_response_at).getTime() - new Date(c.created_at).getTime()) / 60000,
+        );
       }
       if (c.resolved_at) {
-        rec.res.push((new Date(c.resolved_at).getTime() - new Date(c.created_at).getTime()) / 60000);
+        rec.res.push(
+          (new Date(c.resolved_at).getTime() - new Date(c.created_at).getTime()) / 60000,
+        );
       }
     }
     const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
@@ -245,7 +266,13 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
       if (!m.sent_by) continue;
       const rec = agentMap.get(m.sent_by);
       if (rec) rec.messages++;
-      else agentMap.set(m.sent_by, { conversations: new Set(), messages: 1, respTimes: [], resolved: 0 });
+      else
+        agentMap.set(m.sent_by, {
+          conversations: new Set(),
+          messages: 1,
+          respTimes: [],
+          resolved: 0,
+        });
     }
 
     const agentIds = Array.from(agentMap.keys());

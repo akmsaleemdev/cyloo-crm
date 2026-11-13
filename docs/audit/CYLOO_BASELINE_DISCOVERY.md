@@ -15,18 +15,18 @@ No source implementation was changed during discovery. Existing worktree changes
 
 ## Verified technology stack
 
-| Area | Evidence |
-| --- | --- |
-| Runtime | Node v22.20.0; npm 11.9.0 |
-| Web framework | TanStack Start with TanStack Router |
-| Build | Vite 8, Nitro, React Vite plugin |
-| UI | React 19, Tailwind CSS 4, Radix UI, Lucide |
-| Data/auth | Supabase JS 2.110.5 and Supabase migrations/config |
-| Client data | TanStack React Query 5 and TanStack Virtual |
-| Mobile | Expo/React Native application under `mobile/` |
-| Worker | Node QR worker under `qr-worker/` |
-| Tests | Vitest, Testing Library, Playwright, axe-core |
-| Deployment | Node server, Netlify, Docker, and Cloudflare build/deploy scripts are present |
+| Area          | Evidence                                                                      |
+| ------------- | ----------------------------------------------------------------------------- |
+| Runtime       | Node v22.20.0; npm 11.9.0                                                     |
+| Web framework | TanStack Start with TanStack Router                                           |
+| Build         | Vite 8, Nitro, React Vite plugin                                              |
+| UI            | React 19, Tailwind CSS 4, Radix UI, Lucide                                    |
+| Data/auth     | Supabase JS 2.110.5 and Supabase migrations/config                            |
+| Client data   | TanStack React Query 5 and TanStack Virtual                                   |
+| Mobile        | Expo/React Native application under `mobile/`                                 |
+| Worker        | Node QR worker under `qr-worker/`                                             |
+| Tests         | Vitest, Testing Library, Playwright, axe-core                                 |
+| Deployment    | Node server, Netlify, Docker, and Cloudflare build/deploy scripts are present |
 
 ## Repository shape
 
@@ -45,20 +45,20 @@ The repository is already a multi-application workspace in practice, but it is n
 
 ## Baseline command results
 
-| Check | Result | Evidence |
-| --- | --- | --- |
-| `npm run security:policies` | Pass | Restored `security/policy-assertions.json`; both repository hardening assertions hold. |
-| Dependency installation | Pass | `npm ci --ignore-scripts` completed; registry access was slow, not proven unavailable. |
-| `npm run preflight` | Partially fixed | Windows executable lookup was corrected; a full preflight is not passing while full lint and typecheck remain unresolved. |
-| `npm run typecheck` | Not verified | A concurrent run failed with Windows out-of-memory; a standalone retry was stopped after exceeding 7 GB without completing. |
-| Targeted ESLint (`app.js`, `app.cjs`, `docs/script.js`) | Pass | `npx --no-install eslint ...` completed successfully. |
-| `npm run build:server` | Pass | Node-server production build completed with route-discovery, deprecation, and large-chunk warnings. |
-| `npm test -- --maxWorkers=2` | Pass | 20 test files and 122 tests passed. This does not establish live database RLS behavior. |
-| `npm run lint` | Fail | 200,497 errors and 192 warnings, predominantly existing Prettier issues across the repository. |
-| `npm audit --omit=dev --audit-level=high` | Fail | Four production-tree advisories were reported: DOMPurify (critical), undici (high), zod (high), and seroval (moderate). |
-| `npm run security:scan` | Fail | Five new dependency findings: DOMPurify (critical), and happy-dom, undici, Vite, and zod (high). Two other findings are baselined. |
-| `npm audit fix --omit=dev` | Blocked | The remediation command did not complete in the available local environment. |
-| Browser and live database tests | Not run | Require an appropriate isolated environment and credentials. |
+| Check                                                   | Result          | Evidence                                                                                                                           |
+| ------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run security:policies`                             | Pass            | Restored `security/policy-assertions.json`; both repository hardening assertions hold.                                             |
+| Dependency installation                                 | Pass            | `npm ci --ignore-scripts` completed; registry access was slow, not proven unavailable.                                             |
+| `npm run preflight`                                     | Partially fixed | Windows executable lookup was corrected; a full preflight is not passing while full lint and typecheck remain unresolved.          |
+| `npm run typecheck`                                     | Not verified    | A concurrent run failed with Windows out-of-memory; a standalone retry was stopped after exceeding 7 GB without completing.        |
+| Targeted ESLint (`app.js`, `app.cjs`, `docs/script.js`) | Pass            | `npx --no-install eslint ...` completed successfully.                                                                              |
+| `npm run build:server`                                  | Pass            | Node-server production build completed with route-discovery, deprecation, and large-chunk warnings.                                |
+| `npm test -- --maxWorkers=2`                            | Pass            | 20 test files and 122 tests passed. This does not establish live database RLS behavior.                                            |
+| `npm run lint`                                          | Fail            | 200,497 errors and 192 warnings, predominantly existing Prettier issues across the repository.                                     |
+| `npm audit --omit=dev --audit-level=high`               | Fail            | Four production-tree advisories were reported: DOMPurify (critical), undici (high), zod (high), and seroval (moderate).            |
+| `npm run security:scan`                                 | Fail            | Five new dependency findings: DOMPurify (critical), and happy-dom, undici, Vite, and zod (high). Two other findings are baselined. |
+| `npm audit fix --omit=dev`                              | Blocked         | The remediation command did not complete in the available local environment.                                                       |
+| Browser and live database tests                         | Not run         | Require an appropriate isolated environment and credentials.                                                                       |
 
 ## Initial risks and follow-up
 

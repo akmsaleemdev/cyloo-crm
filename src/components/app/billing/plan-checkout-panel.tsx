@@ -8,13 +8,7 @@ import { createCheckoutSession } from "@/lib/billing/billing.functions";
 import { listPurchasablePlans } from "@/lib/billing/plan-gateways.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Plan = {
   id: string;
@@ -59,7 +53,6 @@ export function PlanCheckoutPanel({
     queryFn: async () =>
       (await fetchPlans({ data: { workspace_id: workspaceId } })) as unknown as Plan[],
   });
-
 
   async function buy(plan: Plan) {
     setPending(plan.code);
@@ -112,7 +105,9 @@ export function PlanCheckoutPanel({
                     {isCurrent && <Badge variant="secondary">Current</Badge>}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {p.price_cents === 0 ? "Free" : `${fmt(p.price_cents, p.currency)} / ${p.interval}`}
+                    {p.price_cents === 0
+                      ? "Free"
+                      : `${fmt(p.price_cents, p.currency)} / ${p.interval}`}
                     {providers.length > 0 && <> · via {providers.join(", ")}</>}
                   </div>
                 </div>

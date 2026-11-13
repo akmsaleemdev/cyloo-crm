@@ -189,7 +189,7 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
 
     const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
     const rotatesSecrets = !!data.authToken;
-    
+
     void recordServerAuditEvent({
       eventType: rotatesSecrets ? "secrets.rotate" : "sms_account.update",
       severity: rotatesSecrets ? "warning" : "info",
@@ -197,9 +197,9 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
       actorId: context.userId,
       resourceType: "sms_account",
       resourceId: data.id,
-      data: { 
+      data: {
         updated_fields: Object.keys(patch),
-        rotates_secrets: rotatesSecrets 
+        rotates_secrets: rotatesSecrets,
       },
     });
 

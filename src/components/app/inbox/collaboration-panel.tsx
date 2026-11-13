@@ -32,11 +32,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -166,13 +162,7 @@ function NoteComposer({ conversation }: { conversation: ConversationRow }) {
 /*                                 Note item                                  */
 /* -------------------------------------------------------------------------- */
 
-function NoteItem({
-  note,
-  conversationId,
-}: {
-  note: ConversationNote;
-  conversationId: string;
-}) {
+function NoteItem({ note, conversationId }: { note: ConversationNote; conversationId: string }) {
   const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(note.body);
@@ -205,9 +195,7 @@ function NoteItem({
               {formatDistanceToNow(new Date(note.created_at), { addSuffix: true })}
             </span>
             {note.edited_at && (
-              <span className="text-[11px] text-muted-foreground italic">
-                edited
-              </span>
+              <span className="text-[11px] text-muted-foreground italic">edited</span>
             )}
             {note.is_pinned && (
               <Badge
@@ -228,9 +216,7 @@ function NoteItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() =>
-                update.mutate({ id: note.id, is_pinned: !note.is_pinned })
-              }
+              onClick={() => update.mutate({ id: note.id, is_pinned: !note.is_pinned })}
             >
               {note.is_pinned ? (
                 <>
@@ -300,9 +286,7 @@ function NoteItem({
           </div>
         </div>
       ) : (
-        <p className="text-sm whitespace-pre-wrap break-words">
-          {renderWithMentions(note.body)}
-        </p>
+        <p className="text-sm whitespace-pre-wrap break-words">{renderWithMentions(note.body)}</p>
       )}
     </div>
   );
@@ -312,10 +296,7 @@ function renderWithMentions(text: string) {
   const parts = text.split(/(@[a-z0-9._-]+)/gi);
   return parts.map((p, i) =>
     p.startsWith("@") ? (
-      <span
-        key={i}
-        className="text-primary font-medium bg-primary/10 rounded px-1"
-      >
+      <span key={i} className="text-primary font-medium bg-primary/10 rounded px-1">
         {p}
       </span>
     ) : (
@@ -337,9 +318,7 @@ function PeopleSection({ conversation }: { conversation: ConversationRow }) {
   const [assignOpen, setAssignOpen] = useState(false);
   const [followOpen, setFollowOpen] = useState(false);
 
-  const currentAssignee = conversation.assigned_to
-    ? byId.get(conversation.assigned_to)
-    : null;
+  const currentAssignee = conversation.assigned_to ? byId.get(conversation.assigned_to) : null;
 
   const followers = (participants.data ?? []).filter(
     (p) => p.user_id && (p.role === "follower" || p.role === "watcher" || p.role === "agent"),
@@ -367,9 +346,7 @@ function PeopleSection({ conversation }: { conversation: ConversationRow }) {
       {/* Assignee */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="text-[11px] font-medium  text-muted-foreground">
-            Assigned agent
-          </div>
+          <div className="text-[11px] font-medium  text-muted-foreground">Assigned agent</div>
           <Popover open={assignOpen} onOpenChange={setAssignOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 gap-1.5">
@@ -401,9 +378,7 @@ function PeopleSection({ conversation }: { conversation: ConversationRow }) {
                             {initials(m.display_name ?? m.email)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="truncate">
-                          {m.display_name ?? m.email}
-                        </span>
+                        <span className="truncate">{m.display_name ?? m.email}</span>
                         {m.user_id === conversation.assigned_to && (
                           <Check className="h-3.5 w-3.5 ml-auto text-primary" />
                         )}
@@ -444,9 +419,7 @@ function PeopleSection({ conversation }: { conversation: ConversationRow }) {
       {/* Followers / Watchers */}
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <div className="text-[11px] font-medium  text-muted-foreground">
-            Followers & watchers
-          </div>
+          <div className="text-[11px] font-medium  text-muted-foreground">Followers & watchers</div>
           <Popover open={followOpen} onOpenChange={setFollowOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -480,9 +453,7 @@ function PeopleSection({ conversation }: { conversation: ConversationRow }) {
                             {initials(m.display_name ?? m.email)}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="truncate">
-                          {m.display_name ?? m.email}
-                        </span>
+                        <span className="truncate">{m.display_name ?? m.email}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -582,16 +553,16 @@ function ActivityRow({
   actor,
 }: {
   row: ConversationActivityRow;
-  actor?: ReturnType<typeof useTeamDirectory>["byId"] extends Map<string, infer V> ? V | null | undefined : never;
+  actor?: ReturnType<typeof useTeamDirectory>["byId"] extends Map<string, infer V>
+    ? V | null | undefined
+    : never;
 }) {
   const label = summarizeActivity(row);
   return (
     <li className="relative">
       <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary ring-2 ring-background" />
       <div className="text-xs">
-        <span className="font-medium">
-          {actor?.display_name ?? actor?.email ?? "System"}
-        </span>{" "}
+        <span className="font-medium">{actor?.display_name ?? actor?.email ?? "System"}</span>{" "}
         <span className="text-muted-foreground">{label}</span>
       </div>
       <div className="text-[11px] text-muted-foreground mt-0.5">
@@ -627,11 +598,7 @@ function summarizeActivity(row: ConversationActivityRow): string {
 /*                              Main container                                */
 /* -------------------------------------------------------------------------- */
 
-export function CollaborationPanel({
-  conversation,
-}: {
-  conversation: ConversationRow;
-}) {
+export function CollaborationPanel({ conversation }: { conversation: ConversationRow }) {
   const { active } = useCurrentWorkspace();
   const notes = useConversationNotes(conversation.id);
   const pinned = (notes.data ?? []).filter((n) => n.is_pinned);
@@ -647,9 +614,7 @@ export function CollaborationPanel({
             <Users className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <div className="text-sm font-semibold leading-tight">
-              Team collaboration
-            </div>
+            <div className="text-sm font-semibold leading-tight">Team collaboration</div>
             <div className="text-[11px] text-muted-foreground flex items-center gap-1">
               <Lock className="h-3 w-3" />
               Internal — hidden from the customer
@@ -693,11 +658,7 @@ export function CollaborationPanel({
                         Pinned
                       </div>
                       {pinned.map((n) => (
-                        <NoteItem
-                          key={n.id}
-                          note={n}
-                          conversationId={conversation.id}
-                        />
+                        <NoteItem key={n.id} note={n} conversationId={conversation.id} />
                       ))}
                     </div>
                   )}
@@ -709,11 +670,7 @@ export function CollaborationPanel({
                         </div>
                       )}
                       {others.map((n) => (
-                        <NoteItem
-                          key={n.id}
-                          note={n}
-                          conversationId={conversation.id}
-                        />
+                        <NoteItem key={n.id} note={n} conversationId={conversation.id} />
                       ))}
                     </div>
                   )}

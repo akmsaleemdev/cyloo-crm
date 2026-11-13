@@ -3,8 +3,7 @@ import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPageShell } from "@/components/app/legal-page-shell";
 
-const DESCRIPTION =
-  `${BRAND_NAME}'s Terms of Service: the rules and conditions for using our platform and services.`;
+const DESCRIPTION = `${BRAND_NAME}'s Terms of Service: the rules and conditions for using our platform and services.`;
 const TITLE = "Terms of Service";
 
 export const Route = createFileRoute("/legal/terms-of-service")({
@@ -27,10 +26,7 @@ export const Route = createFileRoute("/legal/terms-of-service")({
 
 function TermsOfServicePage() {
   return (
-    <LegalPageShell
-      title="Terms of Service"
-      subtitle="Last updated: July 30, 2026"
-    >
+    <LegalPageShell title="Terms of Service" subtitle="Last updated: July 30, 2026">
       <p>
         These Terms of Service ("Terms") govern your access to and use of the <Brand /> website,
         applications, and services (collectively, the "Services"). By using the Services, you agree
@@ -40,8 +36,8 @@ function TermsOfServicePage() {
       <h2>1. Acceptance of terms</h2>
       <p>
         By creating an account, accessing, or using the Services, you confirm that you are at least
-        18 years old and have the authority to enter into these Terms. If you use the Services on behalf
-        of an organization, you represent that you have authority to bind that organization.
+        18 years old and have the authority to enter into these Terms. If you use the Services on
+        behalf of an organization, you represent that you have authority to bind that organization.
       </p>
 
       <h2>2. Accounts and registration</h2>
@@ -68,8 +64,9 @@ function TermsOfServicePage() {
 
       <h2>4. Subscriptions and payments</h2>
       <p>
-        Some features require a paid subscription. Fees are charged in advance on a monthly or annual
-        basis and are non-refundable except as required by law or as described in our refund policy.
+        Some features require a paid subscription. Fees are charged in advance on a monthly or
+        annual basis and are non-refundable except as required by law or as described in our refund
+        policy.
       </p>
       <p>
         You may cancel your subscription at any time. Cancellation takes effect at the end of the
@@ -105,31 +102,31 @@ function TermsOfServicePage() {
 
       <h2>9. Limitation of liability</h2>
       <p>
-        To the maximum extent permitted by law, <Brand /> and its affiliates shall not be liable for any
-        indirect, incidental, special, consequential, or punitive damages arising out of your use of
-        the Services. Our total liability shall not exceed the amount you paid us in the 12 months
-        preceding the claim.
+        To the maximum extent permitted by law, <Brand /> and its affiliates shall not be liable for
+        any indirect, incidental, special, consequential, or punitive damages arising out of your
+        use of the Services. Our total liability shall not exceed the amount you paid us in the 12
+        months preceding the claim.
       </p>
 
       <h2>10. Indemnification</h2>
       <p>
-        You agree to indemnify and hold harmless <Brand /> and its affiliates from any claims, damages,
-        or expenses arising from your use of the Services, your content, or your violation of these
-        Terms.
+        You agree to indemnify and hold harmless <Brand /> and its affiliates from any claims,
+        damages, or expenses arising from your use of the Services, your content, or your violation
+        of these Terms.
       </p>
 
       <h2>11. Governing law</h2>
       <p>
         These Terms are governed by the laws of the jurisdiction in which <Brand /> is registered,
-        without regard to conflict of law principles. Disputes shall be resolved in the competent courts
-        of that jurisdiction.
+        without regard to conflict of law principles. Disputes shall be resolved in the competent
+        courts of that jurisdiction.
       </p>
 
       <h2>12. Changes to these terms</h2>
       <p>
-        We may update these Terms from time to time. We will notify you of material changes by posting
-        the updated Terms on this page and updating the "Last updated" date. Continued use of the
-        Services after changes constitutes acceptance.
+        We may update these Terms from time to time. We will notify you of material changes by
+        posting the updated Terms on this page and updating the "Last updated" date. Continued use
+        of the Services after changes constitutes acceptance.
       </p>
 
       <h2>13. Contact us</h2>

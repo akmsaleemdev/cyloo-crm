@@ -10,13 +10,18 @@
  * extensibility point so plugins can observe, mutate, or wrap the operation
  * without modifying the core module.
  */
-import { eventBus, type Middleware } from './event-bus';
-import type { CatalogEvent } from './event-catalog';
+import { eventBus, type Middleware } from "./event-bus";
+import type { CatalogEvent } from "./event-catalog";
 
 export type HookName = CatalogEvent | string;
 
 // ---------- Actions ----------
-export function addAction(slug: string, name: HookName, fn: (payload: any) => void | Promise<void>, priority = 10) {
+export function addAction(
+  slug: string,
+  name: HookName,
+  fn: (payload: any) => void | Promise<void>,
+  priority = 10,
+) {
   return eventBus.on(slug, `action:${name}`, fn, priority);
 }
 export async function doAction(name: HookName, payload: unknown = {}) {
@@ -24,11 +29,21 @@ export async function doAction(name: HookName, payload: unknown = {}) {
 }
 
 /** Subscribe specifically to the `before:` variant. */
-export function addBeforeAction(slug: string, name: HookName, fn: (payload: any) => void | Promise<void>, priority = 10) {
+export function addBeforeAction(
+  slug: string,
+  name: HookName,
+  fn: (payload: any) => void | Promise<void>,
+  priority = 10,
+) {
   return eventBus.on(slug, `action:before:${name}`, fn, priority);
 }
 /** Subscribe specifically to the `after:` variant. */
-export function addAfterAction(slug: string, name: HookName, fn: (payload: any) => void | Promise<void>, priority = 10) {
+export function addAfterAction(
+  slug: string,
+  name: HookName,
+  fn: (payload: any) => void | Promise<void>,
+  priority = 10,
+) {
   return eventBus.on(slug, `action:after:${name}`, fn, priority);
 }
 
@@ -37,7 +52,11 @@ export function addAfterAction(slug: string, name: HookName, fn: (payload: any) 
  * the payload is first threaded through `filter:<name>` filters (a veto here
  * cancels core execution) and then wrapped by `middleware:<name>` middleware.
  */
-export async function doActionAround<T>(name: HookName, payload: T, core: (value: T) => Promise<void> | void): Promise<T | null> {
+export async function doActionAround<T>(
+  name: HookName,
+  payload: T,
+  core: (value: T) => Promise<void> | void,
+): Promise<T | null> {
   const filtered = await eventBus.emitFiltered<T>(`filter:${name}`, payload);
   if (filtered === null) return null;
   await eventBus.emit(`action:before:${name}`, filtered);
@@ -48,7 +67,12 @@ export async function doActionAround<T>(name: HookName, payload: T, core: (value
 }
 
 // ---------- Filters ----------
-export function addFilter<T = unknown>(slug: string, name: HookName, fn: (v: T) => T | Promise<T> | null, priority = 10) {
+export function addFilter<T = unknown>(
+  slug: string,
+  name: HookName,
+  fn: (v: T) => T | Promise<T> | null,
+  priority = 10,
+) {
   return eventBus.filter<T>(slug, `filter:${name}`, fn as any, priority);
 }
 export async function applyFilters<T>(name: HookName, value: T): Promise<T | null> {
@@ -56,9 +80,18 @@ export async function applyFilters<T>(name: HookName, value: T): Promise<T | nul
 }
 
 // ---------- Middleware ----------
-export function addMiddleware<C = unknown>(slug: string, name: HookName, fn: Middleware<C>, priority = 10) {
+export function addMiddleware<C = unknown>(
+  slug: string,
+  name: HookName,
+  fn: Middleware<C>,
+  priority = 10,
+) {
   return eventBus.use<C>(slug, `middleware:${name}`, fn, priority);
 }
-export async function runAround<C>(name: HookName, ctx: C, core: () => Promise<void> | void): Promise<C> {
+export async function runAround<C>(
+  name: HookName,
+  ctx: C,
+  core: () => Promise<void> | void,
+): Promise<C> {
   return eventBus.runPipeline(`middleware:${name}`, ctx, core);
 }

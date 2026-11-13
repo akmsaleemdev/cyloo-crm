@@ -13,7 +13,11 @@ import { FileText, HardDrive, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatBytes } from "@/lib/messaging/media.client";
-import { getMediaStats, deleteMediaAttachment, cleanupExpiredMedia } from "@/lib/messaging/media.functions";
+import {
+  getMediaStats,
+  deleteMediaAttachment,
+  cleanupExpiredMedia,
+} from "@/lib/messaging/media.functions";
 import { toast } from "sonner";
 
 interface Stats {
@@ -58,7 +62,9 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
     }
   }
 
-  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [workspaceId]);
+  useEffect(() => {
+    refresh(); /* eslint-disable-next-line */
+  }, [workspaceId]);
 
   async function onDelete(id: string) {
     try {
@@ -86,7 +92,11 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={<HardDrive className="h-4 w-4" />} label="Total files" value={loading ? "" : String(stats?.total_files ?? 0)} />
+        <StatCard
+          icon={<HardDrive className="h-4 w-4" />}
+          label="Total files"
+          value={loading ? "" : String(stats?.total_files ?? 0)}
+        />
         <StatCard label="Total size" value={loading ? "" : formatBytes(stats?.total_bytes)} />
         <StatCard label="Images" value={loading ? "" : formatBytes(stats?.image_bytes)} />
         <StatCard label="Videos" value={loading ? "" : formatBytes(stats?.video_bytes)} />
@@ -99,7 +109,11 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
         />
         <div className="flex items-end">
           <Button variant="outline" onClick={onCleanup} disabled={cleaning} className="w-full">
-            {cleaning ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Trash2 className="mr-1 h-4 w-4" />}
+            {cleaning ? (
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="mr-1 h-4 w-4" />
+            )}
             Cleanup expired
           </Button>
         </div>
@@ -111,7 +125,9 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /></div>
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
           ) : recent.length === 0 ? (
             <p className="text-sm text-muted-foreground">No uploads yet.</p>
           ) : (
@@ -123,7 +139,8 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
                     <div className="truncate font-medium">{r.file_name ?? "Untitled"}</div>
                     <div className="text-xs text-muted-foreground">
                       {r.mime_type ?? "file"} · {formatBytes(r.size_bytes)}
-                      {r.download_count > 0 && ` · ${r.download_count} download${r.download_count === 1 ? "" : "s"}`}
+                      {r.download_count > 0 &&
+                        ` · ${r.download_count} download${r.download_count === 1 ? "" : "s"}`}
                       {r.expires_at && ` · expires ${new Date(r.expires_at).toLocaleDateString()}`}
                     </div>
                   </div>
@@ -146,11 +163,24 @@ export function StorageManagementPanel({ workspaceId }: { workspaceId: string })
   );
 }
 
-function StatCard({ label, value, highlight, icon }: { label: string; value: string; highlight?: boolean; icon?: React.ReactNode }) {
+function StatCard({
+  label,
+  value,
+  highlight,
+  icon,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+  icon?: React.ReactNode;
+}) {
   return (
     <Card className={highlight ? "border-amber-500/50" : undefined}>
       <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{label}</div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {icon}
+          {label}
+        </div>
         <div className="mt-1 text-lg font-semibold ">{value}</div>
       </CardContent>
     </Card>

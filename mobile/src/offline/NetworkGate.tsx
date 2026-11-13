@@ -1,8 +1,8 @@
-import { useEffect, type ReactNode } from 'react';
-import * as Network from 'expo-network';
-import { useAppStore } from '@/stores/appStore';
-import { flush } from './outbox';
-import { queryClient } from '@/api/queryClient';
+import { useEffect, type ReactNode } from "react";
+import * as Network from "expo-network";
+import { useAppStore } from "@/stores/appStore";
+import { flush } from "./outbox";
+import { queryClient } from "@/api/queryClient";
 
 /**
  * Watches connectivity, flushes the offline outbox on reconnect,

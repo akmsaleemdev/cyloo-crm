@@ -66,13 +66,7 @@ export interface CheckoutSession {
 }
 
 export type SubscriptionStatus =
-  | "trialing"
-  | "active"
-  | "past_due"
-  | "canceled"
-  | "unpaid"
-  | "incomplete"
-  | "paused";
+  "trialing" | "active" | "past_due" | "canceled" | "unpaid" | "incomplete" | "paused";
 
 export interface SubscriptionSnapshot {
   provider: BillingProviderId;
@@ -211,8 +205,14 @@ export interface BillingProvider {
   createCustomerPortalSession(ref: CustomerRef, return_url: string): Promise<{ url: string }>;
 
   getSubscription(providerSubscriptionId: string): Promise<SubscriptionSnapshot>;
-  cancelSubscription(providerSubscriptionId: string, at_period_end?: boolean): Promise<SubscriptionSnapshot>;
-  updateSubscriptionQuantity(providerSubscriptionId: string, quantity: number): Promise<SubscriptionSnapshot>;
+  cancelSubscription(
+    providerSubscriptionId: string,
+    at_period_end?: boolean,
+  ): Promise<SubscriptionSnapshot>;
+  updateSubscriptionQuantity(
+    providerSubscriptionId: string,
+    quantity: number,
+  ): Promise<SubscriptionSnapshot>;
 
   reportUsage(input: UsageReport): Promise<void>;
   previewInvoice(providerSubscriptionId: string): Promise<InvoicePreview>;

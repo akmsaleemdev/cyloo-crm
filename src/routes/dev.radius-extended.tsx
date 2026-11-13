@@ -2,37 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Command,
-  CommandInput,
-  CommandList,
-  CommandItem,
-} from "@/components/ui/command";
+import { Command, CommandInput, CommandList, CommandItem } from "@/components/ui/command";
 
 /**
  * Extended radius fixture — guards `rounded-control` (6px) across
@@ -61,9 +41,7 @@ function RadiusExtendedFixture() {
                 Tooltip
               </Button>
             </TooltipTrigger>
-            <TooltipContent data-testid="tooltip-content">
-              Tooltip surface
-            </TooltipContent>
+            <TooltipContent data-testid="tooltip-content">Tooltip surface</TooltipContent>
           </Tooltip>
         </section>
       </TooltipProvider>
@@ -76,9 +54,7 @@ function RadiusExtendedFixture() {
               Hover
             </Button>
           </HoverCardTrigger>
-          <HoverCardContent data-testid="hovercard-content">
-            Hover card surface
-          </HoverCardContent>
+          <HoverCardContent data-testid="hovercard-content">Hover card surface</HoverCardContent>
         </HoverCard>
       </section>
 
@@ -92,9 +68,7 @@ function RadiusExtendedFixture() {
             Right click me
           </ContextMenuTrigger>
           <ContextMenuContent data-testid="contextmenu-content">
-            <ContextMenuItem data-testid="contextmenu-item">
-              Item one
-            </ContextMenuItem>
+            <ContextMenuItem data-testid="contextmenu-item">Item one</ContextMenuItem>
             <ContextMenuItem>Item two</ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -147,10 +121,7 @@ function RadiusExtendedFixture() {
 
       <section className="space-y-2">
         <p className="text-xs text-muted-foreground">Command palette</p>
-        <Command
-          data-testid="command"
-          className="max-w-md border"
-        >
+        <Command data-testid="command" className="max-w-md border">
           <CommandInput placeholder="Search" data-testid="command-input" />
           <CommandList>
             <CommandItem data-testid="command-item">Item one</CommandItem>

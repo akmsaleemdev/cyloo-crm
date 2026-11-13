@@ -21,7 +21,9 @@ export type WorkflowPermissions = {
   isLoading: boolean;
 };
 
-export function useWorkflowPermissions(workspaceId: string | null | undefined): WorkflowPermissions {
+export function useWorkflowPermissions(
+  workspaceId: string | null | undefined,
+): WorkflowPermissions {
   const { data, isLoading } = useQuery({
     queryKey: ["workflow-permissions", workspaceId],
     enabled: Boolean(workspaceId),
@@ -31,7 +33,8 @@ export function useWorkflowPermissions(workspaceId: string | null | undefined): 
       // that flakes on cold starts and silently downgrades users to read-only.
       const { data: auth } = await supabase.auth.getSession();
       const userId = auth.session?.user?.id;
-      if (!userId || !workspaceId) return { role: null as string | null, status: null as string | null };
+      if (!userId || !workspaceId)
+        return { role: null as string | null, status: null as string | null };
       const { data: member, error } = await supabase
         .from("workspace_members")
         .select("role, status")

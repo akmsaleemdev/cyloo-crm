@@ -58,7 +58,8 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
       _workspace_id: data.workspaceId,
       _user_id: context.userId,
     });
-    if (!isAdmin) throw new Error("Unauthorized: only workspace admins can view Meta app settings.");
+    if (!isAdmin)
+      throw new Error("Unauthorized: only workspace admins can view Meta app settings.");
 
     const appId = process.env["META_APP_ID"] ?? "";
     const appSecret = process.env["META_APP_SECRET"] ?? "";
@@ -70,7 +71,12 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
 
     checks.push(
       appId
-        ? { id: "app_id", label: "META_APP_ID stored", state: "ok", detail: `Configured (${mask(appId)}).` }
+        ? {
+            id: "app_id",
+            label: "META_APP_ID stored",
+            state: "ok",
+            detail: `Configured (${mask(appId)}).`,
+          }
         : {
             id: "app_id",
             label: "META_APP_ID stored",
@@ -92,7 +98,8 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
             label: "META_APP_SECRET stored",
             state: "fail",
             detail: "Not configured.",
-            remedy: "Configure META_APP_SECRET as a server-side secret. It signs webhooks and exchanges OAuth codes.",
+            remedy:
+              "Configure META_APP_SECRET as a server-side secret. It signs webhooks and exchanges OAuth codes.",
           },
     );
 
@@ -147,7 +154,12 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
               `${GRAPH}/${encodeURIComponent(appId)}/subscriptions?access_token=${encodeURIComponent(`${appId}|${appSecret}`)}`,
             );
             const subJson: {
-              data?: Array<{ object?: string; callback_url?: string; active?: boolean; fields?: Array<{ name?: string } | string> }>;
+              data?: Array<{
+                object?: string;
+                callback_url?: string;
+                active?: boolean;
+                fields?: Array<{ name?: string } | string>;
+              }>;
               error?: { message?: string };
             } = await subRes.json().catch(() => ({}));
             const page = (subJson.data ?? []).find((s) => s.object === "page");
@@ -161,8 +173,12 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
                   "In the Meta app → Webhooks → Page, subscribe using the callback URL below and the fields messages, messaging_postbacks, message_deliveries, message_reads.",
               });
             } else {
-              const fields = (page.fields ?? []).map((f) => (typeof f === "string" ? f : (f.name ?? "")));
-              const missing = ["messages", "messaging_postbacks"].filter((f) => !fields.includes(f));
+              const fields = (page.fields ?? []).map((f) =>
+                typeof f === "string" ? f : (f.name ?? ""),
+              );
+              const missing = ["messages", "messaging_postbacks"].filter(
+                (f) => !fields.includes(f),
+              );
               checks.push({
                 id: "webhook",
                 label: "Messenger webhook subscribed",
@@ -171,7 +187,10 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
                   ? `Subscribed, but missing field(s): ${missing.join(", ")}.`
                   : `Subscribed (${fields.length} field${fields.length === 1 ? "" : "s"}).`,
                 ...(missing.length
-                  ? { remedy: "Add the missing fields in Meta app → Webhooks → Page → Edit subscription." }
+                  ? {
+                      remedy:
+                        "Add the missing fields in Meta app → Webhooks → Page → Edit subscription.",
+                    }
                   : {}),
               });
             }
@@ -190,7 +209,8 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
           label: "Credentials accepted by Meta",
           state: "fail",
           detail: err instanceof Error ? err.message : "Network error contacting Meta Graph API.",
-          remedy: "Retry the check; if it keeps failing, Meta Graph may be unreachable from the server.",
+          remedy:
+            "Retry the check; if it keeps failing, Meta Graph may be unreachable from the server.",
         });
       }
     }
@@ -211,7 +231,10 @@ export const getMetaAppStatus = createServerFn({ method: "POST" })
           ? "No Facebook Page connected yet."
           : `${healthy} of ${rows.length} linked Page${rows.length === 1 ? "" : "s"} healthy.`,
       ...(healthy < rows.length || rows.length === 0
-        ? { remedy: "Open API Configurations → Messenger Accounts and connect (or reconnect) a Page." }
+        ? {
+            remedy:
+              "Open API Configurations → Messenger Accounts and connect (or reconnect) a Page.",
+          }
         : {}),
     });
 

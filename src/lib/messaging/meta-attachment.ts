@@ -23,9 +23,15 @@ export interface MetaAttachment {
 
 /** Normalize both webhook attachments and Graph history attachments. */
 export function normalizeMetaAttachment(attachment?: MetaAttachment | null) {
-  const url = attachment?.payload?.url ?? attachment?.image_data?.url ??
-    attachment?.video_data?.url ?? attachment?.file_url ?? null;
-  const kind = attachment?.type ?? (attachment?.image_data ? "image" : attachment?.video_data ? "video" : null);
+  const url =
+    attachment?.payload?.url ??
+    attachment?.image_data?.url ??
+    attachment?.video_data?.url ??
+    attachment?.file_url ??
+    null;
+  const kind =
+    attachment?.type ??
+    (attachment?.image_data ? "image" : attachment?.video_data ? "video" : null);
   const messageType = url ? metaAttachmentType(kind, attachment?.mime_type) : "text";
   return {
     mediaUrl: url,

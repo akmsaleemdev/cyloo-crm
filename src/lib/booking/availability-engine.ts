@@ -23,16 +23,27 @@ interface EventType {
   max_advance_days: number;
 }
 
-interface WeeklySlot { day_of_week: number; start_time: string; end_time: string }
+interface WeeklySlot {
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+}
 interface HostSchedule {
   host_id: string;
   timezone: string;
   weekly: WeeklySlot[];
-  overrides: Array<{ override_date: string; is_blocked: boolean; start_time: string | null; end_time: string | null }>;
+  overrides: Array<{
+    override_date: string;
+    is_blocked: boolean;
+    start_time: string | null;
+    end_time: string | null;
+  }>;
   busy: Array<{ start_at: string; end_at: string }>;
 }
 
-function addMinutes(d: Date, m: number) { return new Date(d.getTime() + m * 60_000); }
+function addMinutes(d: Date, m: number) {
+  return new Date(d.getTime() + m * 60_000);
+}
 function parseTimeOnDate(date: Date, hhmm: string): Date {
   const [h, m, s] = hhmm.split(":").map(Number);
   const out = new Date(date);
@@ -52,7 +63,9 @@ export async function computeAvailability(
 ): Promise<AvailabilitySlot[]> {
   const { data: et } = await supabase
     .from("booking_event_types")
-    .select("id, workspace_id, duration_minutes, buffer_before_minutes, buffer_after_minutes, min_notice_minutes, max_advance_days, is_active")
+    .select(
+      "id, workspace_id, duration_minutes, buffer_before_minutes, buffer_after_minutes, min_notice_minutes, max_advance_days, is_active",
+    )
     .eq("id", eventTypeId)
     .maybeSingle();
   if (!et || !et.is_active) return [];
@@ -60,12 +73,16 @@ export async function computeAvailability(
 
   const { data: hostsData } = await supabase
     .from("booking_event_type_hosts")
-    .select("host_id, schedule_id, priority, booking_availability_schedules(timezone, booking_availability_slots(day_of_week, start_time, end_time))")
+    .select(
+      "host_id, schedule_id, priority, booking_availability_schedules(timezone, booking_availability_slots(day_of_week, start_time, end_time))",
+    )
     .eq("event_type_id", eventTypeId)
     .order("priority", { ascending: true });
 
   const now = new Date();
-  const from = new Date(Math.max(new Date(fromISO).getTime(), addMinutes(now, eventType.min_notice_minutes).getTime()));
+  const from = new Date(
+    Math.max(new Date(fromISO).getTime(), addMinutes(now, eventType.min_notice_minutes).getTime()),
+  );
   const maxTo = addMinutes(now, eventType.max_advance_days * 24 * 60);
   const to = new Date(Math.min(new Date(toISO).getTime(), maxTo.getTime()));
   if (to <= from) return [];
@@ -127,7 +144,11 @@ export async function computeAvailability(
   const bAfter = eventType.buffer_after_minutes;
 
   for (const host of hosts) {
-    for (let day = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate())); day <= to; day = addMinutes(day, 24 * 60)) {
+    for (
+      let day = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
+      day <= to;
+      day = addMinutes(day, 24 * 60)
+    ) {
       const dateStr = toDateOnly(day);
       const dow = day.getUTCDay();
 
@@ -135,9 +156,12 @@ export async function computeAvailability(
       let windows: Array<{ start: string; end: string }> = [];
       if (override) {
         if (override.is_blocked) continue;
-        if (override.start_time && override.end_time) windows = [{ start: override.start_time, end: override.end_time }];
+        if (override.start_time && override.end_time)
+          windows = [{ start: override.start_time, end: override.end_time }];
       } else {
-        windows = host.weekly.filter((w) => w.day_of_week === dow).map((w) => ({ start: w.start_time, end: w.end_time }));
+        windows = host.weekly
+          .filter((w) => w.day_of_week === dow)
+          .map((w) => ({ start: w.start_time, end: w.end_time }));
       }
 
       for (const w of windows) {
@@ -149,7 +173,10 @@ export async function computeAvailability(
           const blockStart = addMinutes(slotStart, -bBefore);
           const blockEnd = addMinutes(slotEnd, bAfter);
 
-          if (slotStart < from) { cursor = addMinutes(cursor, step); continue; }
+          if (slotStart < from) {
+            cursor = addMinutes(cursor, step);
+            continue;
+          }
           if (slotEnd > to) break;
 
           const conflict = host.busy.some((b) => {
@@ -158,7 +185,11 @@ export async function computeAvailability(
             return bs < blockEnd && be > blockStart;
           });
           if (!conflict) {
-            slots.push({ host_id: host.host_id, start_at: slotStart.toISOString(), end_at: slotEnd.toISOString() });
+            slots.push({
+              host_id: host.host_id,
+              start_at: slotStart.toISOString(),
+              end_at: slotEnd.toISOString(),
+            });
           }
           cursor = addMinutes(cursor, step);
         }

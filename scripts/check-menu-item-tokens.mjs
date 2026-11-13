@@ -54,11 +54,7 @@ const VARIANTS = [
 ];
 
 // Forbidden token targets on those variants.
-const TOKENS = [
-  "bg-accent",
-  "bg-\\[var\\(\\s*--accent\\s*\\)\\]",
-  "text-accent-foreground",
-];
+const TOKENS = ["bg-accent", "bg-\\[var\\(\\s*--accent\\s*\\)\\]", "text-accent-foreground"];
 
 const patterns = [];
 for (const v of VARIANTS) {
@@ -96,9 +92,7 @@ for (const d of scanDirs) {
     const rel = relative(ROOT, file).split("\\").join("/");
     if (ALLOWLIST.has(rel)) continue;
     const content = readFileSync(file, "utf8");
-    const inScope =
-      SCOPED_FILES.has(rel) ||
-      /from\s+["']@\/lib\/menu-item-class["']/.test(content);
+    const inScope = SCOPED_FILES.has(rel) || /from\s+["']@\/lib\/menu-item-class["']/.test(content);
     if (!inScope) continue;
     const lines = content.split("\n");
     for (let i = 0; i < lines.length; i++) {
@@ -124,6 +118,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(
-  "✅ menu-item-tokens check passed — no forbidden accent hover/active/focus tokens.",
-);
+console.log("✅ menu-item-tokens check passed — no forbidden accent hover/active/focus tokens.");

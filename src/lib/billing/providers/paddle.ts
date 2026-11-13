@@ -10,7 +10,12 @@
  * Secrets: PADDLE_API_KEY, PADDLE_WEBHOOK_SECRET, optional PADDLE_ENV=live.
  */
 import { createStubProvider } from "./_stub";
-import type { BillingProvider, SubscriptionSnapshot, WebhookEvent, WebhookVerifyInput } from "./types";
+import type {
+  BillingProvider,
+  SubscriptionSnapshot,
+  WebhookEvent,
+  WebhookVerifyInput,
+} from "./types";
 
 const base = createStubProvider({
   id: "paddle",
@@ -41,7 +46,8 @@ async function paddleGet<T>(path: string): Promise<T> {
     headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
   });
   const json = (await res.json().catch(() => ({}))) as any;
-  if (!res.ok) throw new Error(`Paddle GET ${path} failed: ${json?.error?.detail ?? res.statusText}`);
+  if (!res.ok)
+    throw new Error(`Paddle GET ${path} failed: ${json?.error?.detail ?? res.statusText}`);
   return json.data as T;
 }
 
@@ -75,8 +81,10 @@ function mapSubscription(s: any): SubscriptionSnapshot {
               : "active",
     plan_code: item.price?.id ?? "",
     quantity: item.quantity ?? 1,
-    current_period_start: s.current_billing_period?.starts_at ?? s.started_at ?? new Date().toISOString(),
-    current_period_end: s.current_billing_period?.ends_at ?? s.next_billed_at ?? new Date().toISOString(),
+    current_period_start:
+      s.current_billing_period?.starts_at ?? s.started_at ?? new Date().toISOString(),
+    current_period_end:
+      s.current_billing_period?.ends_at ?? s.next_billed_at ?? new Date().toISOString(),
     trial_ends_at: item.trial_dates?.ends_at ?? null,
     cancel_at: s.scheduled_change?.action === "cancel" ? s.scheduled_change.effective_at : null,
     canceled_at: s.canceled_at ?? null,
@@ -110,7 +118,8 @@ export const paddleProvider: BillingProvider = {
 
     // Reject deliveries older than 5 minutes (replay protection).
     const age = Math.abs(Date.now() / 1000 - Number(ts));
-    if (!Number.isFinite(age) || age > 300) throw new Error("Paddle signature timestamp out of tolerance");
+    if (!Number.isFinite(age) || age > 300)
+      throw new Error("Paddle signature timestamp out of tolerance");
 
     const event = JSON.parse(raw_body);
     return {

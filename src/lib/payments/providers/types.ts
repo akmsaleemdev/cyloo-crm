@@ -9,15 +9,15 @@
  */
 
 export const PAYMENT_PROVIDERS = [
-  'stripe',
-  'paypal',
-  'paddle',
-  'razorpay',
-  'paystack',
-  'flutterwave',
-  'mollie',
-  'mercadopago',
-  'midtrans',
+  "stripe",
+  "paypal",
+  "paddle",
+  "razorpay",
+  "paystack",
+  "flutterwave",
+  "mollie",
+  "mercadopago",
+  "midtrans",
 ] as const;
 
 export type PaymentProviderId = (typeof PAYMENT_PROVIDERS)[number];
@@ -30,7 +30,7 @@ export interface CreateLinkInput {
   allowPartial?: boolean;
   minAmount?: number | null;
   isRecurring?: boolean;
-  recurringInterval?: 'day' | 'week' | 'month' | 'year' | null;
+  recurringInterval?: "day" | "week" | "month" | "year" | null;
   recurringCount?: number | null;
   customerEmail?: string | null;
   customerName?: string | null;
@@ -58,7 +58,7 @@ export interface RefundInput {
 
 export interface RefundResult {
   refundReference: string | null;
-  status: 'succeeded' | 'pending' | 'failed';
+  status: "succeeded" | "pending" | "failed";
 }
 
 export interface PaymentLinkProvider {

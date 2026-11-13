@@ -232,7 +232,11 @@ function ProjectTeamPage() {
                 <UsersRound className="size-4" aria-hidden="true" />
                 <span>{projectMembers.length + (ownerUser && !ownerIsMember ? 1 : 0)} people</span>
                 <Button asChild size="sm" variant="ghost">
-                  <Link to="/projects/$projectId" params={{ projectId: project.id }} search={(prev: any) => prev}>
+                  <Link
+                    to="/projects/$projectId"
+                    params={{ projectId: project.id }}
+                    search={(prev: any) => prev}
+                  >
                     Open project
                   </Link>
                 </Button>

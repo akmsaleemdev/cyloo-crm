@@ -24,11 +24,14 @@ export async function deliverTikTokDmReply(args: {
   if (!text) throw new Error("TikTok messages must contain text.");
   const accountId = s(meta.account_id);
   const conversationId = s(meta.tiktok_conversation_id);
-  if (!accountId || !conversationId) throw new Error("This conversation is not linked to a TikTok Business account.");
+  if (!accountId || !conversationId)
+    throw new Error("This conversation is not linked to a TikTok Business account.");
 
   const { data } = await admin
     .from("tiktok_business_accounts")
-    .select("id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status")
+    .select(
+      "id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status",
+    )
     .eq("id", accountId)
     .eq("workspace_id", conv.workspace_id)
     .maybeSingle();

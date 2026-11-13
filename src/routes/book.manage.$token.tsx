@@ -73,9 +73,7 @@ export const Route = createFileRoute("/book/manage/$token")({
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
       <div className="text-center">
         <h1 className="text-2xl font-semibold mb-2">Link not found</h1>
-        <p className="text-muted-foreground">
-          This management link is invalid or has expired.
-        </p>
+        <p className="text-muted-foreground">This management link is invalid or has expired.</p>
       </div>
     </div>
   ),
@@ -122,11 +120,10 @@ function ManageBookingPage() {
         <CardContent className="p-6 space-y-5">
           <div className="space-y-2">
             <div className="h-1 w-10 rounded-full" style={{ background: brand }} />
-            <h1 className="text-2xl font-semibold">
-              {initial.eventType?.name ?? "Your booking"}
-            </h1>
+            <h1 className="text-2xl font-semibold">{initial.eventType?.name ?? "Your booking"}</h1>
             <p className="text-sm text-muted-foreground">
-              Confirmed for <span className="text-foreground font-medium">{appt.customer_name}</span>
+              Confirmed for{" "}
+              <span className="text-foreground font-medium">{appt.customer_name}</span>
             </p>
           </div>
 
@@ -297,7 +294,9 @@ function RescheduleForm({
   const [slots, setSlots] = useState<Array<{ start_at: string; end_at: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<{ start_at: string; end_at: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ start_at: string; end_at: string } | null>(
+    null,
+  );
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -381,7 +380,11 @@ function RescheduleForm({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button size="icon" variant="ghost" onClick={() => setMonthAnchor(addMonths(monthAnchor, 1))}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => setMonthAnchor(addMonths(monthAnchor, 1))}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

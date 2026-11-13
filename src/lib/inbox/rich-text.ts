@@ -215,7 +215,9 @@ export function extractFirstUrl(text: string): string | null {
       if ((url.protocol === "https:" || url.protocol === "http:") && url.hostname.includes(".")) {
         return url.href;
       }
-    } catch { /* Keep searching for another valid URL. */ }
+    } catch {
+      /* Keep searching for another valid URL. */
+    }
   }
   return null;
 }

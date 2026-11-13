@@ -27,19 +27,43 @@ import { Brand } from "@/components/brand";
 type Cell = { id: string; label: string; render: () => React.ReactNode };
 
 const CELLS: Cell[] = [
-  { id: "h1", label: "Heading 1",   render: () => <Heading level={1}>Ag The quick brown fox</Heading> },
-  { id: "h2", label: "Heading 2",   render: () => <Heading level={2}>Ag The quick brown fox</Heading> },
-  { id: "h3", label: "Heading 3",   render: () => <Heading level={3}>Ag The quick brown fox</Heading> },
-  { id: "h4", label: "Heading 4",   render: () => <Heading level={4}>Ag The quick brown fox</Heading> },
-  { id: "h5", label: "Heading 5",   render: () => <Heading level={5}>Ag The quick brown fox</Heading> },
-  { id: "h6", label: "Heading 6",   render: () => <Heading level={6}>Ag The quick brown fox</Heading> },
+  {
+    id: "h1",
+    label: "Heading 1",
+    render: () => <Heading level={1}>Ag The quick brown fox</Heading>,
+  },
+  {
+    id: "h2",
+    label: "Heading 2",
+    render: () => <Heading level={2}>Ag The quick brown fox</Heading>,
+  },
+  {
+    id: "h3",
+    label: "Heading 3",
+    render: () => <Heading level={3}>Ag The quick brown fox</Heading>,
+  },
+  {
+    id: "h4",
+    label: "Heading 4",
+    render: () => <Heading level={4}>Ag The quick brown fox</Heading>,
+  },
+  {
+    id: "h5",
+    label: "Heading 5",
+    render: () => <Heading level={5}>Ag The quick brown fox</Heading>,
+  },
+  {
+    id: "h6",
+    label: "Heading 6",
+    render: () => <Heading level={6}>Ag The quick brown fox</Heading>,
+  },
   {
     id: "lead",
     label: "Lead / body-lg",
     render: () => (
       <Text variant="body-lg" muted className="max-w-[60ch]">
-        A lead paragraph introduces the section with slightly larger, muted body
-        copy. AVAWAY To Ye — fi fl ffi ffl 0123456789.
+        A lead paragraph introduces the section with slightly larger, muted body copy. AVAWAY To Ye
+        — fi fl ffi ffl 0123456789.
       </Text>
     ),
   },
@@ -48,9 +72,8 @@ const CELLS: Cell[] = [
     label: "Body",
     render: () => (
       <Text variant="body-md" className="max-w-[60ch]">
-        Body copy at the base text size. The quick brown fox jumps over the lazy
-        dog. Kerning &amp; tracking: AVAWAY To Ye 1,234.56 — “curly” ‘quotes’ —
-        fi fl ffi ffl.
+        Body copy at the base text size. The quick brown fox jumps over the lazy dog. Kerning &amp;
+        tracking: AVAWAY To Ye 1,234.56 — “curly” ‘quotes’ — fi fl ffi ffl.
       </Text>
     ),
   },
@@ -77,10 +100,18 @@ const CELLS: Cell[] = [
     label: "Weight ramp",
     render: () => (
       <div className="grid grid-cols-4 gap-x-6 gap-y-1">
-        <Text as="span" variant="body-md" weight="regular">Normal 400</Text>
-        <Text as="span" variant="body-md" weight="medium">Medium 500</Text>
-        <Text as="span" variant="body-md" weight="semibold">Semibold 600</Text>
-        <Text as="span" variant="body-md" weight="bold">Bold 700</Text>
+        <Text as="span" variant="body-md" weight="regular">
+          Normal 400
+        </Text>
+        <Text as="span" variant="body-md" weight="medium">
+          Medium 500
+        </Text>
+        <Text as="span" variant="body-md" weight="semibold">
+          Semibold 600
+        </Text>
+        <Text as="span" variant="body-md" weight="bold">
+          Bold 700
+        </Text>
       </div>
     ),
   },
@@ -156,8 +187,8 @@ const CELLS: Cell[] = [
     render: () => (
       <Prose>
         <blockquote>
-          “Typography is the craft of endowing human language with a durable
-          visual form.” — Robert Bringhurst
+          “Typography is the craft of endowing human language with a durable visual form.” — Robert
+          Bringhurst
         </blockquote>
       </Prose>
     ),
@@ -172,9 +203,17 @@ const CELLS: Cell[] = [
       </Text>
     ),
   },
-  { id: "caption",  label: "Caption",  render: () => <Caption>Last updated 2 hours ago</Caption> },
-  { id: "eyebrow",  label: "Eyebrow",  render: () => <Eyebrow>Featured</Eyebrow> },
-  { id: "display",  label: "Display",  render: () => <Display size="md">Ag <Brand /></Display> },
+  { id: "caption", label: "Caption", render: () => <Caption>Last updated 2 hours ago</Caption> },
+  { id: "eyebrow", label: "Eyebrow", render: () => <Eyebrow>Featured</Eyebrow> },
+  {
+    id: "display",
+    label: "Display",
+    render: () => (
+      <Display size="md">
+        Ag <Brand />
+      </Display>
+    ),
+  },
   {
     id: "table",
     label: "Table typography",
@@ -231,10 +270,7 @@ function TypographyVisualFixture() {
 
 export const Route = createFileRoute("/dev/typography")({
   head: () => ({
-    meta: [
-      { title: "Typography visual fixture" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Typography visual fixture" }, { name: "robots", content: "noindex" }],
   }),
   component: TypographyVisualFixture,
 });

@@ -25,18 +25,29 @@ export const Route = createFileRoute("/api/public/v1/deals")({
         const offset = Math.max(Number(url.searchParams.get("offset") ?? "0"), 0);
         const { data, error, count } = await ctx.supabase
           .from("deals")
-          .select("id, title, amount, currency, pipeline_id, stage_id, contact_id, company_id, expected_close_date, created_at", { count: "exact" })
+          .select(
+            "id, title, amount, currency, pipeline_id, stage_id, contact_id, company_id, expected_close_date, created_at",
+            { count: "exact" },
+          )
           .eq("organization_id", ctx.organizationId)
           .order("created_at", { ascending: false })
           .range(offset, offset + limit - 1);
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-        return jsonOk(data ?? [], { requestId: ctx.requestId, meta: { total: count ?? 0, limit, offset } });
+        return jsonOk(data ?? [], {
+          requestId: ctx.requestId,
+          meta: { total: count ?? 0, limit, offset },
+        });
       }),
       POST: withGateway({ requiredScopes: ["deals:write"] }, async (ctx, req) => {
         const body = await parseJson<unknown>(req);
         const parsed = CreateDealSchema.safeParse(body);
         if (!parsed.success) {
-          return jsonError("validation_error", "Invalid deal payload", { issues: parsed.error.issues }, ctx.requestId);
+          return jsonError(
+            "validation_error",
+            "Invalid deal payload",
+            { issues: parsed.error.issues },
+            ctx.requestId,
+          );
         }
         // Referenced records must live in the caller's own tenant.
         const foreign = await findForeignReferences(ctx.supabase, ctx.organizationId, parsed.data);
@@ -56,7 +67,6 @@ export const Route = createFileRoute("/api/public/v1/deals")({
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
         return jsonOk(data, { status: 201, requestId: ctx.requestId });
       }),
-
     },
   },
 });

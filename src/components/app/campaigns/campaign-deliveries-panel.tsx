@@ -179,7 +179,9 @@ export function CampaignDeliveriesPanel({ campaignId }: { campaignId: string }) 
       if (res.retried === 0) {
         toast.info("No failed recipients to retry");
       } else {
-        toast.success(`Requeued ${res.retried} failed ${res.retried === 1 ? "recipient" : "recipients"}`);
+        toast.success(
+          `Requeued ${res.retried} failed ${res.retried === 1 ? "recipient" : "recipients"}`,
+        );
       }
       qc.invalidateQueries({ queryKey: ["campaign-recipients", campaignId] });
       qc.invalidateQueries({ queryKey: ["campaigns"] });
@@ -191,7 +193,6 @@ export function CampaignDeliveriesPanel({ campaignId }: { campaignId: string }) 
       setRetrying(false);
     }
   }
-
 
   const counts = useMemo(() => {
     const c: Record<Bucket, number> = { queued: 0, sending: 0, completed: 0, failed: 0 };
@@ -207,13 +208,7 @@ export function CampaignDeliveriesPanel({ campaignId }: { campaignId: string }) 
     return recipients.filter((r) => {
       if (filter !== "all" && bucketOf(r.status) !== filter) return false;
       if (!search) return true;
-      const hay = [
-        displayName(r),
-        r.contact?.phone_number,
-        r.error_code,
-        r.error_message,
-        r.status,
-      ]
+      const hay = [displayName(r), r.contact?.phone_number, r.error_code, r.error_message, r.status]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -242,9 +237,7 @@ export function CampaignDeliveriesPanel({ campaignId }: { campaignId: string }) 
                 <span className="text-sm font-medium text-muted-foreground">{meta.label}</span>
                 <Icon className={`h-4 w-4 ${meta.tone}`} />
               </div>
-              <div className="mt-2 text-2xl font-semibold ">
-                {counts[b].toLocaleString()}
-              </div>
+              <div className="mt-2 text-2xl font-semibold ">{counts[b].toLocaleString()}</div>
               <div className="mt-1 text-xs text-muted-foreground">{pct}% of loaded</div>
             </button>
           );
@@ -438,8 +431,8 @@ export function CampaignDeliveriesPanel({ campaignId }: { campaignId: string }) 
               <strong>
                 {failedCount} failed {failedCount === 1 ? "recipient" : "recipients"}
               </strong>{" "}
-              for immediate resend. Successful, queued, and in-flight messages are unchanged.
-              If the campaign was completed or paused it will resume running.
+              for immediate resend. Successful, queued, and in-flight messages are unchanged. If the
+              campaign was completed or paused it will resume running.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

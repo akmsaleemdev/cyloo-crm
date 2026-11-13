@@ -12,10 +12,25 @@ export const whatsappCloudChannel: ChannelProvider = {
   label: "WhatsApp (Cloud API)",
   implemented: true,
   capabilities: new Set([
-    "text", "emoji", "image", "video", "audio", "voice_note", "document",
-    "location", "contact_card", "interactive_buttons", "interactive_list",
-    "template", "reaction", "reply_quote", "forward", "delete",
-    "typing_indicator", "read_receipt", "delivery_receipt",
+    "text",
+    "emoji",
+    "image",
+    "video",
+    "audio",
+    "voice_note",
+    "document",
+    "location",
+    "contact_card",
+    "interactive_buttons",
+    "interactive_list",
+    "template",
+    "reaction",
+    "reply_quote",
+    "forward",
+    "delete",
+    "typing_indicator",
+    "read_receipt",
+    "delivery_receipt",
   ]),
 
   verifyWebhook(query) {
@@ -26,7 +41,9 @@ export const whatsappCloudChannel: ChannelProvider = {
   },
 
   extractAccountRouting(body: unknown) {
-    const b = body as { entry?: Array<{ changes?: Array<{ value?: { metadata?: { phone_number_id?: string } } }> }> };
+    const b = body as {
+      entry?: Array<{ changes?: Array<{ value?: { metadata?: { phone_number_id?: string } } }> }>;
+    };
     const pnid = b?.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
     return pnid ? { externalAccountId: pnid } : null;
   },
@@ -35,7 +52,8 @@ export const whatsappCloudChannel: ChannelProvider = {
     // Delegated in production to the existing wa-cloud normalizer.
     // Return empty here to keep the seam explicit; the messaging module
     // owns the low-level parse and hands events back via engines/ingress.
-    void body; void account;
+    void body;
+    void account;
     return [];
   },
 
@@ -57,6 +75,9 @@ export const whatsappCloudChannel: ChannelProvider = {
         contextMessageId: draft.quotedMessageId,
       } as never,
     } as never)) as { providerMessageId?: string; id?: string };
-    return { providerMessageId: res.providerMessageId ?? res.id ?? crypto.randomUUID(), status: "queued" };
+    return {
+      providerMessageId: res.providerMessageId ?? res.id ?? crypto.randomUUID(),
+      status: "queued",
+    };
   },
 };

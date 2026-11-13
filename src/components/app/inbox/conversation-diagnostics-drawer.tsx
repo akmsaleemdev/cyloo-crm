@@ -49,7 +49,10 @@ function CheckRow({ check }: { check: DiagnosticCheck }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium">{check.label}</p>
-            <Badge variant={check.status === "fail" ? "destructive" : "secondary"} className="text-[11px]">
+            <Badge
+              variant={check.status === "fail" ? "destructive" : "secondary"}
+              className="text-[11px]"
+            >
               {meta.label}
             </Badge>
           </div>
@@ -115,7 +118,9 @@ export function ConversationDiagnosticsDrawer({
                 <div
                   className={cn(
                     "rounded border p-3",
-                    data.linked ? "border-border bg-muted/40" : "border-destructive/40 bg-destructive/5",
+                    data.linked
+                      ? "border-border bg-muted/40"
+                      : "border-destructive/40 bg-destructive/5",
                   )}
                 >
                   <div className="flex items-center gap-2">

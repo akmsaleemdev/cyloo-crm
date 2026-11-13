@@ -105,7 +105,10 @@ export async function uploadMedia(opts: UploadOptions): Promise<UploadedMedia> {
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) opts.onProgress?.(e.loaded, e.total);
     };
-    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed (${xhr.status})`)));
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Upload failed (${xhr.status})`));
     xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.send(buf);
   });
@@ -148,7 +151,11 @@ interface CacheEntry {
 const urlCache = new Map<string, CacheEntry>();
 const SAFETY_WINDOW_MS = 30_000; // refresh 30s before expiry
 
-function cacheKey(attachmentId: string, orgId: string, opts?: { download?: boolean; width?: number; height?: number }): string {
+function cacheKey(
+  attachmentId: string,
+  orgId: string,
+  opts?: { download?: boolean; width?: number; height?: number },
+): string {
   // Include the active org so a switch cannot serve a URL minted under org-A
   // to a viewer now operating inside org-B.
   return `${orgId}:${attachmentId}:${opts?.download ? "d" : "v"}:${opts?.width ?? ""}:${opts?.height ?? ""}`;
@@ -162,8 +169,16 @@ export function useSignedMediaUrl(
   attachmentId: string | null | undefined,
   opts?: { download?: boolean; width?: number; height?: number; enabled?: boolean },
 ) {
-  const [state, setState] = useState<{ url: string | null; loading: boolean; error: string | null; mimeType?: string | null; filename?: string | null }>({
-    url: null, loading: false, error: null,
+  const [state, setState] = useState<{
+    url: string | null;
+    loading: boolean;
+    error: string | null;
+    mimeType?: string | null;
+    filename?: string | null;
+  }>({
+    url: null,
+    loading: false,
+    error: null,
   });
   const getUrl = useServerFn(getMediaSignedUrl);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -178,7 +193,13 @@ export function useSignedMediaUrl(
       if (!attachmentId) return;
       const cached = urlCache.get(key);
       if (cached && cached.expiresAt - Date.now() > SAFETY_WINDOW_MS) {
-        setState({ url: cached.url, loading: false, error: null, mimeType: cached.mimeType, filename: cached.filename });
+        setState({
+          url: cached.url,
+          loading: false,
+          error: null,
+          mimeType: cached.mimeType,
+          filename: cached.filename,
+        });
         scheduleRefresh(cached.expiresAt - Date.now() - SAFETY_WINDOW_MS);
         return;
       }
@@ -189,26 +210,47 @@ export function useSignedMediaUrl(
             attachmentId,
             activeOrgId: getActiveOrgIdOrThrow(),
             download: !!opts?.download,
-            transform: opts?.width || opts?.height ? { width: opts?.width, height: opts?.height } : undefined,
+            transform:
+              opts?.width || opts?.height
+                ? { width: opts?.width, height: opts?.height }
+                : undefined,
           },
         });
         if (cancelled) return;
         const expiresAt = Date.now() + res.expiresIn * 1000;
-        urlCache.set(key, { url: res.signedUrl, expiresAt, mimeType: res.mimeType, filename: res.filename });
-        setState({ url: res.signedUrl, loading: false, error: null, mimeType: res.mimeType, filename: res.filename });
+        urlCache.set(key, {
+          url: res.signedUrl,
+          expiresAt,
+          mimeType: res.mimeType,
+          filename: res.filename,
+        });
+        setState({
+          url: res.signedUrl,
+          loading: false,
+          error: null,
+          mimeType: res.mimeType,
+          filename: res.filename,
+        });
         scheduleRefresh(res.expiresIn * 1000 - SAFETY_WINDOW_MS);
       } catch (err) {
         if (cancelled) return;
-        setState({ url: null, loading: false, error: err instanceof Error ? err.message : String(err) });
+        setState({
+          url: null,
+          loading: false,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
 
     function scheduleRefresh(ms: number) {
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => {
-        urlCache.delete(key);
-        load();
-      }, Math.max(5_000, ms));
+      timerRef.current = setTimeout(
+        () => {
+          urlCache.delete(key);
+          load();
+        },
+        Math.max(5_000, ms),
+      );
     }
 
     load();
@@ -228,6 +270,9 @@ export function formatBytes(n: number | null | undefined): string {
   const units = ["B", "KB", "MB", "GB", "TB"];
   let i = 0;
   let v = n;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
   return `${v.toFixed(v >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
 }

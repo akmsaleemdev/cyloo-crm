@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppTopbar } from "@/components/app/app-topbar";
-import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
+import {
+  SettingsLayout,
+  SettingsCard,
+  SettingsRow,
+} from "@/components/app/settings/settings-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -107,212 +111,209 @@ function MembersSettings() {
       title="Team Members & Roles"
       description="Invite collaborators, assign workspace permissions, and audit pending invitations."
     >
-        {canManage && (
-          <PermissionGate permission="members.invite">
-            <Card>
-              <CardHeader>
-                <CardTitle>Invite a teammate</CardTitle>
-                <CardDescription>They will receive an email invitation link.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={onInvite} className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 grid gap-1">
-                    <Label htmlFor="email" className="sr-only">
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="teammate@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(v) => setInviteRole(v as WorkspaceRole)}
-                  >
-                    <SelectTrigger className="sm:w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ROLES.map((r) => (
-                        <SelectItem key={r} value={r} className="capitalize">
-                          {r}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button type="submit" disabled={invite.isPending}>
-                    {invite.isPending ? "Sending" : "Send invite"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </PermissionGate>
-        )}
+      {canManage && (
+        <PermissionGate permission="members.invite">
+          <Card>
+            <CardHeader>
+              <CardTitle>Invite a teammate</CardTitle>
+              <CardDescription>They will receive an email invitation link.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={onInvite} className="flex flex-col sm:flex-row gap-3">
+                <div className="flex-1 grid gap-1">
+                  <Label htmlFor="email" className="sr-only">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="teammate@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as WorkspaceRole)}>
+                  <SelectTrigger className="sm:w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLES.map((r) => (
+                      <SelectItem key={r} value={r} className="capitalize">
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="submit" disabled={invite.isPending}>
+                  {invite.isPending ? "Sending" : "Send invite"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </PermissionGate>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Members ({members.data?.length ?? 0})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {members.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading</p>
-            ) : members.error ? (
-              <p className="text-sm text-destructive">Failed to load members.</p>
-            ) : (members.data ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No members yet.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {members.data!.map((m) => (
-                    <TableRow key={m.user_id}>
-                      <TableCell>
-                        <div className="font-medium text-sm">
-                          {m.display_name ?? m.email ?? m.user_id.slice(0, 8)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{m.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        {canManage && m.role !== "owner" ? (
-                          <Select
-                            value={m.role}
-                            onValueChange={(v) =>
-                              updateRole.mutate({ userId: m.user_id, role: v as WorkspaceRole })
-                            }
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ROLES.map((r) => (
-                                <SelectItem key={r} value={r} className="capitalize">
-                                  {r}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant="secondary" className="capitalize">
-                            {m.role}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={m.status === "active" ? "default" : "outline"}
-                          className="capitalize"
+      <Card>
+        <CardHeader>
+          <CardTitle>Members ({members.data?.length ?? 0})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {members.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading</p>
+          ) : members.error ? (
+            <p className="text-sm text-destructive">Failed to load members.</p>
+          ) : (members.data ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">No members yet.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {members.data!.map((m) => (
+                  <TableRow key={m.user_id}>
+                    <TableCell>
+                      <div className="font-medium text-sm">
+                        {m.display_name ?? m.email ?? m.user_id.slice(0, 8)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{m.email}</div>
+                    </TableCell>
+                    <TableCell>
+                      {canManage && m.role !== "owner" ? (
+                        <Select
+                          value={m.role}
+                          onValueChange={(v) =>
+                            updateRole.mutate({ userId: m.user_id, role: v as WorkspaceRole })
+                          }
                         >
-                          {m.status}
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLES.map((r) => (
+                              <SelectItem key={r} value={r} className="capitalize">
+                                {r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant="secondary" className="capitalize">
+                          {m.role}
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={m.status === "active" ? "default" : "outline"}
+                        className="capitalize"
+                      >
+                        {m.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {canManage && m.role !== "owner" && (
+                        <PermissionGate permission="members.remove">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" variant="ghost" className="text-destructive">
+                                Remove
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove member?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  They will lose access immediately.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    if (!canRemove) return;
+                                    remove.mutate(m.user_id);
+                                  }}
+                                >
+                                  Remove
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </PermissionGate>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Pending invitations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {invites.isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading</p>
+          ) : (invites.data ?? []).filter((i) => i.status === "pending").length === 0 ? (
+            <p className="text-sm text-muted-foreground">No pending invitations.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Expires</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {invites
+                  .data!.filter((i) => i.status === "pending")
+                  .map((i) => (
+                    <TableRow key={i.id}>
+                      <TableCell className="text-sm">{i.email}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {i.role}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">
-                        {canManage && m.role !== "owner" && (
-                          <PermissionGate permission="members.remove">
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="ghost" className="text-destructive">
-                                  Remove
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Remove member?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    They will lose access immediately.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => {
-                                      if (!canRemove) return;
-                                      remove.mutate(m.user_id);
-                                    }}
-                                  >
-                                    Remove
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </PermissionGate>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {formatZoned(new Date(i.expires_at), { dateStyle: "short" })}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2">
+                        {canManage && (
+                          <>
+                            <Button size="sm" variant="ghost" onClick={() => resend.mutate(i.id)}>
+                              Resend
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive"
+                              onClick={() => revoke.mutate(i.id)}
+                            >
+                              Revoke
+                            </Button>
+                          </>
                         )}
                       </TableCell>
                     </TableRow>
                   ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Pending invitations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {invites.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading</p>
-            ) : (invites.data ?? []).filter((i) => i.status === "pending").length === 0 ? (
-              <p className="text-sm text-muted-foreground">No pending invitations.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Expires</TableHead>
-                    <TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invites
-                    .data!.filter((i) => i.status === "pending")
-                    .map((i) => (
-                      <TableRow key={i.id}>
-                        <TableCell className="text-sm">{i.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="capitalize">
-                            {i.role}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {formatZoned(new Date(i.expires_at), { dateStyle: "short" })}
-                        </TableCell>
-                        <TableCell className="text-right space-x-2">
-                          {canManage && (
-                            <>
-                              <Button size="sm" variant="ghost" onClick={() => resend.mutate(i.id)}>
-                                Resend
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-destructive"
-                                onClick={() => revoke.mutate(i.id)}
-                              >
-                                Revoke
-                              </Button>
-                            </>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </SettingsLayout>
   );
 }

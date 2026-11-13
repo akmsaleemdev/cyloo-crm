@@ -46,7 +46,8 @@ export const AIEngine = {
       model: res.model ?? opts.model,
       providerKind: res.providerKind,
       tokensPrompt: (res as { usage?: { prompt_tokens?: number } }).usage?.prompt_tokens,
-      tokensCompletion: (res as { usage?: { completion_tokens?: number } }).usage?.completion_tokens,
+      tokensCompletion: (res as { usage?: { completion_tokens?: number } }).usage
+        ?.completion_tokens,
     };
   },
 

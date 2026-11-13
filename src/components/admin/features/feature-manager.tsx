@@ -31,20 +31,42 @@ import {
 
 import { listAllPlans, upsertPlan } from "@/lib/billing/plans.functions";
 import {
-  CAPABILITIES, LIMITS, FEATURES, GROUP_LABELS, bucketForTier,
-  type CapabilityDefinition, type CapabilityGroup,
+  CAPABILITIES,
+  LIMITS,
+  FEATURES,
+  GROUP_LABELS,
+  bucketForTier,
+  type CapabilityDefinition,
+  type CapabilityGroup,
 } from "@/lib/billing/feature-catalog";
 
 type PlanRow = {
-  id: string; code: string; name: string; tier: string;
-  price_cents: number; currency: string; interval: string;
-  features: Record<string, unknown>; limits: Record<string, unknown>;
-  description: string | null; tagline: string | null; badge: string | null; cta_label: string | null;
-  trial_days: number; is_active: boolean; is_public: boolean; is_custom: boolean; highlight: boolean;
-  sort_order: number; monthly_plan_code: string | null;
+  id: string;
+  code: string;
+  name: string;
+  tier: string;
+  price_cents: number;
+  currency: string;
+  interval: string;
+  features: Record<string, unknown>;
+  limits: Record<string, unknown>;
+  description: string | null;
+  tagline: string | null;
+  badge: string | null;
+  cta_label: string | null;
+  trial_days: number;
+  is_active: boolean;
+  is_public: boolean;
+  is_custom: boolean;
+  highlight: boolean;
+  sort_order: number;
+  monthly_plan_code: string | null;
 };
 
-type Draft = Record<string, { features: Record<string, boolean>; limits: Record<string, number | null> }>;
+type Draft = Record<
+  string,
+  { features: Record<string, boolean>; limits: Record<string, number | null> }
+>;
 
 export function FeatureManager() {
   const qc = useQueryClient();
@@ -58,7 +80,10 @@ export function FeatureManager() {
   });
 
   const plans = (plansQ.data ?? []) as PlanRow[];
-  const monthlyPlans = useMemo(() => plans.filter((p) => p.interval === "month" && p.is_public !== false), [plans]);
+  const monthlyPlans = useMemo(
+    () => plans.filter((p) => p.interval === "month" && p.is_public !== false),
+    [plans],
+  );
 
   const [draft, setDraft] = useState<Draft>({});
 
@@ -122,18 +147,30 @@ export function FeatureManager() {
       const mergedLimits = { ...(plan.limits ?? {}), ...d.limits };
       const mergedFeatures = { ...(plan.features ?? {}), ...d.features };
       // Trim undefined
-      for (const k of Object.keys(mergedLimits)) if (mergedLimits[k as keyof typeof mergedLimits] === undefined) delete mergedLimits[k as keyof typeof mergedLimits];
+      for (const k of Object.keys(mergedLimits))
+        if (mergedLimits[k as keyof typeof mergedLimits] === undefined)
+          delete mergedLimits[k as keyof typeof mergedLimits];
       return upsertFn({
         data: {
-          code: plan.code, name: plan.name, tier: plan.tier as never,
-          description: plan.description ?? null, tagline: plan.tagline ?? null,
-          badge: plan.badge ?? null, cta_label: plan.cta_label ?? null,
-          price_cents: plan.price_cents, currency: plan.currency,
-          interval: plan.interval as never, trial_days: plan.trial_days,
-          features: mergedFeatures, limits: mergedLimits,
-          is_active: plan.is_active, is_public: plan.is_public,
-          is_custom: plan.is_custom, highlight: plan.highlight,
-          sort_order: plan.sort_order, monthly_plan_code: plan.monthly_plan_code ?? null,
+          code: plan.code,
+          name: plan.name,
+          tier: plan.tier as never,
+          description: plan.description ?? null,
+          tagline: plan.tagline ?? null,
+          badge: plan.badge ?? null,
+          cta_label: plan.cta_label ?? null,
+          price_cents: plan.price_cents,
+          currency: plan.currency,
+          interval: plan.interval as never,
+          trial_days: plan.trial_days,
+          features: mergedFeatures,
+          limits: mergedLimits,
+          is_active: plan.is_active,
+          is_public: plan.is_public,
+          is_custom: plan.is_custom,
+          highlight: plan.highlight,
+          sort_order: plan.sort_order,
+          monthly_plan_code: plan.monthly_plan_code ?? null,
         },
       });
     },
@@ -147,15 +184,32 @@ export function FeatureManager() {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
 
-  const dirtyPlanIds = useMemo(() => Object.keys(draft).filter((id) => {
-    const d = draft[id];
-    return Object.keys(d.features).length + Object.keys(d.limits).length > 0;
-  }), [draft]);
+  const dirtyPlanIds = useMemo(
+    () =>
+      Object.keys(draft).filter((id) => {
+        const d = draft[id];
+        return Object.keys(d.features).length + Object.keys(d.limits).length > 0;
+      }),
+    [draft],
+  );
 
-  const groups: CapabilityGroup[] = ["workspace", "crm", "sales", "marketing", "automation", "ai", "infrastructure", "customization"];
+  const groups: CapabilityGroup[] = [
+    "workspace",
+    "crm",
+    "sales",
+    "marketing",
+    "automation",
+    "ai",
+    "infrastructure",
+    "customization",
+  ];
 
   if (plansQ.isLoading) {
-    return <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
@@ -164,14 +218,21 @@ export function FeatureManager() {
         <Card>
           <CardHeader className="flex-row items-start justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" /> Feature Management</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" /> Feature Management
+              </CardTitle>
               <CardDescription>
                 Every capability below is enforced at runtime by the active subscription plan.
-                Numeric limits accept whole numbers; leave blank for <Badge variant="outline" className="mx-1">Unlimited</Badge>.
+                Numeric limits accept whole numbers; leave blank for{" "}
+                <Badge variant="outline" className="mx-1">
+                  Unlimited
+                </Badge>
+                .
               </CardDescription>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {monthlyPlans.length} monthly plans · {LIMITS.length} limits · {FEATURES.length} feature flags
+              {monthlyPlans.length} monthly plans · {LIMITS.length} limits · {FEATURES.length}{" "}
+              feature flags
             </div>
           </CardHeader>
         </Card>
@@ -199,14 +260,25 @@ export function FeatureManager() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b bg-muted/40">
-                            <th className="sticky left-0 z-10 bg-muted/40 px-4 py-3 text-left font-medium min-w-[240px]">Capability</th>
+                            <th className="sticky left-0 z-10 bg-muted/40 px-4 py-3 text-left font-medium min-w-[240px]">
+                              Capability
+                            </th>
                             {monthlyPlans.map((p) => (
-                              <th key={p.id} className="px-4 py-3 text-left font-medium min-w-[160px]">
+                              <th
+                                key={p.id}
+                                className="px-4 py-3 text-left font-medium min-w-[160px]"
+                              >
                                 <div className="flex items-center gap-2">
                                   <span>{p.name}</span>
-                                  {dirtyPlanIds.includes(p.id) && <Badge variant="secondary" className="h-5 text-[11px]">unsaved</Badge>}
+                                  {dirtyPlanIds.includes(p.id) && (
+                                    <Badge variant="secondary" className="h-5 text-[11px]">
+                                      unsaved
+                                    </Badge>
+                                  )}
                                 </div>
-                                <div className="text-xs font-normal text-muted-foreground capitalize">{p.tier}</div>
+                                <div className="text-xs font-normal text-muted-foreground capitalize">
+                                  {p.tier}
+                                </div>
                               </th>
                             ))}
                           </tr>
@@ -243,7 +315,11 @@ export function FeatureManager() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={saveMut.isPending || monthlyPlans.length === 0}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={saveMut.isPending || monthlyPlans.length === 0}
+                >
                   {saveMut.isPending ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                   Plan actions <ChevronDown className="ml-2 size-4" />
                 </Button>
@@ -261,7 +337,8 @@ export function FeatureManager() {
                   <DropdownMenuGroup key={p.id} aria-label={p.name}>
                     {index > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuLabel>
-                      {p.name}{dirtyPlanIds.includes(p.id) ? " · Unsaved" : ""}
+                      {p.name}
+                      {dirtyPlanIds.includes(p.id) ? " · Unsaved" : ""}
                     </DropdownMenuLabel>
                     <DropdownMenuItem onSelect={() => applyDefaults(p)}>
                       <RotateCcw className="mr-2 size-4" /> Reset {p.name} to defaults
@@ -311,10 +388,7 @@ function CapabilityRow({ cap, plans, getLimit, getFeature, setLimit, setFeature 
       {plans.map((p) => (
         <td key={p.id} className="px-4 py-3 align-middle">
           {cap.kind === "limit" ? (
-            <LimitInput
-              value={getLimit(p, cap.key)}
-              onChange={(v) => setLimit(p.id, cap.key, v)}
-            />
+            <LimitInput value={getLimit(p, cap.key)} onChange={(v) => setLimit(p.id, cap.key, v)} />
           ) : (
             <Switch
               checked={getFeature(p, cap.key)}
@@ -327,7 +401,13 @@ function CapabilityRow({ cap, plans, getLimit, getFeature, setLimit, setFeature 
   );
 }
 
-function LimitInput({ value, onChange }: { value: number | null | undefined; onChange: (v: number | null | undefined) => void }) {
+function LimitInput({
+  value,
+  onChange,
+}: {
+  value: number | null | undefined;
+  onChange: (v: number | null | undefined) => void;
+}) {
   const unlimited = value === null;
   return (
     <div className="flex items-center gap-2">

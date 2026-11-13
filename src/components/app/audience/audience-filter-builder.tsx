@@ -3,9 +3,20 @@ import { Plus, X, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import type { AudienceFilter, AudienceCondition, AudienceField, AudienceOperator } from "@/hooks/use-audience";
+import type {
+  AudienceFilter,
+  AudienceCondition,
+  AudienceField,
+  AudienceOperator,
+} from "@/hooks/use-audience";
 
 const FIELDS: { value: AudienceField; label: string; group: string }[] = [
   { value: "search", label: "Free text search", group: "Basic" },
@@ -106,7 +117,9 @@ export function AudienceFilterBuilder({ value, onChange, compact }: AudienceFilt
             value={value.logic}
             onValueChange={(v) => onChange({ ...value, logic: v as "AND" | "OR" })}
           >
-            <SelectTrigger className="h-9 w-28"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 w-28">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="AND">All (AND)</SelectItem>
               <SelectItem value="OR">Any (OR)</SelectItem>
@@ -145,7 +158,8 @@ export function AudienceFilterBuilder({ value, onChange, compact }: AudienceFilt
       <div className="space-y-2">
         {value.conditions.length === 0 && (
           <p className="text-sm text-muted-foreground py-4 text-center border border-dashed rounded-control">
-            No filters yet — click <span className="font-medium">Add filter</span> to build your audience.
+            No filters yet — click <span className="font-medium">Add filter</span> to build your
+            audience.
           </p>
         )}
         {value.conditions.map((c) => (
@@ -171,9 +185,12 @@ function ConditionRow({
   onRemove: () => void;
 }) {
   const ops = opsFor(condition.field);
-  const isMulti = ["tags", "segments", "in", "not_in"].includes(condition.operator) || ["tags", "segments"].includes(condition.field);
+  const isMulti =
+    ["tags", "segments", "in", "not_in"].includes(condition.operator) ||
+    ["tags", "segments"].includes(condition.field);
   const isBool = ["is_favorite", "do_not_contact"].includes(condition.field);
-  const isDateNumber = condition.field === "customer_lifetime_value" || condition.operator === "within_days";
+  const isDateNumber =
+    condition.field === "customer_lifetime_value" || condition.operator === "within_days";
   const nullish = condition.operator === "is_null" || condition.operator === "not_null";
 
   return (
@@ -181,9 +198,17 @@ function ConditionRow({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2 flex-1">
         <Select
           value={condition.field}
-          onValueChange={(v) => onChange({ field: v as AudienceField, operator: opsFor(v as AudienceField)[0].value, value: undefined })}
+          onValueChange={(v) =>
+            onChange({
+              field: v as AudienceField,
+              operator: opsFor(v as AudienceField)[0].value,
+              value: undefined,
+            })
+          }
         >
-          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-9">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {FIELDS.map((f) => (
               <SelectItem key={f.value} value={f.value}>
@@ -198,10 +223,14 @@ function ConditionRow({
           value={condition.operator}
           onValueChange={(v) => onChange({ operator: v as AudienceOperator })}
         >
-          <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="h-9">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             {ops.map((o) => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              <SelectItem key={o.value} value={o.value}>
+                {o.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -213,7 +242,9 @@ function ConditionRow({
                 value={String(condition.value ?? "true")}
                 onValueChange={(v) => onChange({ value: v === "true" })}
               >
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="true">true</SelectItem>
                   <SelectItem value="false">false</SelectItem>
@@ -223,7 +254,9 @@ function ConditionRow({
               <Input
                 className="h-9"
                 placeholder="comma separated (vip, gold)"
-                value={Array.isArray(condition.value) ? (condition.value as string[]).join(", ") : ""}
+                value={
+                  Array.isArray(condition.value) ? (condition.value as string[]).join(", ") : ""
+                }
                 onChange={(e) =>
                   onChange({
                     value: e.target.value
@@ -266,13 +299,19 @@ function AiSuggestionBox({ onApply }: { onApply: (f: AudienceFilter) => void }) 
     const text = q.toLowerCase();
     const conditions: AudienceCondition[] = [];
     if (/\bvip|top|high[- ]value\b/.test(text))
-      conditions.push({ id: uid(), field: "customer_lifetime_value", operator: "gte", value: 1000 });
+      conditions.push({
+        id: uid(),
+        field: "customer_lifetime_value",
+        operator: "gte",
+        value: 1000,
+      });
     if (/\blead(s)?\b/.test(text))
       conditions.push({ id: uid(), field: "lifecycle_stage", operator: "eq", value: "lead" });
     if (/\bcustomer(s)?\b/.test(text))
       conditions.push({ id: uid(), field: "lifecycle_stage", operator: "eq", value: "customer" });
     const country = text.match(/\b(in|from) ([a-z ]{2,20})\b/)?.[2]?.trim();
-    if (country) conditions.push({ id: uid(), field: "country", operator: "contains", value: country });
+    if (country)
+      conditions.push({ id: uid(), field: "country", operator: "contains", value: country });
     const days = Number(text.match(/last (\d+) days?/)?.[1]);
     if (days > 0)
       conditions.push({ id: uid(), field: "last_seen_at", operator: "within_days", value: days });

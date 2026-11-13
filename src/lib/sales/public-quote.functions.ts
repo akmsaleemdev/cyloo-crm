@@ -1,12 +1,12 @@
-import { createServerFn } from '@tanstack/react-start';
-import { z } from 'zod';
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 
 const tokenSchema = z.object({ token: z.string().min(8).max(128) });
 
 const signSchema = z.object({
   token: z.string().min(8).max(128),
   fullName: z.string().trim().min(2).max(120),
-  email: z.string().trim().email().max(200).optional().or(z.literal('')),
+  email: z.string().trim().email().max(200).optional().or(z.literal("")),
   signature: z.string().trim().min(2).max(120),
   accept: z.boolean(),
 });
@@ -39,44 +39,47 @@ export type PublicQuote = {
 };
 
 const QUOTE_COLUMNS =
-  'id, workspace_id, quote_number, title, status, version, currency, subtotal, tax_total, discount_total, total, notes, terms, valid_until, created_at, custom_fields';
+  "id, workspace_id, quote_number, title, status, version, currency, subtotal, tax_total, discount_total, total, notes, terms, valid_until, created_at, custom_fields";
 
 /** Public, token-gated read of a shared quote. Marks a sent quote as viewed. */
-export const getPublicQuote = createServerFn({ method: 'GET' })
+export const getPublicQuote = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => tokenSchema.parse(d))
   .handler(async ({ data }): Promise<PublicQuote | null> => {
-    const { supabaseAdmin } = await import('@/lib/demo/admin-write-guard.server');
+    const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabaseAdmin as any;
 
     const { data: quote, error } = await db
-      .from('quotes')
+      .from("quotes")
       .select(QUOTE_COLUMNS)
-      .eq('public_token', data.token)
-      .is('deleted_at', null)
+      .eq("public_token", data.token)
+      .is("deleted_at", null)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!quote) return null;
 
     const { data: lines } = await db
-      .from('quote_line_items')
-      .select('id, description, quantity, unit_price, total, sort_order')
-      .eq('quote_id', quote.id)
-      .order('sort_order', { ascending: true });
+      .from("quote_line_items")
+      .select("id, description, quantity, unit_price, total, sort_order")
+      .eq("quote_id", quote.id)
+      .order("sort_order", { ascending: true });
 
-    if (quote.status === 'sent') {
-      await db.from('quotes').update({ status: 'viewed', viewed_at: new Date().toISOString() }).eq('id', quote.id);
-      quote.status = 'viewed';
+    if (quote.status === "sent") {
+      await db
+        .from("quotes")
+        .update({ status: "viewed", viewed_at: new Date().toISOString() })
+        .eq("id", quote.id);
+      quote.status = "viewed";
     }
 
     const { data: ws } = await db
-      .from('workspaces')
-      .select('name')
-      .eq('id', quote.workspace_id)
+      .from("workspaces")
+      .select("name")
+      .eq("id", quote.workspace_id)
       .maybeSingle();
 
     const cf = (quote.custom_fields ?? {}) as Record<string, unknown>;
-    const sig = (cf['signature'] ?? null) as PublicQuote['signature'];
+    const sig = (cf["signature"] ?? null) as PublicQuote["signature"];
 
     return {
       id: quote.id,
@@ -95,58 +98,58 @@ export const getPublicQuote = createServerFn({ method: 'GET' })
       created_at: quote.created_at,
       workspace_name: ws?.name ?? null,
       line_items: (lines ?? []).map((l: Record<string, unknown>) => ({
-        id: String(l['id']),
-        description: (l['description'] as string | null) ?? null,
-        quantity: Number(l['quantity'] ?? 0),
-        unit_price: Number(l['unit_price'] ?? 0),
-        total: Number(l['total'] ?? 0),
-        sort_order: Number(l['sort_order'] ?? 0),
+        id: String(l["id"]),
+        description: (l["description"] as string | null) ?? null,
+        quantity: Number(l["quantity"] ?? 0),
+        unit_price: Number(l["unit_price"] ?? 0),
+        total: Number(l["total"] ?? 0),
+        sort_order: Number(l["sort_order"] ?? 0),
       })),
       signature: sig,
     };
   });
 
 /** Public accept (with typed signature) or decline of a shared quote. */
-export const signPublicQuote = createServerFn({ method: 'POST' })
+export const signPublicQuote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => signSchema.parse(d))
   .handler(async ({ data }) => {
-    const { supabaseAdmin } = await import('@/lib/demo/admin-write-guard.server');
+    const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabaseAdmin as any;
 
     const { data: quote } = await db
-      .from('quotes')
-      .select('id, workspace_id, status, custom_fields, deal_id')
-      .eq('public_token', data.token)
-      .is('deleted_at', null)
+      .from("quotes")
+      .select("id, workspace_id, status, custom_fields, deal_id")
+      .eq("public_token", data.token)
+      .is("deleted_at", null)
       .maybeSingle();
-    if (!quote) throw new Error('This quote link is no longer valid.');
-    if (['accepted', 'rejected', 'expired'].includes(quote.status)) {
+    if (!quote) throw new Error("This quote link is no longer valid.");
+    if (["accepted", "rejected", "expired"].includes(quote.status)) {
       throw new Error(`This quote has already been ${quote.status}.`);
     }
 
     const signedAt = new Date().toISOString();
     const cf = { ...((quote.custom_fields as Record<string, unknown>) ?? {}) };
     if (data.accept) {
-      cf['signature'] = {
+      cf["signature"] = {
         name: data.fullName,
         email: data.email || null,
         signature: data.signature,
         signed_at: signedAt,
       };
     } else {
-      cf['declined'] = { name: data.fullName, at: signedAt };
+      cf["declined"] = { name: data.fullName, at: signedAt };
     }
 
     const { error } = await db
-      .from('quotes')
+      .from("quotes")
       .update({
-        status: data.accept ? 'accepted' : 'rejected',
+        status: data.accept ? "accepted" : "rejected",
         custom_fields: cf,
         ...(data.accept ? { accepted_at: signedAt } : { rejected_at: signedAt }),
       })
-      .eq('id', quote.id);
+      .eq("id", quote.id);
     if (error) throw new Error(error.message);
 
-    return { ok: true, status: data.accept ? 'accepted' : 'rejected', signed_at: signedAt };
+    return { ok: true, status: data.accept ? "accepted" : "rejected", signed_at: signedAt };
   });

@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { MessageCircle, Sparkles, HelpCircle, LifeBuoy, Send, X, Minus, Smartphone, Monitor } from "lucide-react";
+import {
+  MessageCircle,
+  Sparkles,
+  HelpCircle,
+  LifeBuoy,
+  Send,
+  X,
+  Minus,
+  Smartphone,
+  Monitor,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { WidgetConfig } from "@/lib/widget/widget-config";
 import { cn } from "@/lib/utils";
@@ -54,10 +64,20 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
           <span className="ml-3 text-muted-foreground text-xs">Live preview — unsaved</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button size="sm" variant={device === "desktop" ? "secondary" : "ghost"} className="h-7 px-2" onClick={() => setDevice("desktop")}>
+          <Button
+            size="sm"
+            variant={device === "desktop" ? "secondary" : "ghost"}
+            className="h-7 px-2"
+            onClick={() => setDevice("desktop")}
+          >
             <Monitor className="size-3.5" />
           </Button>
-          <Button size="sm" variant={device === "mobile" ? "secondary" : "ghost"} className="h-7 px-2" onClick={() => setDevice("mobile")}>
+          <Button
+            size="sm"
+            variant={device === "mobile" ? "secondary" : "ghost"}
+            className="h-7 px-2"
+            onClick={() => setDevice("mobile")}
+          >
             <Smartphone className="size-3.5" />
           </Button>
         </div>
@@ -65,7 +85,10 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
 
       {/* Stage */}
       <div
-        className={cn("relative h-[560px] w-full overflow-hidden", isDark ? "bg-slate-900" : "bg-slate-50")}
+        className={cn(
+          "relative h-[560px] w-full overflow-hidden",
+          isDark ? "bg-slate-900" : "bg-slate-50",
+        )}
         style={{ fontFamily: config.fontFamily }}
       >
         {/* Fake site backdrop */}
@@ -75,19 +98,21 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
         {open && (
           <div
             className="absolute flex flex-col overflow-hidden shadow-2xl"
-            style={{
-              [side]: 24,
-              [pos]: 92,
-              width: panelW,
-              height: panelH,
-              maxWidth: "calc(100% - 32px)",
-              maxHeight: "calc(100% - 120px)",
-              background: surfaceBg,
-              color: surfaceFg,
-              borderRadius: config.radius,
-              border: `1px solid ${border}`,
-              fontSize: config.fontSizeBase,
-            } as React.CSSProperties}
+            style={
+              {
+                [side]: 24,
+                [pos]: 92,
+                width: panelW,
+                height: panelH,
+                maxWidth: "calc(100% - 32px)",
+                maxHeight: "calc(100% - 120px)",
+                background: surfaceBg,
+                color: surfaceFg,
+                borderRadius: config.radius,
+                border: `1px solid ${border}`,
+                fontSize: config.fontSizeBase,
+              } as React.CSSProperties
+            }
           >
             {/* Header */}
             <div
@@ -95,21 +120,35 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
               style={{ background: config.brandColor, color: config.brandTextColor }}
             >
               {config.agentAvatarUrl ? (
-                <img src={config.agentAvatarUrl} alt="" className="size-10 rounded-full object-cover" />
+                <img
+                  src={config.agentAvatarUrl}
+                  alt=""
+                  className="size-10 rounded-full object-cover"
+                />
               ) : (
                 <div className="grid size-10 place-items-center rounded-full bg-white/20 font-bold">
                   {(config.agentName || "A").slice(0, 1).toUpperCase()}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <div className="truncate font-bold text-base">{config.welcomeTitle || widgetName || "Chat"}</div>
+                <div className="truncate font-bold text-base">
+                  {config.welcomeTitle || widgetName || "Chat"}
+                </div>
                 <div className="truncate text-xs opacity-90">{config.welcomeSubtitle}</div>
               </div>
               <div className="flex items-center gap-1">
-                <button className="grid size-7 place-items-center rounded-control hover:bg-white/15" aria-label="Minimize" onClick={() => setOpen(false)}>
+                <button
+                  className="grid size-7 place-items-center rounded-control hover:bg-white/15"
+                  aria-label="Minimize"
+                  onClick={() => setOpen(false)}
+                >
                   <Minus className="size-4" />
                 </button>
-                <button className="grid size-7 place-items-center rounded-control hover:bg-white/15" aria-label="Close" onClick={() => setOpen(false)}>
+                <button
+                  className="grid size-7 place-items-center rounded-control hover:bg-white/15"
+                  aria-label="Close"
+                  onClick={() => setOpen(false)}
+                >
                   <X className="size-4" />
                 </button>
               </div>
@@ -118,7 +157,10 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
             {/* Messages */}
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               <div className="flex items-end gap-2">
-                <div className="grid size-6 shrink-0 place-items-center rounded-full text-[11px]" style={{ background: botBubble, color: surfaceFg }}>
+                <div
+                  className="grid size-6 shrink-0 place-items-center rounded-full text-[11px]"
+                  style={{ background: botBubble, color: surfaceFg }}
+                >
                   {(config.agentName || "A").slice(0, 1).toUpperCase()}
                 </div>
                 <div
@@ -150,7 +192,11 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
             <div className="border-t p-3" style={{ borderColor: border }}>
               <div
                 className="flex items-center gap-2 px-3 py-2"
-                style={{ background: isDark ? "#141a25" : "#f8fafc", borderRadius: config.radius, border: `1px solid ${border}` }}
+                style={{
+                  background: isDark ? "#141a25" : "#f8fafc",
+                  borderRadius: config.radius,
+                  border: `1px solid ${border}`,
+                }}
               >
                 <input
                   className="flex-1 bg-transparent outline-none"
@@ -160,7 +206,11 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
                 />
                 <button
                   className="grid size-8 place-items-center"
-                  style={{ background: config.brandColor, color: config.brandTextColor, borderRadius: config.bubbleStyle === "sharp" ? 4 : config.radius }}
+                  style={{
+                    background: config.brandColor,
+                    color: config.brandTextColor,
+                    borderRadius: config.bubbleStyle === "sharp" ? 4 : config.radius,
+                  }}
                   aria-label="Send"
                 >
                   <Send className="size-4" />
@@ -179,14 +229,16 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
         <button
           onClick={() => setOpen((v) => !v)}
           className="absolute flex items-center gap-2 shadow-xl transition-transform hover:scale-105"
-          style={{
-            [side]: 24,
-            [pos]: 24,
-            background: config.brandColor,
-            color: config.brandTextColor,
-            borderRadius: 999,
-            padding: config.launcherLabel ? "12px 16px" : 14,
-          } as React.CSSProperties}
+          style={
+            {
+              [side]: 24,
+              [pos]: 24,
+              background: config.brandColor,
+              color: config.brandTextColor,
+              borderRadius: 999,
+              padding: config.launcherLabel ? "12px 16px" : 14,
+            } as React.CSSProperties
+          }
           aria-label="Toggle chat"
         >
           {config.launcherIcon === "custom" && config.launcherIconUrl ? (
@@ -194,7 +246,9 @@ export function WidgetAppearancePreview({ config, widgetName }: Props) {
           ) : (
             <Icon className="size-6" />
           )}
-          {config.launcherLabel && <span className="font-medium text-sm">{config.launcherLabel}</span>}
+          {config.launcherLabel && (
+            <span className="font-medium text-sm">{config.launcherLabel}</span>
+          )}
         </button>
       </div>
     </div>

@@ -3,7 +3,16 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, CheckCircle2, Copy, ExternalLink, Loader2, Plus, Unplug, Webhook } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Plus,
+  Unplug,
+  Webhook,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -80,20 +89,25 @@ export function TikTokDmPanel() {
   const connect = useMutation({
     mutationFn: () => startConnect({ data: { workspaceId: workspaceId!, origin } }),
     onSuccess: (res) => window.location.assign(res.url),
-    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Could not start TikTok connect"),
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Could not start TikTok connect"),
   });
 
   const webhook = useMutation({
-    mutationFn: (register: boolean) => webhookFn({ data: { workspaceId: workspaceId!, origin, register } }),
+    mutationFn: (register: boolean) =>
+      webhookFn({ data: { workspaceId: workspaceId!, origin, register } }),
     onSuccess: (res) =>
       res.matches
         ? toast.success("TikTok webhook points at this app")
-        : toast.warning(`TikTok webhook is ${res.current ? `set to ${res.current}` : "not set"}. Click Register.`),
+        : toast.warning(
+            `TikTok webhook is ${res.current ? `set to ${res.current}` : "not set"}. Click Register.`,
+          ),
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Webhook check failed"),
   });
 
   const disconnect = useMutation({
-    mutationFn: (accountId: string) => disconnectFn({ data: { workspaceId: workspaceId!, accountId } }),
+    mutationFn: (accountId: string) =>
+      disconnectFn({ data: { workspaceId: workspaceId!, accountId } }),
     onSuccess: () => {
       toast.success("TikTok account disconnected");
       void qc.invalidateQueries({ queryKey: ["tiktok-dm-setup", workspaceId] });
@@ -110,9 +124,9 @@ export function TikTokDmPanel() {
           <div>
             <h2 className="font-bold text-xl">TikTok Messages</h2>
             <p className="text-sm text-muted-foreground max-w-2xl">
-              Direct messages sent to your TikTok Business account arrive in the Inbox in real time (TikTok
-              channel). Replies you send from the Inbox go back as TikTok DMs through the official Business
-              Messaging API.
+              Direct messages sent to your TikTok Business account arrive in the Inbox in real time
+              (TikTok channel). Replies you send from the Inbox go back as TikTok DMs through the
+              official Business Messaging API.
             </p>
           </div>
         </div>
@@ -167,12 +181,21 @@ export function TikTokDmPanel() {
             {data.accounts.map((a) => (
               <li key={a.id} className="p-3 space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="font-medium">{a.displayName || a.username || "TikTok account"}</span>
-                  {a.username && <span className="text-xs text-muted-foreground font-mono">@{a.username}</span>}
-                  <Badge variant={a.status === "active" ? "outline" : "destructive"} className="text-[11px]">
+                  <span className="font-medium">
+                    {a.displayName || a.username || "TikTok account"}
+                  </span>
+                  {a.username && (
+                    <span className="text-xs text-muted-foreground font-mono">@{a.username}</span>
+                  )}
+                  <Badge
+                    variant={a.status === "active" ? "outline" : "destructive"}
+                    className="text-[11px]"
+                  >
                     {a.status === "reauth_required" ? "Reconnect needed" : a.status}
                   </Badge>
-                  <span className="ml-auto text-xs text-muted-foreground">Last message {relative(a.lastEventAt)}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    Last message {relative(a.lastEventAt)}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -199,8 +222,8 @@ export function TikTokDmPanel() {
         <CopyRow label="Redirect URL" value={`${origin}/api/public/tiktok-dm/callback`} />
         <CopyRow label="Webhook callback URL" value={`${origin}/api/public/webhooks/tiktok`} />
         <p className="text-xs text-muted-foreground">
-          The webhook is set once per TikTok app. Register points the app's DIRECT_MESSAGE webhook at this
-          deployment (use your public HTTPS domain, not localhost).
+          The webhook is set once per TikTok app. Register points the app's DIRECT_MESSAGE webhook
+          at this deployment (use your public HTTPS domain, not localhost).
         </p>
         <div className="flex gap-2">
           <Button
@@ -211,7 +234,11 @@ export function TikTokDmPanel() {
           >
             Check
           </Button>
-          <Button size="sm" disabled={!data?.appConfigured || webhook.isPending} onClick={() => webhook.mutate(true)}>
+          <Button
+            size="sm"
+            disabled={!data?.appConfigured || webhook.isPending}
+            onClick={() => webhook.mutate(true)}
+          >
             {webhook.isPending ? (
               <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
             ) : (
@@ -229,7 +256,10 @@ export function TikTokDmPanel() {
             <li key={r}>{r}</li>
           ))}
         </ul>
-        <Link to="/inbox" className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+        <Link
+          to="/inbox"
+          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+        >
           Open the Inbox <ExternalLink className="h-3 w-3" />
         </Link>
       </section>

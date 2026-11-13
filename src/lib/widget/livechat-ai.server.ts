@@ -152,9 +152,7 @@ interface AnalysisInput {
  * one round-trip keeps latency and cost predictable — the visitor should
  * never wait on multiple sequential model calls.
  */
-export async function analyzeConversation(
-  input: AnalysisInput,
-): Promise<AssistantAnalysis> {
+export async function analyzeConversation(input: AnalysisInput): Promise<AssistantAnalysis> {
   const { bot, userMessage, history, kbHits } = input;
 
   const transcript = history
@@ -239,8 +237,7 @@ export async function analyzeConversation(
       sentimentScore: clamp(Number(parsed.sentiment_score ?? 0), -1, 1),
       topics: arr(parsed.topics),
       leadScore: clamp(Math.round(Number(parsed.lead_score ?? 0)), 0, 100),
-      leadStage:
-        (parsed.lead_stage as AssistantAnalysis["leadStage"]) || "cold",
+      leadStage: (parsed.lead_stage as AssistantAnalysis["leadStage"]) || "cold",
       productRecommendations: arr(parsed.product_recommendations).slice(0, 3),
       appointmentSuggested: Boolean(parsed.appointment_suggested),
       appointmentReason: parsed.appointment_reason ?? null,
@@ -271,18 +268,14 @@ export async function generateAssistantReply(
   const kbContext = kbHits.length
     ? [
         "Grounding — use these knowledge-base snippets to answer factual questions. Cite them naturally, never fabricate details:",
-        ...kbHits.map(
-          (h, i) => `[${i + 1}] ${h.title}\n${h.snippet}`,
-        ),
+        ...kbHits.map((h, i) => `[${i + 1}] ${h.title}\n${h.snippet}`),
       ].join("\n\n")
     : "";
 
   const systemPrompt = [
     bot.system_prompt ||
       "You are a helpful AI assistant embedded on a website. Be concise, friendly, and helpful.",
-    bot.organization_prompt
-      ? `Organization context:\n${bot.organization_prompt}`
-      : "",
+    bot.organization_prompt ? `Organization context:\n${bot.organization_prompt}` : "",
     bot.personality ? `Personality: ${bot.personality}` : "",
     bot.tone ? `Tone: ${bot.tone}` : "",
     targetLanguage
@@ -297,17 +290,14 @@ export async function generateAssistantReply(
     .filter(Boolean)
     .join("\n\n");
 
-  const messages: { role: "system" | "user" | "assistant"; content: string }[] =
-    [
-      { role: "system", content: systemPrompt },
-      ...history.slice(-10).map((m) => ({
-        role: (m.role === "assistant" ? "assistant" : "user") as
-          | "user"
-          | "assistant",
-        content: m.content,
-      })),
-      { role: "user", content: userMessage },
-    ];
+  const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+    { role: "system", content: systemPrompt },
+    ...history.slice(-10).map((m) => ({
+      role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
+      content: m.content,
+    })),
+    { role: "user", content: userMessage },
+  ];
 
   try {
     const { runChat } = await import("@/lib/ai/complete.functions");
@@ -383,9 +373,7 @@ export async function persistAnalysis(
   kbHits: KbHit[],
 ): Promise<void> {
   try {
-    const { supabaseAdmin } = await import(
-      "@/lib/demo/admin-write-guard.server"
-    );
+    const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     await supabaseAdmin
       .from("chatbot_sessions")
       .update({
@@ -403,9 +391,7 @@ export async function persistAnalysis(
             ? { reason: analysis.appointmentReason }
             : null,
         },
-        ai_escalation_reason: analysis.escalate
-          ? analysis.escalationReason
-          : null,
+        ai_escalation_reason: analysis.escalate ? analysis.escalationReason : null,
         ai_updated_at: new Date().toISOString(),
       } as never)
       .eq("id", sessionId);

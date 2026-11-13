@@ -253,9 +253,7 @@ function InvoiceDetail() {
           </Card>
           <Card className="p-4">
             <div className="text-xs  text-muted-foreground">Paid</div>
-            <div className="text-xl font-semibold  mt-1 text-emerald-600">
-              {money(paid)}
-            </div>
+            <div className="text-xl font-semibold  mt-1 text-emerald-600">{money(paid)}</div>
           </Card>
           <Card className="p-4">
             <div className="text-xs  text-muted-foreground">Balance</div>

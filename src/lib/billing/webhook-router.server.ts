@@ -35,16 +35,13 @@ export async function routeProviderEvent(
   // normalizer runs — they are plugin purchases, not plan billing.
   if (event.type === "checkout.session.completed") {
     const session = (event.data as { object?: unknown })?.object ?? event.data;
-    const { fulfilPluginCheckout, PLUGIN_CHECKOUT_PURPOSE } = await import(
-      "@/lib/marketplace/plugin-checkout.server"
-    );
+    const { fulfilPluginCheckout, PLUGIN_CHECKOUT_PURPOSE } =
+      await import("@/lib/marketplace/plugin-checkout.server");
     const purpose = (session as { metadata?: Record<string, string> })?.metadata?.cyloo_purpose;
     if (purpose === PLUGIN_CHECKOUT_PURPOSE) {
       return fulfilPluginCheckout(session);
     }
   }
-
-
 
   const { normalizeProviderEvent } = await import("@/lib/billing/webhook-normalize.server");
   const normalized = await normalizeProviderEvent(supabase, event.provider, event.type, event.data);
@@ -54,14 +51,9 @@ export async function routeProviderEvent(
   }
 
   if (normalized.kind === "subscription") {
-    const { upsertSubscriptionFromSnapshot } = await import(
-      "@/lib/billing/subscription-engine.server"
-    );
-    await upsertSubscriptionFromSnapshot(
-      supabase,
-      normalized.organization_id,
-      normalized.snapshot,
-    );
+    const { upsertSubscriptionFromSnapshot } =
+      await import("@/lib/billing/subscription-engine.server");
+    await upsertSubscriptionFromSnapshot(supabase, normalized.organization_id, normalized.snapshot);
     return { handled: true };
   }
 
@@ -99,7 +91,9 @@ async function applyPaymentOutcomeToSubscription(
   supabase: any,
   providerId: string,
   normalized: Extract<
-    Awaited<ReturnType<typeof import("@/lib/billing/webhook-normalize.server").normalizeProviderEvent>>,
+    Awaited<
+      ReturnType<typeof import("@/lib/billing/webhook-normalize.server").normalizeProviderEvent>
+    >,
     { kind: "payment" }
   >,
 ) {
@@ -119,14 +113,11 @@ async function applyPaymentOutcomeToSubscription(
     const { getBillingProvider } = await import("@/lib/billing/providers");
     const provider = getBillingProvider(providerId as any);
     const snap = await provider.getSubscription(refresh_subscription_id);
-    const { resolvePlanCodeFromExternal } = await import(
-      "@/lib/billing/webhook-normalize.server"
-    );
+    const { resolvePlanCodeFromExternal } = await import("@/lib/billing/webhook-normalize.server");
     const plan_code =
       (await resolvePlanCodeFromExternal(supabase, providerId, snap.plan_code)) ?? snap.plan_code;
-    const { upsertSubscriptionFromSnapshot } = await import(
-      "@/lib/billing/subscription-engine.server"
-    );
+    const { upsertSubscriptionFromSnapshot } =
+      await import("@/lib/billing/subscription-engine.server");
     await upsertSubscriptionFromSnapshot(supabase, payment.organization_id, {
       ...snap,
       plan_code,

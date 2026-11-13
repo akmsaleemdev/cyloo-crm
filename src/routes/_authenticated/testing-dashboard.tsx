@@ -38,11 +38,15 @@ export const Route = createFileRoute("/_authenticated/testing-dashboard")({
   head: () => ({
     meta: [
       { title: "Testing Dashboard" },
-      { name: "description", content: "Unified view of unit, integration, E2E, a11y, performance, and security test results." },
+      {
+        name: "description",
+        content:
+          "Unified view of unit, integration, E2E, a11y, performance, and security test results.",
+      },
     ],
   }),
   component: TestingDashboard,
-  errorComponent: ({ error, reset }) => {
+  errorComponent: function TestingDashboardError({ error, reset }) {
     const router = useRouter();
     return (
       <div className="p-6">
@@ -82,10 +86,16 @@ function TestingDashboard() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Testing Dashboard</h1>
           <p className="text-sm text-muted-foreground">
-            Live snapshot of every test suite — unit, integration, API, E2E, UI, a11y, performance, security, regression & smoke.
+            Live snapshot of every test suite — unit, integration, API, E2E, UI, a11y, performance,
+            security, regression & smoke.
           </p>
         </div>
-        <Button variant="outline" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh test data">
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          aria-label="Refresh test data"
+        >
           <RefreshCw className={"size-4 " + (isFetching ? "animate-spin" : "")} />
           Refresh
         </Button>
@@ -93,7 +103,12 @@ function TestingDashboard() {
 
       {/* Overall summary */}
       <section className="grid gap-4 md:grid-cols-4">
-        <SummaryCard label="Total tests" value={overall?.total ?? 0} loading={isLoading} icon={Beaker} />
+        <SummaryCard
+          label="Total tests"
+          value={overall?.total ?? 0}
+          loading={isLoading}
+          icon={Beaker}
+        />
         <SummaryCard
           label="Passing"
           value={overall?.passed ?? 0}
@@ -101,7 +116,13 @@ function TestingDashboard() {
           icon={CheckCircle2}
           tone="success"
         />
-        <SummaryCard label="Failing" value={overall?.failed ?? 0} loading={isLoading} icon={XCircle} tone="destructive" />
+        <SummaryCard
+          label="Failing"
+          value={overall?.failed ?? 0}
+          loading={isLoading}
+          icon={XCircle}
+          tone="destructive"
+        />
         <SummaryCard
           label="Skipped"
           value={overall?.skipped ?? 0}
@@ -121,7 +142,9 @@ function TestingDashboard() {
           <CardContent>
             <div className="mb-2 flex items-baseline justify-between">
               <span className="text-3xl font-semibold ">{passRate}%</span>
-              <Badge variant={passRate >= 95 ? "default" : passRate >= 80 ? "secondary" : "destructive"}>
+              <Badge
+                variant={passRate >= 95 ? "default" : passRate >= 80 ? "secondary" : "destructive"}
+              >
                 {passRate >= 95 ? "Healthy" : passRate >= 80 ? "At risk" : "Failing"}
               </Badge>
             </div>
@@ -142,12 +165,16 @@ function TestingDashboard() {
                     <span className="capitalize text-muted-foreground">{k}</span>
                     <span className="">{data.coverage![k]}%</span>
                   </div>
-                  <Progress value={data.coverage![k]} aria-label={`${k} coverage ${data.coverage![k]}%`} />
+                  <Progress
+                    value={data.coverage![k]}
+                    aria-label={`${k} coverage ${data.coverage![k]}%`}
+                  />
                 </div>
               ))
             ) : (
               <p className="text-sm text-muted-foreground">
-                Run <code className="rounded bg-muted px-1 py-0.5">npm run test:coverage</code> to populate this panel.
+                Run <code className="rounded bg-muted px-1 py-0.5">npm run test:coverage</code> to
+                populate this panel.
               </p>
             )}
           </CardContent>
@@ -181,7 +208,8 @@ function TestingDashboard() {
               <AlertTitle>No test artifacts found</AlertTitle>
               <AlertDescription>
                 Run <code className="rounded bg-muted px-1 py-0.5">npm run test</code> and{" "}
-                <code className="rounded bg-muted px-1 py-0.5">npm run test:e2e</code> to populate the dashboard.
+                <code className="rounded bg-muted px-1 py-0.5">npm run test:e2e</code> to populate
+                the dashboard.
               </AlertDescription>
             </Alert>
           )}

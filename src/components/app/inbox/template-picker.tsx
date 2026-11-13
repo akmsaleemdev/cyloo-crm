@@ -37,10 +37,7 @@ import {
 import { useSyncTemplates, useTemplates } from "@/hooks/use-wa-templates";
 import { useChannelAccounts } from "@/hooks/use-channel-accounts";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
-import {
-  TemplatePreviewDialog,
-  type TemplatePreviewTarget,
-} from "./template-preview-dialog";
+import { TemplatePreviewDialog, type TemplatePreviewTarget } from "./template-preview-dialog";
 import {
   buildTemplateSendPayload,
   type TemplateComponent,
@@ -96,7 +93,6 @@ export function TemplatePicker({
   contact,
   initialSearch,
 }: Props) {
-
   const [search, setSearch] = useState(initialSearch ?? "");
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -173,12 +169,8 @@ export function TemplatePicker({
       : templates;
     return {
       favorites: filtered.filter((t) => t.is_favorite),
-      recent: filtered
-        .filter((t) => !t.is_favorite && t.last_used_at)
-        .slice(0, 6),
-      others: filtered.filter(
-        (t) => !t.is_favorite && !t.last_used_at,
-      ),
+      recent: filtered.filter((t) => !t.is_favorite && t.last_used_at).slice(0, 6),
+      others: filtered.filter((t) => !t.is_favorite && !t.last_used_at),
     };
   }, [templates, search]);
 
@@ -197,10 +189,7 @@ export function TemplatePicker({
       }))
       .filter((t) => t.body.length > 0)
       .filter(
-        (t) =>
-          !term ||
-          t.name.toLowerCase().includes(term) ||
-          t.body.toLowerCase().includes(term),
+        (t) => !term || t.name.toLowerCase().includes(term) || t.body.toLowerCase().includes(term),
       );
   }, [waData, search]);
 
@@ -268,7 +257,6 @@ export function TemplatePicker({
     close();
   };
 
-
   const [preview, setPreview] = useState<{
     target: TemplatePreviewTarget;
     template: MessageTemplate;
@@ -295,9 +283,6 @@ export function TemplatePicker({
       template: t,
       isLocal: true,
     });
-
-
-
 
   const startCreate = () => {
     const term = search.trim();
@@ -333,7 +318,9 @@ export function TemplatePicker({
           <div className="text-sm font-medium">New saved reply</div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="tpl-name" className="text-xs">Name</Label>
+              <Label htmlFor="tpl-name" className="text-xs">
+                Name
+              </Label>
               <Input
                 id="tpl-name"
                 value={name}
@@ -343,7 +330,9 @@ export function TemplatePicker({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="tpl-shortcut" className="text-xs">Shortcut (optional)</Label>
+              <Label htmlFor="tpl-shortcut" className="text-xs">
+                Shortcut (optional)
+              </Label>
               <Input
                 id="tpl-shortcut"
                 value={shortcut}
@@ -353,7 +342,9 @@ export function TemplatePicker({
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="tpl-body" className="text-xs">Message</Label>
+            <Label htmlFor="tpl-body" className="text-xs">
+              Message
+            </Label>
             <Textarea
               id="tpl-body"
               value={body}
@@ -362,7 +353,8 @@ export function TemplatePicker({
               placeholder="Hi {{contact_name}}, your order is on its way!"
             />
             <p className="text-[11px] text-muted-foreground">
-              Use {"{{"}variable{"}}"} placeholders — they are filled in automatically when inserted.
+              Use {"{{"}variable{"}}"} placeholders — they are filled in automatically when
+              inserted.
             </p>
           </div>
           <div className="flex justify-end gap-2 pt-1">
@@ -380,176 +372,200 @@ export function TemplatePicker({
 
   return (
     <>
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput
-        placeholder="Search saved replies, templates, /shortcuts"
-        value={search}
-        onValueChange={setSearch}
-      />
-      {syncBar}
-      <CommandList>
-        {isLoading || waLoading ? (
-          <div className="p-6 text-center text-xs text-muted-foreground">
-            Loading
-          </div>
-        ) : templates.length === 0 && (waData?.templates?.length ?? 0) === 0 ? (
-          <div className="p-6 text-center space-y-3">
-            <p className="text-xs text-muted-foreground">
-              No templates yet. Create your first saved reply.
-            </p>
-            <Button size="sm" onClick={startCreate}>
-              <Plus className="h-4 w-4" /> New saved reply
-            </Button>
-          </div>
-        ) : (
-          <>
-            {waTemplates.length > 0 && (
-              <CommandGroup heading="WhatsApp templates (approved)">
-                {waTemplates.map((t) => (
-                  <CommandItem
-                    key={`wa-${t.id}`}
-                    value={`${t.name} ${t.body}`}
-                    onSelect={() => pickWa(t)}
-                    className="flex items-start gap-2 py-2"
-                  >
-                    <MessageSquare className="h-3.5 w-3.5 mt-0.5 text-emerald-500 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-medium truncate">{t.name}</span>
-                        <Badge variant="outline" className="h-4 px-1 text-[11px]">
-                          {t.category.toLowerCase()}
-                        </Badge>
-                        <Badge variant="outline" className="h-4 px-1 text-[11px] font-mono">
-                          {t.language}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {t.body.replace(/\s+/g, " ")}
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      aria-label={`Preview ${t.name}`}
-                      title="Preview with variables"
-                      onPointerDown={(e) => e.preventDefault()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        previewWa(t);
-                      }}
+      <CommandDialog open={open} onOpenChange={onOpenChange}>
+        <CommandInput
+          placeholder="Search saved replies, templates, /shortcuts"
+          value={search}
+          onValueChange={setSearch}
+        />
+        {syncBar}
+        <CommandList>
+          {isLoading || waLoading ? (
+            <div className="p-6 text-center text-xs text-muted-foreground">Loading</div>
+          ) : templates.length === 0 && (waData?.templates?.length ?? 0) === 0 ? (
+            <div className="p-6 text-center space-y-3">
+              <p className="text-xs text-muted-foreground">
+                No templates yet. Create your first saved reply.
+              </p>
+              <Button size="sm" onClick={startCreate}>
+                <Plus className="h-4 w-4" /> New saved reply
+              </Button>
+            </div>
+          ) : (
+            <>
+              {waTemplates.length > 0 && (
+                <CommandGroup heading="WhatsApp templates (approved)">
+                  {waTemplates.map((t) => (
+                    <CommandItem
+                      key={`wa-${t.id}`}
+                      value={`${t.name} ${t.body}`}
+                      onSelect={() => pickWa(t)}
+                      className="flex items-start gap-2 py-2"
                     >
-                      <Eye className="h-3.5 w-3.5" />
-                    </Button>
-                    {onPickAndSend && (
+                      <MessageSquare className="h-3.5 w-3.5 mt-0.5 text-emerald-500 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-sm font-medium truncate">{t.name}</span>
+                          <Badge variant="outline" className="h-4 px-1 text-[11px]">
+                            {t.category.toLowerCase()}
+                          </Badge>
+                          <Badge variant="outline" className="h-4 px-1 text-[11px] font-mono">
+                            {t.language}
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {t.body.replace(/\s+/g, " ")}
+                        </div>
+                      </div>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="shrink-0"
-                        aria-label={`Send ${t.name} now`}
-                        title="Send now"
+                        aria-label={`Preview ${t.name}`}
+                        title="Preview with variables"
                         onPointerDown={(e) => e.preventDefault()}
                         onClick={(e) => {
                           e.stopPropagation();
-                          sendWa(t);
+                          previewWa(t);
                         }}
                       >
-                        <Send className="h-3.5 w-3.5" />
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
-                    )}
-                  </CommandItem>
-
-                ))}
-              </CommandGroup>
-            )}
-            {waTemplates.length > 0 && templates.length > 0 && <CommandSeparator />}
-
-            <CommandEmpty>
-              <div className="p-4 text-center space-y-3">
-                <p className="text-xs text-muted-foreground">No matching templates.</p>
-                <Button size="sm" onClick={startCreate}>
-                  <Plus className="h-4 w-4" /> New saved reply
-                </Button>
-              </div>
-            </CommandEmpty>
-            {favorites.length > 0 && (
-              <CommandGroup heading="Favorites">
-                {favorites.map((t) => (
-                  <TemplateRow key={t.id} template={t} onSelect={() => pick(t)} onSend={onPickAndSend ? () => sendNow(t) : undefined} onPreview={() => previewLocal(t)} icon="star" />
-                ))}
-              </CommandGroup>
-            )}
-            {recent.length > 0 && (
-              <>
-                {favorites.length > 0 && <CommandSeparator />}
-                <CommandGroup heading="Recently used">
-                  {recent.map((t) => (
-                    <TemplateRow key={t.id} template={t} onSelect={() => pick(t)} onSend={onPickAndSend ? () => sendNow(t) : undefined} onPreview={() => previewLocal(t)} icon="clock" />
+                      {onPickAndSend && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          aria-label={`Send ${t.name} now`}
+                          title="Send now"
+                          onPointerDown={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            sendWa(t);
+                          }}
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                    </CommandItem>
                   ))}
                 </CommandGroup>
-              </>
-            )}
-            {others.length > 0 && (
-              <>
-                {(favorites.length > 0 || recent.length > 0) && <CommandSeparator />}
-                <CommandGroup heading="All templates">
-                  {others.map((t) => (
-                    <TemplateRow key={t.id} template={t} onSelect={() => pick(t)} onSend={onPickAndSend ? () => sendNow(t) : undefined} onPreview={() => previewLocal(t)} icon="file" />
+              )}
+              {waTemplates.length > 0 && templates.length > 0 && <CommandSeparator />}
+
+              <CommandEmpty>
+                <div className="p-4 text-center space-y-3">
+                  <p className="text-xs text-muted-foreground">No matching templates.</p>
+                  <Button size="sm" onClick={startCreate}>
+                    <Plus className="h-4 w-4" /> New saved reply
+                  </Button>
+                </div>
+              </CommandEmpty>
+              {favorites.length > 0 && (
+                <CommandGroup heading="Favorites">
+                  {favorites.map((t) => (
+                    <TemplateRow
+                      key={t.id}
+                      template={t}
+                      onSelect={() => pick(t)}
+                      onSend={onPickAndSend ? () => sendNow(t) : undefined}
+                      onPreview={() => previewLocal(t)}
+                      icon="star"
+                    />
                   ))}
                 </CommandGroup>
-              </>
-            )}
-          </>
-        )}
-      </CommandList>
-      <div className="px-3 py-2 border-t border-border text-[11px] text-muted-foreground flex items-center gap-3">
-        <span className="flex items-center gap-1">
-          <CommandIcon className="h-3 w-3" />
-          <kbd className="px-1 rounded bg-muted">↑↓</kbd> to navigate
-        </span>
-        <span>
-          <kbd className="px-1 rounded bg-muted">↵</kbd> to insert
-        </span>
-        {onPickAndSend && (
+              )}
+              {recent.length > 0 && (
+                <>
+                  {favorites.length > 0 && <CommandSeparator />}
+                  <CommandGroup heading="Recently used">
+                    {recent.map((t) => (
+                      <TemplateRow
+                        key={t.id}
+                        template={t}
+                        onSelect={() => pick(t)}
+                        onSend={onPickAndSend ? () => sendNow(t) : undefined}
+                        onPreview={() => previewLocal(t)}
+                        icon="clock"
+                      />
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+              {others.length > 0 && (
+                <>
+                  {(favorites.length > 0 || recent.length > 0) && <CommandSeparator />}
+                  <CommandGroup heading="All templates">
+                    {others.map((t) => (
+                      <TemplateRow
+                        key={t.id}
+                        template={t}
+                        onSelect={() => pick(t)}
+                        onSend={onPickAndSend ? () => sendNow(t) : undefined}
+                        onPreview={() => previewLocal(t)}
+                        icon="file"
+                      />
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </>
+          )}
+        </CommandList>
+        <div className="px-3 py-2 border-t border-border text-[11px] text-muted-foreground flex items-center gap-3">
           <span className="flex items-center gap-1">
-            <Send className="h-3 w-3" /> to send now
+            <CommandIcon className="h-3 w-3" />
+            <kbd className="px-1 rounded bg-muted">↑↓</kbd> to navigate
           </span>
-        )}
+          <span>
+            <kbd className="px-1 rounded bg-muted">↵</kbd> to insert
+          </span>
+          {onPickAndSend && (
+            <span className="flex items-center gap-1">
+              <Send className="h-3 w-3" /> to send now
+            </span>
+          )}
 
-        <span>
-          <kbd className="px-1 rounded bg-muted">esc</kbd> to close
-        </span>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="ml-auto h-6 px-2 text-[11px]"
-          onClick={startCreate}
-        >
-          <Plus className="h-3 w-3" /> New
-        </Button>
-      </div>
-    </CommandDialog>
-    <TemplatePreviewDialog
-      open={!!preview}
-      onOpenChange={(v) => { if (!v) setPreview(null); }}
-      template={preview?.target ?? null}
-      contextVars={contextVars}
-      contact={contact}
-      onInsert={(rendered) => {
-        if (!preview) return;
-        onPick(rendered, preview.template);
-        if (preview.isLocal) registerUsage.mutate(preview.template);
-        setPreview(null);
-        close();
-      }}
-      onSend={onPickAndSend ? (rendered, _values, payload) => {
-        if (!preview) return;
-        void onPickAndSend(rendered, preview.template, payload ?? undefined);
-        if (preview.isLocal) registerUsage.mutate(preview.template);
-        setPreview(null);
-        close();
-      } : undefined}
-    />
+          <span>
+            <kbd className="px-1 rounded bg-muted">esc</kbd> to close
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto h-6 px-2 text-[11px]"
+            onClick={startCreate}
+          >
+            <Plus className="h-3 w-3" /> New
+          </Button>
+        </div>
+      </CommandDialog>
+      <TemplatePreviewDialog
+        open={!!preview}
+        onOpenChange={(v) => {
+          if (!v) setPreview(null);
+        }}
+        template={preview?.target ?? null}
+        contextVars={contextVars}
+        contact={contact}
+        onInsert={(rendered) => {
+          if (!preview) return;
+          onPick(rendered, preview.template);
+          if (preview.isLocal) registerUsage.mutate(preview.template);
+          setPreview(null);
+          close();
+        }}
+        onSend={
+          onPickAndSend
+            ? (rendered, _values, payload) => {
+                if (!preview) return;
+                void onPickAndSend(rendered, preview.template, payload ?? undefined);
+                if (preview.isLocal) registerUsage.mutate(preview.template);
+                setPreview(null);
+                close();
+              }
+            : undefined
+        }
+      />
     </>
   );
 }
@@ -567,7 +583,6 @@ function TemplateRow({
   onPreview?: (() => void) | undefined;
   icon: "star" | "clock" | "file";
 }) {
-
   const Icon = icon === "star" ? Star : icon === "clock" ? Clock : FileText;
   return (
     <CommandItem
@@ -634,6 +649,5 @@ function TemplateRow({
         </Button>
       )}
     </CommandItem>
-
   );
 }

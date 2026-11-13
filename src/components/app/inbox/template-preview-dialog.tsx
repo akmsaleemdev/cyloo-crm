@@ -240,7 +240,7 @@ export function TemplatePreviewDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, template?.id]);
 
-  const usePreset = (preset: TemplatePreset) => {
+  const applyPreset = (preset: TemplatePreset) => {
     setValues((v) => applyPreset(tokens, v, preset));
     setSources((s) => {
       const next = { ...s };
@@ -414,7 +414,7 @@ export function TemplatePreviewDialog({
                         <button
                           type="button"
                           className="py-1 pr-1 hover:text-primary"
-                          onClick={() => usePreset(p)}
+                          onClick={() => applyPreset(p)}
                           title={Object.entries(p.values)
                             .map(([k, v]) => `${k}: ${v}`)
                             .join("\n")}

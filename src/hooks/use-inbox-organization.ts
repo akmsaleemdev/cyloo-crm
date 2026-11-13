@@ -11,7 +11,6 @@ const anyFrom = (t: string) => sbAny(supabase).from(t as any) as any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rpc = (name: string, args: Record<string, unknown>) => (supabase.rpc as any)(name, args);
 
-
 /* --------------------------------- Labels --------------------------------- */
 
 export type Label = {
@@ -28,7 +27,11 @@ export type Label = {
 };
 
 const slugify = (s: string) =>
-  s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 
 export function useLabels() {
   const { active: workspace } = useCurrentWorkspace();
@@ -140,8 +143,7 @@ export function useSavedFilters() {
         filter: workspaceId ? `workspace_id=eq.${workspaceId}` : undefined,
       },
     ],
-    onChange: () =>
-      qc.invalidateQueries({ queryKey: ["saved_filters", workspaceId] }),
+    onChange: () => qc.invalidateQueries({ queryKey: ["saved_filters", workspaceId] }),
   });
 
   return q;

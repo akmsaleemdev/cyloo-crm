@@ -93,7 +93,9 @@ function DashboardPage() {
   const pipelineValue = pipelineTotals.length
     ? pipelineTotals.map((total) => pipelineMoney(total.amount, total.currency)).join(" · ")
     : pipelineMoney(0, tenantCurrency);
-  const weighted = pipelineTotals.map((total) => pipelineMoney(total.weighted, total.currency)).join(" · ");
+  const weighted = pipelineTotals
+    .map((total) => pipelineMoney(total.weighted, total.currency))
+    .join(" · ");
 
   // Dashboard customization state & persistence
   const [widgets, setWidgets] = useState<DashboardWidgetConfig[]>(() =>
@@ -162,15 +164,31 @@ function DashboardPage() {
                   return (
                     <StaggerItem key={widget.id} className={spanClass}>
                       <div className="flex flex-wrap gap-2 p-1">
-                        <QuickAction icon={Target} label="New Lead" onClick={() => nav({ to: "/leads" })} />
-                        <QuickAction icon={Users} label="New Contact" onClick={() => nav({ to: "/contacts" })} />
+                        <QuickAction
+                          icon={Target}
+                          label="New Lead"
+                          onClick={() => nav({ to: "/leads" })}
+                        />
+                        <QuickAction
+                          icon={Users}
+                          label="New Contact"
+                          onClick={() => nav({ to: "/contacts" })}
+                        />
                         <QuickAction
                           icon={Building2}
                           label="New Company"
                           onClick={() => nav({ to: "/companies" })}
                         />
-                        <QuickAction icon={Handshake} label="New Deal" onClick={() => nav({ to: "/deals" })} />
-                        <QuickAction icon={Calendar} label="New Task" onClick={() => nav({ to: "/tasks", search: (prev: any) => prev })} />
+                        <QuickAction
+                          icon={Handshake}
+                          label="New Deal"
+                          onClick={() => nav({ to: "/deals" })}
+                        />
+                        <QuickAction
+                          icon={Calendar}
+                          label="New Task"
+                          onClick={() => nav({ to: "/tasks", search: (prev: any) => prev })}
+                        />
                         <QuickAction
                           icon={MessagesSquare}
                           label="Open Inbox"
@@ -194,7 +212,11 @@ function DashboardPage() {
                           tone="accent"
                           label="New Leads · 7d"
                           value={String(newLeadsCount)}
-                          hint={d.assignedLeadsCount.isError ? "Assigned leads unavailable" : `${d.assignedLeadsCount.data ?? 0} assigned to you`}
+                          hint={
+                            d.assignedLeadsCount.isError
+                              ? "Assigned leads unavailable"
+                              : `${d.assignedLeadsCount.data ?? 0} assigned to you`
+                          }
                           loading={d.newLeadsCount.isPending}
                           error={d.newLeadsCount.isError}
                           to="/leads"
@@ -215,19 +237,42 @@ function DashboardPage() {
                           icon={DollarSign}
                           tone="green"
                           label="Open Pipeline"
-                          value={pipeline.data?.state === "no_pipeline" || pipeline.data?.state === "no_stages" ? "—" : pipelineValue}
-                          hint={pipeline.data?.state === "no_pipeline" ? "No pipeline configured" : pipeline.data?.state === "no_stages" ? "No stages configured" : pipeline.data?.state === "no_open_deals" ? "No open deals" : weighted ? `Weighted ${weighted}` : undefined}
+                          value={
+                            pipeline.data?.state === "no_pipeline" ||
+                            pipeline.data?.state === "no_stages"
+                              ? "—"
+                              : pipelineValue
+                          }
+                          hint={
+                            pipeline.data?.state === "no_pipeline"
+                              ? "No pipeline configured"
+                              : pipeline.data?.state === "no_stages"
+                                ? "No stages configured"
+                                : pipeline.data?.state === "no_open_deals"
+                                  ? "No open deals"
+                                  : weighted
+                                    ? `Weighted ${weighted}`
+                                    : undefined
+                          }
                           loading={pipeline.isPending}
                           error={pipeline.isError}
                           compact={pipelineTotals.length > 1}
-                          onClick={() => document.getElementById("dashboard-pipeline-summary")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                          onClick={() =>
+                            document
+                              .getElementById("dashboard-pipeline-summary")
+                              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                          }
                         />
                         <StatCard
                           icon={Calendar}
                           tone="amber"
                           label="Upcoming Tasks"
                           value={String(tasks.data?.upcomingCount ?? 0)}
-                          hint={tasks.data ? `CRM ${tasks.data.crmUpcomingCount} · Project ${tasks.data.projectUpcomingCount}${overdue ? ` · ${overdue} overdue` : ""}` : undefined}
+                          hint={
+                            tasks.data
+                              ? `CRM ${tasks.data.crmUpcomingCount} · Project ${tasks.data.projectUpcomingCount}${overdue ? ` · ${overdue} overdue` : ""}`
+                              : undefined
+                          }
                           loading={tasks.isPending}
                           error={tasks.isError}
                           to={taskCardTo}
@@ -262,9 +307,24 @@ function DashboardPage() {
                           atRisk={cust?.atRisk ?? 0}
                           overdue={overdue}
                           pipelineTotals={pipelineTotals}
-                          loading={d.newLeadsCount.isPending || d.activeCustomers.isPending || tasks.isPending || pipeline.isPending}
-                          error={d.newLeadsCount.isError || d.activeCustomers.isError || tasks.isError || pipeline.isError}
-                          onRetry={() => { void d.newLeadsCount.refetch(); void d.activeCustomers.refetch(); void tasks.refetch(); void pipeline.refetch(); }}
+                          loading={
+                            d.newLeadsCount.isPending ||
+                            d.activeCustomers.isPending ||
+                            tasks.isPending ||
+                            pipeline.isPending
+                          }
+                          error={
+                            d.newLeadsCount.isError ||
+                            d.activeCustomers.isError ||
+                            tasks.isError ||
+                            pipeline.isError
+                          }
+                          onRetry={() => {
+                            void d.newLeadsCount.refetch();
+                            void d.activeCustomers.refetch();
+                            void tasks.refetch();
+                            void pipeline.refetch();
+                          }}
                         />
                       </div>
                     </StaggerItem>
@@ -281,7 +341,11 @@ function DashboardPage() {
                           to="/leads"
                           hash="new-7d"
                         >
-                          {d.newLeads.isPending ? <Loading /> : d.newLeads.isError ? <LoadError onRetry={() => void d.newLeads.refetch()} /> : d.newLeads.data?.length ? (
+                          {d.newLeads.isPending ? (
+                            <Loading />
+                          ) : d.newLeads.isError ? (
+                            <LoadError onRetry={() => void d.newLeads.refetch()} />
+                          ) : d.newLeads.data?.length ? (
                             <ul className="divide-y divide-border/60">
                               {d.newLeads.data.slice(0, 6).map((l) => (
                                 <li key={l.id}>
@@ -297,14 +361,18 @@ function DashboardPage() {
                                         .toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-sm font-medium truncate">{leadDisplayName(l)}</div>
+                                      <div className="text-sm font-medium truncate">
+                                        {leadDisplayName(l)}
+                                      </div>
                                       <div className="text-xs text-muted-foreground truncate">
                                         {l.company_name || l.email || "—"}
                                         {l.source ? ` · ${l.source}` : ""}
                                       </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
-                                      {l.rating === "hot" && <Flame className="w-3.5 h-3.5 text-orange-500" />}
+                                      {l.rating === "hot" && (
+                                        <Flame className="w-3.5 h-3.5 text-orange-500" />
+                                      )}
                                       {typeof l.score === "number" && (
                                         <Badge variant="outline" className="text-[11px]">
                                           {l.score}
@@ -321,8 +389,17 @@ function DashboardPage() {
                           )}
                         </Widget>
 
-                        <Widget title="Assigned to me" subtitle="Your open leads" icon={Zap} to="/leads">
-                          {d.assignedLeads.isPending ? <Loading /> : d.assignedLeads.isError ? <LoadError onRetry={() => void d.assignedLeads.refetch()} /> : d.assignedLeads.data?.length ? (
+                        <Widget
+                          title="Assigned to me"
+                          subtitle="Your open leads"
+                          icon={Zap}
+                          to="/leads"
+                        >
+                          {d.assignedLeads.isPending ? (
+                            <Loading />
+                          ) : d.assignedLeads.isError ? (
+                            <LoadError onRetry={() => void d.assignedLeads.refetch()} />
+                          ) : d.assignedLeads.data?.length ? (
                             <ul className="divide-y divide-border/60">
                               {d.assignedLeads.data.slice(0, 6).map((l) => (
                                 <li key={l.id}>
@@ -338,7 +415,9 @@ function DashboardPage() {
                                         .toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-sm font-medium truncate">{leadDisplayName(l)}</div>
+                                      <div className="text-sm font-medium truncate">
+                                        {leadDisplayName(l)}
+                                      </div>
                                       <div className="text-xs text-muted-foreground truncate">
                                         {l.company_name || l.email || "—"}
                                       </div>
@@ -366,7 +445,11 @@ function DashboardPage() {
                           icon={Users}
                           to="/contacts"
                         >
-                          {d.recentContacts.isPending ? <Loading /> : d.recentContacts.isError ? <LoadError onRetry={() => void d.recentContacts.refetch()} /> : d.recentContacts.data?.length ? (
+                          {d.recentContacts.isPending ? (
+                            <Loading />
+                          ) : d.recentContacts.isError ? (
+                            <LoadError onRetry={() => void d.recentContacts.refetch()} />
+                          ) : d.recentContacts.data?.length ? (
                             <ul className="divide-y divide-border/60">
                               {d.recentContacts.data.slice(0, 6).map((c) => (
                                 <li key={c.id}>
@@ -382,7 +465,9 @@ function DashboardPage() {
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                      <div className="text-sm font-medium truncate">{contactDisplayName(c)}</div>
+                                      <div className="text-sm font-medium truncate">
+                                        {contactDisplayName(c)}
+                                      </div>
                                       <div className="text-xs text-muted-foreground truncate">
                                         {c.job_title || c.email || "—"}
                                       </div>
@@ -405,12 +490,18 @@ function DashboardPage() {
                           icon={MessagesSquare}
                           to="/inbox"
                         >
-                          {d.recentConversations.isPending ? <Loading /> : d.recentConversations.isError ? <LoadError onRetry={() => void d.recentConversations.refetch()} /> : d.recentConversations.data?.length ? (
+                          {d.recentConversations.isPending ? (
+                            <Loading />
+                          ) : d.recentConversations.isError ? (
+                            <LoadError onRetry={() => void d.recentConversations.refetch()} />
+                          ) : d.recentConversations.data?.length ? (
                             <ul className="divide-y divide-border/60">
                               {d.recentConversations.data.map((c) => {
                                 const name =
                                   c.contact?.display_name ||
-                                  [c.contact?.first_name, c.contact?.last_name].filter(Boolean).join(" ") ||
+                                  [c.contact?.first_name, c.contact?.last_name]
+                                    .filter(Boolean)
+                                    .join(" ") ||
                                   "Unknown";
                                 const initials = name
                                   .split(/\s+/)
@@ -424,7 +515,9 @@ function DashboardPage() {
                                     className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/40 transition"
                                   >
                                     <Avatar className="w-9 h-9 shrink-0">
-                                      {c.contact?.avatar_url ? <AvatarImage src={c.contact.avatar_url} /> : null}
+                                      {c.contact?.avatar_url ? (
+                                        <AvatarImage src={c.contact.avatar_url} />
+                                      ) : null}
                                       <AvatarFallback className="text-xs bg-emerald-500/10 text-emerald-600">
                                         {initials || "??"}
                                       </AvatarFallback>
@@ -468,7 +561,11 @@ function DashboardPage() {
                           subtitle="Everything that happened today"
                           icon={Activity}
                         >
-                          {d.todaysActivities.isPending ? <Loading /> : d.todaysActivities.isError ? <LoadError onRetry={() => void d.todaysActivities.refetch()} /> : d.todaysActivities.data?.length ? (
+                          {d.todaysActivities.isPending ? (
+                            <Loading />
+                          ) : d.todaysActivities.isError ? (
+                            <LoadError onRetry={() => void d.todaysActivities.refetch()} />
+                          ) : d.todaysActivities.data?.length ? (
                             <ol className="p-4 space-y-3 relative before:absolute before:left-[22px] before:top-2 before:bottom-2 before:w-px before:bg-border">
                               {d.todaysActivities.data.slice(0, 10).map((a) => (
                                 <li key={a.id} className="flex items-start gap-3 relative">
@@ -478,7 +575,9 @@ function DashboardPage() {
                                       {a.summary || a.verb.replace(/[._]/g, " ")}
                                     </div>
                                     <div className="text-xs text-muted-foreground">
-                                      <span className="capitalize">{a.verb.replace(/[._]/g, " ")}</span>
+                                      <span className="capitalize">
+                                        {a.verb.replace(/[._]/g, " ")}
+                                      </span>
                                       {a.object_type ? ` · ${a.object_type}` : ""} ·{" "}
                                       {fmtZoned(new Date(a.created_at), {
                                         hour: "2-digit",
@@ -495,21 +594,50 @@ function DashboardPage() {
                         </Widget>
 
                         <div id="dashboard-upcoming-tasks">
-                          <Widget title="Upcoming Tasks" subtitle="CRM and project work, sorted by due date" icon={Calendar}>
+                          <Widget
+                            title="Upcoming Tasks"
+                            subtitle="CRM and project work, sorted by due date"
+                            icon={Calendar}
+                          >
                             <div className="flex flex-wrap gap-3 border-b border-border/60 px-4 py-2 text-xs">
-                              {!!tasks.data?.crmUpcomingCount && <Link to="/tasks" search={(prev: any) => prev} className="text-accent hover:underline">View CRM tasks ({tasks.data.crmUpcomingCount})</Link>}
-                              {!!tasks.data?.projectUpcomingCount && <Link to="/projects/tasks" className="text-accent hover:underline">View Project tasks ({tasks.data.projectUpcomingCount})</Link>}
-                              <Link to="/settings/task-reminders" className="text-accent hover:underline">Reminder settings</Link>
+                              {!!tasks.data?.crmUpcomingCount && (
+                                <Link
+                                  to="/tasks"
+                                  search={(prev: any) => prev}
+                                  className="text-accent hover:underline"
+                                >
+                                  View CRM tasks ({tasks.data.crmUpcomingCount})
+                                </Link>
+                              )}
+                              {!!tasks.data?.projectUpcomingCount && (
+                                <Link to="/projects/tasks" className="text-accent hover:underline">
+                                  View Project tasks ({tasks.data.projectUpcomingCount})
+                                </Link>
+                              )}
+                              <Link
+                                to="/settings/task-reminders"
+                                className="text-accent hover:underline"
+                              >
+                                Reminder settings
+                              </Link>
                             </div>
                             {tasks.data && overdue > 0 && (
                               <div className="border-b border-border/60 px-4 py-2 text-xs text-amber-700 dark:text-amber-400">
-                                {overdue} overdue · CRM {tasks.data.crmOverdueCount} · Project {tasks.data.projectOverdueCount}
+                                {overdue} overdue · CRM {tasks.data.crmOverdueCount} · Project{" "}
+                                {tasks.data.projectOverdueCount}
                               </div>
                             )}
-                            {tasks.isPending ? <Loading /> : tasks.isError ? <LoadError onRetry={() => void tasks.refetch()} /> : upcoming.length ? (
+                            {tasks.isPending ? (
+                              <Loading />
+                            ) : tasks.isError ? (
+                              <LoadError onRetry={() => void tasks.refetch()} />
+                            ) : upcoming.length ? (
                               <ul className="divide-y divide-border/60">
                                 {upcoming.slice(0, 8).map((t) => (
-                                  <li key={`${t.source}:${t.id}`} className="flex items-center gap-3 px-4 py-2.5">
+                                  <li
+                                    key={`${t.source}:${t.id}`}
+                                    className="flex items-center gap-3 px-4 py-2.5"
+                                  >
                                     <div
                                       className={`w-2 h-2 rounded-full shrink-0 ${t.priority === "high" || t.priority === "urgent" ? "bg-destructive" : t.priority === "medium" ? "bg-amber-500" : "bg-muted-foreground/60"}`}
                                     />
@@ -523,11 +651,18 @@ function DashboardPage() {
                                               hour: "2-digit",
                                               minute: "2-digit",
                                             })
-                                          : t.dueDate ? formatProjectDueDate(t.dueDate) : "No date"}
+                                          : t.dueDate
+                                            ? formatProjectDueDate(t.dueDate)
+                                            : "No date"}
                                       </div>
                                     </Link>
-                                    <Badge variant="secondary" className="text-[11px] shrink-0">{t.source}</Badge>
-                                    <Badge variant="outline" className="text-[11px] capitalize shrink-0">
+                                    <Badge variant="secondary" className="text-[11px] shrink-0">
+                                      {t.source}
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-[11px] capitalize shrink-0"
+                                    >
                                       {t.status}
                                     </Badge>
                                   </li>
@@ -621,16 +756,32 @@ function StatCard({
         )}
       </div>
       <div className="mt-4">
-        <div className={compact ? "text-lg font-display font-semibold break-words" : "text-3xl font-display font-semibold"}>
-          {loading ? <span className="text-sm text-muted-foreground animate-pulse">Loading…</span> : error ? <span className="text-sm text-destructive">Could not load</span> : value}
+        <div
+          className={
+            compact
+              ? "text-lg font-display font-semibold break-words"
+              : "text-3xl font-display font-semibold"
+          }
+        >
+          {loading ? (
+            <span className="text-sm text-muted-foreground animate-pulse">Loading…</span>
+          ) : error ? (
+            <span className="text-sm text-destructive">Could not load</span>
+          ) : (
+            value
+          )}
         </div>
         <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
-        {!loading && !error && hint && <div className="text-[11px] text-muted-foreground mt-2">{hint}</div>}
+        {!loading && !error && hint && (
+          <div className="text-[11px] text-muted-foreground mt-2">{hint}</div>
+        )}
       </div>
     </div>
   );
   return to ? (
-    <Link to={to} hash={hash}>{content}</Link>
+    <Link to={to} hash={hash}>
+      {content}
+    </Link>
   ) : onClick ? (
     <button type="button" onClick={onClick} className="w-full text-left">
       {content}
@@ -685,20 +836,28 @@ function Empty({ text }: { text: string }) {
 }
 
 function Loading() {
-  return <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading…</div>;
+  return (
+    <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading…</div>
+  );
 }
 
 function LoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="p-6 text-center text-sm text-destructive">
       <p>Could not load this data.</p>
-      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={onRetry}>Retry</Button>
+      <Button type="button" variant="outline" size="sm" className="mt-2" onClick={onRetry}>
+        Retry
+      </Button>
     </div>
   );
 }
 
 function formatProjectDueDate(date: string) {
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`));
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${date}T00:00:00Z`));
 }
 
 function LeadStatusBadge({ status }: { status: string }) {
@@ -738,13 +897,19 @@ function PipelineSummary({
 
   return (
     <Widget title="Pipeline Summary" subtitle="Open deals by stage" icon={Handshake} to="/deals">
-      {loading ? <Loading /> : error ? <LoadError onRetry={onRetry} /> : data?.state === "no_pipeline" ? (
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <LoadError onRetry={onRetry} />
+      ) : data?.state === "no_pipeline" ? (
         <Empty text="No pipeline configured. Create a pipeline to get started." />
       ) : data?.state === "no_stages" ? (
         <Empty text="No stages configured in your pipeline." />
       ) : data ? (
         <div className="p-4 space-y-3">
-          {data.state === "no_open_deals" && <p className="text-sm text-muted-foreground">No open deals yet.</p>}
+          {data.state === "no_open_deals" && (
+            <p className="text-sm text-muted-foreground">No open deals yet.</p>
+          )}
           {stages.map((s) => (
             <div key={s.id}>
               <div className="flex items-center justify-between text-xs mb-1">
@@ -756,7 +921,16 @@ function PipelineSummary({
                   {data.pipelines.length > 1 ? `${s.pipelineName} · ${s.name}` : s.name}
                 </span>
                 <span className="text-muted-foreground text-right">
-                  {s.count} · {s.totals.length ? s.totals.map((total) => formatMoney(Math.round(total.amount), total.currency, { maximumFractionDigits: 0 })).join(" · ") : formatMoney(0, tenantCurrency, { maximumFractionDigits: 0 })}
+                  {s.count} ·{" "}
+                  {s.totals.length
+                    ? s.totals
+                        .map((total) =>
+                          formatMoney(Math.round(total.amount), total.currency, {
+                            maximumFractionDigits: 0,
+                          }),
+                        )
+                        .join(" · ")
+                    : formatMoney(0, tenantCurrency, { maximumFractionDigits: 0 })}
                 </span>
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
@@ -767,7 +941,11 @@ function PipelineSummary({
               </div>
             </div>
           ))}
-          {data.unassignedDeals > 0 && <p className="text-xs text-muted-foreground">{data.unassignedDeals} open deal(s) have no stage.</p>}
+          {data.unassignedDeals > 0 && (
+            <p className="text-xs text-muted-foreground">
+              {data.unassignedDeals} open deal(s) have no stage.
+            </p>
+          )}
         </div>
       ) : (
         <Empty text="No pipeline data available." />
@@ -841,22 +1019,28 @@ function AIInsights({
           <p className="text-[11px] text-muted-foreground">Automatic signals from your workspace</p>
         </div>
       </header>
-      {loading ? <Loading /> : error ? <LoadError onRetry={onRetry} /> : <ul className="p-3 space-y-2">
-        {insights.map((i, idx) => (
-          <li
-            key={idx}
-            className="flex items-start gap-3 p-3 rounded-control hover:bg-muted/40 transition"
-          >
-            <div className={`w-8 h-8 rounded-control grid place-items-center shrink-0 ${i.tone}`}>
-              <i.icon className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-medium">{i.title}</div>
-              <div className="text-xs text-muted-foreground">{i.body}</div>
-            </div>
-          </li>
-        ))}
-      </ul>}
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <LoadError onRetry={onRetry} />
+      ) : (
+        <ul className="p-3 space-y-2">
+          {insights.map((i, idx) => (
+            <li
+              key={idx}
+              className="flex items-start gap-3 p-3 rounded-control hover:bg-muted/40 transition"
+            >
+              <div className={`w-8 h-8 rounded-control grid place-items-center shrink-0 ${i.tone}`}>
+                <i.icon className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium">{i.title}</div>
+                <div className="text-xs text-muted-foreground">{i.body}</div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }

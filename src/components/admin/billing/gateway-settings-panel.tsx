@@ -58,7 +58,6 @@ function FieldError({ message }: { message?: string }) {
   return <p className="text-xs text-destructive">{message}</p>;
 }
 
-
 type Gateway = Awaited<ReturnType<typeof listGateways>>[number];
 
 const PAYMENT_METHODS = [
@@ -128,9 +127,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
   const upsertFn = useServerFn(upsertGateway);
   const deleteFn = useServerFn(deleteGateway);
 
-  const [editing, setEditing] = useState<{ mode: "add" | "edit"; form: FormState } | null>(
-    null,
-  );
+  const [editing, setEditing] = useState<{ mode: "add" | "edit"; form: FormState } | null>(null);
 
   const gatewaysQ = useQuery({
     queryKey: ["billing", "gateways"],
@@ -163,8 +160,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
   });
 
   const modeMut = useMutation({
-    mutationFn: (vars: { provider_id: string; mode: "sandbox" | "live" }) =>
-      modeFn({ data: vars }),
+    mutationFn: (vars: { provider_id: string; mode: "sandbox" | "live" }) => modeFn({ data: vars }),
     onSuccess: (res) => {
       toast.success(`${res.provider_id} switched to ${res.mode}`);
       invalidate();
@@ -209,8 +205,8 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
         <div>
           <h3 className="text-sm font-medium">Registered gateways</h3>
           <p className="text-xs text-muted-foreground">
-            {enabledCount} of {gateways.length} enabled · credentials are stored as backend
-            secret names, never as raw keys.
+            {enabledCount} of {gateways.length} enabled · credentials are stored as backend secret
+            names, never as raw keys.
           </p>
         </div>
         <Button
@@ -222,9 +218,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
         </Button>
       </div>
 
-      <div
-        className={`grid gap-3 ${compact ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}
-      >
+      <div className={`grid gap-3 ${compact ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {gatewaysQ.isLoading && (
           <Card className="p-4 text-sm text-muted-foreground">Loading gateways</Card>
         )}
@@ -264,9 +258,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   <Switch
                     checked={p.enabled}
                     aria-label={`${p.enabled ? "Disable" : "Enable"} ${p.displayName}`}
-                    onCheckedChange={(v) =>
-                      toggleMut.mutate({ provider_id: p.id, enabled: v })
-                    }
+                    onCheckedChange={(v) => toggleMut.mutate({ provider_id: p.id, enabled: v })}
                   />
                 )}
               </div>
@@ -275,10 +267,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                 {Object.entries(p.supports)
                   .filter(([, v]) => v)
                   .map(([k]) => (
-                    <span
-                      key={k}
-                      className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
-                    >
+                    <span key={k} className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                       {k.replace(/_/g, " ")}
                     </span>
                   ))}
@@ -328,10 +317,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
 
       <GatewayWebhookReplay gatewayIds={gateways.map((g) => g.id)} />
 
-
       <GatewayAuditLog />
-
-
 
       <GatewayDialog
         state={editing}
@@ -389,7 +375,6 @@ function GatewayDialog({
     onSave(form);
   };
 
-
   const toggleMethod = (m: string) => {
     const s = new Set(form.supported_methods);
     if (s.has(m)) s.delete(m);
@@ -401,10 +386,12 @@ function GatewayDialog({
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isAdd ? "Add payment gateway" : `Configure ${form.display_label || form.provider_id}`}</DialogTitle>
+          <DialogTitle>
+            {isAdd ? "Add payment gateway" : `Configure ${form.display_label || form.provider_id}`}
+          </DialogTitle>
           <DialogDescription>
-            Secrets live in the backend secret store — enter the secret <em>name</em>, not the
-            key value.
+            Secrets live in the backend secret store — enter the secret <em>name</em>, not the key
+            value.
           </DialogDescription>
         </DialogHeader>
 
@@ -445,7 +432,6 @@ function GatewayDialog({
             />
             <FieldError message={errors.display_label} />
           </div>
-
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="grid gap-1.5">
@@ -525,7 +511,6 @@ function GatewayDialog({
             <FieldError message={errors.webhook_url} />
           </div>
 
-
           <div className="grid gap-1.5">
             <Label>Supported payment methods</Label>
             <div className="flex flex-wrap gap-1.5">
@@ -562,7 +547,6 @@ function GatewayDialog({
             <FieldError message={errors.notes} />
           </div>
         </div>
-
 
         <DialogFooter className="gap-2 sm:justify-between">
           <div>

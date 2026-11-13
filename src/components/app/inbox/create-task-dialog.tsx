@@ -185,7 +185,10 @@ export function CreateTaskDialog({ open, onOpenChange, conversation }: Props) {
             <div className="min-w-0 space-y-1.5">
               <Label htmlFor="task-project">Project</Label>
               <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger id="task-project" className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate">
+                <SelectTrigger
+                  id="task-project"
+                  className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate"
+                >
                   <SelectValue placeholder="Choose a project" />
                 </SelectTrigger>
                 <SelectContent className="w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]">

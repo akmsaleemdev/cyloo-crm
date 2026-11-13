@@ -46,11 +46,8 @@ export const backfillLivechatInbox = createServerFn({ method: "POST" })
     if (!ws) throw new Error("Workspace not found");
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const {
-      ensureConversationForSession,
-      bridgeMessage,
-      markConversationHandoff,
-    } = await import("@/lib/livechat/inbox-bridge.server");
+    const { ensureConversationForSession, bridgeMessage, markConversationHandoff } =
+      await import("@/lib/livechat/inbox-bridge.server");
 
     const { data: rows, error } = await supabaseAdmin
       .from("chatbot_sessions")
@@ -64,7 +61,7 @@ export const backfillLivechatInbox = createServerFn({ method: "POST" })
       .limit(data.limit ?? 200);
     if (error) throw new Error(error.message);
 
-    const sessions = ((rows ?? []) as unknown) as SessionRow[];
+    const sessions = (rows ?? []) as unknown as SessionRow[];
     let linked = 0;
     let messages = 0;
 
@@ -90,7 +87,7 @@ export const backfillLivechatInbox = createServerFn({ method: "POST" })
         .order("created_at", { ascending: true })
         .limit(500);
 
-      for (const m of (((msgs ?? []) as unknown) as { role: string; content: string }[])) {
+      for (const m of (msgs ?? []) as unknown as { role: string; content: string }[]) {
         if (!m.content?.trim() || m.role === "system" || m.role === "tool") continue;
         await bridgeMessage({
           workspaceId: data.workspaceId,

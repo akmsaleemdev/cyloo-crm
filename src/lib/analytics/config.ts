@@ -7,7 +7,14 @@
  * GTM container, PostHog project token, Plausible domain).
  */
 
-export const ANALYTICS_PROVIDERS = ["none", "ga4", "gtm", "posthog", "plausible", "custom"] as const;
+export const ANALYTICS_PROVIDERS = [
+  "none",
+  "ga4",
+  "gtm",
+  "posthog",
+  "plausible",
+  "custom",
+] as const;
 
 export type AnalyticsProvider = (typeof ANALYTICS_PROVIDERS)[number];
 

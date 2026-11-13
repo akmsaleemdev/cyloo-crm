@@ -11,7 +11,11 @@ import { createHmac } from "node:crypto";
 import type { MeetingProvider, MeetingAccount, MeetingRequest, MeetingArtifact } from "./types";
 
 function b64url(input: Buffer | string): string {
-  return Buffer.from(input).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+  return Buffer.from(input)
+    .toString("base64")
+    .replace(/=/g, "")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_");
 }
 
 /** Mint a LiveKit-compatible room-grant JWT (HS256). */
@@ -57,7 +61,10 @@ function randomRoom(): string {
 
 export const livekitProvider: MeetingProvider = {
   kind: "livekit",
-  async createMeeting(account: MeetingAccount | null, req: MeetingRequest): Promise<MeetingArtifact> {
+  async createMeeting(
+    account: MeetingAccount | null,
+    req: MeetingRequest,
+  ): Promise<MeetingArtifact> {
     const room = `booking-${req.appointment_id.slice(0, 8)}-${randomRoom()}`;
     const url = account?.config.livekit_url ?? "";
     // The join URL is the app's own LiveKit stage page; the page mints a

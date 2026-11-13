@@ -3,7 +3,12 @@
  * implementation. Add Twilio / 360dialog here later; nothing else changes.
  */
 
-import type { MessagingProvider, ProviderName, ChannelAccountRecord, ProviderCredentials } from "./types";
+import type {
+  MessagingProvider,
+  ProviderName,
+  ChannelAccountRecord,
+  ProviderCredentials,
+} from "./types";
 import { whatsappCloudProvider } from "./providers/whatsapp-cloud.server";
 import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import { ProviderError } from "./errors";
@@ -11,8 +16,8 @@ import { sbAny } from "@/lib/supabase/untyped";
 
 const registry: Record<ProviderName, MessagingProvider | undefined> = {
   whatsapp_cloud: whatsappCloudProvider,
-  twilio: undefined,       // reserved
-  dialog360: undefined,    // reserved
+  twilio: undefined, // reserved
+  dialog360: undefined, // reserved
   custom: undefined,
 };
 
@@ -31,11 +36,19 @@ export async function loadChannelAccount(id: string): Promise<ChannelAccountReco
     .maybeSingle();
   if (error || !data) throw new ProviderError("not_found", `channel account ${id} not found`);
   const row = data as unknown as {
-    id: string; workspace_id: string; provider: ProviderName;
-    phone_number_id: string | null; waba_id: string | null; verify_token: string | null;
-    webhook_signature_algo: string; access_token_secret_name: string | null;
-    app_secret_name: string | null; external_account_id: string | null;
-    status: string | null; display_name: string | null; phone_number: string | null;
+    id: string;
+    workspace_id: string;
+    provider: ProviderName;
+    phone_number_id: string | null;
+    waba_id: string | null;
+    verify_token: string | null;
+    webhook_signature_algo: string;
+    access_token_secret_name: string | null;
+    app_secret_name: string | null;
+    external_account_id: string | null;
+    status: string | null;
+    display_name: string | null;
+    phone_number: string | null;
   };
   return {
     id: row.id,
@@ -64,10 +77,7 @@ export async function loadChannelAccount(id: string): Promise<ChannelAccountReco
  *  - the primary name is absent but a conventional alias is present; we try
  *    the fallback names in order.
  */
-export function resolveSecretByName(
-  primary: string,
-  fallbacks: string[] = [],
-): string | undefined {
+export function resolveSecretByName(primary: string, fallbacks: string[] = []): string | undefined {
   const names = [primary, ...fallbacks];
   for (const name of names) {
     if (!name) continue;
@@ -138,7 +148,10 @@ export async function routeWebhookToAccount(
   if (routing.phoneNumberId) filters.phone_number_id = routing.phoneNumberId;
   if (routing.externalAccountId) filters.external_account_id = routing.externalAccountId;
 
-  let query = sbAny(supabaseAdmin).from("channel_accounts" as never).select("id").eq("provider", provider);
+  let query = sbAny(supabaseAdmin)
+    .from("channel_accounts" as never)
+    .select("id")
+    .eq("provider", provider);
   if (routing.phoneNumberId) query = query.eq("phone_number_id", routing.phoneNumberId);
   if (routing.externalAccountId) query = query.eq("external_account_id", routing.externalAccountId);
   const { data } = await query.limit(1).maybeSingle();

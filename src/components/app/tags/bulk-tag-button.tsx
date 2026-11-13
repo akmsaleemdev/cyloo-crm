@@ -21,9 +21,7 @@ export function BulkTagButton({ entityType, entityIds, disabled }: Props) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const filtered = tags.filter((t) =>
-    t.name.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const filtered = tags.filter((t) => t.name.toLowerCase().includes(search.trim().toLowerCase()));
 
   const apply = async (tagId: string) => {
     try {

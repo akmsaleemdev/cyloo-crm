@@ -25,9 +25,7 @@ export interface WebhookAccountStats {
 
 export const getWhatsAppWebhookStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     // Last 7 days is enough for a live health signal.
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -175,7 +173,9 @@ export const testWhatsAppWebhook = createServerFn({ method: "POST" })
     );
 
     if (accountError) throw new Error(accountError.message);
-    const account = ((secretRows ?? []) as unknown as Array<{ id: string; verify_token: string | null }>)[0] ?? null;
+    const account =
+      ((secretRows ?? []) as unknown as Array<{ id: string; verify_token: string | null }>)[0] ??
+      null;
     const verifyToken = (account as { verify_token?: string | null } | null)?.verify_token;
 
     // Recent delivery context, regardless of the challenge outcome.
@@ -295,9 +295,9 @@ export const listWhatsAppFailedWebhooks = createServerFn({ method: "GET" })
 
     if (error) throw new Error(error.message);
 
-    const events = ((rows ?? []) as unknown as Array<
-      Omit<FailedWebhookRow, "payload"> & { payload?: unknown }
-    >).map((row) => ({
+    const events = (
+      (rows ?? []) as unknown as Array<Omit<FailedWebhookRow, "payload"> & { payload?: unknown }>
+    ).map((row) => ({
       ...row,
       payload:
         data.includePayload && row.payload !== undefined

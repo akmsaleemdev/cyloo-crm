@@ -42,7 +42,8 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
     if (campaign.status === "archived" || campaign.status === "cancelled") {
       throw new Error(`Cannot enqueue a ${campaign.status} campaign`);
     }
-    if (["pending", "rejected"].includes(campaign.approval_status)) throw new Error("Campaign approval is required before sending.");
+    if (["pending", "rejected"].includes(campaign.approval_status))
+      throw new Error("Campaign approval is required before sending.");
     // Running / scheduled campaigns may be re-enqueued to append newly
     // eligible recipients or reschedule pending queue rows. We dedupe
     // against existing campaign_recipients below so the same contact is
@@ -61,11 +62,18 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
     let contactIds: string[] = [];
 
     if (campaign.contact_list_id) {
-      const { data: list, error: listError } = await supabase.from("contact_lists").select("id")
-        .eq("id", campaign.contact_list_id).eq("workspace_id", wsId).maybeSingle();
+      const { data: list, error: listError } = await supabase
+        .from("contact_lists")
+        .select("id")
+        .eq("id", campaign.contact_list_id)
+        .eq("workspace_id", wsId)
+        .maybeSingle();
       if (listError) throw listError;
       if (!list) throw new Error("Contact list not found in this workspace.");
-      const { data: members, error } = await supabase.from("contact_list_members").select("contact_id").eq("list_id", list.id);
+      const { data: members, error } = await supabase
+        .from("contact_list_members")
+        .select("contact_id")
+        .eq("list_id", list.id);
       if (error) throw error;
       contactIds = (members ?? []).map((r: Any) => r.contact_id);
     } else if (campaign.segment_id) {
@@ -265,14 +273,20 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
         ? {}
         : { started_at: nextStatus === "running" ? new Date().toISOString() : null }),
     };
-    const { error: statusError } = await sbAny(supabase).from("campaigns").update(updatePayload).eq("id", campaign.id);
+    const { error: statusError } = await sbAny(supabase)
+      .from("campaigns")
+      .update(updatePayload)
+      .eq("id", campaign.id);
 
     if (!statusError && !isAppend) {
       try {
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
         const admin = sbAny(supabaseAdmin);
         const { data: workspace, error: workspaceError } = await admin
-          .from("workspaces").select("organization_id").eq("id", wsId).single();
+          .from("workspaces")
+          .select("organization_id")
+          .eq("id", wsId)
+          .single();
         if (workspaceError) throw workspaceError;
         const { error: notificationError } = await admin.from("notifications").insert({
           user_id: userId,
@@ -280,7 +294,10 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
           channel: "in_app",
           status: "unread",
           category: "campaign",
-          title: nextStatus === "scheduled" ? `Campaign scheduled: ${campaign.name}` : `Campaign started: ${campaign.name}`,
+          title:
+            nextStatus === "scheduled"
+              ? `Campaign scheduled: ${campaign.name}`
+              : `Campaign started: ${campaign.name}`,
           body: `${resolvedTotal} recipients`,
           action_url: `/campaigns/${campaign.id}`,
           data: { campaign_id: campaign.id, workspace_id: wsId },
@@ -291,12 +308,14 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
       }
     }
 
-    await sbAny(supabase).from("campaign_events").insert({
-      workspace_id: wsId,
-      campaign_id: campaign.id,
-      event_type: "enqueued",
-      payload: { enqueued, actor: userId },
-    } as Any);
+    await sbAny(supabase)
+      .from("campaign_events")
+      .insert({
+        workspace_id: wsId,
+        campaign_id: campaign.id,
+        event_type: "enqueued",
+        payload: { enqueued, actor: userId },
+      } as Any);
 
     return { ok: true, enqueued, skipped: ineligible.length };
   });
@@ -412,9 +431,7 @@ export const retryFailedRecipients = createServerFn({ method: "POST" })
     let enqueued = 0;
     for (let i = 0; i < queueRows.length; i += chunk) {
       const slice = queueRows.slice(i, i + chunk);
-      const { error: qErr } = await supabase
-        .from("campaign_dispatch_queue")
-        .insert(slice as Any);
+      const { error: qErr } = await supabase.from("campaign_dispatch_queue").insert(slice as Any);
       if (qErr) throw qErr;
       enqueued += slice.length;
     }
@@ -427,12 +444,14 @@ export const retryFailedRecipients = createServerFn({ method: "POST" })
         .eq("id", campaign.id);
     }
 
-    await sbAny(supabase).from("campaign_events").insert({
-      workspace_id: wsId,
-      campaign_id: campaign.id,
-      event_type: "retry_failed",
-      payload: { retried: enqueued, actor: userId },
-    } as Any);
+    await sbAny(supabase)
+      .from("campaign_events")
+      .insert({
+        workspace_id: wsId,
+        campaign_id: campaign.id,
+        event_type: "retry_failed",
+        payload: { retried: enqueued, actor: userId },
+      } as Any);
 
     return { ok: true, retried: enqueued };
   });
@@ -548,7 +567,9 @@ export const recomputeSegment = createServerFn({ method: "POST" })
           segment_id: seg.id,
           contact_id: cid,
         }));
-        await sbAny(supabase).from("segment_members").insert(chunk as Any);
+        await sbAny(supabase)
+          .from("segment_members")
+          .insert(chunk as Any);
       }
     }
     await supabase

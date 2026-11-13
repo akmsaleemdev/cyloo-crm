@@ -130,20 +130,26 @@ export function SecretValidationAlert({ validation }: { validation: SecretNameVa
       </AlertTitle>
       <AlertDescription className="min-w-0 max-w-full space-y-3 text-xs leading-relaxed break-words whitespace-normal [overflow-wrap:anywhere]">
         {validation.missing.map((s) => (
-          <div key={s.name} className="min-w-0 max-w-full space-y-1 break-words [overflow-wrap:anywhere]">
+          <div
+            key={s.name}
+            className="min-w-0 max-w-full space-y-1 break-words [overflow-wrap:anywhere]"
+          >
             <p className="min-w-0 max-w-full whitespace-normal break-words [overflow-wrap:anywhere]">
               <SecretName>{s.name}</SecretName>{" "}
-              {s.severity === "required" ? "(required)" : "(recommended)"} does not exist in
-              Cloud → Secrets.
+              {s.severity === "required" ? "(required)" : "(recommended)"} does not exist in Cloud →
+              Secrets.
             </p>
-            <p className="min-w-0 max-w-full whitespace-normal break-words text-muted-foreground [overflow-wrap:anywhere]">{s.purpose}</p>
+            <p className="min-w-0 max-w-full whitespace-normal break-words text-muted-foreground [overflow-wrap:anywhere]">
+              {s.purpose}
+            </p>
             <p className="min-w-0 max-w-full whitespace-normal break-words [overflow-wrap:anywhere]">
               <span className="font-medium">How to fix: </span>
               {s.remedy ? (
                 s.remedy
               ) : (
                 <>
-                  Save the value in Cloud → Secrets using exactly the name <SecretName>{s.name}</SecretName>.
+                  Save the value in Cloud → Secrets using exactly the name{" "}
+                  <SecretName>{s.name}</SecretName>.
                 </>
               )}
             </p>

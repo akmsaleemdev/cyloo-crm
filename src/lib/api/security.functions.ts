@@ -18,8 +18,14 @@ import { sbAny } from "@/lib/supabase/untyped";
 
 const CorsSchema = z.object({
   allowed_origins: z.array(z.string()).max(50).default(["*"]),
-  allowed_methods: z.array(z.string()).max(15).default(["GET", "POST", "PATCH", "DELETE", "OPTIONS"]),
-  allowed_headers: z.array(z.string()).max(50).default(["Authorization", "Content-Type", "Idempotency-Key"]),
+  allowed_methods: z
+    .array(z.string())
+    .max(15)
+    .default(["GET", "POST", "PATCH", "DELETE", "OPTIONS"]),
+  allowed_headers: z
+    .array(z.string())
+    .max(50)
+    .default(["Authorization", "Content-Type", "Idempotency-Key"]),
   allow_credentials: z.boolean().default(false),
   max_age_seconds: z.number().int().min(0).max(86400).default(86400),
 });
@@ -83,7 +89,10 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
             .eq("organization_id", scope.organizationId)
         : Promise.resolve({ data: [] }),
       scope.workspaceId
-        ? sbAny(supabase).from("ip_allowlists").select("id, applies_to, is_active").eq("workspace_id", scope.workspaceId)
+        ? sbAny(supabase)
+            .from("ip_allowlists")
+            .select("id, applies_to, is_active")
+            .eq("workspace_id", scope.workspaceId)
         : Promise.resolve({ data: [] }),
       scope.workspaceId
         ? supabase
@@ -107,7 +116,10 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
             .eq("organization_id", scope.organizationId)
         : Promise.resolve({ data: [] }),
       scope.organizationId
-        ? sbAny(supabase).from("webhook_endpoints").select("id, is_active").eq("organization_id", scope.organizationId)
+        ? sbAny(supabase)
+            .from("webhook_endpoints")
+            .select("id, is_active")
+            .eq("organization_id", scope.organizationId)
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -125,16 +137,27 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     const webhooks: any[] = webhooksRes.data ?? [];
 
     const now = Date.now();
-    const expiringSoon = keys.filter((k) => k.expires_at && !k.revoked_at && new Date(k.expires_at).getTime() - now < 14 * 86400_000).length;
+    const expiringSoon = keys.filter(
+      (k) =>
+        k.expires_at && !k.revoked_at && new Date(k.expires_at).getTime() - now < 14 * 86400_000,
+    ).length;
     const active = keys.filter((k) => !k.revoked_at).length;
-    const stale = keys.filter((k) => !k.revoked_at && (!k.last_used_at || now - new Date(k.last_used_at).getTime() > 90 * 86400_000)).length;
+    const stale = keys.filter(
+      (k) =>
+        !k.revoked_at &&
+        (!k.last_used_at || now - new Date(k.last_used_at).getTime() > 90 * 86400_000),
+    ).length;
     const rotated = keys.filter((k) => k.rotated_from).length;
 
     return {
       keys: { total: keys.length, active, expiring_soon: expiringSoon, stale, rotated },
       ip_rules: {
         total: ip.length,
-        allow: ip.filter((r) => r.applies_to === "allow" || r.applies_to === "api" || r.applies_to === "admin").filter((r) => r.is_active).length,
+        allow: ip
+          .filter(
+            (r) => r.applies_to === "allow" || r.applies_to === "api" || r.applies_to === "admin",
+          )
+          .filter((r) => r.is_active).length,
         deny: ip.filter((r) => r.applies_to === "deny").filter((r) => r.is_active).length,
       },
       alerts: {
@@ -148,7 +171,9 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
         used: Number(q.used ?? 0),
         included: Number(q.included ?? 0),
         hard_limit: q.hard_limit == null ? null : Number(q.hard_limit),
-        pct: q.included ? Math.min(100, Math.round((Number(q.used ?? 0) / Number(q.included)) * 100)) : 0,
+        pct: q.included
+          ? Math.min(100, Math.round((Number(q.used ?? 0) / Number(q.included)) * 100))
+          : 0,
         period_end: q.period_end as string | null,
       })),
       webhooks: { total: webhooks.length, active: webhooks.filter((w) => w.is_active).length },
@@ -196,14 +221,38 @@ export const upsertIpRule = createServerFn({ method: "POST" })
       created_by: userId,
     };
     if (data.id) {
-      const { error } = await sbAny(supabase).from("ip_allowlists").update(payload).eq("id", data.id).eq("workspace_id", workspaceId);
+      const { error } = await sbAny(supabase)
+        .from("ip_allowlists")
+        .update(payload)
+        .eq("id", data.id)
+        .eq("workspace_id", workspaceId);
       if (error) throw error;
-      await logAudit(supabase, workspaceId, userId, "ip_rule.update", "ip_allowlist", data.id, payload);
+      await logAudit(
+        supabase,
+        workspaceId,
+        userId,
+        "ip_rule.update",
+        "ip_allowlist",
+        data.id,
+        payload,
+      );
       return { id: data.id };
     }
-    const { data: created, error } = await sbAny(supabase).from("ip_allowlists").insert(payload).select("id").maybeSingle();
+    const { data: created, error } = await sbAny(supabase)
+      .from("ip_allowlists")
+      .insert(payload)
+      .select("id")
+      .maybeSingle();
     if (error) throw error;
-    await logAudit(supabase, workspaceId, userId, "ip_rule.create", "ip_allowlist", created?.id ?? null, payload);
+    await logAudit(
+      supabase,
+      workspaceId,
+      userId,
+      "ip_rule.create",
+      "ip_allowlist",
+      created?.id ?? null,
+      payload,
+    );
     return { id: created?.id as string };
   });
 
@@ -215,7 +264,11 @@ export const deleteIpRule = createServerFn({ method: "POST" })
     const { workspaceId } = await getScope(supabase, userId);
     if (!workspaceId) throw new Error("No workspace");
     await assertSecurityAdmin(supabase, userId);
-    const { error } = await sbAny(supabase).from("ip_allowlists").delete().eq("id", data.id).eq("workspace_id", workspaceId);
+    const { error } = await sbAny(supabase)
+      .from("ip_allowlists")
+      .delete()
+      .eq("id", data.id)
+      .eq("workspace_id", workspaceId);
     if (error) throw error;
     await logAudit(supabase, workspaceId, userId, "ip_rule.delete", "ip_allowlist", data.id, null);
     return { ok: true };
@@ -275,7 +328,8 @@ export const saveCorsConfig = createServerFn({ method: "POST" })
       });
       if (error) throw error;
     }
-    if (workspaceId) await logAudit(supabase, workspaceId, userId, "cors.update", "settings", null, data);
+    if (workspaceId)
+      await logAudit(supabase, workspaceId, userId, "cors.update", "settings", null, data);
     return { ok: true };
   });
 
@@ -295,7 +349,12 @@ export type SecurityEventRow = {
 export const listSecurityEvents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({ severity: z.string().optional(), limit: z.number().int().min(1).max(200).default(100) }).parse(v),
+    z
+      .object({
+        severity: z.string().optional(),
+        limit: z.number().int().min(1).max(200).default(100),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }): Promise<SecurityEventRow[]> => {
     const { supabase, userId } = context;
@@ -336,7 +395,9 @@ export type AuditLogRow = {
 
 export const listAuditLogs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({ limit: z.number().int().min(1).max(200).default(100) }).parse(v))
+  .validator((v: unknown) =>
+    z.object({ limit: z.number().int().min(1).max(200).default(100) }).parse(v),
+  )
   .handler(async ({ data, context }): Promise<AuditLogRow[]> => {
     const { supabase, userId } = context;
     const { workspaceId, organizationId } = await getScope(supabase, userId);
@@ -362,7 +423,6 @@ export const listAuditLogs = createServerFn({ method: "POST" })
       metadata_json: r.metadata == null ? null : JSON.stringify(r.metadata),
     }));
   });
-
 
 // -------- API key rotation --------
 
@@ -435,12 +495,18 @@ export const listAbuseSignals = createServerFn({ method: "GET" })
       .gte("created_at", since)
       .limit(5000);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rows: any[] = (data ?? []).map((r: any) => ({ ...r, ip: r.ip == null ? null : String(r.ip) }));
+    const rows: any[] = (data ?? []).map((r: any) => ({
+      ...r,
+      ip: r.ip == null ? null : String(r.ip),
+    }));
     const badRows = rows.filter((r) => (r.status_code ?? 0) === 429 || (r.status_code ?? 0) >= 400);
     return {
       top_ips: rankBy(badRows, (r) => r.ip ?? "unknown").slice(0, 10),
       top_paths: rankBy(badRows, (r) => r.path ?? "/").slice(0, 10),
-      top_keys: rankBy(badRows.filter((r) => r.api_key_id), (r) => r.api_key_id as string).slice(0, 10),
+      top_keys: rankBy(
+        badRows.filter((r) => r.api_key_id),
+        (r) => r.api_key_id as string,
+      ).slice(0, 10),
     };
   });
 
@@ -485,19 +551,23 @@ async function logAudit(
   void supabase;
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { error } = await sbAny(supabaseAdmin).from("audit_logs").insert({
-      workspace_id: workspaceId,
-      actor_id: userId,
-      // audit_logs.action is the audit_action enum (create/update/delete/...);
-      // map the dotted event name onto it and keep the full name in metadata.
-      action: toAuditAction(action),
-      resource_type: resourceType,
-      resource_id: resourceId,
-      metadata: {
-        event: action,
-        ...(metadata && typeof metadata === "object" ? (metadata as Record<string, unknown>) : {}),
-      },
-    });
+    const { error } = await sbAny(supabaseAdmin)
+      .from("audit_logs")
+      .insert({
+        workspace_id: workspaceId,
+        actor_id: userId,
+        // audit_logs.action is the audit_action enum (create/update/delete/...);
+        // map the dotted event name onto it and keep the full name in metadata.
+        action: toAuditAction(action),
+        resource_type: resourceType,
+        resource_id: resourceId,
+        metadata: {
+          event: action,
+          ...(metadata && typeof metadata === "object"
+            ? (metadata as Record<string, unknown>)
+            : {}),
+        },
+      });
     if (error) console.error("[audit_logs] insert failed", { action, error: error.message });
   } catch (e) {
     // audit failures never break the calling operation
@@ -551,7 +621,14 @@ function emptyOverview() {
     ip_rules: { total: 0, allow: 0, deny: 0 },
     alerts: { total_7d: 0, critical: 0, high: 0 },
     abuse: { total: 0, errors: 0, rate_limited: 0, unique_ips: 0 },
-    quotas: [] as Array<{ meter: string; used: number; included: number; hard_limit: number | null; pct: number; period_end: string | null }>,
+    quotas: [] as Array<{
+      meter: string;
+      used: number;
+      included: number;
+      hard_limit: number | null;
+      pct: number;
+      period_end: string | null;
+    }>,
     webhooks: { total: 0, active: 0 },
   };
 }

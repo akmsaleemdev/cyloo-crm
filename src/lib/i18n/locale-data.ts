@@ -85,8 +85,34 @@ export const DATE_FORMAT_OPTIONS = [
 ] as const;
 
 /** Sensible starting set so a fresh platform is not empty. */
-export const COMMON_LANGUAGES = ["en", "es", "fr", "de", "pt", "it", "nl", "ar", "hi", "bn", "zh", "ja"];
-export const COMMON_CURRENCIES = ["USD", "EUR", "GBP", "AED", "SAR", "INR", "BDT", "BRL", "CAD", "AUD", "JPY", "CNY"];
+export const COMMON_LANGUAGES = [
+  "en",
+  "es",
+  "fr",
+  "de",
+  "pt",
+  "it",
+  "nl",
+  "ar",
+  "hi",
+  "bn",
+  "zh",
+  "ja",
+];
+export const COMMON_CURRENCIES = [
+  "USD",
+  "EUR",
+  "GBP",
+  "AED",
+  "SAR",
+  "INR",
+  "BDT",
+  "BRL",
+  "CAD",
+  "AUD",
+  "JPY",
+  "CNY",
+];
 export const COMMON_TIMEZONES = [
   "UTC",
   "America/New_York",

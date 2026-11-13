@@ -115,7 +115,6 @@ export async function defaultGatewayId(
   );
 }
 
-
 /** Current environment mode per gateway (`sandbox` | `live`). */
 export async function gatewayModes(supabase: Client): Promise<Record<string, string>> {
   const rows = (await platformGateways(supabase)) as unknown as Array<{

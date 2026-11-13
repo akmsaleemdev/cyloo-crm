@@ -407,7 +407,9 @@ export function useConversations(params: ListParams) {
           q = q.is("last_message_at", null);
           q = ascending ? q.gt("id", id) : q.lt("id", id);
         } else {
-          q = q.or(`last_message_at.${cmp}.${lma},and(last_message_at.eq.${lma},id.${cmp}.${id}),last_message_at.is.null`);
+          q = q.or(
+            `last_message_at.${cmp}.${lma},and(last_message_at.eq.${lma},id.${cmp}.${id}),last_message_at.is.null`,
+          );
         }
         q = q.limit(PAGE_SIZE);
       } else if (!useKeyset) {

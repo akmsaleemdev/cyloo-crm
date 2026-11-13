@@ -24,10 +24,7 @@ describe("Tenant Access Audit Trail", () => {
   });
 
   it("should have tenant audit event types", () => {
-    const auditEventPath = resolve(
-      SRC_DIR,
-      "lib/tenant/tenant-audit-event.ts",
-    );
+    const auditEventPath = resolve(SRC_DIR, "lib/tenant/tenant-audit-event.ts");
     if (existsSync(auditEventPath)) {
       const content = readFileSync(auditEventPath, "utf-8");
       expect(content).toContain("export");
@@ -35,36 +32,24 @@ describe("Tenant Access Audit Trail", () => {
   });
 
   it("should have tenant audit functions", () => {
-    const auditFnPath = resolve(
-      SRC_DIR,
-      "lib/tenant/tenant-audit.functions.ts",
-    );
+    const auditFnPath = resolve(SRC_DIR, "lib/tenant/tenant-audit.functions.ts");
     expect(existsSync(auditFnPath)).toBe(true);
   });
 
   it("should have org switch audit functions", () => {
-    const orgSwitchPath = resolve(
-      SRC_DIR,
-      "lib/org-switch-audit.functions.ts",
-    );
+    const orgSwitchPath = resolve(SRC_DIR, "lib/org-switch-audit.functions.ts");
     expect(existsSync(orgSwitchPath)).toBe(true);
   });
 });
 
 describe("Tenant Audit Event Recording", () => {
   it("should export audit event recording functions", () => {
-    const auditFnPath = resolve(
-      SRC_DIR,
-      "lib/tenant/tenant-audit.functions.ts",
-    );
+    const auditFnPath = resolve(SRC_DIR, "lib/tenant/tenant-audit.functions.ts");
     if (existsSync(auditFnPath)) {
       const content = readFileSync(auditFnPath, "utf-8");
       // Should have createServerFn or export functions
-      const hasExports =
-        content.includes("export") ||
-        content.includes("createServerFn");
+      const hasExports = content.includes("export") || content.includes("createServerFn");
       expect(hasExports).toBe(true);
     }
   });
 });
-

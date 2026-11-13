@@ -21,9 +21,13 @@ export function Breadcrumbs({ homeTo = "/dashboard" }: { homeTo?: string }) {
           <span key={`${c.to ?? "group"}-${i}`} className="inline-flex items-center gap-1">
             <ChevronRight className="w-3 h-3 opacity-60" />
             {last ? (
-              <span aria-current="page" className="text-foreground font-medium">{c.label}</span>
+              <span aria-current="page" className="text-foreground font-medium">
+                {c.label}
+              </span>
             ) : c.to ? (
-              <Link to={c.to} className="hover:text-foreground">{c.label}</Link>
+              <Link to={c.to} className="hover:text-foreground">
+                {c.label}
+              </Link>
             ) : (
               <span className="text-muted-foreground">{c.label}</span>
             )}

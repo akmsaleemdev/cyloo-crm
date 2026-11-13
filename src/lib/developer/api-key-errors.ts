@@ -76,7 +76,12 @@ function classify(e: unknown, action: "create" | "revoke"): ApiKeyErrorInfo {
   }
 
   // --- Auth --------------------------------------------------------------
-  if (status === 401 || msg.includes("unauthorized") || msg.includes("jwt expired") || msg.includes("invalid token")) {
+  if (
+    status === 401 ||
+    msg.includes("unauthorized") ||
+    msg.includes("jwt expired") ||
+    msg.includes("invalid token")
+  ) {
     return of(
       "Your session expired",
       "Sign in again, then retry — your login token is no longer valid.",
@@ -99,10 +104,14 @@ function classify(e: unknown, action: "create" | "revoke"): ApiKeyErrorInfo {
   }
 
   // --- Missing table grants ---------------------------------------------
-  if (msg.includes("permission denied for table") || msg.includes("permission denied for relation")) {
+  if (
+    msg.includes("permission denied for table") ||
+    msg.includes("permission denied for relation")
+  ) {
     return of(
       "API keys aren't available yet",
-      "The API keys storage isn't configured for this workspace. Contact support with this message: " + raw,
+      "The API keys storage isn't configured for this workspace. Contact support with this message: " +
+        raw,
     );
   }
 
@@ -115,7 +124,10 @@ function classify(e: unknown, action: "create" | "revoke"): ApiKeyErrorInfo {
   }
 
   // --- Validation --------------------------------------------------------
-  if (msg.includes("string must contain at least 1") || msg.includes("too_small") && msg.includes("name")) {
+  if (
+    msg.includes("string must contain at least 1") ||
+    (msg.includes("too_small") && msg.includes("name"))
+  ) {
     return of("Name is required", "Give the key a name so you can recognise it later.", "name");
   }
   if (msg.includes("at most 80")) {
@@ -140,11 +152,7 @@ function classify(e: unknown, action: "create" | "revoke"): ApiKeyErrorInfo {
 
   // --- Postgres specifics ------------------------------------------------
   if (code === "23505" || msg.includes("duplicate key value")) {
-    return of(
-      "A key with that name already exists",
-      "Pick a different name for this key.",
-      "name",
-    );
+    return of("A key with that name already exists", "Pick a different name for this key.", "name");
   }
   if (code === "23503" || msg.includes("foreign key")) {
     return of(

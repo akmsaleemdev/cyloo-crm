@@ -44,7 +44,9 @@ export async function computeRevenueSnapshot(
 
   const subQuery = supabase
     .from("subscriptions")
-    .select("id, status, seats, created_at, canceled_at, plans!inner(price_cents, currency, interval)")
+    .select(
+      "id, status, seats, created_at, canceled_at, plans!inner(price_cents, currency, interval)",
+    )
     .eq("plans.currency", currency);
   if (opts.organization_id) subQuery.eq("organization_id", opts.organization_id);
   const subsRes = await subQuery;
@@ -59,8 +61,10 @@ export async function computeRevenueSnapshot(
   for (const s of subs) {
     const factor = MONTHLY_FACTOR[s.plans.interval as string] ?? 1;
     const monthly = Math.round(s.plans.price_cents * (s.seats ?? 1) * factor);
-    if (s.status === "active") { active++; mrr_cents += monthly; }
-    else if (s.status === "trialing") trialing++;
+    if (s.status === "active") {
+      active++;
+      mrr_cents += monthly;
+    } else if (s.status === "trialing") trialing++;
     if (s.created_at && s.created_at >= dayStart && s.created_at <= dayEnd) newCount++;
     if (s.canceled_at && s.canceled_at >= dayStart && s.canceled_at <= dayEnd) churned++;
   }
@@ -73,7 +77,10 @@ export async function computeRevenueSnapshot(
     .lte("paid_at", dayEnd);
   if (opts.organization_id) invQuery.eq("organization_id", opts.organization_id);
   const invRes = await invQuery;
-  const gross = (invRes.data ?? []).reduce((s: number, i: any) => s + (i.amount_paid_cents ?? 0), 0);
+  const gross = (invRes.data ?? []).reduce(
+    (s: number, i: any) => s + (i.amount_paid_cents ?? 0),
+    0,
+  );
 
   const refundsQuery = supabase
     .from("billing_payment_attempts")
@@ -84,7 +91,10 @@ export async function computeRevenueSnapshot(
     .lte("refunded_at", dayEnd);
   if (opts.organization_id) refundsQuery.eq("organization_id", opts.organization_id);
   const refRes = await refundsQuery;
-  const refunds = (refRes.data ?? []).reduce((s: number, r: any) => s + (r.refunded_amount_cents ?? 0), 0);
+  const refunds = (refRes.data ?? []).reduce(
+    (s: number, r: any) => s + (r.refunded_amount_cents ?? 0),
+    0,
+  );
 
   // Simple monthly churn rate = churned / active_at_start.
   const churn_rate = active + churned === 0 ? 0 : Number((churned / (active + churned)).toFixed(4));

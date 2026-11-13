@@ -48,7 +48,9 @@ export function AiMarketingAssistant({ campaignId }: { campaignId?: string }) {
       <div className="px-4 py-3 border-b border-border flex items-center gap-2 bg-gradient-to-r from-primary/10 via-transparent to-transparent">
         <Sparkles className="w-4 h-4 text-primary" />
         <div className="font-medium">AI marketing assistant</div>
-        <div className="ml-auto text-xs text-muted-foreground">Continuously optimizes campaigns</div>
+        <div className="ml-auto text-xs text-muted-foreground">
+          Continuously optimizes campaigns
+        </div>
       </div>
       <div className="border-b border-border">
         <ScrollArea orientation="horizontal" type="hover" className="w-full">
@@ -149,9 +151,9 @@ function CopyGenerator({ campaignId }: { campaignId?: string }) {
   const { data: campaign } = useCampaign(campaignId ?? "");
   const gen = useServerFn(generateCampaignCopy);
   const [goal, setGoal] = useState<string>(((campaign as any)?.goal as string) ?? "");
-  const [tone, setTone] = useState<"friendly" | "professional" | "urgent" | "playful" | "luxury" | "neutral">(
-    "friendly",
-  );
+  const [tone, setTone] = useState<
+    "friendly" | "professional" | "urgent" | "playful" | "luxury" | "neutral"
+  >("friendly");
   const [product, setProduct] = useState("");
   const [count, setCount] = useState(3);
   const [loading, setLoading] = useState(false);
@@ -228,13 +230,9 @@ function CopyGenerator({ campaignId }: { campaignId?: string }) {
         {variants.map((v, i) => (
           <div key={i} className="rounded-control border border-border p-3 bg-background/60">
             <div className="flex items-center justify-between">
-              <div className="text-xs  text-muted-foreground">
-                Variant {i + 1}
-              </div>
+              <div className="text-xs  text-muted-foreground">Variant {i + 1}</div>
               <button
-                onClick={() =>
-                  copy(`${v.headline}\n\n${v.body}\n\nCTA: ${v.cta}`, `v-${i}`)
-                }
+                onClick={() => copy(`${v.headline}\n\n${v.body}\n\nCTA: ${v.cta}`, `v-${i}`)}
                 className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
               >
                 {copied === `v-${i}` ? (
@@ -272,9 +270,11 @@ function RewritePanel({ campaignId }: { campaignId?: string }) {
   const [tone, setTone] = useState("friendly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ rewritten: string; changes: string[]; reasoning: string } | null>(
-    null,
-  );
+  const [result, setResult] = useState<{
+    rewritten: string;
+    changes: string[];
+    reasoning: string;
+  } | null>(null);
 
   async function run() {
     setLoading(true);
@@ -344,9 +344,7 @@ function RewritePanel({ campaignId }: { campaignId?: string }) {
         </Field>
         {result?.changes?.length ? (
           <div className="mt-3">
-            <div className="text-xs  text-muted-foreground mb-1">
-              Changes
-            </div>
+            <div className="text-xs  text-muted-foreground mb-1">Changes</div>
             <ul className="list-disc pl-5 text-sm space-y-0.5">
               {result.changes.map((c, i) => (
                 <li key={i}>{c}</li>
@@ -540,10 +538,7 @@ function AudiencePanel() {
               {s.filters?.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {s.filters.map((f: any, j: number) => (
-                    <span
-                      key={j}
-                      className="text-[11px] font-mono px-2 py-0.5 rounded bg-muted"
-                    >
+                    <span key={j} className="text-[11px] font-mono px-2 py-0.5 rounded bg-muted">
                       {f.field} {f.op} {String(f.value)}
                     </span>
                   ))}
@@ -553,9 +548,7 @@ function AudiencePanel() {
           ))}
           {(result.suggested_lists ?? []).length > 0 && (
             <div className="rounded-control border border-border p-3">
-              <div className="text-xs  text-muted-foreground mb-1">
-                Suggested existing lists
-              </div>
+              <div className="text-xs  text-muted-foreground mb-1">Suggested existing lists</div>
               <ul className="text-sm space-y-1">
                 {result.suggested_lists.map((l: any, i: number) => (
                   <li key={i}>
@@ -566,9 +559,7 @@ function AudiencePanel() {
               </ul>
             </div>
           )}
-          {result.notes && (
-            <div className="text-xs text-muted-foreground">{result.notes}</div>
-          )}
+          {result.notes && <div className="text-xs text-muted-foreground">{result.notes}</div>}
         </div>
       )}
     </div>
@@ -617,9 +608,7 @@ function TimingPanel({ campaignId }: { campaignId?: string }) {
         <div className="mt-4 space-y-3">
           {result.next_recommended_iso && (
             <div className="rounded-control border border-primary/40 bg-primary/5 p-3">
-              <div className="text-xs  text-primary mb-1">
-                Next recommended send
-              </div>
+              <div className="text-xs  text-primary mb-1">Next recommended send</div>
               <div className="text-lg font-semibold">
                 {new Date(result.next_recommended_iso).toLocaleString()}
               </div>
@@ -696,7 +685,9 @@ function AnalyzePanel({ campaignId }: { campaignId?: string }) {
           <div className="rounded-control border border-border p-3">
             <div className="flex items-center gap-2">
               <span className="text-xs  text-muted-foreground">Health</span>
-              <span className={`text-xs px-2 py-0.5 rounded-control ${healthColor[result.health] ?? "bg-muted"}`}>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-control ${healthColor[result.health] ?? "bg-muted"}`}
+              >
                 {result.health}
               </span>
             </div>
@@ -713,9 +704,7 @@ function AnalyzePanel({ campaignId }: { campaignId?: string }) {
           )}
           {(result.improvements ?? []).length > 0 && (
             <div>
-              <div className="text-xs  text-primary mb-1">
-                Improvement plan
-              </div>
+              <div className="text-xs  text-primary mb-1">Improvement plan</div>
               <div className="space-y-2">
                 {result.improvements.map((imp: any, i: number) => (
                   <div key={i} className="rounded-control border border-border p-3">

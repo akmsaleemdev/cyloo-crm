@@ -17,8 +17,11 @@ export interface LinkedInPublishInput {
   caption: string;
 }
 
-export async function publishToLinkedIn(input: LinkedInPublishInput): Promise<ProviderPublishResult> {
-  if (!input.memberId) throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
+export async function publishToLinkedIn(
+  input: LinkedInPublishInput,
+): Promise<ProviderPublishResult> {
+  if (!input.memberId)
+    throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
   const token = resolveToken(input.accessTokenCipher);
 
   const res = await fetch("https://api.linkedin.com/v2/ugcPosts", {

@@ -99,9 +99,7 @@ export function InvoicePreview({ invoice, workspaceName }: Props) {
                 <td className="py-3 text-right ">{money(Number(l.unit_price))}</td>
                 <td className="py-3 text-right ">{Number(l.discount_pct)}%</td>
                 <td className="py-3 text-right ">{Number(l.tax_rate)}%</td>
-                <td className="py-3 text-right  font-medium">
-                  {money(Number(l.total))}
-                </td>
+                <td className="py-3 text-right  font-medium">{money(Number(l.total))}</td>
               </tr>
             ))}
           </tbody>

@@ -20,12 +20,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type RouteTo = "ai" | "department" | "agent" | "queue";
-export type RoutingStrategy =
-  | "auto"
-  | "round_robin"
-  | "least_busy"
-  | "department"
-  | "skill";
+export type RoutingStrategy = "auto" | "round_robin" | "least_busy" | "department" | "skill";
 
 export interface RoutingContext {
   workspaceId: string;
@@ -87,11 +82,7 @@ interface AgentRow {
   last_active_at: string | null;
 }
 
-function ruleMatches(
-  rule: RoutingRuleRow,
-  ctx: RoutingContext,
-  inHours: boolean,
-): boolean {
+function ruleMatches(rule: RoutingRuleRow, ctx: RoutingContext, inHours: boolean): boolean {
   if (rule.match_business_hours === true && !inHours) return false;
   if (rule.match_business_hours === false && inHours) return false;
 
@@ -159,7 +150,13 @@ async function isBusinessHoursOpen(
   const mm = parts.find((p) => p.type === "minute")?.value ?? "00";
   const nowT = `${hh}:${mm}:00`;
   const map: Record<string, number> = {
-    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
   };
   const dow = map[wk] ?? 0;
   const today = rows.find((r) => r.day_of_week === dow && r.is_open);
@@ -195,10 +192,7 @@ function agentMatches(
   return true;
 }
 
-function selectAgent(
-  agents: AgentRow[],
-  strategy: RoutingStrategy,
-): AgentRow | null {
+function selectAgent(agents: AgentRow[], strategy: RoutingStrategy): AgentRow | null {
   if (!agents.length) return null;
   if (strategy === "round_robin") {
     // Least-recently-assigned first.
@@ -217,10 +211,7 @@ function selectAgent(
   })[0]!;
 }
 
-async function loadAgents(
-  admin: SupabaseClient,
-  workspaceId: string,
-): Promise<AgentRow[]> {
+async function loadAgents(admin: SupabaseClient, workspaceId: string): Promise<AgentRow[]> {
   const [{ data: avail }, { data: members }] = await Promise.all([
     admin
       .from("agent_availability")
@@ -290,12 +281,10 @@ export async function decideRouting(ctx: RoutingContext): Promise<RoutingDecisio
     ...ctx,
     visitorIsVip: ctx.visitorIsVip ?? Boolean(v?.is_vip),
     visitorPriority:
-      ctx.visitorPriority ??
-      ((v?.priority as RoutingContext["visitorPriority"]) ?? "normal"),
-    language: ctx.language ?? ((v?.language as string | null) ?? null),
-    country: ctx.country ?? ((v?.country as string | null) ?? null),
-    visitorMetadata:
-      ctx.visitorMetadata ?? ((v?.metadata as Record<string, unknown> | null) ?? null),
+      ctx.visitorPriority ?? (v?.priority as RoutingContext["visitorPriority"]) ?? "normal",
+    language: ctx.language ?? (v?.language as string | null) ?? null,
+    country: ctx.country ?? (v?.country as string | null) ?? null,
+    visitorMetadata: ctx.visitorMetadata ?? (v?.metadata as Record<string, unknown> | null) ?? null,
   };
 
   const rules = (rulesData ?? []) as RoutingRuleRow[];
@@ -329,13 +318,9 @@ export async function decideRouting(ctx: RoutingContext): Promise<RoutingDecisio
     )
       ? (matched.route_to as RouteTo)
       : "ai";
-    const strategy = ([
-      "auto",
-      "round_robin",
-      "least_busy",
-      "department",
-      "skill",
-    ] as const).includes(matched.strategy as RoutingStrategy)
+    const strategy = (
+      ["auto", "round_robin", "least_busy", "department", "skill"] as const
+    ).includes(matched.strategy as RoutingStrategy)
       ? (matched.strategy as RoutingStrategy)
       : "auto";
 
@@ -441,18 +426,15 @@ export async function decideRouting(ctx: RoutingContext): Promise<RoutingDecisio
 }
 
 /** Record that an agent just got assigned — powers round-robin fairness. */
-export async function markAgentAssigned(
-  workspaceId: string,
-  userId: string,
-): Promise<void> {
+export async function markAgentAssigned(workspaceId: string, userId: string): Promise<void> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const admin = supabaseAdmin as unknown as SupabaseClient;
   await admin
     .from("agent_availability")
     .update({
       last_assigned_at: new Date().toISOString(),
-      current_load: (
-        (
+      current_load:
+        ((
           (
             await admin
               .from("agent_availability")
@@ -461,8 +443,7 @@ export async function markAgentAssigned(
               .eq("user_id", userId)
               .maybeSingle()
           ).data as { current_load?: number } | null
-        )?.current_load ?? 0
-      ) + 1,
+        )?.current_load ?? 0) + 1,
     } as never)
     .eq("workspace_id", workspaceId)
     .eq("user_id", userId);

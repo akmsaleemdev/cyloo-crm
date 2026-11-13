@@ -1,9 +1,9 @@
-import { useSyncExternalStore } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Building2, TriangleAlert } from 'lucide-react';
-import { useCurrentWorkspace } from '@/hooks/use-workspace';
-import { readActiveOrgId, subscribeActiveTenant } from '@/lib/tenant/active-tenant';
+import { useSyncExternalStore } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Building2, TriangleAlert } from "lucide-react";
+import { useCurrentWorkspace } from "@/hooks/use-workspace";
+import { readActiveOrgId, subscribeActiveTenant } from "@/lib/tenant/active-tenant";
 
 /**
  * Resolves which workspace vCard writes will actually land in, and whether
@@ -21,18 +21,26 @@ export function useWorkspaceContext() {
  * Visible "saves go here" indicator for the vCard and versioning screens.
  * Makes the fallback workspace explicit instead of silent.
  */
-export function WorkspaceContextIndicator({ className, compact }: { className?: string; compact?: boolean }) {
+export function WorkspaceContextIndicator({
+  className,
+  compact,
+}: {
+  className?: string;
+  compact?: boolean;
+}) {
   const { workspace, isFallback, isLoading } = useWorkspaceContext();
 
   if (isLoading && !workspace) {
     return (
-      <span className={`text-xs text-muted-foreground ${className ?? ''}`}>Resolving workspace</span>
+      <span className={`text-xs text-muted-foreground ${className ?? ""}`}>
+        Resolving workspace
+      </span>
     );
   }
 
   if (!workspace) {
     return (
-      <Badge variant="destructive" className={`gap-1.5 font-normal ${className ?? ''}`}>
+      <Badge variant="destructive" className={`gap-1.5 font-normal ${className ?? ""}`}>
         <TriangleAlert className="h-3.5 w-3.5" />
         No workspace available
       </Badge>
@@ -49,10 +57,14 @@ export function WorkspaceContextIndicator({ className, compact }: { className?: 
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge
-            variant={isFallback ? 'outline' : 'secondary'}
-            className={`gap-1.5 font-normal ${isFallback ? 'border-amber-500/60 text-amber-700 dark:text-amber-400' : ''} ${className ?? ''}`}
+            variant={isFallback ? "outline" : "secondary"}
+            className={`gap-1.5 font-normal ${isFallback ? "border-amber-500/60 text-amber-700 dark:text-amber-400" : ""} ${className ?? ""}`}
           >
-            {isFallback ? <TriangleAlert className="h-3.5 w-3.5" /> : <Building2 className="h-3.5 w-3.5" />}
+            {isFallback ? (
+              <TriangleAlert className="h-3.5 w-3.5" />
+            ) : (
+              <Building2 className="h-3.5 w-3.5" />
+            )}
             <span className="truncate max-w-[16rem]">{label}</span>
             {isFallback && <span className="text-[11px] uppercase tracking-wide">fallback</span>}
           </Badge>

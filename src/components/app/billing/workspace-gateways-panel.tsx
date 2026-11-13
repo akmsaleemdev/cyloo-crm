@@ -12,13 +12,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -79,8 +73,8 @@ export function WorkspaceGatewaysPanel({
       <CardHeader>
         <CardTitle>Payment gateways</CardTitle>
         <CardDescription>
-          Choose which of the platform's gateways this workspace uses, and which one is
-          selected by default. Gateways switched off platform-wide can't be turned on here.
+          Choose which of the platform's gateways this workspace uses, and which one is selected by
+          default. Gateways switched off platform-wide can't be turned on here.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -145,9 +139,7 @@ export function WorkspaceGatewaysPanel({
                   aria-label={`Enable ${g.displayName} for this workspace`}
                   checked={g.effectiveEnabled}
                   disabled={!canManage || busy}
-                  onCheckedChange={(v) =>
-                    toggle.mutate({ provider_id: g.id, enabled: v })
-                  }
+                  onCheckedChange={(v) => toggle.mutate({ provider_id: g.id, enabled: v })}
                 />
               </div>
             </div>

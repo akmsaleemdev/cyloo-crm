@@ -54,6 +54,10 @@ export function trackCtaClick(id: string, location: string, props: AnalyticsProp
   trackMarketing("cta_click", { cta_id: id, location, ...props });
 }
 
-export function trackPricingClick(plan: string, location: string, props: AnalyticsProps = {}): void {
+export function trackPricingClick(
+  plan: string,
+  location: string,
+  props: AnalyticsProps = {},
+): void {
   trackMarketing("pricing_click", { plan, location, ...props });
 }

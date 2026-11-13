@@ -44,7 +44,7 @@ export function BirthdayRemindersPanel() {
 
   const toggleLead = (v: number) => {
     setLeadDays((prev) =>
-      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].sort((a, b) => a - b)
+      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].sort((a, b) => a - b),
     );
   };
 
@@ -73,7 +73,7 @@ export function BirthdayRemindersPanel() {
     try {
       const res = await runNow.mutateAsync(wsId);
       toast.success(
-        `Scan complete · ${res.contacts_matched} matched · ${res.notifications_created} alerts sent`
+        `Scan complete · ${res.contacts_matched} matched · ${res.notifications_created} alerts sent`,
       );
     } catch (e: any) {
       toast.error(e?.message ?? "Run failed");

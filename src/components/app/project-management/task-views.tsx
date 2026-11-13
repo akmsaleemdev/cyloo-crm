@@ -12,7 +12,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { PmProject, PmTask, PmWorkspaceUser } from "@/lib/project-management/client";
-import { TASK_PRIORITY_LABELS, TASK_PRIORITY_TONE, TASK_STATUS_LABELS, TASK_STATUS_ORDER, TASK_STATUS_TONE, shortDate } from "./labels";
+import {
+  TASK_PRIORITY_LABELS,
+  TASK_PRIORITY_TONE,
+  TASK_STATUS_LABELS,
+  TASK_STATUS_ORDER,
+  TASK_STATUS_TONE,
+  shortDate,
+} from "./labels";
 
 type TaskViewProps = {
   tasks: PmTask[];
@@ -321,14 +328,22 @@ export function TaskList({
               )}
               <td className="px-4 py-3 text-nowrap">
                 <Badge variant="secondary" className="inline-flex items-center gap-1.5 px-1.5">
-                  <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", TASK_STATUS_TONE[task.status])} aria-hidden="true" />
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 shrink-0 rounded-full",
+                      TASK_STATUS_TONE[task.status],
+                    )}
+                    aria-hidden="true"
+                  />
                   {TASK_STATUS_LABELS[task.status]}
                 </Badge>
               </td>
               <td className="px-4 py-3 text-nowrap">
                 <TaskPriorityBadge priority={task.priority} />
               </td>
-              <td className="px-4 py-3 text-muted-foreground text-nowrap">{assigneeName(task, users)}</td>
+              <td className="px-4 py-3 text-muted-foreground text-nowrap">
+                {assigneeName(task, users)}
+              </td>
               <td
                 className={cn(
                   "px-4 py-3 text-nowrap",

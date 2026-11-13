@@ -25,7 +25,15 @@ export function AdminPageShell({
   );
 }
 
-export function AdminEmptyState({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string }) {
+export function AdminEmptyState({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="rounded-control border border-dashed border-border bg-surface p-12 text-center">
       <div className="mx-auto w-12 h-12 rounded-control bg-accent/10 text-accent grid place-items-center">

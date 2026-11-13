@@ -55,8 +55,7 @@ export const Route = createFileRoute("/api/public/oauth/authorize")({
           return Response.redirect(u.toString(), 302);
         };
 
-        if (responseType !== "code")
-          return redirectErr("unsupported_response_type");
+        if (responseType !== "code") return redirectErr("unsupported_response_type");
         if (!(client.allowed_grant_types as string[]).includes("authorization_code"))
           return redirectErr("unauthorized_client");
         if (client.require_pkce && !codeChallenge)

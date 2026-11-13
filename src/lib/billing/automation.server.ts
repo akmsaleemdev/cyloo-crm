@@ -52,8 +52,16 @@ const DEFAULT_CONFIG: Omit<AutomationConfig, "organization_id"> = {
 };
 
 async function loadConfig(sb: SupabaseClient, org: string): Promise<AutomationConfig> {
-  const { data } = await sbAny(sb).from("billing_automation_config").select("*").eq("organization_id", org).maybeSingle();
-  return { organization_id: org, ...DEFAULT_CONFIG, ...(data as Partial<AutomationConfig> ?? {}) };
+  const { data } = await sbAny(sb)
+    .from("billing_automation_config")
+    .select("*")
+    .eq("organization_id", org)
+    .maybeSingle();
+  return {
+    organization_id: org,
+    ...DEFAULT_CONFIG,
+    ...((data as Partial<AutomationConfig>) ?? {}),
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +122,9 @@ async function scanInvoicesDue(sb: SupabaseClient): Promise<number> {
 // ---------------------------------------------------------------------------
 // Retry failed payments
 // ---------------------------------------------------------------------------
-async function retryFailedPayments(sb: SupabaseClient): Promise<{ retried: number; succeeded: number }> {
+async function retryFailedPayments(
+  sb: SupabaseClient,
+): Promise<{ retried: number; succeeded: number }> {
   const { data } = await sb
     .from("billing_payment_attempts")
     .select("id, organization_id, invoice_id, provider, amount_cents, currency, retry_count")
@@ -149,7 +159,9 @@ async function retryFailedPayments(sb: SupabaseClient): Promise<{ retried: numbe
 // ---------------------------------------------------------------------------
 // Grace period + suspension
 // ---------------------------------------------------------------------------
-async function processGraceAndSuspend(sb: SupabaseClient): Promise<{ started: number; suspended: number; expired: number }> {
+async function processGraceAndSuspend(
+  sb: SupabaseClient,
+): Promise<{ started: number; suspended: number; expired: number }> {
   const now = new Date();
   let started = 0;
   let suspended = 0;
@@ -164,7 +176,10 @@ async function processGraceAndSuspend(sb: SupabaseClient): Promise<{ started: nu
   for (const s of pastDue ?? []) {
     const cfg = await loadConfig(sb, s.organization_id);
     const graceEnd = new Date(now.getTime() + cfg.grace_period_days * 86400 * 1000);
-    await sbAny(sb).from("subscriptions").update({ grace_period_ends_at: graceEnd.toISOString() }).eq("id", s.id);
+    await sbAny(sb)
+      .from("subscriptions")
+      .update({ grace_period_ends_at: graceEnd.toISOString() })
+      .eq("id", s.id);
     await emit({
       type: "subscription.grace_started",
       organization_id: s.organization_id,
@@ -182,7 +197,10 @@ async function processGraceAndSuspend(sb: SupabaseClient): Promise<{ started: nu
   for (const s of graceExpired ?? []) {
     const cfg = await loadConfig(sb, s.organization_id);
     if (!cfg.auto_suspend_after_grace) continue;
-    await sbAny(sb).from("subscriptions").update({ status: "paused", suspended_at: now.toISOString() }).eq("id", s.id);
+    await sbAny(sb)
+      .from("subscriptions")
+      .update({ status: "paused", suspended_at: now.toISOString() })
+      .eq("id", s.id);
     await emit({
       type: "subscription.suspended",
       organization_id: s.organization_id,
@@ -210,7 +228,10 @@ async function processGraceAndSuspend(sb: SupabaseClient): Promise<{ started: nu
 }
 
 /** Reactivate an account after outstanding invoices are paid. */
-export async function reactivateAccount(sb: SupabaseClient, subscription_id: string): Promise<boolean> {
+export async function reactivateAccount(
+  sb: SupabaseClient,
+  subscription_id: string,
+): Promise<boolean> {
   const { data: sub } = await sb
     .from("subscriptions")
     .select("id, organization_id, status")
@@ -239,7 +260,11 @@ export async function reactivateAccount(sb: SupabaseClient, subscription_id: str
 }
 
 /** Manually suspend an account. */
-export async function suspendAccount(sb: SupabaseClient, subscription_id: string, reason = "manual"): Promise<void> {
+export async function suspendAccount(
+  sb: SupabaseClient,
+  subscription_id: string,
+  reason = "manual",
+): Promise<void> {
   const { data: sub } = await sb
     .from("subscriptions")
     .select("id, organization_id")
@@ -278,8 +303,12 @@ async function autoReactivate(sb: SupabaseClient): Promise<number> {
 export async function runBillingAutomation(sb: SupabaseClient): Promise<Record<string, unknown>> {
   const trials = await scanTrialsEnding(sb).catch((e) => (console.error("[trials]", e), 0));
   const dueInv = await scanInvoicesDue(sb).catch((e) => (console.error("[due]", e), 0));
-  const retry = await retryFailedPayments(sb).catch((e) => (console.error("[retry]", e), { retried: 0, succeeded: 0 }));
-  const grace = await processGraceAndSuspend(sb).catch((e) => (console.error("[grace]", e), { started: 0, suspended: 0, expired: 0 }));
+  const retry = await retryFailedPayments(sb).catch(
+    (e) => (console.error("[retry]", e), { retried: 0, succeeded: 0 }),
+  );
+  const grace = await processGraceAndSuspend(sb).catch(
+    (e) => (console.error("[grace]", e), { started: 0, suspended: 0, expired: 0 }),
+  );
   const reactivated = await autoReactivate(sb).catch((e) => (console.error("[reactivate]", e), 0));
   return {
     ok: true,

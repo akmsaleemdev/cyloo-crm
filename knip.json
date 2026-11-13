@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "src/routes/**/*.{ts,tsx}",
+        "src/{router,start,server}.{ts,tsx}",
+        "src/styles.css",
+        "docs/style.css",
+        "app.{js,cjs}",
+        "scripts/*.{mjs,ps1}",
+        "public/sw.js",
+        "docs/script.js",
+        "tests/**/*.{test,spec}.{ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "scripts/*.mjs",
+        "*.{ts,mts,mjs,cjs,js}",
+        "tests/**/*.{ts,tsx}"
+      ],
+      "ignore": ["src/routeTree.gen.ts"],
+      "ignoreDependencies": ["@tanstack/router-plugin", "@testing-library/dom"]
+    },
+    "mobile": {
+      "entry": ["app/**/*.{ts,tsx}", "babel.config.js"],
+      "project": ["app/**/*.{ts,tsx}", "src/**/*.{ts,tsx}", "*.js"]
+    },
+    "qr-worker": {
+      "entry": ["src/index.js", "ecosystem.config.cjs"],
+      "project": ["src/**/*.js", "*.cjs"]
+    }
+  }
+}

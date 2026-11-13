@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Validates that the caller is a member of the requested workspace/organization.
- * 
+ *
  * While RLS protects the database, this middleware prevents server-function
  * logic from running against a tenant the user doesn't belong to. This blocks
  * ID enumeration and side-effects in functions that don't only do DB reads.
@@ -14,7 +14,7 @@ export const requireTenantAccess = createMiddleware({ type: "function" })
   .server(async ({ next, context }) => {
     const request = getRequest();
     const headers = request?.headers;
-    
+
     // We expect the client to send these headers via attachSupabaseAuthFresh
     const orgId = headers?.get("x-cyloo-org-id");
     const workspaceId = headers?.get("x-cyloo-workspace-id");
@@ -29,7 +29,7 @@ export const requireTenantAccess = createMiddleware({ type: "function" })
     }
 
     const targetId = workspaceId || orgId;
-    
+
     // Verify membership using the authenticated Supabase client from context.
     // This leverages RLS on the membership tables.
     const { data: membership, error } = await context.supabase
@@ -52,8 +52,8 @@ export const requireTenantAccess = createMiddleware({ type: "function" })
         },
       });
 
-      throw new Response("Forbidden: You do not have access to this tenant", { 
-        status: 403 
+      throw new Response("Forbidden: You do not have access to this tenant", {
+        status: 403,
       });
     }
 

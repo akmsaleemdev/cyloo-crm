@@ -165,8 +165,8 @@ export async function createWidgetSession(
     ipAddress?: string;
     /** Skip reuse and start a new conversation (the visitor pressed "New conversation"). */
     newConversation?: boolean;
-  previousSessionId?: string;
-  previousVisitorToken?: string;
+    previousSessionId?: string;
+    previousVisitorToken?: string;
   },
 ): Promise<{ sessionId: string; visitorToken: string; bot: WidgetBot } | null> {
   const bot = await loadEmbeddableBot(botId);
@@ -190,7 +190,12 @@ export async function createWidgetSession(
       .eq("chatbot_id", bot.id)
       .eq("channel", "livechat")
       .maybeSingle();
-    const row = prev as { id: string; external_id: string; status: string; created_at: string } | null;
+    const row = prev as {
+      id: string;
+      external_id: string;
+      status: string;
+      created_at: string;
+    } | null;
     if (row && row.external_id === prevVisitorId && row.status === "active") {
       if (visitorMeta?.newConversation) {
         await supabaseAdmin

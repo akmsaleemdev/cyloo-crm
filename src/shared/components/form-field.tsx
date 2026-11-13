@@ -56,12 +56,24 @@ export function FormField({
   );
 }
 
-function Label({ children, required, className }: { children: ReactNode; required?: boolean; className?: string }) {
+function Label({
+  children,
+  required,
+  className,
+}: {
+  children: ReactNode;
+  required?: boolean;
+  className?: string;
+}) {
   const { id } = useField();
   return (
     <label htmlFor={id} className={cn("text-xs font-medium text-foreground", className)}>
       {children}
-      {required && <span className="ml-0.5 text-danger" aria-hidden>*</span>}
+      {required && (
+        <span className="ml-0.5 text-danger" aria-hidden>
+          *
+        </span>
+      )}
     </label>
   );
 }

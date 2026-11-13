@@ -16,10 +16,7 @@
  */
 
 import { useEffect, useRef } from "react";
-import {
-  useRouter,
-  useRouterState,
-} from "@tanstack/react-router";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import {
   isUuid,
   ORG_CHANGED_EVENT,
@@ -29,7 +26,6 @@ import {
   writeActiveOrgId,
 } from "@/lib/tenant/active-tenant";
 import { supabase } from "@/integrations/supabase/client";
-
 
 function getUrlOrgId(): string | null {
   if (typeof window === "undefined") return null;
@@ -100,7 +96,6 @@ export function OrgUrlSync() {
       cancelled = true;
     };
   }, [locationHref]);
-
 
   // Storage → URL: when the active org changes (switcher, cross-tab, or
   // programmatic), reflect it in the URL without touching the pathname or

@@ -31,21 +31,13 @@ describe("Cross-Tenant Access Prevention", () => {
   it("should have RLS enabled on all user-data tables", () => {
     // Extract all tables that have CREATE TABLE
     const tables = [
-      ...allSQL.matchAll(
-        /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?(\w+)/gi,
-      ),
+      ...allSQL.matchAll(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?(\w+)/gi),
     ].map((m) => m[1]);
 
     // System/config tables may not need RLS
-    const systemTables = [
-      "schema_migrations",
-      "extensions",
-      "migrations",
-    ];
+    const systemTables = ["schema_migrations", "extensions", "migrations"];
 
-    const userDataTables = tables.filter(
-      (t) => !systemTables.includes(t.toLowerCase()),
-    );
+    const userDataTables = tables.filter((t) => !systemTables.includes(t.toLowerCase()));
 
     for (const table of userDataTables) {
       const hasRLS = new RegExp(
@@ -61,11 +53,7 @@ describe("Cross-Tenant Access Prevention", () => {
   });
 
   it("should use auth.uid() in tenant isolation policies", () => {
-    const policies = [
-      ...allSQL.matchAll(
-        /CREATE\s+POLICY\s+\S+\s+ON\s+\S+[^;]+;/gi,
-      ),
-    ];
+    const policies = [...allSQL.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+\S+[^;]+;/gi)];
 
     let policiesWithAuthUid = 0;
     for (const match of policies) {
@@ -90,10 +78,7 @@ describe("Cross-Tenant Access Prevention", () => {
     for (const table of sensitiveTables) {
       const policies = [
         ...allSQL.matchAll(
-          new RegExp(
-            `CREATE\\s+POLICY\\s+\\S+\\s+ON\\s+(?:public\\.)?${table}[^;]+;`,
-            "gi",
-          ),
+          new RegExp(`CREATE\\s+POLICY\\s+\\S+\\s+ON\\s+(?:public\\.)?${table}[^;]+;`, "gi"),
         ),
       ];
 
@@ -101,14 +86,11 @@ describe("Cross-Tenant Access Prevention", () => {
         const policyText = match[0].toLowerCase();
         // Should not have USING (true) without role restriction
         const isOverlyPermissive =
-          policyText.includes("using (true)") &&
-          !policyText.includes("to service_role");
-        expect(
-          isOverlyPermissive,
-          `Overly permissive policy on sensitive table "${table}"`,
-        ).toBe(false);
+          policyText.includes("using (true)") && !policyText.includes("to service_role");
+        expect(isOverlyPermissive, `Overly permissive policy on sensitive table "${table}"`).toBe(
+          false,
+        );
       }
     }
   });
 });
-

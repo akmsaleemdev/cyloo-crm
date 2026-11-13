@@ -67,9 +67,7 @@ const linkInput = z.object({
 /** All gateway links, optionally scoped to one plan. */
 export const listPlanGatewayLinks = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input) =>
-    z.object({ plan_id: z.string().uuid().optional() }).parse(input ?? {}),
-  )
+  .validator((input) => z.object({ plan_id: z.string().uuid().optional() }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
     let q = sbAny(context.supabase).from("plan_gateway_prices").select(COLS);
     if (data.plan_id) q = q.eq("plan_id", data.plan_id);
@@ -118,7 +116,6 @@ export const listPurchasablePlans = createServerFn({ method: "GET" })
     const { listPurchasablePlanTargets } = await import("./plan-gateways.server");
     return listPurchasablePlanTargets(context.supabase, data.workspace_id ?? null);
   });
-
 
 /* -------------------------------------------------------------------------- */
 /*  Writes (super-admin only via RLS)                                          */
@@ -196,10 +193,7 @@ export const deletePlanGatewayLink = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
 
-    const { error } = await context.supabase
-      .from("plan_gateway_prices")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("plan_gateway_prices").delete().eq("id", data.id);
     if (error) throw error;
 
     if (priorRow) {
@@ -255,8 +249,7 @@ async function auditPlanLink(
       .maybeSingle();
     const planCode = (plan as { code?: string } | null)?.code ?? args.link.plan_id;
 
-    const target =
-      args.link.external_price_id ?? args.link.checkout_url ?? "(none)";
+    const target = args.link.external_price_id ?? args.link.checkout_url ?? "(none)";
     const verb =
       args.action === "gateway.plan_unlinked"
         ? "Unlinked"
@@ -298,4 +291,3 @@ async function auditPlanLink(
     console.error("[plan-gateways] audit failed", args.action, error);
   }
 }
-

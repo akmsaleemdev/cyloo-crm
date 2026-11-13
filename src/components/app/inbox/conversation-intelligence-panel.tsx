@@ -96,8 +96,8 @@ function EmptyState({ analyzing, onAnalyze }: { analyzing: boolean; onAnalyze: (
       <Sparkles className="h-8 w-8 mx-auto text-muted-foreground" />
       <div className="text-sm font-medium">No analysis yet</div>
       <p className="text-xs text-muted-foreground">
-        Generate AI insights: summary, sentiment, intent, urgency, priority, risk, spam
-        detection, and topics — all grounded in the conversation transcript and CRM data.
+        Generate AI insights: summary, sentiment, intent, urgency, priority, risk, spam detection,
+        and topics — all grounded in the conversation transcript and CRM data.
       </p>
       <Button size="sm" onClick={onAnalyze} disabled={analyzing} className="gap-2">
         {analyzing ? (
@@ -198,8 +198,7 @@ function InsightBody({ insight, stale }: { insight: ConversationInsight; stale: 
       </Section>
 
       {/* Scores */}
-      {(typeof insight.satisfactionScore === "number" ||
-        typeof insight.riskScore === "number") && (
+      {(typeof insight.satisfactionScore === "number" || typeof insight.riskScore === "number") && (
         <Section title="Predictions">
           {typeof insight.satisfactionScore === "number" && (
             <ScoreRow
@@ -214,11 +213,7 @@ function InsightBody({ insight, stale }: { insight: ConversationInsight; stale: 
               label="Risk"
               value={insight.riskScore}
               accent="destructive"
-              hint={
-                insight.riskReasons.length > 0
-                  ? insight.riskReasons.join(" · ")
-                  : undefined
-              }
+              hint={insight.riskReasons.length > 0 ? insight.riskReasons.join(" · ") : undefined}
             />
           )}
         </Section>

@@ -25,7 +25,9 @@ function InvoicesPage() {
       </header>
 
       {q.isLoading ? (
-        <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Loading</div>
+        <div className="p-8 flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading
+        </div>
       ) : invs.length === 0 ? (
         <div className="rounded-control border border-border bg-surface p-10 text-center">
           <Receipt className="w-8 h-8 mx-auto text-muted-foreground/50" />
@@ -48,18 +50,37 @@ function InvoicesPage() {
               {invs.map((i) => (
                 <tr key={i.id} className="border-t border-border">
                   <td className="px-4 py-3 font-mono text-xs">{i.invoice_number}</td>
-                  <td className="px-4 py-3">{i.issue_date ? new Date(i.issue_date).toLocaleDateString() : "—"}</td>
-                  <td className="px-4 py-3">{i.due_date ? new Date(i.due_date).toLocaleDateString() : "—"}</td>
+                  <td className="px-4 py-3">
+                    {i.issue_date ? new Date(i.issue_date).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {i.due_date ? new Date(i.due_date).toLocaleDateString() : "—"}
+                  </td>
                   <td className="px-4 py-3 text-right font-medium">{money(i.total, i.currency)}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={i.status === "paid" ? "default" : i.status === "overdue" ? "destructive" : "outline"} className="capitalize">
+                    <Badge
+                      variant={
+                        i.status === "paid"
+                          ? "default"
+                          : i.status === "overdue"
+                            ? "destructive"
+                            : "outline"
+                      }
+                      className="capitalize"
+                    >
                       {i.status}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     {i.public_token && (
-                      <a href={`/invoices/public/${i.public_token}`} target="_blank" rel="noreferrer">
-                        <Button size="sm" variant="ghost"><Download className="w-3.5 h-3.5 " /> View</Button>
+                      <a
+                        href={`/invoices/public/${i.public_token}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Button size="sm" variant="ghost">
+                          <Download className="w-3.5 h-3.5 " /> View
+                        </Button>
                       </a>
                     )}
                   </td>

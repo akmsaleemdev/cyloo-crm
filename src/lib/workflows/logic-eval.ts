@@ -43,12 +43,21 @@ const toDate = (v: unknown): Date | null => {
 
 /** Parse duration like "7d", "12h", "30m", "45s" into milliseconds. */
 const parseDurationMs = (v: unknown): number | null => {
-  const s = String(v ?? "").trim().toLowerCase();
+  const s = String(v ?? "")
+    .trim()
+    .toLowerCase();
   const m = /^(-?\d+(?:\.\d+)?)\s*(ms|s|m|h|d|w)?$/.exec(s);
   if (!m) return null;
   const n = Number(m[1]);
   const unit = m[2] ?? "s";
-  const factor: Record<string, number> = { ms: 1, s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000, w: 604_800_000 };
+  const factor: Record<string, number> = {
+    ms: 1,
+    s: 1000,
+    m: 60_000,
+    h: 3_600_000,
+    d: 86_400_000,
+    w: 604_800_000,
+  };
   return n * factor[unit];
 };
 
@@ -63,7 +72,12 @@ export function evalNot(input: Record<string, unknown>): LogicResult {
 const coerceConditions = (raw: unknown): unknown[] => {
   if (Array.isArray(raw)) return raw;
   if (typeof raw === "string") {
-    try { const p = JSON.parse(raw); return Array.isArray(p) ? p : [p]; } catch { return [raw]; }
+    try {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p : [p];
+    } catch {
+      return [raw];
+    }
   }
   return raw == null ? [] : [raw];
 };
@@ -84,15 +98,37 @@ export function evalCompareText(input: Record<string, unknown>): LogicResult {
   const op = String(input.operator ?? "equals");
   let result = false;
   switch (op) {
-    case "equals": result = l === r; break;
-    case "not_equals": result = l !== r; break;
-    case "contains": result = l.includes(r); break;
-    case "not_contains": result = !l.includes(r); break;
-    case "starts_with": result = l.startsWith(r); break;
-    case "ends_with": result = l.endsWith(r); break;
-    case "regex": try { result = new RegExp(String(input.right ?? ""), cs ? "" : "i").test(toStr(input.left, true)); } catch { result = false; } break;
-    case "is_empty": result = l.length === 0; break;
-    case "is_not_empty": result = l.length > 0; break;
+    case "equals":
+      result = l === r;
+      break;
+    case "not_equals":
+      result = l !== r;
+      break;
+    case "contains":
+      result = l.includes(r);
+      break;
+    case "not_contains":
+      result = !l.includes(r);
+      break;
+    case "starts_with":
+      result = l.startsWith(r);
+      break;
+    case "ends_with":
+      result = l.endsWith(r);
+      break;
+    case "regex":
+      try {
+        result = new RegExp(String(input.right ?? ""), cs ? "" : "i").test(toStr(input.left, true));
+      } catch {
+        result = false;
+      }
+      break;
+    case "is_empty":
+      result = l.length === 0;
+      break;
+    case "is_not_empty":
+      result = l.length > 0;
+      break;
   }
   return { result };
 }
@@ -105,13 +141,27 @@ export function evalCompareNumber(input: Record<string, unknown>): LogicResult {
   if (Number.isNaN(l) || (op !== "between" && Number.isNaN(r))) return { result: false };
   let result = false;
   switch (op) {
-    case "eq": result = l === r; break;
-    case "neq": result = l !== r; break;
-    case "gt": result = l > r; break;
-    case "gte": result = l >= r; break;
-    case "lt": result = l < r; break;
-    case "lte": result = l <= r; break;
-    case "between": result = !Number.isNaN(u) && l >= Math.min(r, u) && l <= Math.max(r, u); break;
+    case "eq":
+      result = l === r;
+      break;
+    case "neq":
+      result = l !== r;
+      break;
+    case "gt":
+      result = l > r;
+      break;
+    case "gte":
+      result = l >= r;
+      break;
+    case "lt":
+      result = l < r;
+      break;
+    case "lte":
+      result = l <= r;
+      break;
+    case "between":
+      result = !Number.isNaN(u) && l >= Math.min(r, u) && l <= Math.max(r, u);
+      break;
   }
   return { result };
 }
@@ -132,13 +182,17 @@ export function evalCompareDate(input: Record<string, unknown>): LogicResult {
   const right = toDate(input.right);
   if (!right) return { result: false };
   switch (op) {
-    case "before": return { result: left.getTime() < right.getTime() };
-    case "after": return { result: left.getTime() > right.getTime() };
-    case "same_day": return {
-      result: left.getUTCFullYear() === right.getUTCFullYear()
-        && left.getUTCMonth() === right.getUTCMonth()
-        && left.getUTCDate() === right.getUTCDate(),
-    };
+    case "before":
+      return { result: left.getTime() < right.getTime() };
+    case "after":
+      return { result: left.getTime() > right.getTime() };
+    case "same_day":
+      return {
+        result:
+          left.getUTCFullYear() === right.getUTCFullYear() &&
+          left.getUTCMonth() === right.getUTCMonth() &&
+          left.getUTCDate() === right.getUTCDate(),
+      };
     case "between": {
       const upper = toDate(input.right_upper);
       if (!upper) return { result: false };
@@ -177,7 +231,10 @@ export function evalRegex(input: Record<string, unknown>): LogicResult & { group
   }
 }
 
-export function evalIf(input: Record<string, unknown>): { branch: "true" | "false"; result: boolean } {
+export function evalIf(input: Record<string, unknown>): {
+  branch: "true" | "false";
+  result: boolean;
+} {
   const t = truthy(input.expression);
   return { branch: t ? "true" : "false", result: t };
 }
@@ -200,15 +257,28 @@ function evalPredicate(p: Predicate): boolean {
   const numOps = new Set(["eq", "neq", "gt", "gte", "lt", "lte", "between"]);
   const dateOps = new Set(["before", "after", "same_day", "within_last", "older_than"]);
   if (numOps.has(op) && !Number.isNaN(toNum(p.left)) && !Number.isNaN(toNum(p.right))) {
-    return evalCompareNumber({ left: p.left, right: p.right, right_upper: p.right_upper, operator: op }).result;
+    return evalCompareNumber({
+      left: p.left,
+      right: p.right,
+      right_upper: p.right_upper,
+      operator: op,
+    }).result;
   }
   if (dateOps.has(op)) {
-    return evalCompareDate({ left: p.left, right: p.right, right_upper: p.right_upper, operator: op }).result;
+    return evalCompareDate({
+      left: p.left,
+      right: p.right,
+      right_upper: p.right_upper,
+      operator: op,
+    }).result;
   }
   return evalCompareText({ left: p.left, right: p.right, operator: op }).result;
 }
 
-export function evalDecisionTree(input: Record<string, unknown>): { branch: string; matched: boolean } {
+export function evalDecisionTree(input: Record<string, unknown>): {
+  branch: string;
+  matched: boolean;
+} {
   const rules = coerceConditions(input.rules) as Rule[];
   for (const r of rules) {
     if (!r?.when) continue;
@@ -218,7 +288,8 @@ export function evalDecisionTree(input: Record<string, unknown>): { branch: stri
     const passAll = all.length === 0 || all.every(evalPredicate);
     const passAny = any.length === 0 || any.some(evalPredicate);
     const passNot = !not || !evalPredicate(not);
-    if (passAll && passAny && passNot) return { branch: String(r.branch ?? "match"), matched: true };
+    if (passAll && passAny && passNot)
+      return { branch: String(r.branch ?? "match"), matched: true };
   }
   return { branch: String(input.default_branch ?? "else"), matched: false };
 }
@@ -233,7 +304,8 @@ export function evalExpression(expr: string): unknown {
   const src = String(expr ?? "").trim();
   if (!src) return null;
   // Whitelist: digits, string literals, operators, whitespace, parens, dots, booleans, null
-  const allowed = /^(?:\s|[0-9.+\-*/%(),?:!<>=&|]|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\btrue\b|\bfalse\b|\bnull\b)+$/;
+  const allowed =
+    /^(?:\s|[0-9.+\-*/%(),?:!<>=&|]|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\btrue\b|\bfalse\b|\bnull\b)+$/;
   if (!allowed.test(src)) return src; // fallback: return raw string
   try {
     // eslint-disable-next-line no-new-func
@@ -246,10 +318,21 @@ export function evalExpression(expr: string): unknown {
 
 export function coerceReturn(value: unknown, type: string | undefined): unknown {
   switch (type) {
-    case "string": return value == null ? "" : String(value);
-    case "number": { const n = Number(value); return Number.isNaN(n) ? 0 : n; }
-    case "boolean": return truthy(value);
-    case "json": try { return typeof value === "string" ? JSON.parse(value) : value; } catch { return value; }
-    default: return value;
+    case "string":
+      return value == null ? "" : String(value);
+    case "number": {
+      const n = Number(value);
+      return Number.isNaN(n) ? 0 : n;
+    }
+    case "boolean":
+      return truthy(value);
+    case "json":
+      try {
+        return typeof value === "string" ? JSON.parse(value) : value;
+      } catch {
+        return value;
+      }
+    default:
+      return value;
   }
 }

@@ -8,10 +8,31 @@ export const SOUND_PRESETS = [
   { id: "drop", name: "Drop", notes: [988, 740, 587], wave: "triangle", step: 0.13, length: 0.16 },
   { id: "marimba", name: "Marimba", notes: [523, 784], wave: "sine", step: 0.18, length: 0.22 },
   { id: "bell", name: "Bell", notes: [880, 1175, 880], wave: "sine", step: 0.18, length: 0.22 },
-  { id: "spark", name: "Spark", notes: [1047, 1319, 1568], wave: "triangle", step: 0.09, length: 0.11 },
+  {
+    id: "spark",
+    name: "Spark",
+    notes: [1047, 1319, 1568],
+    wave: "triangle",
+    step: 0.09,
+    length: 0.11,
+  },
   { id: "warm", name: "Warm", notes: [392, 523, 659], wave: "sine", step: 0.17, length: 0.21 },
-  { id: "signal", name: "Signal", notes: [698, 698, 932], wave: "triangle", step: 0.15, length: 0.12 },
-  { id: "orbit", name: "Orbit", notes: [587, 784, 1047, 784], wave: "sine", step: 0.12, length: 0.15 },
+  {
+    id: "signal",
+    name: "Signal",
+    notes: [698, 698, 932],
+    wave: "triangle",
+    step: 0.15,
+    length: 0.12,
+  },
+  {
+    id: "orbit",
+    name: "Orbit",
+    notes: [587, 784, 1047, 784],
+    wave: "sine",
+    step: 0.12,
+    length: 0.15,
+  },
 ] as const;
 
 export type SoundPresetId = (typeof SOUND_PRESETS)[number]["id"];
@@ -23,17 +44,28 @@ const DEFAULT_VOLUME = 70;
 // Give short tones enough headroom while keeping their sustained peaks staggered.
 const MAX_NOTE_GAIN = 0.6;
 
-type InboxChoices = { channels: Record<string, SoundPresetId>; accounts: Record<string, SoundPresetId> };
+type InboxChoices = {
+  channels: Record<string, SoundPresetId>;
+  accounts: Record<string, SoundPresetId>;
+};
 const EMPTY_CHOICES = (): InboxChoices => ({ channels: {}, accounts: {} });
 
 function stored(key: string): string | null {
   if (typeof window === "undefined") return null;
-  try { return window.localStorage.getItem(key); } catch { return null; }
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
 }
 
 function save(key: string, value: string): void {
   if (typeof window === "undefined") return;
-  try { window.localStorage.setItem(key, value); } catch { /* browser storage unavailable */ }
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    /* browser storage unavailable */
+  }
 }
 
 export function isSoundPresetId(value: unknown): value is SoundPresetId {
@@ -69,16 +101,27 @@ function inboxChoices(workspaceId: string): InboxChoices {
     const value = parsed as Partial<InboxChoices>;
     const clean = (input: unknown): Record<string, SoundPresetId> => {
       if (!input || typeof input !== "object") return {};
-      return Object.fromEntries(Object.entries(input).filter(([, id]) => isSoundPresetId(id))) as Record<string, SoundPresetId>;
+      return Object.fromEntries(
+        Object.entries(input).filter(([, id]) => isSoundPresetId(id)),
+      ) as Record<string, SoundPresetId>;
     };
     return { channels: clean(value.channels), accounts: clean(value.accounts) };
-  } catch { return EMPTY_CHOICES(); }
+  } catch {
+    return EMPTY_CHOICES();
+  }
 }
 
 /** Defaults preserve distinct audible cues for the existing inbox channels. */
 const CHANNEL_DEFAULTS: Record<string, SoundPresetId> = {
-  whatsapp: "bright", messenger: "soft", instagram: "glass", telegram: "pulse",
-  email: "warm", sms: "signal", webchat: "spark", livechat: "spark", voice: "bell",
+  whatsapp: "bright",
+  messenger: "soft",
+  instagram: "glass",
+  telegram: "pulse",
+  email: "warm",
+  sms: "signal",
+  webchat: "spark",
+  livechat: "spark",
+  voice: "bell",
 };
 
 function soundChannel(channel: string): string {
@@ -91,28 +134,48 @@ export function getInboxChannelPreset(workspaceId: string, channel: string): Sou
   return inboxChoices(workspaceId).channels[normalized] ?? CHANNEL_DEFAULTS[normalized] ?? "bright";
 }
 
-export function setInboxChannelPreset(workspaceId: string, channel: string, id: SoundPresetId): void {
+export function setInboxChannelPreset(
+  workspaceId: string,
+  channel: string,
+  id: SoundPresetId,
+): void {
   const choices = inboxChoices(workspaceId);
   choices.channels[soundChannel(channel)] = id;
   save(`${INBOX_KEY_PREFIX}${workspaceId}`, JSON.stringify(choices));
 }
 
-export function getInboxAccountPreset(workspaceId: string, accountId: string): SoundPresetId | null {
+export function getInboxAccountPreset(
+  workspaceId: string,
+  accountId: string,
+): SoundPresetId | null {
   return inboxChoices(workspaceId).accounts[accountId] ?? null;
 }
 
-export function setInboxAccountPreset(workspaceId: string, accountId: string, id: SoundPresetId | null): void {
+export function setInboxAccountPreset(
+  workspaceId: string,
+  accountId: string,
+  id: SoundPresetId | null,
+): void {
   const choices = inboxChoices(workspaceId);
   if (id) choices.accounts[accountId] = id;
   else delete choices.accounts[accountId];
   save(`${INBOX_KEY_PREFIX}${workspaceId}`, JSON.stringify(choices));
 }
 
-export function resolveInboxSoundPreset(workspaceId: string | undefined, channel: string | undefined, accountId?: string | null): SoundPresetId {
+export function resolveInboxSoundPreset(
+  workspaceId: string | undefined,
+  channel: string | undefined,
+  accountId?: string | null,
+): SoundPresetId {
   const normalized = soundChannel(channel ?? "");
   if (!workspaceId) return CHANNEL_DEFAULTS[normalized] ?? "bright";
   const choices = inboxChoices(workspaceId);
-  return (accountId && choices.accounts[accountId]) || choices.channels[normalized] || CHANNEL_DEFAULTS[normalized] || "bright";
+  return (
+    (accountId && choices.accounts[accountId]) ||
+    choices.channels[normalized] ||
+    CHANNEL_DEFAULTS[normalized] ||
+    "bright"
+  );
 }
 
 let audioContext: AudioContext | null = null;
@@ -123,7 +186,9 @@ export function playSoundPreset(id: SoundPresetId): void {
   const volume = getNotificationSoundVolume();
   if (volume === 0) return;
   try {
-    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const Ctor =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!Ctor) return;
     audioContext ??= new Ctor();
     if (audioContext.state === "suspended") void audioContext.resume();
@@ -144,5 +209,7 @@ export function playSoundPreset(id: SoundPresetId): void {
       oscillator.start(at);
       oscillator.stop(at + preset.length + 0.01);
     });
-  } catch { /* Browser audio may be unavailable or blocked until interaction. */ }
+  } catch {
+    /* Browser audio may be unavailable or blocked until interaction. */
+  }
 }

@@ -39,8 +39,7 @@ export const Route = createFileRoute("/whatsapp-secret-overflow-probe")({
 });
 
 /** A realistic 300+ char Meta system-user token with no spaces or hyphens. */
-const LONG_TOKEN =
-  "EAAG" + "ZAbcdefghijklmnopqrstuvwxyz0123456789".repeat(9) + "ZDZD";
+const LONG_TOKEN = "EAAG" + "ZAbcdefghijklmnopqrstuvwxyz0123456789".repeat(9) + "ZDZD";
 
 const VALIDATION: SecretNameValidation = {
   isChecking: false,

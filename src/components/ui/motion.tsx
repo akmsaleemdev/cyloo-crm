@@ -1,10 +1,5 @@
 import React, { forwardRef } from "react";
-import {
-  motion,
-  useReducedMotion,
-  type HTMLMotionProps,
-  type Variants,
-} from "framer-motion";
+import { motion, useReducedMotion, type HTMLMotionProps, type Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,48 +22,47 @@ export const MOTION_EASINGS = {
 /**
  * Page Transition: Subtle fade-in with micro-slide on Y axis
  */
-export const PageTransition = forwardRef<
-  HTMLDivElement,
-  HTMLMotionProps<"div">
->(({ children, className, ...props }, ref) => {
-  const shouldReduceMotion = useReducedMotion();
+export const PageTransition = forwardRef<HTMLDivElement, HTMLMotionProps<"div">>(
+  ({ children, className, ...props }, ref) => {
+    const shouldReduceMotion = useReducedMotion();
 
-  const variants: Variants = {
-    initial: {
-      opacity: 0,
-      y: shouldReduceMotion ? 0 : 8,
-    },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: shouldReduceMotion ? 0 : MOTION_TIMINGS.standard,
-        ease: MOTION_EASINGS.easeOut,
+    const variants: Variants = {
+      initial: {
+        opacity: 0,
+        y: shouldReduceMotion ? 0 : 8,
       },
-    },
-    exit: {
-      opacity: 0,
-      y: shouldReduceMotion ? 0 : -6,
-      transition: {
-        duration: shouldReduceMotion ? 0 : MOTION_TIMINGS.fast,
+      animate: {
+        opacity: 1,
+        y: 0,
+        transition: {
+          duration: shouldReduceMotion ? 0 : MOTION_TIMINGS.standard,
+          ease: MOTION_EASINGS.easeOut,
+        },
       },
-    },
-  };
+      exit: {
+        opacity: 0,
+        y: shouldReduceMotion ? 0 : -6,
+        transition: {
+          duration: shouldReduceMotion ? 0 : MOTION_TIMINGS.fast,
+        },
+      },
+    };
 
-  return (
-    <motion.div
-      ref={ref}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={variants}
-      className={cn("w-full h-full", className)}
-      {...props}
-    >
-      {children}
-    </motion.div>
-  );
-});
+    return (
+      <motion.div
+        ref={ref}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={variants}
+        className={cn("w-full h-full", className)}
+        {...props}
+      >
+        {children}
+      </motion.div>
+    );
+  },
+);
 PageTransition.displayName = "PageTransition";
 
 /**
@@ -109,9 +103,12 @@ MotionCard.displayName = "MotionCard";
 /**
  * Stagger Container & Items for choreography
  */
-export const StaggerContainer: React.FC<
-  HTMLMotionProps<"div"> & { staggerDelay?: number }
-> = ({ children, className, staggerDelay = 0.04, ...props }) => {
+export const StaggerContainer: React.FC<HTMLMotionProps<"div"> & { staggerDelay?: number }> = ({
+  children,
+  className,
+  staggerDelay = 0.04,
+  ...props
+}) => {
   const shouldReduceMotion = useReducedMotion();
 
   const containerVariants: Variants = {
@@ -168,9 +165,13 @@ export const StaggerItem: React.FC<HTMLMotionProps<"div">> = ({
 /**
  * Subtle Fade In Wrapper
  */
-export const FadeIn: React.FC<
-  HTMLMotionProps<"div"> & { delay?: number; duration?: number }
-> = ({ children, className, delay = 0, duration = 0.25, ...props }) => {
+export const FadeIn: React.FC<HTMLMotionProps<"div"> & { delay?: number; duration?: number }> = ({
+  children,
+  className,
+  delay = 0,
+  duration = 0.25,
+  ...props
+}) => {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -189,4 +190,3 @@ export const FadeIn: React.FC<
     </motion.div>
   );
 };
-

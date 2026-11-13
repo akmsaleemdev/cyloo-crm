@@ -11,7 +11,7 @@ export async function processFacebookFeedEntries(
   payload: unknown,
   attribution?: { workspaceId: string | null },
 ): Promise<void> {
-  const entries = ((payload as { entry?: Array<Record<string, unknown>> })?.entry ?? []);
+  const entries = (payload as { entry?: Array<Record<string, unknown>> })?.entry ?? [];
   const failures: string[] = [];
 
   for (const entry of entries) {
@@ -26,7 +26,8 @@ export async function processFacebookFeedEntries(
     for (const account of accounts) {
       if (attribution && !attribution.workspaceId) attribution.workspaceId = account.workspaceId;
       const res = await ingestSocialComments(admin, account, comments);
-      if (res.failed > 0) failures.push(`workspace ${account.workspaceId}: ${res.failed} comment(s) failed`);
+      if (res.failed > 0)
+        failures.push(`workspace ${account.workspaceId}: ${res.failed} comment(s) failed`);
     }
   }
 

@@ -46,7 +46,9 @@ export async function sendMessengerMessage(
 
   const messagingType = input.messagingType ?? "RESPONSE";
   if (messagingType === "MESSAGE_TAG" && !input.tag) {
-    throw new MessengerSendError("generic", "MESSAGE_TAG sends require an explicit tag", { local: true });
+    throw new MessengerSendError("generic", "MESSAGE_TAG sends require an explicit tag", {
+      local: true,
+    });
   }
 
   const message: Record<string, unknown> = {};
@@ -58,14 +60,18 @@ export async function sendMessengerMessage(
   } else if (input.text && input.text.trim()) {
     message.text = input.text.trim();
   } else {
-    throw new MessengerSendError("generic", "Message must have text or an attachment", { local: true });
+    throw new MessengerSendError("generic", "Message must have text or an attachment", {
+      local: true,
+    });
   }
 
   let token: string;
   try {
     token = decryptToken(input.accessTokenCipher);
   } catch {
-    throw new MessengerSendError("token_invalid", "Stored Page token could not be read", { local: true });
+    throw new MessengerSendError("token_invalid", "Stored Page token could not be read", {
+      local: true,
+    });
   }
 
   const body: Record<string, unknown> = {
@@ -100,7 +106,11 @@ export async function sendMessengerMessage(
       message: detail,
       httpStatus: resp.status,
     });
-    throw new MessengerSendError(kind, detail, { code: e.code, subcode: e.error_subcode, type: e.type });
+    throw new MessengerSendError(kind, detail, {
+      code: e.code,
+      subcode: e.error_subcode,
+      type: e.type,
+    });
   }
   return {
     messageId: json.message_id ?? "",

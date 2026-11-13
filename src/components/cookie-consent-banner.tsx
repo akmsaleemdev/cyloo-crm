@@ -159,9 +159,7 @@ function CookiePreferencesDialog({
                 checked={cat.required ? true : categories[cat.id]}
                 disabled={cat.required || saving}
                 aria-label={`${cat.label} cookies`}
-                onCheckedChange={(checked) =>
-                  setCategories({ ...categories, [cat.id]: checked })
-                }
+                onCheckedChange={(checked) => setCategories({ ...categories, [cat.id]: checked })}
               />
             </div>
           ))}

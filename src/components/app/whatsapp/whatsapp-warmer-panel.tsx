@@ -108,7 +108,10 @@ export function WhatsAppWarmerPanel() {
 
   const removeMessage = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await sbAny(supabase).from("whatsapp_warmer_messages").delete().eq("id", id);
+      const { error } = await sbAny(supabase)
+        .from("whatsapp_warmer_messages")
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["warmer_messages", ws?.id] }),
@@ -133,7 +136,9 @@ export function WhatsAppWarmerPanel() {
           <h2 className="font-bold text-xl flex items-center gap-2">
             <Flame className="w-5 h-5 text-warning" /> WhatsApp Warmer
           </h2>
-          <p className="text-sm text-muted-foreground">Automated human behavior for safer messaging.</p>
+          <p className="text-sm text-muted-foreground">
+            Automated human behavior for safer messaging.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Switch

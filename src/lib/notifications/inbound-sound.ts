@@ -19,7 +19,11 @@ export function setInboundSoundEnabled(on: boolean): void {
   }
 }
 
-export function playInboundChime(channel?: string, workspaceId?: string, channelAccountId?: string | null): void {
+export function playInboundChime(
+  channel?: string,
+  workspaceId?: string,
+  channelAccountId?: string | null,
+): void {
   if (typeof window === "undefined" || !isInboundSoundEnabled()) return;
   playSoundPreset(resolveInboxSoundPreset(workspaceId, channel, channelAccountId));
 }

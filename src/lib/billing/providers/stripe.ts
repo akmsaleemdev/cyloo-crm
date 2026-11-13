@@ -83,8 +83,15 @@ export const stripeProvider: BillingProvider = {
   id: "stripe",
   displayName: "Stripe",
   supports: {
-    checkout: true, customer_portal: true, usage_reporting: true, tax: true, coupons: true,
-    payments: true, refunds: true, partial_refunds: true, webhooks: true,
+    checkout: true,
+    customer_portal: true,
+    usage_reporting: true,
+    tax: true,
+    coupons: true,
+    payments: true,
+    refunds: true,
+    partial_refunds: true,
+    webhooks: true,
   },
 
   async createCustomer(input: CustomerInput): Promise<CustomerRef> {
@@ -158,7 +165,8 @@ export const stripeProvider: BillingProvider = {
   async reportUsage(input: UsageReport): Promise<void> {
     // Requires subscription_item id resolved from meter_code mapping.
     // This is orchestrated in the billing service layer; the raw call:
-    if (!input.subscription_id) throw new Error("subscription_id required for Stripe usage reporting");
+    if (!input.subscription_id)
+      throw new Error("subscription_id required for Stripe usage reporting");
     await stripeCall("POST", `/subscription_items/${input.subscription_id}/usage_records`, {
       quantity: input.quantity,
       timestamp: Math.floor(new Date(input.occurred_at).getTime() / 1000),
@@ -188,7 +196,9 @@ export const stripeProvider: BillingProvider = {
   async verifyWebhook({ raw_body, signature, secret }: WebhookVerifyInput): Promise<WebhookEvent> {
     if (!signature) throw new Error("Missing Stripe signature header");
     // Stripe's signature format: t=<ts>,v1=<hex>
-    const parts = Object.fromEntries(signature.split(",").map((p) => p.split("=") as [string, string]));
+    const parts = Object.fromEntries(
+      signature.split(",").map((p) => p.split("=") as [string, string]),
+    );
     const ts = parts.t;
     const v1 = parts.v1;
     if (!ts || !v1) throw new Error("Malformed Stripe signature");
@@ -248,7 +258,14 @@ export const stripeProvider: BillingProvider = {
       provider_payment_id: input.provider_payment_id,
       amount_cents: r.amount ?? 0,
       currency: (r.currency ?? "usd").toUpperCase(),
-      status: r.status === "succeeded" ? "succeeded" : r.status === "pending" ? "pending" : r.status === "failed" ? "failed" : "canceled",
+      status:
+        r.status === "succeeded"
+          ? "succeeded"
+          : r.status === "pending"
+            ? "pending"
+            : r.status === "failed"
+              ? "failed"
+              : "canceled",
       reason: r.reason ?? input.reason,
       created_at: new Date((r.created ?? Math.floor(Date.now() / 1000)) * 1000).toISOString(),
     };
@@ -258,11 +275,17 @@ export const stripeProvider: BillingProvider = {
 function mapPaymentIntent(pi: any): PaymentIntent {
   const stripeStatus = pi.status as string;
   const status: PaymentIntent["status"] =
-    stripeStatus === "succeeded" ? "succeeded" :
-    stripeStatus === "processing" ? "processing" :
-    stripeStatus === "requires_action" || stripeStatus === "requires_confirmation" ? "requires_action" :
-    stripeStatus === "canceled" ? "canceled" :
-    stripeStatus === "requires_payment_method" ? "failed" : "pending";
+    stripeStatus === "succeeded"
+      ? "succeeded"
+      : stripeStatus === "processing"
+        ? "processing"
+        : stripeStatus === "requires_action" || stripeStatus === "requires_confirmation"
+          ? "requires_action"
+          : stripeStatus === "canceled"
+            ? "canceled"
+            : stripeStatus === "requires_payment_method"
+              ? "failed"
+              : "pending";
   return {
     provider: "stripe",
     provider_payment_id: pi.id,

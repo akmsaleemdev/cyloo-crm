@@ -100,11 +100,7 @@ console.warn = (...args: Parameters<typeof console.warn>) => {
 
 console.error = (...args: Parameters<typeof console.error>) => {
   const msg = typeof args[0] === "string" ? args[0] : "";
-  if (
-    msg.includes("Not implemented") ||
-    msg.includes("Error: Uncaught") ||
-    msg.includes("act()")
-  )
+  if (msg.includes("Not implemented") || msg.includes("Error: Uncaught") || msg.includes("act()"))
     return;
   originalError(...args);
 };
@@ -119,4 +115,3 @@ export function createMockWorkspaceId(): string {
 export function createMockUserId(): string {
   return crypto.randomUUID();
 }
-

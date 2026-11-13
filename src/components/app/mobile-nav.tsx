@@ -77,11 +77,7 @@ export function MobileNav() {
         <SheetHeader className="border-b border-sidebar-border px-3 h-header flex-row items-center space-y-0 justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="grid place-items-center w-8 h-8 rounded-control overflow-hidden">
-              <img
-                src={brand.logoUrl ?? cylooLogo}
-                alt={`${brand.name} logo`}
-                className="size-6"
-              />
+              <img src={brand.logoUrl ?? cylooLogo} alt={`${brand.name} logo`} className="size-6" />
             </div>
             <SheetTitle className="font-display text-sidebar-accent-foreground truncate">
               {brand.name}
@@ -113,7 +109,10 @@ export function MobileNav() {
                 {groups.map((group) => {
                   const items = NAV_ITEMS.filter((n) => n.group === group.id)
                     .filter(
-                      (n) => n.to !== "/settings/white-label" || workspaceRole === "owner" || workspaceRole === "admin",
+                      (n) =>
+                        n.to !== "/settings/white-label" ||
+                        workspaceRole === "owner" ||
+                        workspaceRole === "admin",
                     )
                     .filter(
                       (n) => !n.permission || permsLoading || isSuperAdmin || can(n.permission),

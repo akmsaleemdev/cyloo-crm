@@ -28,16 +28,18 @@ export async function log(entry: LogEntry): Promise<void> {
   else console.log(line, entry.data ?? {});
 
   try {
-    await sbAny(supabaseAdmin).from("provider_logs" as never).insert({
-      workspace_id: entry.workspaceId ?? null,
-      channel_account_id: entry.channelAccountId ?? null,
-      provider: entry.provider ?? null,
-      level: entry.level,
-      scope: entry.scope,
-      message: entry.message,
-      data: entry.data ?? {},
-      correlation_id: entry.correlationId ?? null,
-    } as never);
+    await sbAny(supabaseAdmin)
+      .from("provider_logs" as never)
+      .insert({
+        workspace_id: entry.workspaceId ?? null,
+        channel_account_id: entry.channelAccountId ?? null,
+        provider: entry.provider ?? null,
+        level: entry.level,
+        scope: entry.scope,
+        message: entry.message,
+        data: entry.data ?? {},
+        correlation_id: entry.correlationId ?? null,
+      } as never);
   } catch (err) {
     // Never let logging kill the caller.
     console.error("[msg:logger] failed to persist log", err);

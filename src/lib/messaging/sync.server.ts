@@ -79,7 +79,11 @@ export async function runSync(input: RunSyncInput): Promise<RunSyncResult> {
   const startedAt = Date.now();
 
   // read cursor (idempotent, best-effort)
-  const cursorBefore = await readCursor(input.workspaceId, input.channelAccountId ?? null, input.kind);
+  const cursorBefore = await readCursor(
+    input.workspaceId,
+    input.channelAccountId ?? null,
+    input.kind,
+  );
 
   // create job row
   const { data: created, error: insertErr } = await supabaseAdmin
@@ -111,7 +115,8 @@ export async function runSync(input: RunSyncInput): Promise<RunSyncResult> {
   try {
     result = await dispatch(input, correlationId);
     if (result.failed > 0 && result.succeeded > 0) status = "partial";
-    else if (result.failed > 0 && result.succeeded === 0 && result.processed > 0) status = "partial";
+    else if (result.failed > 0 && result.succeeded === 0 && result.processed > 0)
+      status = "partial";
     if (result.partial) status = "partial";
   } catch (err) {
     status = "failed";
@@ -179,17 +184,28 @@ export async function runSync(input: RunSyncInput): Promise<RunSyncResult> {
 
 async function dispatch(input: RunSyncInput, correlationId: string): Promise<OpResult> {
   switch (input.kind) {
-    case "templates":            return syncTemplates(input);
-    case "business_profile":     return syncBusinessProfile(input);
-    case "phone_numbers":        return syncPhoneNumbers(input);
-    case "media_cleanup":        return syncMediaCleanup(input);
-    case "webhook_drain":        return syncWebhookDrain(correlationId);
-    case "outbox_drain":         return syncOutboxDrain(correlationId);
-    case "scheduled_messages":   return syncScheduledMessages();
-    case "contacts_reconcile":   return syncContactsReconcile(input);
-    case "conversations_reconcile": return syncConversationsReconcile(input);
-    case "status_reconcile":     return syncStatusReconcile(input);
-    case "account_health":       return syncAccountHealth(input);
+    case "templates":
+      return syncTemplates(input);
+    case "business_profile":
+      return syncBusinessProfile(input);
+    case "phone_numbers":
+      return syncPhoneNumbers(input);
+    case "media_cleanup":
+      return syncMediaCleanup(input);
+    case "webhook_drain":
+      return syncWebhookDrain(correlationId);
+    case "outbox_drain":
+      return syncOutboxDrain(correlationId);
+    case "scheduled_messages":
+      return syncScheduledMessages();
+    case "contacts_reconcile":
+      return syncContactsReconcile(input);
+    case "conversations_reconcile":
+      return syncConversationsReconcile(input);
+    case "status_reconcile":
+      return syncStatusReconcile(input);
+    case "account_health":
+      return syncAccountHealth(input);
   }
 }
 
@@ -228,7 +244,12 @@ async function syncBusinessProfile(input: RunSyncInput): Promise<OpResult> {
     .eq("id", input.channelAccountId);
 
   void impl;
-  return { processed: profile ? 1 : 0, succeeded: profile ? 1 : 0, failed: 0, metadata: { profile } };
+  return {
+    processed: profile ? 1 : 0,
+    succeeded: profile ? 1 : 0,
+    failed: 0,
+    metadata: { profile },
+  };
 }
 
 async function syncPhoneNumbers(input: RunSyncInput): Promise<OpResult> {
@@ -242,7 +263,16 @@ async function syncPhoneNumbers(input: RunSyncInput): Promise<OpResult> {
     { headers: { Authorization: `Bearer ${creds.accessToken}` } },
   );
   if (!res.ok) throw new Error(`phone_numbers fetch failed: ${res.status}`);
-  const body = (await res.json()) as { data?: Array<{ id: string; display_phone_number: string; verified_name?: string; code_verification_status?: string; quality_rating?: string; name_status?: string }> };
+  const body = (await res.json()) as {
+    data?: Array<{
+      id: string;
+      display_phone_number: string;
+      verified_name?: string;
+      code_verification_status?: string;
+      quality_rating?: string;
+      name_status?: string;
+    }>;
+  };
   const nums = body.data ?? [];
 
   let matched = 0;
@@ -257,23 +287,39 @@ async function syncPhoneNumbers(input: RunSyncInput): Promise<OpResult> {
         .from("channel_accounts" as never)
         .update({
           phone_number: n.display_phone_number,
-          metadata: { ...r.metadata, verified_name: n.verified_name, quality_rating: n.quality_rating, code_verification_status: n.code_verification_status, name_status: n.name_status },
+          metadata: {
+            ...r.metadata,
+            verified_name: n.verified_name,
+            quality_rating: n.quality_rating,
+            code_verification_status: n.code_verification_status,
+            name_status: n.name_status,
+          },
         } as never)
         .eq("id", r.id);
       matched += 1;
     }
   }
-  return { processed: nums.length, succeeded: matched, failed: nums.length - matched, metadata: { totalOnWaba: nums.length, matchedLocal: matched } };
+  return {
+    processed: nums.length,
+    succeeded: matched,
+    failed: nums.length - matched,
+    metadata: { totalOnWaba: nums.length, matchedLocal: matched },
+  };
 }
 
 async function syncMediaCleanup(input: RunSyncInput): Promise<OpResult> {
-  const { data, error } = await sbAny(supabaseAdmin).rpc("claim_expired_media" as never, { _limit: 200 } as never);
+  const { data, error } = await sbAny(supabaseAdmin).rpc(
+    "claim_expired_media" as never,
+    { _limit: 200 } as never,
+  );
   if (error) throw new Error(error.message);
   const rows = (data ?? []) as Array<{ id: string; storage_bucket: string; storage_path: string }>;
 
   let deleted = 0;
   for (const r of rows) {
-    const { error: rmErr } = await supabaseAdmin.storage.from(r.storage_bucket).remove([r.storage_path]);
+    const { error: rmErr } = await supabaseAdmin.storage
+      .from(r.storage_bucket)
+      .remove([r.storage_path]);
     if (!rmErr) deleted += 1;
   }
   void input;
@@ -321,7 +367,11 @@ async function syncContactsReconcile(input: RunSyncInput): Promise<OpResult> {
     .eq("direction", "inbound")
     .is("contact_id" as never, null)
     .limit(500);
-  const rows = (orphaned ?? []) as Array<{ id: string; conversation_id: string; metadata: Record<string, unknown> }>;
+  const rows = (orphaned ?? []) as Array<{
+    id: string;
+    conversation_id: string;
+    metadata: Record<string, unknown>;
+  }>;
   let fixed = 0;
   for (const m of rows) {
     const waId = (m.metadata as { from?: string })?.from;
@@ -368,7 +418,12 @@ async function syncConversationsReconcile(input: RunSyncInput): Promise<OpResult
       .limit(1)
       .maybeSingle();
     if (!last) continue;
-    const l = last as unknown as { created_at: string; body: string | null; direction: string; message_type: string };
+    const l = last as unknown as {
+      created_at: string;
+      body: string | null;
+      direction: string;
+      message_type: string;
+    };
     await supabaseAdmin
       .from("conversations" as never)
       .update({
@@ -445,7 +500,9 @@ async function readCursor(
     .select("last_success_at")
     .eq("workspace_id", workspaceId)
     .eq("kind", kind);
-  q = channelAccountId ? q.eq("channel_account_id", channelAccountId) : q.is("channel_account_id", null);
+  q = channelAccountId
+    ? q.eq("channel_account_id", channelAccountId)
+    : q.is("channel_account_id", null);
   const { data } = await q.maybeSingle();
   return (data as { last_success_at?: string } | null)?.last_success_at ?? null;
 }
@@ -482,10 +539,15 @@ async function upsertCursor(args: {
 // retry claim (used by cron)
 // ---------------------------------------------------------------------------
 
-export async function claimFailedJobsForRetry(limit = 20): Promise<Array<{
-  id: string; workspace_id: string; channel_account_id: string | null;
-  kind: SyncKind; attempt: number;
-}>> {
+export async function claimFailedJobsForRetry(limit = 20): Promise<
+  Array<{
+    id: string;
+    workspace_id: string;
+    channel_account_id: string | null;
+    kind: SyncKind;
+    attempt: number;
+  }>
+> {
   const { data } = await supabaseAdmin
     .from("sync_jobs" as never)
     .select("id, workspace_id, channel_account_id, kind, attempt")
@@ -496,7 +558,10 @@ export async function claimFailedJobsForRetry(limit = 20): Promise<Array<{
     .order("next_retry_at", { ascending: true })
     .limit(limit);
   return (data ?? []) as Array<{
-    id: string; workspace_id: string; channel_account_id: string | null;
-    kind: SyncKind; attempt: number;
+    id: string;
+    workspace_id: string;
+    channel_account_id: string | null;
+    kind: SyncKind;
+    attempt: number;
   }>;
 }

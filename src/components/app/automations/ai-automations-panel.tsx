@@ -33,10 +33,16 @@ export function AiAutomationsPanel() {
         <div className="flex items-center gap-2">
           <Bot className="w-4 h-4 text-primary" />
           <h2 className="font-display text-lg font-semibold">AI Automations</h2>
-          {!isAdmin && <Badge variant="secondary" className="ml-2 gap-1"><Shield className="w-3 h-3"/>Read-only</Badge>}
+          {!isAdmin && (
+            <Badge variant="secondary" className="ml-2 gap-1">
+              <Shield className="w-3 h-3" />
+              Read-only
+            </Badge>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Enable AI-driven actions across your CRM. Each automation can require confirmation before executing.
+          Enable AI-driven actions across your CRM. Each automation can require confirmation before
+          executing.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -56,7 +62,13 @@ export function AiAutomationsPanel() {
                     <p className="text-xs text-muted-foreground mt-1">{meta.description}</p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {meta.entities.map((e) => (
-                        <Badge key={e} variant="outline" className="text-[11px] py-0 px-1.5 capitalize">{e}</Badge>
+                        <Badge
+                          key={e}
+                          variant="outline"
+                          className="text-[11px] py-0 px-1.5 capitalize"
+                        >
+                          {e}
+                        </Badge>
                       ))}
                     </div>
                   </div>
@@ -74,7 +86,9 @@ export function AiAutomationsPanel() {
                   <Switch
                     disabled={!isAdmin || !enabled}
                     checked={requireConfirm}
-                    onCheckedChange={(v) => update.mutate({ automationType: t, requireConfirmation: v })}
+                    onCheckedChange={(v) =>
+                      update.mutate({ automationType: t, requireConfirmation: v })
+                    }
                   />
                 </div>
               </Card>
@@ -91,7 +105,10 @@ export function AiAutomationsPanel() {
 }
 
 function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
-  const { data: pending, isLoading } = useSuggestions(workspaceId, { status: "pending", limit: 50 });
+  const { data: pending, isLoading } = useSuggestions(workspaceId, {
+    status: "pending",
+    limit: 50,
+  });
   const apply = useApplySuggestion(workspaceId);
   const reject = useRejectSuggestion(workspaceId);
 
@@ -104,7 +121,8 @@ function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
       {isLoading && <div className="text-xs text-muted-foreground">Loading</div>}
       {!isLoading && (pending?.length ?? 0) === 0 && (
         <div className="text-xs text-muted-foreground py-8 text-center">
-          No pending AI suggestions. Enable automations and interact with conversations, leads, or deals to generate suggestions.
+          No pending AI suggestions. Enable automations and interact with conversations, leads, or
+          deals to generate suggestions.
         </div>
       )}
       <ScrollArea type="hover" viewportClassName="max-h-[70vh]">
@@ -114,9 +132,14 @@ function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
             const applying = apply.isPending && apply.variables === s.id;
             const rejecting = reject.isPending && reject.variables === s.id;
             return (
-              <div key={s.id} className="rounded-control border border-border p-3 space-y-2 bg-surface hover:bg-muted/40 transition-colors">
+              <div
+                key={s.id}
+                className="rounded-control border border-border p-3 space-y-2 bg-surface hover:bg-muted/40 transition-colors"
+              >
                 <div className="flex items-center justify-between gap-2">
-                  <Badge variant="outline" className="text-[11px]">{meta?.label ?? s.automationType}</Badge>
+                  <Badge variant="outline" className="text-[11px]">
+                    {meta?.label ?? s.automationType}
+                  </Badge>
                   {s.confidence != null && (
                     <span className="text-[11px] text-muted-foreground ">
                       {(s.confidence * 100).toFixed(0)}% confidence
@@ -124,10 +147,13 @@ function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
                   )}
                 </div>
                 <div className="text-sm font-medium">{s.title}</div>
-                {s.summary && <div className="text-xs text-muted-foreground line-clamp-3">{s.summary}</div>}
+                {s.summary && (
+                  <div className="text-xs text-muted-foreground line-clamp-3">{s.summary}</div>
+                )}
                 <div className="flex items-center justify-between pt-1">
                   <span className="text-[11px] text-muted-foreground">
-                    {s.entityType} · {formatDistanceToNow(new Date(s.createdAt), { addSuffix: true })}
+                    {s.entityType} ·{" "}
+                    {formatDistanceToNow(new Date(s.createdAt), { addSuffix: true })}
                   </span>
                   <div className="flex gap-1.5">
                     <Button
@@ -137,7 +163,11 @@ function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
                       disabled={rejecting || applying}
                       onClick={() => reject.mutate(s.id)}
                     >
-                      {rejecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
+                      {rejecting ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <X className="w-3 h-3" />
+                      )}
                     </Button>
                     <Button
                       size="sm"
@@ -145,7 +175,11 @@ function SuggestionQueue({ workspaceId }: { workspaceId: string | undefined }) {
                       disabled={applying || rejecting}
                       onClick={() => apply.mutate(s.id)}
                     >
-                      {applying ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                      {applying ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Check className="w-3 h-3" />
+                      )}
                       <span className="ml-1 text-xs">Apply</span>
                     </Button>
                   </div>

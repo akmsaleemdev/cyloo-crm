@@ -69,9 +69,18 @@ export async function provisionMeetingForAppointment(input: {
   supabaseAdmin: {
     from: (t: string) => {
       select: (s: string) => {
-        eq: (a: string, b: unknown) => {
-          eq: (a: string, b: unknown) => {
-            order: (a: string, b: unknown) => {
+        eq: (
+          a: string,
+          b: unknown,
+        ) => {
+          eq: (
+            a: string,
+            b: unknown,
+          ) => {
+            order: (
+              a: string,
+              b: unknown,
+            ) => {
               limit: (n: number) => { maybeSingle: () => Promise<{ data: unknown }> };
             };
           };
@@ -91,7 +100,9 @@ export async function provisionMeetingForAppointment(input: {
   let accountRow: MeetingAccount | null = null;
   const q = supabaseAdmin
     .from("meeting_provider_accounts")
-    .select("id, workspace_id, provider, display_name, status, credentials_ciphertext, config, is_default")
+    .select(
+      "id, workspace_id, provider, display_name, status, credentials_ciphertext, config, is_default",
+    )
     .eq("workspace_id", req.workspace_id)
     .eq("provider", kind)
     .order("is_default", { ascending: false })
@@ -102,28 +113,32 @@ export async function provisionMeetingForAppointment(input: {
   const provider = meetingProviderForKind(kind);
   try {
     const artifact = await provider.createMeeting(accountRow, req);
-    await sbAny(supabaseAdmin).from("meeting_history").insert({
-      workspace_id: req.workspace_id,
-      appointment_id: req.appointment_id,
-      provider: kind,
-      provider_account_id: accountRow?.id ?? null,
-      action: "created",
-      join_url: artifact.join_url,
-      external_meeting_id: artifact.external_meeting_id ?? null,
-      payload: artifact.raw ?? {},
-    });
+    await sbAny(supabaseAdmin)
+      .from("meeting_history")
+      .insert({
+        workspace_id: req.workspace_id,
+        appointment_id: req.appointment_id,
+        provider: kind,
+        provider_account_id: accountRow?.id ?? null,
+        action: "created",
+        join_url: artifact.join_url,
+        external_meeting_id: artifact.external_meeting_id ?? null,
+        payload: artifact.raw ?? {},
+      });
     return artifact;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    await sbAny(supabaseAdmin).from("meeting_history").insert({
-      workspace_id: req.workspace_id,
-      appointment_id: req.appointment_id,
-      provider: kind,
-      provider_account_id: accountRow?.id ?? null,
-      action: "error",
-      error: msg,
-      payload: {},
-    });
+    await sbAny(supabaseAdmin)
+      .from("meeting_history")
+      .insert({
+        workspace_id: req.workspace_id,
+        appointment_id: req.appointment_id,
+        provider: kind,
+        provider_account_id: accountRow?.id ?? null,
+        action: "error",
+        error: msg,
+        payload: {},
+      });
     // Graceful fallback: return a provider-shaped stub so booking still succeeds
     return {
       provider: kind,
@@ -135,4 +150,10 @@ export async function provisionMeetingForAppointment(input: {
   }
 }
 
-export type { MeetingProvider, MeetingProviderKind, MeetingAccount, MeetingRequest, MeetingArtifact };
+export type {
+  MeetingProvider,
+  MeetingProviderKind,
+  MeetingAccount,
+  MeetingRequest,
+  MeetingArtifact,
+};

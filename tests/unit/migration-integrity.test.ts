@@ -23,10 +23,7 @@ function extractTableBlock(sql: string, tableName: string): string | null {
 }
 
 describe("Database Migration Integrity", () => {
-  const enterpriseMigration = join(
-    MIGRATIONS_DIR,
-    "20261108120000_enterprise_core_modules.sql",
-  );
+  const enterpriseMigration = join(MIGRATIONS_DIR, "20261108120000_enterprise_core_modules.sql");
 
   let sql: string;
   try {
@@ -89,10 +86,9 @@ describe("Database Migration Integrity", () => {
       const tableBlock = extractTableBlock(sql, table);
       expect(tableBlock, `Table "${table}" should be found`).not.toBeNull();
       if (tableBlock) {
-        expect(
-          tableBlock.toLowerCase(),
-          `Table "${table}" should have workspace_id`,
-        ).toContain("workspace_id");
+        expect(tableBlock.toLowerCase(), `Table "${table}" should have workspace_id`).toContain(
+          "workspace_id",
+        );
       }
     }
   });
@@ -106,10 +102,7 @@ describe("Database Migration Integrity", () => {
           tableBlock.toLowerCase().includes("created_at") ||
           tableBlock.toLowerCase().includes("executed_at") ||
           tableBlock.toLowerCase().includes("checked_at");
-        expect(
-          hasTimestamp,
-          `Table "${table}" should have a timestamp column`,
-        ).toBe(true);
+        expect(hasTimestamp, `Table "${table}" should have a timestamp column`).toBe(true);
       }
     }
   });
@@ -121,10 +114,7 @@ describe("Database Migration Integrity", () => {
         const hasUUID =
           tableBlock.toLowerCase().includes("uuid") &&
           tableBlock.toLowerCase().includes("primary key");
-        expect(
-          hasUUID,
-          `Table "${table}" should use UUID primary key`,
-        ).toBe(true);
+        expect(hasUUID, `Table "${table}" should use UUID primary key`).toBe(true);
       }
     }
   });

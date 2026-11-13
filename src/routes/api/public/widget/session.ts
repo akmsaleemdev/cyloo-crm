@@ -35,12 +35,16 @@ const BodySchema = z.object({
   // Pre-chat form — the visitor must identify themselves before chatting.
   visitorName: z.string().trim().min(2).max(120),
   visitorEmail: z.string().trim().email().max(255),
-  visitorPhone: z.string().trim().min(6).max(32).regex(/^[+0-9()\s-]+$/, "Invalid phone"),
+  visitorPhone: z
+    .string()
+    .trim()
+    .min(6)
+    .max(32)
+    .regex(/^[+0-9()\s-]+$/, "Invalid phone"),
   newConversation: z.boolean().optional(),
   previousSessionId: z.string().uuid().optional(),
   previousVisitorToken: z.string().min(10).max(200).optional(),
 });
-
 
 function json(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {

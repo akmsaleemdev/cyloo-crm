@@ -26,7 +26,6 @@ export type MeetingLocationKind =
   | "whatsapp"
   | "custom";
 
-
 export type AppointmentDraft = {
   workspace_id: string;
   event_type_id: string;
@@ -152,17 +151,28 @@ const REGISTRY: Record<MeetingLocationKind, MeetingProvider> = {
   whatsapp: whatsappProvider,
   custom: customProvider,
   zoom: { kind: "zoom", createMeeting: (a: AppointmentDraft) => provisionViaProvider("zoom", a) },
-  google_meet: { kind: "google_meet", createMeeting: (a: AppointmentDraft) => provisionViaProvider("google_meet", a) },
-  microsoft_teams: { kind: "microsoft_teams", createMeeting: (a: AppointmentDraft) => provisionViaProvider("microsoft_teams", a) },
-  jitsi: { kind: "jitsi", createMeeting: (a: AppointmentDraft) => provisionViaProvider("jitsi", a) },
-  livekit: { kind: "livekit", createMeeting: (a: AppointmentDraft) => provisionViaProvider("livekit", a) },
+  google_meet: {
+    kind: "google_meet",
+    createMeeting: (a: AppointmentDraft) => provisionViaProvider("google_meet", a),
+  },
+  microsoft_teams: {
+    kind: "microsoft_teams",
+    createMeeting: (a: AppointmentDraft) => provisionViaProvider("microsoft_teams", a),
+  },
+  jitsi: {
+    kind: "jitsi",
+    createMeeting: (a: AppointmentDraft) => provisionViaProvider("jitsi", a),
+  },
+  livekit: {
+    kind: "livekit",
+    createMeeting: (a: AppointmentDraft) => provisionViaProvider("livekit", a),
+  },
 };
 
 export function getMeetingProvider(kind: string): MeetingProvider {
-  return REGISTRY[(kind as MeetingLocationKind)] ?? customProvider;
+  return REGISTRY[kind as MeetingLocationKind] ?? customProvider;
 }
 
 export async function provisionMeeting(a: AppointmentDraft): Promise<MeetingArtifact> {
   return getMeetingProvider(a.location_kind).createMeeting(a);
 }
-

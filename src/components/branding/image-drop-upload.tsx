@@ -150,11 +150,17 @@ export function ImageDropUpload({
 
         <div className="min-w-0 flex-1">
           <p className="flex items-center gap-2 text-sm font-medium">
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
+            {busy ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <UploadCloud className="h-3.5 w-3.5" />
+            )}
             {busy ? "Uploading" : "Drag & drop, or click to upload"}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {broken && value ? "Image could not be loaded — check the URL." : (hint ?? "PNG, JPG, WEBP, SVG or ICO · max 5 MB")}
+            {broken && value
+              ? "Image could not be loaded — check the URL."
+              : (hint ?? "PNG, JPG, WEBP, SVG or ICO · max 5 MB")}
           </p>
         </div>
 

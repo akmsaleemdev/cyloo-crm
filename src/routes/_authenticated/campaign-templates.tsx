@@ -70,9 +70,7 @@ function CampaignTemplatesPage() {
                 className="px-3 py-2 rounded-control border border-border bg-background text-sm md:col-span-2"
                 placeholder="Description"
                 value={editing.description}
-                onChange={(e) =>
-                  setEditing((f) => (f ? { ...f, description: e.target.value } : f))
-                }
+                onChange={(e) => setEditing((f) => (f ? { ...f, description: e.target.value } : f))}
               />
               <textarea
                 className="px-3 py-2 rounded-control border border-border bg-background text-sm md:col-span-2 min-h-[120px] font-mono"
@@ -121,7 +119,10 @@ function CampaignTemplatesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map((t) => (
-              <div key={t.id} className="rounded-control border border-border bg-surface p-4 shadow-sm">
+              <div
+                key={t.id}
+                className="rounded-control border border-border bg-surface p-4 shadow-sm"
+              >
                 <div className="flex items-start gap-2">
                   <div className="w-9 h-9 bg-accent/10 text-accent grid place-items-center">
                     <FileText className="w-4 h-4" />

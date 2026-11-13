@@ -15,12 +15,16 @@ import type { HandoffPriority } from "@/lib/handoff/handoff.functions";
 
 const PRIORITY_BADGE: Record<HandoffPriority, { label: string; className: string }> = {
   urgent: { label: "Urgent", className: "bg-red-500/15 text-red-600 border-red-500/30" },
-  high:   { label: "High",   className: "bg-orange-500/15 text-orange-600 border-orange-500/30" },
+  high: { label: "High", className: "bg-orange-500/15 text-orange-600 border-orange-500/30" },
   normal: { label: "Normal", className: "bg-muted text-foreground border-transparent" },
-  low:    { label: "Low",    className: "bg-muted/60 text-muted-foreground border-transparent" },
+  low: { label: "Low", className: "bg-muted/60 text-muted-foreground border-transparent" },
 };
 
-export function HandoffQueuePanel({ onOpenConversation }: { onOpenConversation?: (id: string) => void }) {
+export function HandoffQueuePanel({
+  onOpenConversation,
+}: {
+  onOpenConversation?: (id: string) => void;
+}) {
   const queueQ = useHandoffQueue("waiting");
   const claim = useClaimFromQueue();
   const deptQ = useDepartments();
@@ -59,14 +63,22 @@ export function HandoffQueuePanel({ onOpenConversation }: { onOpenConversation?:
               const dept = q.target_department_id ? deptById.get(q.target_department_id) : null;
               const p = PRIORITY_BADGE[q.priority];
               return (
-                <li key={q.id} className="rounded-control border p-3 hover:bg-muted/40 transition-colors">
+                <li
+                  key={q.id}
+                  className="rounded-control border p-3 hover:bg-muted/40 transition-colors"
+                >
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className={p.className}>{p.label}</Badge>
+                        <Badge variant="outline" className={p.className}>
+                          {p.label}
+                        </Badge>
                         {dept ? (
                           <span className="inline-flex items-center gap-1 text-xs">
-                            <span className="h-2 w-2 rounded-full" style={{ background: dept.color }} />
+                            <span
+                              className="h-2 w-2 rounded-full"
+                              style={{ background: dept.color }}
+                            />
                             {dept.name}
                           </span>
                         ) : null}
@@ -81,9 +93,7 @@ export function HandoffQueuePanel({ onOpenConversation }: { onOpenConversation?:
                           {q.required_skills.join(", ")}
                         </p>
                       ) : null}
-                      {q.reason ? (
-                        <p className="mt-1 text-sm truncate">{q.reason}</p>
-                      ) : null}
+                      {q.reason ? <p className="mt-1 text-sm truncate">{q.reason}</p> : null}
                     </div>
                     <div className="flex flex-col gap-1.5 shrink-0">
                       <Button
@@ -92,7 +102,11 @@ export function HandoffQueuePanel({ onOpenConversation }: { onOpenConversation?:
                         onClick={() => claim.mutate(q.id)}
                         disabled={claim.isPending}
                       >
-                        {claim.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Claim"}
+                        {claim.isPending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Claim"
+                        )}
                       </Button>
                       {onOpenConversation ? (
                         <Button

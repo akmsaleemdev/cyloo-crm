@@ -62,8 +62,8 @@ export async function extractFromUrl(url: string): Promise<UrlExtractResult> {
 
   // Grab <title>
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  const title = decodeEntities((titleMatch?.[1] ?? "").replace(/\s+/g, " ").trim())
-    || parsed.hostname;
+  const title =
+    decodeEntities((titleMatch?.[1] ?? "").replace(/\s+/g, " ").trim()) || parsed.hostname;
 
   // Prefer <main> or <article> if present, otherwise fall back to <body>.
   const scope =
@@ -74,7 +74,18 @@ export async function extractFromUrl(url: string): Promise<UrlExtractResult> {
   html = scope;
 
   // Strip noisy elements before flattening tags.
-  for (const t of ["script", "style", "noscript", "svg", "iframe", "form", "nav", "header", "footer", "aside"]) {
+  for (const t of [
+    "script",
+    "style",
+    "noscript",
+    "svg",
+    "iframe",
+    "form",
+    "nav",
+    "header",
+    "footer",
+    "aside",
+  ]) {
     html = stripTag(html, t);
   }
 

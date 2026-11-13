@@ -3,8 +3,8 @@
  * before showing app content again. The Supabase session stays valid so we
  * don't force a full re-login, matching the Slack/1Password model.
  */
-import { create } from 'zustand';
-import { AppState, type AppStateStatus } from 'react-native';
+import { create } from "zustand";
+import { AppState, type AppStateStatus } from "react-native";
 
 const IDLE_MS = 2 * 60 * 1000; // 2 minutes background → lock
 
@@ -31,10 +31,10 @@ let bound = false;
 export function bindAppLock() {
   if (bound) return;
   bound = true;
-  AppState.addEventListener('change', (state: AppStateStatus) => {
+  AppState.addEventListener("change", (state: AppStateStatus) => {
     const s = useLockStore.getState();
-    if (state === 'background' || state === 'inactive') s.markBackground();
-    if (state === 'active') s.evaluate();
+    if (state === "background" || state === "inactive") s.markBackground();
+    if (state === "active") s.evaluate();
   });
 }
 

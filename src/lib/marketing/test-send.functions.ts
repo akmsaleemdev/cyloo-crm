@@ -90,8 +90,7 @@ export const sendTestTemplate = createServerFn({ method: "POST" })
     if (data.channelAccountId) accountQ = accountQ.eq("id", data.channelAccountId);
     const { data: accounts, error: aErr } = await accountQ.limit(10);
     if (aErr) throw new Error(aErr.message);
-    const account =
-      (accounts ?? []).find((a: any) => a.is_default) ?? (accounts ?? [])[0];
+    const account = (accounts ?? []).find((a: any) => a.is_default) ?? (accounts ?? [])[0];
     if (!account) {
       throw new Error(
         "No connected WhatsApp Cloud account in this workspace. Connect one on the Channels page first.",
@@ -99,18 +98,15 @@ export const sendTestTemplate = createServerFn({ method: "POST" })
     }
 
     // 3) Load full record + credentials on the server.
-    const { loadChannelAccount, loadCredentials } = await import(
-      "@/lib/messaging/registry.server"
-    );
+    const { loadChannelAccount, loadCredentials } = await import("@/lib/messaging/registry.server");
     const acc = await loadChannelAccount(account.id);
     if (!acc) throw new Error("Failed to load channel account");
     const credentials = loadCredentials(acc);
 
     // 4) Build the outbound payload and send via the WA Cloud provider.
     const components = buildSendComponents(tpl.components, data.variables ?? {});
-    const { whatsappCloudProvider } = await import(
-      "@/lib/messaging/providers/whatsapp-cloud.server"
-    );
+    const { whatsappCloudProvider } =
+      await import("@/lib/messaging/providers/whatsapp-cloud.server");
     const to = data.phoneNumber.replace(/^\+/, "");
 
     const correlationId = crypto.randomUUID();

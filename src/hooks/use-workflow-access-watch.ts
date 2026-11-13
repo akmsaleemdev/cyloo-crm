@@ -100,7 +100,12 @@ export function useWorkflowAccessWatch(
       .channel(`workflow-access:${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "workspace_members", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "workspace_members",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         (payload: { new?: { status?: string } }) => {
           const next = payload?.new?.status ?? null;
           if (next && next !== "active") revoke(next);

@@ -79,9 +79,22 @@ export type PipelineTemplateRow = {
 };
 
 export const STAGE_COLORS = [
-  "#94a3b8", "#64748b", "#3b82f6", "#0ea5e9", "#06b6d4",
-  "#10b981", "#22c55e", "#84cc16", "#eab308", "#f59e0b",
-  "#f97316", "#ef4444", "#ec4899", "#a855f7", "#8b5cf6", "#6366f1",
+  "#94a3b8",
+  "#64748b",
+  "#3b82f6",
+  "#0ea5e9",
+  "#06b6d4",
+  "#10b981",
+  "#22c55e",
+  "#84cc16",
+  "#eab308",
+  "#f59e0b",
+  "#f97316",
+  "#ef4444",
+  "#ec4899",
+  "#a855f7",
+  "#8b5cf6",
+  "#6366f1",
 ];
 
 /* ------------------------------ Pipelines ------------------------------ */
@@ -136,13 +149,14 @@ export function useCreatePipeline() {
       if (!active?.id) throw new Error("No workspace");
       // find next position
       const { data: existing } = await anyFrom("deal_pipelines")
-        .select("position").eq("workspace_id", active.id)
-        .order("position", { ascending: false }).limit(1);
+        .select("position")
+        .eq("workspace_id", active.id)
+        .order("position", { ascending: false })
+        .limit(1);
       const position = ((existing?.[0]?.position as number | undefined) ?? -1) + 1;
 
       if (input.is_default) {
-        await anyFrom("deal_pipelines").update({ is_default: false })
-          .eq("workspace_id", active.id);
+        await anyFrom("deal_pipelines").update({ is_default: false }).eq("workspace_id", active.id);
       }
       const { data, error } = await anyFrom("deal_pipelines")
         .insert({
@@ -155,7 +169,8 @@ export function useCreatePipeline() {
           is_default: input.is_default ?? false,
           position,
         })
-        .select("*").single();
+        .select("*")
+        .single();
       if (error) throw error;
       return data as PipelineRow;
     },
@@ -173,11 +188,16 @@ export function useUpdatePipeline() {
   return useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<PipelineRow> }) => {
       if (patch.is_default) {
-        await anyFrom("deal_pipelines").update({ is_default: false })
-          .eq("workspace_id", active?.id).neq("id", id);
+        await anyFrom("deal_pipelines")
+          .update({ is_default: false })
+          .eq("workspace_id", active?.id)
+          .neq("id", id);
       }
       const { data, error } = await anyFrom("deal_pipelines")
-        .update(patch).eq("id", id).select("*").single();
+        .update(patch)
+        .eq("id", id)
+        .select("*")
+        .single();
       if (error) throw error;
       return data as PipelineRow;
     },
@@ -194,7 +214,8 @@ export function useDeletePipeline() {
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await anyFrom("deal_pipelines")
-        .update({ deleted_at: new Date().toISOString() }).eq("id", id);
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -214,9 +235,12 @@ export function useCreateStage() {
     mutationFn: async (input: Partial<StageRow> & { pipeline_id: string; name: string }) => {
       if (!active?.id) throw new Error("No workspace");
       const { data: existing } = await anyFrom("deal_stages")
-        .select("position").eq("pipeline_id", input.pipeline_id)
-        .order("position", { ascending: false }).limit(1);
-      const position = input.position ?? ((existing?.[0]?.position as number | undefined) ?? -1) + 1;
+        .select("position")
+        .eq("pipeline_id", input.pipeline_id)
+        .order("position", { ascending: false })
+        .limit(1);
+      const position =
+        input.position ?? ((existing?.[0]?.position as number | undefined) ?? -1) + 1;
 
       const { data, error } = await anyFrom("deal_stages")
         .insert({
@@ -235,7 +259,8 @@ export function useCreateStage() {
           automations: input.automations ?? [],
           is_active: input.is_active ?? true,
         })
-        .select("*").single();
+        .select("*")
+        .single();
       if (error) throw error;
       return data as StageRow;
     },
@@ -257,7 +282,10 @@ export function useUpdateStage() {
         p.is_lost = patch.stage_type === "lost";
       }
       const { data, error } = await anyFrom("deal_stages")
-        .update(p).eq("id", id).select("*").single();
+        .update(p)
+        .eq("id", id)
+        .select("*")
+        .single();
       if (error) throw error;
       return data as StageRow;
     },
@@ -288,11 +316,15 @@ export function useDeleteStage() {
 export function useReorderStages() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ pipelineId, orderedIds }: { pipelineId: string; orderedIds: string[] }) => {
+    mutationFn: async ({
+      pipelineId,
+      orderedIds,
+    }: {
+      pipelineId: string;
+      orderedIds: string[];
+    }) => {
       await Promise.all(
-        orderedIds.map((id, i) =>
-          anyFrom("deal_stages").update({ position: i }).eq("id", id),
-        ),
+        orderedIds.map((id, i) => anyFrom("deal_stages").update({ position: i }).eq("id", id)),
       );
       return pipelineId;
     },
@@ -329,18 +361,25 @@ export function useApplyTemplate() {
   const { active } = useCurrentWorkspace();
   return useMutation({
     mutationFn: async ({
-      template, name, makeDefault,
-    }: { template: PipelineTemplateRow; name?: string; makeDefault?: boolean }): Promise<PipelineRow> => {
+      template,
+      name,
+      makeDefault,
+    }: {
+      template: PipelineTemplateRow;
+      name?: string;
+      makeDefault?: boolean;
+    }): Promise<PipelineRow> => {
       if (!active?.id) throw new Error("No workspace");
       // find next position
       const { data: existing } = await anyFrom("deal_pipelines")
-        .select("position").eq("workspace_id", active.id)
-        .order("position", { ascending: false }).limit(1);
+        .select("position")
+        .eq("workspace_id", active.id)
+        .order("position", { ascending: false })
+        .limit(1);
       const position = ((existing?.[0]?.position as number | undefined) ?? -1) + 1;
 
       if (makeDefault) {
-        await anyFrom("deal_pipelines").update({ is_default: false })
-          .eq("workspace_id", active.id);
+        await anyFrom("deal_pipelines").update({ is_default: false }).eq("workspace_id", active.id);
       }
 
       const { data: pipe, error: pErr } = await anyFrom("deal_pipelines")
@@ -352,7 +391,9 @@ export function useApplyTemplate() {
           icon: template.icon ?? null,
           is_default: !!makeDefault,
           position,
-        }).select("*").single();
+        })
+        .select("*")
+        .single();
       if (pErr) throw pErr;
 
       const rows = template.stages.map((s, i) => ({
@@ -421,13 +462,21 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
     enabled: !!wsId && !!pipelineId,
     queryFn: async (): Promise<PipelineAnalytics> => {
       const [{ data: stages }, { data: deals }, { data: history }] = await Promise.all([
-        anyFrom("deal_stages").select("*")
-          .eq("pipeline_id", pipelineId).order("position", { ascending: true }),
-        anyFrom("deals").select("*")
-          .eq("workspace_id", wsId).eq("pipeline_id", pipelineId).is("deleted_at", null),
-        anyFrom("deal_stage_history").select("*")
-          .eq("workspace_id", wsId).eq("pipeline_id", pipelineId)
-          .order("created_at", { ascending: true }).limit(5000),
+        anyFrom("deal_stages")
+          .select("*")
+          .eq("pipeline_id", pipelineId)
+          .order("position", { ascending: true }),
+        anyFrom("deals")
+          .select("*")
+          .eq("workspace_id", wsId)
+          .eq("pipeline_id", pipelineId)
+          .is("deleted_at", null),
+        anyFrom("deal_stage_history")
+          .select("*")
+          .eq("workspace_id", wsId)
+          .eq("pipeline_id", pipelineId)
+          .order("created_at", { ascending: true })
+          .limit(5000),
       ]);
       const stageList: StageRow[] = (stages ?? []) as StageRow[];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -444,7 +493,8 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
       const openValue = open.reduce((a, d) => a + Number(d.amount || 0), 0);
       const lostValue = lost.reduce((a, d) => a + Number(d.amount || 0), 0);
       const weightedValue = open.reduce(
-        (a, d) => a + Number(d.amount || 0) * (Number(d.probability || 0) / 100), 0,
+        (a, d) => a + Number(d.amount || 0) * (Number(d.probability || 0) / 100),
+        0,
       );
 
       const closed = won.length + lost.length;
@@ -455,9 +505,12 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
       const cycleDays: number[] = [];
       for (const d of won) {
         const firstHist = histList.find((h) => h.deal_id === d.id);
-        const wonHist = [...histList].reverse().find((h) => h.deal_id === d.id && h.to_status === "won");
+        const wonHist = [...histList]
+          .reverse()
+          .find((h) => h.deal_id === d.id && h.to_status === "won");
         if (firstHist && wonHist) {
-          const ms = new Date(wonHist.created_at).getTime() - new Date(firstHist.created_at).getTime();
+          const ms =
+            new Date(wonHist.created_at).getTime() - new Date(firstHist.created_at).getTime();
           if (ms > 0) cycleDays.push(ms / (1000 * 60 * 60 * 24));
         }
       }
@@ -468,12 +521,15 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
       // by stage aging & counts
       const byStage = stageList.map((s) => {
         const stageDeals = dealList.filter((d) => d.stage_id === s.id && d.status === "open");
-        const ages = stageDeals
-          .map((d) => {
-            const last = [...histList].reverse().find((h) => h.deal_id === d.id && h.to_stage_id === s.id);
-            const enteredAt = last ? new Date(last.created_at) : new Date(d.updated_at || d.created_at);
-            return (Date.now() - enteredAt.getTime()) / (1000 * 60 * 60 * 24);
-          });
+        const ages = stageDeals.map((d) => {
+          const last = [...histList]
+            .reverse()
+            .find((h) => h.deal_id === d.id && h.to_stage_id === s.id);
+          const enteredAt = last
+            ? new Date(last.created_at)
+            : new Date(d.updated_at || d.created_at);
+          return (Date.now() - enteredAt.getTime()) / (1000 * 60 * 60 * 24);
+        });
         const avgAge = ages.length ? ages.reduce((a, b) => a + b, 0) / ages.length : null;
         const threshold = s.aging_days ?? Infinity;
         const stalled = ages.filter((a) => a > threshold).length;
@@ -490,7 +546,9 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
 
       // funnel: how many deals have ever touched each stage
       const funnel = stageList.map((s) => {
-        const touchedIds = new Set(histList.filter((h) => h.to_stage_id === s.id).map((h) => h.deal_id));
+        const touchedIds = new Set(
+          histList.filter((h) => h.to_stage_id === s.id).map((h) => h.deal_id),
+        );
         for (const d of dealList) if (d.stage_id === s.id) touchedIds.add(d.id);
         const touched = dealList.filter((d) => touchedIds.has(d.id));
         return {
@@ -507,7 +565,11 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
         const next = stageList[i + 1];
         const from = funnel[i].count;
         const to = funnel[i + 1].count;
-        return { fromStageId: s.id, toStageId: next.id, rate: from === 0 ? 0 : Math.min(1, to / from) };
+        return {
+          fromStageId: s.id,
+          toStageId: next.id,
+          rate: from === 0 ? 0 : Math.min(1, to / from),
+        };
       });
 
       return {
@@ -515,10 +577,17 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
         openDeals: open.length,
         wonDeals: won.length,
         lostDeals: lost.length,
-        openValue, wonValue, lostValue, weightedValue,
-        winRate, avgDealSize, avgSalesCycleDays,
+        openValue,
+        wonValue,
+        lostValue,
+        weightedValue,
+        winRate,
+        avgDealSize,
+        avgSalesCycleDays,
         currency,
-        byStage, funnel, conversion,
+        byStage,
+        funnel,
+        conversion,
       };
     },
   });
@@ -526,37 +595,56 @@ export function usePipelineAnalytics(pipelineId: string | null | undefined) {
 
 /* -------------------------- Realtime updates -------------------------- */
 
-export function useDealsRealtime(workspaceId: string | undefined, pipelineId: string | null | undefined) {
+export function useDealsRealtime(
+  workspaceId: string | undefined,
+  pipelineId: string | null | undefined,
+) {
   const qc = useQueryClient();
   useEffect(() => {
     if (!workspaceId) return;
     const channel = supabase
       .channel(`pipeline_rt:${workspaceId}:${pipelineId ?? "any"}`)
-      .on("postgres_changes",
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "deals", filter: `workspace_id=eq.${workspaceId}` },
         () => {
           qc.invalidateQueries({ queryKey: ["deals"] });
           qc.invalidateQueries({ queryKey: ["pipeline_analytics"] });
-        })
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "deal_stages" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["stages_full"] });
-          qc.invalidateQueries({ queryKey: ["deal_stages"] });
-        })
-      .on("postgres_changes",
-        { event: "*", schema: "public", table: "deal_pipelines", filter: `workspace_id=eq.${workspaceId}` },
+        },
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "deal_stages" }, () => {
+        qc.invalidateQueries({ queryKey: ["stages_full"] });
+        qc.invalidateQueries({ queryKey: ["deal_stages"] });
+      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "deal_pipelines",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => {
           qc.invalidateQueries({ queryKey: ["pipelines_full"] });
           qc.invalidateQueries({ queryKey: ["deal_pipelines"] });
-        })
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "deal_stage_history", filter: `workspace_id=eq.${workspaceId}` },
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "deal_stage_history",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => {
           qc.invalidateQueries({ queryKey: ["pipeline_analytics"] });
-        })
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [workspaceId, pipelineId, qc]);
 }
 

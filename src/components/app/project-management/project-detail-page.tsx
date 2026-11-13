@@ -271,13 +271,20 @@ export function ProjectDetailPage({ projectId }: { projectId: string }) {
             <div>
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 {project.logo_url && (
-                  <img src={project.logo_url} alt={`${project.name} logo`} className="h-10 w-10 rounded-control object-contain" />
+                  <img
+                    src={project.logo_url}
+                    alt={`${project.name} logo`}
+                    className="h-10 w-10 rounded-control object-contain"
+                  />
                 )}
                 <h1 className="text-xl font-semibold">{project.name}</h1>
                 <Badge variant="secondary">{PROJECT_STATUS_LABELS[project.status]}</Badge>
               </div>
               {project.description ? (
-                <FormattedText text={project.description} className="max-w-3xl text-sm text-muted-foreground" />
+                <FormattedText
+                  text={project.description}
+                  className="max-w-3xl text-sm text-muted-foreground"
+                />
               ) : (
                 <p className="text-sm text-muted-foreground">No project description yet.</p>
               )}

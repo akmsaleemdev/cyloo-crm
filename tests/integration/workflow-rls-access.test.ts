@@ -29,18 +29,12 @@ describe("Workflow RLS Access", () => {
   });
 
   it("should have workflow functions file for client-side queries", () => {
-    const functionsFile = resolve(
-      SRC_DIR,
-      "lib/workflows/workflows.functions.ts",
-    );
+    const functionsFile = resolve(SRC_DIR, "lib/workflows/workflows.functions.ts");
     expect(existsSync(functionsFile)).toBe(true);
   });
 
   it("should have workflow validation logic", () => {
-    const validationFile = resolve(
-      SRC_DIR,
-      "lib/workflows/validation.ts",
-    );
+    const validationFile = resolve(SRC_DIR, "lib/workflows/validation.ts");
     if (existsSync(validationFile)) {
       const content = readFileSync(validationFile, "utf-8");
       // Should export validation functions
@@ -48,4 +42,3 @@ describe("Workflow RLS Access", () => {
     }
   });
 });
-

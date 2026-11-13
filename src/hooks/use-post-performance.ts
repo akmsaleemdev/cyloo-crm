@@ -32,7 +32,9 @@ export function usePostMetrics() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await sbAny(supabase)
         .from("social_post_metrics")
-        .select("id, post_id, target_id, channel_id, platform, impressions, clicks, shares, likes, comments, fetched_at")
+        .select(
+          "id, post_id, target_id, channel_id, platform, impressions, clicks, shares, likes, comments, fetched_at",
+        )
         .eq("workspace_id", active!.id)
         .order("fetched_at", { ascending: false });
       if (error) throw error;

@@ -613,9 +613,7 @@ function LivechatAnalyticsPage() {
                             <tr key={a.id} className="border-b last:border-0">
                               <td className="py-2 pr-4">{a.name}</td>
                               <td className="py-2 pr-4 text-right ">{a.handled}</td>
-                              <td className="py-2 pr-4 text-right ">
-                                {fmtSec(a.avgResponseSec)}
-                              </td>
+                              <td className="py-2 pr-4 text-right ">{fmtSec(a.avgResponseSec)}</td>
                               <td className="py-2 pr-4 text-right ">
                                 {fmtSec(a.avgResolutionSec)}
                               </td>

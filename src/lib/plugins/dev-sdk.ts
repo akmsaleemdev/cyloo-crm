@@ -9,22 +9,43 @@
  * Registrations are scoped to the plugin slug — the Plugin Manager revokes
  * everything atomically on disable/uninstall.
  */
-import type { ComponentType, ReactNode } from 'react';
-import { extensionRegistry } from './extension-registry';
+import type { ComponentType, ReactNode } from "react";
+import { extensionRegistry } from "./extension-registry";
 import type {
-  AiToolContribution, ApiEndpointContribution, BackgroundJobContribution,
-  ComponentInjectionContribution, DashboardCardContribution, EventContribution,
-  ExtensionRegion, IntegrationContribution, MenuContribution, PageContribution,
-  ReportContribution, TableContribution, WidgetContribution,
-  WorkflowActionContribution, WorkflowTriggerContribution,
-} from './extension-registry';
-import { addAction, addFilter, doAction, applyFilters, addMiddleware, addBeforeAction, addAfterAction, doActionAround, runAround, type HookName } from './hooks';
-import type { Middleware } from './event-bus';
+  AiToolContribution,
+  ApiEndpointContribution,
+  BackgroundJobContribution,
+  ComponentInjectionContribution,
+  DashboardCardContribution,
+  EventContribution,
+  ExtensionRegion,
+  IntegrationContribution,
+  MenuContribution,
+  PageContribution,
+  ReportContribution,
+  TableContribution,
+  WidgetContribution,
+  WorkflowActionContribution,
+  WorkflowTriggerContribution,
+} from "./extension-registry";
+import {
+  addAction,
+  addFilter,
+  doAction,
+  applyFilters,
+  addMiddleware,
+  addBeforeAction,
+  addAfterAction,
+  doActionAround,
+  runAround,
+  type HookName,
+} from "./hooks";
+import type { Middleware } from "./event-bus";
 type CoreAction = HookName;
 type CoreFilter = HookName;
-import { eventBus } from './event-bus';
-import { permissions as permissionManager } from './permissions';
-import type { PluginPermission } from './sdk';
+import { eventBus } from "./event-bus";
+import { permissions as permissionManager } from "./permissions";
+import type { PluginPermission } from "./sdk";
 
 // ---------- Public types ----------
 
@@ -52,7 +73,11 @@ export interface ExtensionContext {
   logger: PluginLogger;
 
   /** Show toast/notification through host UI. */
-  notify: (opts: { title: string; description?: string; variant?: 'default' | 'success' | 'error' | 'warning' }) => void;
+  notify: (opts: {
+    title: string;
+    description?: string;
+    variant?: "default" | "success" | "error" | "warning";
+  }) => void;
 
   /** Ask the host for the current auth context. */
   getUser: () => { userId: string; workspaceId: string; role: string } | null;
@@ -95,11 +120,31 @@ interface ReportBuilder {
   register(report: ReportContribution): void;
 }
 interface ApiBuilder {
-  get(path: string, handler: ApiEndpointContribution['handler'], opts?: Partial<Omit<ApiEndpointContribution, 'id' | 'method' | 'path' | 'handler'>>): void;
-  post(path: string, handler: ApiEndpointContribution['handler'], opts?: Partial<Omit<ApiEndpointContribution, 'id' | 'method' | 'path' | 'handler'>>): void;
-  put(path: string, handler: ApiEndpointContribution['handler'], opts?: Partial<Omit<ApiEndpointContribution, 'id' | 'method' | 'path' | 'handler'>>): void;
-  patch(path: string, handler: ApiEndpointContribution['handler'], opts?: Partial<Omit<ApiEndpointContribution, 'id' | 'method' | 'path' | 'handler'>>): void;
-  delete(path: string, handler: ApiEndpointContribution['handler'], opts?: Partial<Omit<ApiEndpointContribution, 'id' | 'method' | 'path' | 'handler'>>): void;
+  get(
+    path: string,
+    handler: ApiEndpointContribution["handler"],
+    opts?: Partial<Omit<ApiEndpointContribution, "id" | "method" | "path" | "handler">>,
+  ): void;
+  post(
+    path: string,
+    handler: ApiEndpointContribution["handler"],
+    opts?: Partial<Omit<ApiEndpointContribution, "id" | "method" | "path" | "handler">>,
+  ): void;
+  put(
+    path: string,
+    handler: ApiEndpointContribution["handler"],
+    opts?: Partial<Omit<ApiEndpointContribution, "id" | "method" | "path" | "handler">>,
+  ): void;
+  patch(
+    path: string,
+    handler: ApiEndpointContribution["handler"],
+    opts?: Partial<Omit<ApiEndpointContribution, "id" | "method" | "path" | "handler">>,
+  ): void;
+  delete(
+    path: string,
+    handler: ApiEndpointContribution["handler"],
+    opts?: Partial<Omit<ApiEndpointContribution, "id" | "method" | "path" | "handler">>,
+  ): void;
 }
 interface WorkflowBuilder {
   action(action: WorkflowActionContribution): void;
@@ -125,16 +170,28 @@ interface HookBuilder {
   onAction(name: HookName, fn: (payload: unknown) => void | Promise<void>, priority?: number): void;
   onBefore(name: HookName, fn: (payload: unknown) => void | Promise<void>, priority?: number): void;
   onAfter(name: HookName, fn: (payload: unknown) => void | Promise<void>, priority?: number): void;
-  addFilter<T = unknown>(name: HookName, fn: (value: T) => T | Promise<T> | null, priority?: number): void;
+  addFilter<T = unknown>(
+    name: HookName,
+    fn: (value: T) => T | Promise<T> | null,
+    priority?: number,
+  ): void;
   addMiddleware<C = unknown>(name: HookName, fn: Middleware<C>, priority?: number): void;
   doAction(name: HookName, payload?: unknown): Promise<void>;
-  doActionAround<T>(name: HookName, payload: T, core: (v: T) => Promise<void> | void): Promise<T | null>;
+  doActionAround<T>(
+    name: HookName,
+    payload: T,
+    core: (v: T) => Promise<void> | void,
+  ): Promise<T | null>;
   applyFilters<T = unknown>(name: HookName, value: T): Promise<T | null>;
   runAround<C>(name: HookName, ctx: C, core: () => Promise<void> | void): Promise<C>;
 }
 interface UiInjectionBuilder {
   inject(injection: ComponentInjectionContribution): void;
-  injectAt(region: ExtensionRegion, component: ComponentType<Record<string, unknown>>, opts?: { id?: string; order?: number }): void;
+  injectAt(
+    region: ExtensionRegion,
+    component: ComponentType<Record<string, unknown>>,
+    opts?: { id?: string; order?: number },
+  ): void;
 }
 
 // ---------- Helpers ----------
@@ -158,28 +215,39 @@ function createStorage(slug: string): PluginStorage {
   return {
     async get(key) {
       try {
-        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(prefix + key) : null;
+        const raw = typeof localStorage !== "undefined" ? localStorage.getItem(prefix + key) : null;
         return raw ? (JSON.parse(raw) as never) : null;
-      } catch { return null; }
+      } catch {
+        return null;
+      }
     },
     async set(key, value) {
       try {
-        if (typeof localStorage !== 'undefined') localStorage.setItem(prefix + key, JSON.stringify(value));
-      } catch { /* quota / private mode */ }
+        if (typeof localStorage !== "undefined")
+          localStorage.setItem(prefix + key, JSON.stringify(value));
+      } catch {
+        /* quota / private mode */
+      }
     },
     async remove(key) {
-      try { if (typeof localStorage !== 'undefined') localStorage.removeItem(prefix + key); } catch { /* ignore */ }
+      try {
+        if (typeof localStorage !== "undefined") localStorage.removeItem(prefix + key);
+      } catch {
+        /* ignore */
+      }
     },
     async keys() {
       try {
-        if (typeof localStorage === 'undefined') return [];
+        if (typeof localStorage === "undefined") return [];
         const out: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const k = localStorage.key(i);
           if (k?.startsWith(prefix)) out.push(k.slice(prefix.length));
         }
         return out;
-      } catch { return []; }
+      } catch {
+        return [];
+      }
     },
   };
 }
@@ -188,13 +256,13 @@ function createLogger(slug: string): PluginLogger {
   const tag = `[plugin:${slug}]`;
   const push = (level: string, message: string, meta?: unknown) => {
     // eslint-disable-next-line no-console
-    (console[level as 'log'] ?? console.log)(tag, message, meta ?? '');
+    (console[level as "log"] ?? console.log)(tag, message, meta ?? "");
   };
   return {
-    info: (m, meta) => push('log', m, meta),
-    warn: (m, meta) => push('warn', m, meta),
-    error: (m, meta) => push('error', m, meta),
-    debug: (m, meta) => push('debug', m, meta),
+    info: (m, meta) => push("log", m, meta),
+    warn: (m, meta) => push("warn", m, meta),
+    error: (m, meta) => push("error", m, meta),
+    debug: (m, meta) => push("debug", m, meta),
   };
 }
 
@@ -219,18 +287,22 @@ function createLogger(slug: string): PluginLogger {
 export function definePlugin(options: DefinePluginOptions) {
   const { slug, name, version, setup, teardown } = options;
 
-  const notify = (opts: Parameters<ExtensionContext['notify']>[0]) => {
+  const notify = (opts: Parameters<ExtensionContext["notify"]>[0]) => {
     // toast facade — resolved by host at runtime
     const w = globalThis as unknown as { __cyloo_toast?: (o: unknown) => void };
     w.__cyloo_toast?.(opts);
   };
-  const getUser: ExtensionContext['getUser'] = () => {
-    const w = globalThis as unknown as { __cyloo_auth?: () => { userId: string; workspaceId: string; role: string } | null };
+  const getUser: ExtensionContext["getUser"] = () => {
+    const w = globalThis as unknown as {
+      __cyloo_auth?: () => { userId: string; workspaceId: string; role: string } | null;
+    };
     return w.__cyloo_auth?.() ?? null;
   };
 
   const ctx: ExtensionContext = {
-    slug, name, version,
+    slug,
+    name,
+    version,
     storage: createStorage(slug),
     logger: createLogger(slug),
     notify,
@@ -252,11 +324,46 @@ export function definePlugin(options: DefinePluginOptions) {
       register: (r) => extensionRegistry.registerReport(slug, r),
     },
     api: {
-      get: (path, handler, opts) => extensionRegistry.registerApiEndpoint(slug, { id: `GET:${path}`, method: 'GET', path, handler, ...opts }),
-      post: (path, handler, opts) => extensionRegistry.registerApiEndpoint(slug, { id: `POST:${path}`, method: 'POST', path, handler, ...opts }),
-      put: (path, handler, opts) => extensionRegistry.registerApiEndpoint(slug, { id: `PUT:${path}`, method: 'PUT', path, handler, ...opts }),
-      patch: (path, handler, opts) => extensionRegistry.registerApiEndpoint(slug, { id: `PATCH:${path}`, method: 'PATCH', path, handler, ...opts }),
-      delete: (path, handler, opts) => extensionRegistry.registerApiEndpoint(slug, { id: `DELETE:${path}`, method: 'DELETE', path, handler, ...opts }),
+      get: (path, handler, opts) =>
+        extensionRegistry.registerApiEndpoint(slug, {
+          id: `GET:${path}`,
+          method: "GET",
+          path,
+          handler,
+          ...opts,
+        }),
+      post: (path, handler, opts) =>
+        extensionRegistry.registerApiEndpoint(slug, {
+          id: `POST:${path}`,
+          method: "POST",
+          path,
+          handler,
+          ...opts,
+        }),
+      put: (path, handler, opts) =>
+        extensionRegistry.registerApiEndpoint(slug, {
+          id: `PUT:${path}`,
+          method: "PUT",
+          path,
+          handler,
+          ...opts,
+        }),
+      patch: (path, handler, opts) =>
+        extensionRegistry.registerApiEndpoint(slug, {
+          id: `PATCH:${path}`,
+          method: "PATCH",
+          path,
+          handler,
+          ...opts,
+        }),
+      delete: (path, handler, opts) =>
+        extensionRegistry.registerApiEndpoint(slug, {
+          id: `DELETE:${path}`,
+          method: "DELETE",
+          path,
+          handler,
+          ...opts,
+        }),
     },
     workflows: {
       action: (a) => extensionRegistry.registerWorkflowAction(slug, a),
@@ -283,7 +390,8 @@ export function definePlugin(options: DefinePluginOptions) {
       onBefore: (n, fn, priority) => addBeforeAction(slug, n, fn, priority),
       onAfter: (n, fn, priority) => addAfterAction(slug, n, fn, priority),
       addFilter: (n, fn, priority) => addFilter(slug, n, fn as (v: unknown) => unknown, priority),
-      addMiddleware: (n, fn, priority) => addMiddleware(slug, n, fn as Middleware<unknown>, priority),
+      addMiddleware: (n, fn, priority) =>
+        addMiddleware(slug, n, fn as Middleware<unknown>, priority),
       doAction,
       doActionAround,
       applyFilters,
@@ -292,7 +400,12 @@ export function definePlugin(options: DefinePluginOptions) {
     ui: {
       inject: (i) => extensionRegistry.registerInjection(slug, i),
       injectAt: (region, component, opts) =>
-        extensionRegistry.registerInjection(slug, { id: opts?.id ?? component.displayName ?? region, region, component, order: opts?.order }),
+        extensionRegistry.registerInjection(slug, {
+          id: opts?.id ?? component.displayName ?? region,
+          region,
+          component,
+          order: opts?.order,
+        }),
     },
 
     requirePermission: (p) => {
@@ -304,8 +417,12 @@ export function definePlugin(options: DefinePluginOptions) {
 
   // Return an initializer the Plugin Manager can invoke after granting perms.
   return {
-    slug, name, version,
-    init: async () => { await setup(ctx); },
+    slug,
+    name,
+    version,
+    init: async () => {
+      await setup(ctx);
+    },
     teardown: async () => {
       if (teardown) await teardown();
       extensionRegistry.revoke(slug);

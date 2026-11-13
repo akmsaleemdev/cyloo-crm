@@ -5,12 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { useIngestKbFromUrl } from "@/hooks/use-kb";
 
 export function IngestUrlDialog({
-  workspaceId, open, onOpenChange,
+  workspaceId,
+  open,
+  onOpenChange,
 }: {
   workspaceId: string;
   open: boolean;
@@ -26,19 +33,26 @@ export function IngestUrlDialog({
       await ingest.mutateAsync({ workspaceId, url: url.trim(), autoPublish });
       setUrl("");
       onOpenChange(false);
-    } catch { /* toast via hook */ }
+    } catch {
+      /* toast via hook */
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!ingest.isPending) onOpenChange(o); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!ingest.isPending) onOpenChange(o);
+      }}
+    >
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LinkIcon className="h-4 w-4" /> Ingest from URL
           </DialogTitle>
           <DialogDescription>
-            Fetch a web page, extract its main text, and store it as a knowledge article.
-            The article is then embedded and available for RAG retrieval.
+            Fetch a web page, extract its main text, and store it as a knowledge article. The
+            article is then embedded and available for RAG retrieval.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
@@ -56,9 +70,7 @@ export function IngestUrlDialog({
           <div className="flex items-center justify-between rounded-control border p-3">
             <div>
               <div className="text-sm font-medium">Publish immediately</div>
-              <div className="text-xs text-muted-foreground">
-                Otherwise saved as draft.
-              </div>
+              <div className="text-xs text-muted-foreground">Otherwise saved as draft.</div>
             </div>
             <Switch checked={autoPublish} onCheckedChange={setAutoPublish} />
           </div>
@@ -68,7 +80,11 @@ export function IngestUrlDialog({
             Cancel
           </Button>
           <Button onClick={submit} disabled={!url.trim() || ingest.isPending}>
-            {ingest.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <LinkIcon className="h-4 w-4" />}
+            {ingest.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LinkIcon className="h-4 w-4" />
+            )}
             Ingest
           </Button>
         </DialogFooter>

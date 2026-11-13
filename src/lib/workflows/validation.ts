@@ -17,8 +17,13 @@ export function validateGraph(graph: WorkflowGraph): ValidationIssue[] {
   }
 
   const triggers = nodes.filter((n) => NODE_REGISTRY_BY_TYPE[n.type]?.kind === "trigger");
-  if (triggers.length === 0) issues.push({ level: "error", message: "Workflow needs at least one trigger." });
-  if (triggers.length > 1) issues.push({ level: "warning", message: "Multiple triggers detected — only the first will fire." });
+  if (triggers.length === 0)
+    issues.push({ level: "error", message: "Workflow needs at least one trigger." });
+  if (triggers.length > 1)
+    issues.push({
+      level: "warning",
+      message: "Multiple triggers detected — only the first will fire.",
+    });
 
   const nodeIds = new Set(nodes.map((n) => n.id));
   for (const e of edges) {
@@ -37,14 +42,22 @@ export function validateGraph(graph: WorkflowGraph): ValidationIssue[] {
       continue;
     }
     if (def.kind !== "trigger" && !incoming.get(n.id)) {
-      issues.push({ level: "warning", nodeId: n.id, message: `"${def.label}" has no incoming connection.` });
+      issues.push({
+        level: "warning",
+        nodeId: n.id,
+        message: `"${def.label}" has no incoming connection.`,
+      });
     }
     // Required fields
     for (const field of def.inputs ?? []) {
       if (field.required) {
         const v = (n.config ?? {})[field.key];
         if (v === undefined || v === null || v === "") {
-          issues.push({ level: "error", nodeId: n.id, message: `${def.label}: "${field.label}" is required.` });
+          issues.push({
+            level: "error",
+            nodeId: n.id,
+            message: `${def.label}: "${field.label}" is required.`,
+          });
         }
       }
     }
@@ -57,7 +70,9 @@ export function validateGraph(graph: WorkflowGraph): ValidationIssue[] {
     list.push(e.target);
     adj.set(e.source, list);
   });
-  const WHITE = 0, GRAY = 1, BLACK = 2;
+  const WHITE = 0,
+    GRAY = 1,
+    BLACK = 2;
   const color = new Map<string, number>();
   nodes.forEach((n) => color.set(n.id, WHITE));
   const dfs = (id: string): boolean => {

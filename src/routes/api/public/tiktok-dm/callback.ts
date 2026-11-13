@@ -24,12 +24,18 @@ export const Route = createFileRoute("/api/public/tiktok-dm/callback")({
         const { decodeState } = await import("@/lib/social/oauth.server");
         const state = decodeState(url.searchParams.get("state") ?? "");
         const returnTo = "/api-config/tiktok-dm";
-        if (!state) return back(origin, returnTo, { tiktok_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, returnTo, {
+            tiktok_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, returnTo, { tiktok_error: err });
         const code = url.searchParams.get("code") || url.searchParams.get("auth_code");
-        if (!code) return back(origin, returnTo, { tiktok_error: "TikTok did not return an authorization code." });
+        if (!code)
+          return back(origin, returnTo, {
+            tiktok_error: "TikTok did not return an authorization code.",
+          });
 
         try {
           const { tiktokDmCallbackUri } = await import("@/lib/tiktok-dm/protocol");
@@ -37,7 +43,9 @@ export const Route = createFileRoute("/api/public/tiktok-dm/callback")({
           const redirectUri = savedOAuthRedirect(state.redirectUri, tiktokDmCallbackUri(origin));
           const token = await mod.exchangeTikTokDmCode(code, redirectUri);
           const granted = (token.scope ?? "").split(/[,\s]+/).filter(Boolean);
-          const missing = ["message.list.read", "message.list.send"].filter((s) => !granted.includes(s));
+          const missing = ["message.list.read", "message.list.send"].filter(
+            (s) => !granted.includes(s),
+          );
           if (granted.length && missing.length) {
             return back(origin, returnTo, {
               tiktok_error: `TikTok did not grant ${missing.join(", ")}. Approve the messaging permissions and connect again.`,
@@ -46,7 +54,9 @@ export const Route = createFileRoute("/api/public/tiktok-dm/callback")({
 
           const profile = await mod
             .fetchTikTokBusinessProfile(token.open_id, token.access_token)
-            .catch(() => ({}) as { username?: string; display_name?: string; profile_image?: string });
+            .catch(
+              () => ({}) as { username?: string; display_name?: string; profile_image?: string },
+            );
 
           const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
           const db = sbAny(supabaseAdmin);

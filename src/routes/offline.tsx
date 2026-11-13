@@ -53,7 +53,10 @@ function OfflinePage() {
           </Button>
         </div>
         <p className="mt-4 text-xs text-muted-foreground">
-          Status: <span className={online ? "text-emerald-600" : "text-amber-600"}>{online ? "Online" : "Offline"}</span>
+          Status:{" "}
+          <span className={online ? "text-emerald-600" : "text-amber-600"}>
+            {online ? "Online" : "Offline"}
+          </span>
         </p>
       </div>
     </div>

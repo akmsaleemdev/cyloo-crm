@@ -59,7 +59,9 @@ export function WhatsAppCtaButton({
   if (cta.isInternal) {
     return (
       <Button asChild variant={variant} size={size} className={className}>
-        <Link to={cta.href} {...tracking}>{content}</Link>
+        <Link to={cta.href} {...tracking}>
+          {content}
+        </Link>
       </Button>
     );
   }
@@ -95,9 +97,17 @@ export function WhatsAppFloatingCta({ message }: { message?: string }) {
 
   return (
     <div className="fixed bottom-5 right-5 z-50 print:hidden">
-      <span className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-whatsapp/30" aria-hidden />
+      <span
+        className="pointer-events-none absolute inset-0 animate-ping rounded-full bg-whatsapp/30"
+        aria-hidden
+      />
       {cta.isInternal ? (
-        <Link to={cta.href} className={cn(shared, "relative")} onClick={() => setDismissed(false)} {...tracking}>
+        <Link
+          to={cta.href}
+          className={cn(shared, "relative")}
+          onClick={() => setDismissed(false)}
+          {...tracking}
+        >
           <MessageCircle className="size-6" aria-hidden />
           <span className="hidden">{cta.label}</span>
         </Link>

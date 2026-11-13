@@ -199,7 +199,10 @@ export async function ingestInboundWaMessage(
 
   const body = msg.text ?? msg.caption ?? null;
   const replyToId = await findReplyTarget(
-    db, session.workspace_id, resolved.conversationId, msg.context_message_id,
+    db,
+    session.workspace_id,
+    resolved.conversationId,
+    msg.context_message_id,
   );
   const { error } = await sbAny(db)
     .from("messages")
@@ -217,7 +220,11 @@ export async function ingestInboundWaMessage(
       external_message_id: providerMessageId,
       reply_to_id: replyToId,
       delivered_at: new Date().toISOString(),
-      metadata: { wa_session_id: sessionId, source: "wa_qr", context_message_id: msg.context_message_id ?? null },
+      metadata: {
+        wa_session_id: sessionId,
+        source: "wa_qr",
+        context_message_id: msg.context_message_id ?? null,
+      },
     });
   if (error) return { conversationId: resolved.conversationId, botPaused: resolved.botPaused };
 

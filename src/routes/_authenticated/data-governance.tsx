@@ -93,7 +93,9 @@ export function DataGovernancePage() {
       toast.error("Please enter a valid email or phone number.");
       return;
     }
-    toast.success(`GDPR/PDPL Erasure Executed: All PII records for ${erasureEmail} permanently purged.`);
+    toast.success(
+      `GDPR/PDPL Erasure Executed: All PII records for ${erasureEmail} permanently purged.`,
+    );
     setErasureEmail("");
   };
 
@@ -105,21 +107,23 @@ export function DataGovernancePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Enterprise Data Hygiene, Governance & MDM</h1>
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Enterprise Data Hygiene, Governance & MDM
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/10 text-primary border-primary/20"
+              >
                 Module 33 • Hub 7
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Data completeness hygiene, automated third-party enrichment, cross-channel identity resolution, and privacy compliance.
+              Data completeness hygiene, automated third-party enrichment, cross-channel identity
+              resolution, and privacy compliance.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              className="gap-2 text-xs"
-              onClick={handleRunEnrichment}
-              disabled={enriching}
-            >
+            <Button className="gap-2 text-xs" onClick={handleRunEnrichment} disabled={enriching}>
               <Sparkles className="w-3.5 h-3.5" />
               {enriching ? "Enriching via Clearbit/Apollo..." : "Trigger Third-Party Enrichment"}
             </Button>
@@ -131,7 +135,9 @@ export function DataGovernancePage() {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Overall Data Health Score</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Overall Data Health Score
+                </p>
                 <p className="text-2xl font-bold mt-1 text-emerald-600">92 / 100</p>
               </div>
               <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-600">
@@ -164,7 +170,9 @@ export function DataGovernancePage() {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Privacy Erasure Requests</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Privacy Erasure Requests
+                </p>
                 <p className="text-2xl font-bold mt-1">100% Compliant</p>
               </div>
               <div className="p-2.5 rounded-full bg-purple-500/10 text-purple-600">
@@ -177,7 +185,9 @@ export function DataGovernancePage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
-            <TabsTrigger value="overview">Identity Resolution Queue ({candidates.length})</TabsTrigger>
+            <TabsTrigger value="overview">
+              Identity Resolution Queue ({candidates.length})
+            </TabsTrigger>
             <TabsTrigger value="hygiene_rules">Deduplication & Survivorship Rules</TabsTrigger>
             <TabsTrigger value="privacy_erasure">GDPR / Saudi PDPL Right-to-Erasure</TabsTrigger>
           </TabsList>
@@ -247,7 +257,8 @@ export function DataGovernancePage() {
               <CardHeader>
                 <CardTitle className="text-base">Field Survivorship & Collision Priority</CardTitle>
                 <CardDescription>
-                  Determines which field values take precedence when resolving duplicate contact records
+                  Determines which field values take precedence when resolving duplicate contact
+                  records
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 text-sm">
@@ -291,15 +302,19 @@ export function DataGovernancePage() {
           <TabsContent value="privacy_erasure" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Saudi PDPL & GDPR Right-to-Erasure Execution</CardTitle>
+                <CardTitle className="text-base">
+                  Saudi PDPL & GDPR Right-to-Erasure Execution
+                </CardTitle>
                 <CardDescription>
-                  Cryptographically purges all personally identifiable information (PII) across active tables and audit records
+                  Cryptographically purges all personally identifiable information (PII) across
+                  active tables and audit records
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 leading-relaxed">
-                  Warning: Right-to-Erasure is irreversible. Executing erasure will permanently anonymize contact details,
-                  conversation transcripts, and customer attachments while maintaining non-identifiable financial totals for tax compliance.
+                  Warning: Right-to-Erasure is irreversible. Executing erasure will permanently
+                  anonymize contact details, conversation transcripts, and customer attachments
+                  while maintaining non-identifiable financial totals for tax compliance.
                 </div>
                 <div className="flex gap-3">
                   <Input
@@ -308,7 +323,11 @@ export function DataGovernancePage() {
                     onChange={(e) => setErasureEmail(e.target.value)}
                     className="text-sm"
                   />
-                  <Button variant="destructive" className="gap-2 shrink-0" onClick={handleExecuteErasure}>
+                  <Button
+                    variant="destructive"
+                    className="gap-2 shrink-0"
+                    onClick={handleExecuteErasure}
+                  >
                     <Trash2 className="w-4 h-4" /> Execute Erasure
                   </Button>
                 </div>
@@ -320,4 +339,3 @@ export function DataGovernancePage() {
     </div>
   );
 }
-

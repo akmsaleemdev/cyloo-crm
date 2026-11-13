@@ -1,5 +1,5 @@
-import { makeStubProvider } from './stub';
-import type { PaymentLinkProvider, PaymentProviderId } from './types';
+import { makeStubProvider } from "./stub";
+import type { PaymentLinkProvider, PaymentProviderId } from "./types";
 
 /**
  * Registry of payment link providers. Each entry advertises its capabilities
@@ -11,70 +11,70 @@ import type { PaymentLinkProvider, PaymentProviderId } from './types';
  */
 const registry: Record<PaymentProviderId, PaymentLinkProvider> = {
   stripe: makeStubProvider({
-    id: 'stripe',
-    displayName: 'Stripe',
+    id: "stripe",
+    displayName: "Stripe",
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   paypal: makeStubProvider({
-    id: 'paypal',
-    displayName: 'PayPal',
+    id: "paypal",
+    displayName: "PayPal",
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   paddle: makeStubProvider({
-    id: 'paddle',
-    displayName: 'Paddle',
+    id: "paddle",
+    displayName: "Paddle",
     supportsPartial: false,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   razorpay: makeStubProvider({
-    id: 'razorpay',
-    displayName: 'Razorpay',
-    currencies: ['INR', 'USD'],
+    id: "razorpay",
+    displayName: "Razorpay",
+    currencies: ["INR", "USD"],
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   paystack: makeStubProvider({
-    id: 'paystack',
-    displayName: 'Paystack',
-    currencies: ['NGN', 'GHS', 'ZAR', 'KES', 'USD'],
+    id: "paystack",
+    displayName: "Paystack",
+    currencies: ["NGN", "GHS", "ZAR", "KES", "USD"],
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   flutterwave: makeStubProvider({
-    id: 'flutterwave',
-    displayName: 'Flutterwave',
-    currencies: ['NGN', 'GHS', 'KES', 'ZAR', 'USD', 'EUR', 'GBP'],
+    id: "flutterwave",
+    displayName: "Flutterwave",
+    currencies: ["NGN", "GHS", "KES", "ZAR", "USD", "EUR", "GBP"],
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   mollie: makeStubProvider({
-    id: 'mollie',
-    displayName: 'Mollie',
-    currencies: ['EUR', 'USD', 'GBP'],
+    id: "mollie",
+    displayName: "Mollie",
+    currencies: ["EUR", "USD", "GBP"],
     supportsPartial: false,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   mercadopago: makeStubProvider({
-    id: 'mercadopago',
-    displayName: 'Mercado Pago',
-    currencies: ['ARS', 'BRL', 'CLP', 'COP', 'MXN', 'PEN', 'UYU', 'USD'],
+    id: "mercadopago",
+    displayName: "Mercado Pago",
+    currencies: ["ARS", "BRL", "CLP", "COP", "MXN", "PEN", "UYU", "USD"],
     supportsPartial: true,
     supportsRecurring: true,
     supportsRefunds: true,
   }),
   midtrans: makeStubProvider({
-    id: 'midtrans',
-    displayName: 'Midtrans',
-    currencies: ['IDR'],
+    id: "midtrans",
+    displayName: "Midtrans",
+    currencies: ["IDR"],
     supportsPartial: false,
     supportsRecurring: false,
     supportsRefunds: true,
@@ -89,4 +89,4 @@ export function listProviders(): PaymentLinkProvider[] {
   return Object.values(registry);
 }
 
-export * from './types';
+export * from "./types";

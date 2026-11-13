@@ -16,10 +16,7 @@
  * their human-readable reason.
  */
 
-import {
-  parseProvider,
-  type KnownProvider,
-} from "@/lib/inbox/channel-capabilities";
+import { parseProvider, type KnownProvider } from "@/lib/inbox/channel-capabilities";
 import type { InboxChannel } from "@/hooks/use-conversations";
 
 /** An account row that passed provider validation. */
@@ -84,7 +81,6 @@ export function mergeAccountSources<T extends { id?: unknown; workspace_id?: unk
   }
   return out;
 }
-
 
 /**
  * Validate a connected-account sync payload.

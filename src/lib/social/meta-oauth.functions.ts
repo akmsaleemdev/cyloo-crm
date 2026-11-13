@@ -20,10 +20,13 @@ export const startMetaConnect = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => input.parse(v))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await sbAny(context.supabase).rpc("is_workspace_admin" as never, {
-      _workspace_id: data.workspaceId,
-      _user_id: context.userId,
-    } as never);
+    const { data: isAdmin } = await sbAny(context.supabase).rpc(
+      "is_workspace_admin" as never,
+      {
+        _workspace_id: data.workspaceId,
+        _user_id: context.userId,
+      } as never,
+    );
     if (!isAdmin) throw new Error("Only workspace owners and admins can connect channels");
 
     const appId = process.env["META_APP_ID"];

@@ -22,9 +22,13 @@ export interface ToolContext {
 export function buildConversationTools(ctx: ToolContext, enabled?: string[]): ToolSet {
   const all = {
     current_time: tool({
-      description: "Get the current server time in ISO-8601. Use when the user asks for the date/time.",
+      description:
+        "Get the current server time in ISO-8601. Use when the user asks for the date/time.",
       inputSchema: z.object({
-        timezone: z.string().nullable().describe("IANA timezone, e.g. 'Europe/Oslo'. Null for UTC."),
+        timezone: z
+          .string()
+          .nullable()
+          .describe("IANA timezone, e.g. 'Europe/Oslo'. Null for UTC."),
       }),
       execute: async ({ timezone }) => {
         const now = new Date();
@@ -74,7 +78,8 @@ export function buildConversationTools(ctx: ToolContext, enabled?: string[]): To
     }),
 
     lookup_customer: tool({
-      description: "Look up a customer by phone, email, or ID. Use when the user references a specific customer.",
+      description:
+        "Look up a customer by phone, email, or ID. Use when the user references a specific customer.",
       inputSchema: z.object({
         query: z.string().describe("Phone number, email, or customer id."),
       }),
@@ -91,20 +96,19 @@ export function buildConversationTools(ctx: ToolContext, enabled?: string[]): To
     }),
 
     save_note: tool({
-      description: "Save a short internal note against this conversation for the agent to review later.",
+      description:
+        "Save a short internal note against this conversation for the agent to review later.",
       inputSchema: z.object({
         note: z.string().min(3),
       }),
       execute: async ({ note }) => {
-        const { error } = await ctx.supabase
-          .from("ai_conversation_messages" as never)
-          .insert({
-            conversation_id: ctx.conversationId,
-            workspace_id: ctx.workspaceId,
-            role: "system",
-            content: `NOTE: ${note}`,
-            metadata: { kind: "note", by: ctx.userId },
-          } as never);
+        const { error } = await ctx.supabase.from("ai_conversation_messages" as never).insert({
+          conversation_id: ctx.conversationId,
+          workspace_id: ctx.workspaceId,
+          role: "system",
+          content: `NOTE: ${note}`,
+          metadata: { kind: "note", by: ctx.userId },
+        } as never);
         return { saved: !error, error: error?.message };
       },
     }),
@@ -121,10 +125,30 @@ export function buildConversationTools(ctx: ToolContext, enabled?: string[]): To
 
 /** Client-safe metadata for a picker UI. */
 export const CONVERSATION_TOOL_CATALOG = [
-  { name: "current_time",          label: "Current time",           group: "Utility",   description: "Server clock / timezone helper." },
-  { name: "search_knowledge_base", label: "Search knowledge base",  group: "Knowledge", description: "RAG search over workspace KB." },
-  { name: "lookup_customer",       label: "Lookup customer",        group: "CRM",       description: "Find a customer by phone/email/id." },
-  { name: "save_note",             label: "Save internal note",     group: "Productivity", description: "Append a note to this conversation." },
+  {
+    name: "current_time",
+    label: "Current time",
+    group: "Utility",
+    description: "Server clock / timezone helper.",
+  },
+  {
+    name: "search_knowledge_base",
+    label: "Search knowledge base",
+    group: "Knowledge",
+    description: "RAG search over workspace KB.",
+  },
+  {
+    name: "lookup_customer",
+    label: "Lookup customer",
+    group: "CRM",
+    description: "Find a customer by phone/email/id.",
+  },
+  {
+    name: "save_note",
+    label: "Save internal note",
+    group: "Productivity",
+    description: "Append a note to this conversation.",
+  },
   ...ACTION_TOOL_CATALOG,
 ] as const;
 

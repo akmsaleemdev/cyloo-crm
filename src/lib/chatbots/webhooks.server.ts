@@ -101,10 +101,12 @@ async function deliver(
     .eq("id", hook.id);
   if (!ok) {
     // best-effort increment
-    await sbAny(supabase).rpc("increment_webhook_failure" as never, { p_id: hook.id } as never).then(
-      () => undefined,
-      () => undefined,
-    );
+    await sbAny(supabase)
+      .rpc("increment_webhook_failure" as never, { p_id: hook.id } as never)
+      .then(
+        () => undefined,
+        () => undefined,
+      );
   }
 }
 
@@ -116,10 +118,7 @@ async function deliver(
  * explicitly via `workspace_id`, and delivery logging still uses the
  * caller's RLS-bound client.
  */
-export async function emitChatbotEvent(
-  supabase: SupabaseClient,
-  opts: EmitOptions,
-): Promise<void> {
+export async function emitChatbotEvent(supabase: SupabaseClient, opts: EmitOptions): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { data: hooks, error } = await supabaseAdmin
@@ -128,7 +127,6 @@ export async function emitChatbotEvent(
       .eq("workspace_id", opts.workspaceId)
       .eq("active", true);
     if (error || !hooks?.length) return;
-
 
     const matching = (hooks as unknown as WebhookRow[]).filter((h) =>
       h.events.includes(opts.event),

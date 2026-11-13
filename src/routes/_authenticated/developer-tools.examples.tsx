@@ -22,7 +22,9 @@ function ExamplesPage() {
           </div>
           <h2 className="font-display text-xl font-semibold">Code Examples</h2>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">Copy-paste snippets for every extension point.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Copy-paste snippets for every extension point.
+        </p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -33,12 +35,21 @@ function ExamplesPage() {
                 <CardTitle className="text-sm">{ex.title}</CardTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">{ex.description}</p>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(ex.code); toast.success("Copied"); }}>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  navigator.clipboard.writeText(ex.code);
+                  toast.success("Copied");
+                }}
+              >
                 <Copy className="w-3.5 h-3.5" />
               </Button>
             </CardHeader>
             <CardContent>
-              <pre className="rounded-control border border-border bg-muted/40 p-3 font-mono text-[11px] leading-relaxed overflow-x-auto">{ex.code}</pre>
+              <pre className="rounded-control border border-border bg-muted/40 p-3 font-mono text-[11px] leading-relaxed overflow-x-auto">
+                {ex.code}
+              </pre>
             </CardContent>
           </Card>
         ))}

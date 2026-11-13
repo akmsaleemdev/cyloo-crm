@@ -70,7 +70,11 @@ export function Autocomplete({
           aria-expanded={open}
           aria-haspopup="listbox"
           disabled={disabled}
-          className={cn("w-full justify-between font-normal", !selected && "text-muted-foreground", className)}
+          className={cn(
+            "w-full justify-between font-normal",
+            !selected && "text-muted-foreground",
+            className,
+          )}
         >
           <span className="truncate text-left">{selected?.label ?? placeholder}</span>
           <span className="ml-2 flex items-center gap-1 shrink-0">
@@ -99,7 +103,10 @@ export function Autocomplete({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn("p-0 w-[var(--radix-popover-trigger-width)]", contentClassName)} align="start">
+      <PopoverContent
+        className={cn("p-0 w-[var(--radix-popover-trigger-width)]", contentClassName)}
+        align="start"
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>

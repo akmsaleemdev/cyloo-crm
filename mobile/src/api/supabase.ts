@@ -1,8 +1,8 @@
-import 'react-native-url-polyfill/auto';
-import { createClient } from '@supabase/supabase-js';
-import { AppState } from 'react-native';
-import { env } from '@/lib/env';
-import { supabaseAuthStorage } from '@/lib/storage';
+import "react-native-url-polyfill/auto";
+import { createClient } from "@supabase/supabase-js";
+import { AppState } from "react-native";
+import { env } from "@/lib/env";
+import { supabaseAuthStorage } from "@/lib/storage";
 
 export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
   auth: {
@@ -15,7 +15,7 @@ export const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
 });
 
 // Pause/resume token refresh with app state — recommended by Supabase RN guide.
-AppState.addEventListener('change', (state) => {
-  if (state === 'active') supabase.auth.startAutoRefresh();
+AppState.addEventListener("change", (state) => {
+  if (state === "active") supabase.auth.startAutoRefresh();
   else supabase.auth.stopAutoRefresh();
 });

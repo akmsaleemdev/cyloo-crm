@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/public/v1/conversations")({
 
         let q = ctx.supabase
           .from("conversations")
-          .select("id, contact_id, channel, status, priority, last_message_at, created_at", { count: "exact" })
+          .select("id, contact_id, channel, status, priority, last_message_at, created_at", {
+            count: "exact",
+          })
           .eq("organization_id", ctx.organizationId)
           .order("last_message_at", { ascending: false, nullsFirst: false })
           .range(offset, offset + limit - 1);
@@ -21,7 +23,10 @@ export const Route = createFileRoute("/api/public/v1/conversations")({
 
         const { data, error, count } = await q;
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-        return jsonOk(data ?? [], { requestId: ctx.requestId, meta: { total: count ?? 0, limit, offset } });
+        return jsonOk(data ?? [], {
+          requestId: ctx.requestId,
+          meta: { total: count ?? 0, limit, offset },
+        });
       }),
     },
   },

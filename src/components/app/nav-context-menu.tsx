@@ -1,7 +1,11 @@
 import * as React from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
-  ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Star, StarOff, ExternalLink, Copy, ArrowRight } from "lucide-react";
 import { useFavorites } from "@/shared/hooks/use-favorites";

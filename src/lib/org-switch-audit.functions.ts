@@ -45,27 +45,29 @@ export const logOrganizationSwitch = createServerFn({ method: "POST" })
     const verifiedOrgId: string | null = visibleOrg?.id ?? null;
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { error } = await sbAny(supabaseAdmin).from("audit_logs").insert({
-      organization_id: verifiedOrgId,
-      actor_id: userId,
-      action: "access",
-      resource_type: "organization_switch",
-      resource_id: data.toOrgId,
-      user_agent: data.userAgent ?? null,
-      changes: {
-        from: { id: data.fromOrgId, name: data.fromOrgName ?? null },
-        to: { id: data.toOrgId, name: data.toOrgName ?? null },
-      },
-      metadata: {
-        outcome: data.outcome,
-        purge_succeeded: data.purgeSucceeded,
-        purge_error: data.purgeError ?? null,
-        duration_ms: data.durationMs ?? null,
-        reason: data.reason ?? null,
-        ...(verifiedOrgId ? {} : { requested_org_id: data.toOrgId, org_unverified: true }),
-      },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    const { error } = await sbAny(supabaseAdmin)
+      .from("audit_logs")
+      .insert({
+        organization_id: verifiedOrgId,
+        actor_id: userId,
+        action: "access",
+        resource_type: "organization_switch",
+        resource_id: data.toOrgId,
+        user_agent: data.userAgent ?? null,
+        changes: {
+          from: { id: data.fromOrgId, name: data.fromOrgName ?? null },
+          to: { id: data.toOrgId, name: data.toOrgName ?? null },
+        },
+        metadata: {
+          outcome: data.outcome,
+          purge_succeeded: data.purgeSucceeded,
+          purge_error: data.purgeError ?? null,
+          duration_ms: data.durationMs ?? null,
+          reason: data.reason ?? null,
+          ...(verifiedOrgId ? {} : { requested_org_id: data.toOrgId, org_unverified: true }),
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
 
     if (error) {
       // Never fail the switch on logging errors — return the message so the

@@ -76,10 +76,8 @@ for (let i = 0; i < lines.length; i++) {
 // `background-color: var(--neutral-*)` in any file under src/routes or src/components.
 const scanDirs = [join(SRC, "routes"), join(SRC, "components")];
 const exts = new Set([".css", ".ts", ".tsx", ".jsx", ".js"]);
-const bgInlineRegex =
-  /background(?:-color)?\s*:\s*var\(\s*--neutral-[^)]+\)/i;
-const bgArbitraryClassRegex =
-  /\bbg-\[var\(\s*--neutral-[^)]+\)\]/i;
+const bgInlineRegex = /background(?:-color)?\s*:\s*var\(\s*--neutral-[^)]+\)/i;
+const bgArbitraryClassRegex = /\bbg-\[var\(\s*--neutral-[^)]+\)\]/i;
 
 function walk(dir) {
   let out = [];
@@ -93,7 +91,7 @@ function walk(dir) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) out = out.concat(walk(p));
-    else if (exts.has(p.slice(p.lastIndexOf("."))) ) out.push(p);
+    else if (exts.has(p.slice(p.lastIndexOf(".")))) out.push(p);
   }
   return out;
 }

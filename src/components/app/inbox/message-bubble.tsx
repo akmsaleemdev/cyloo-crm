@@ -234,10 +234,18 @@ export function MessageBubble({
               )}
             >
               <div className="font-medium opacity-80 truncate">
-                {m.reply_to ? (m.reply_to.direction === "outbound" ? "You" : "Contact") : "Reply to a message"}
+                {m.reply_to
+                  ? m.reply_to.direction === "outbound"
+                    ? "You"
+                    : "Contact"
+                  : "Reply to a message"}
               </div>
               <div className="opacity-75 truncate">
-                {m.reply_to ? (m.reply_to.body ? stripFormatting(m.reply_to.body) : m.reply_to.message_type) : "Original message unavailable"}
+                {m.reply_to
+                  ? m.reply_to.body
+                    ? stripFormatting(m.reply_to.body)
+                    : m.reply_to.message_type
+                  : "Original message unavailable"}
               </div>
             </div>
           )}
@@ -308,10 +316,15 @@ export function MessageBubble({
             {deliveryFailure.retryable ? (
               <button
                 type="button"
-                onClick={() => retry.mutate(
-                  { id: m.id, conversationId: m.conversation_id },
-                  { onError: (error) => toast.error(error instanceof Error ? error.message : "Retry failed") },
-                )}
+                onClick={() =>
+                  retry.mutate(
+                    { id: m.id, conversationId: m.conversation_id },
+                    {
+                      onError: (error) =>
+                        toast.error(error instanceof Error ? error.message : "Retry failed"),
+                    },
+                  )
+                }
                 disabled={retry.isPending}
                 className="flex items-center gap-1 hover:underline"
               >

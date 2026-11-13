@@ -48,7 +48,6 @@ import {
   Loader2,
 } from "lucide-react";
 
-
 export const Route = createFileRoute("/_authenticated/booking/calendar-integrations")({
   component: CalendarIntegrationsPage,
   head: () => ({
@@ -129,26 +128,43 @@ function CalendarIntegrationsPage() {
         const popup = window.open("", `cyloo-${provider}-calendar`, "width=600,height=720");
         if (!popup) throw new Error("Popup blocked. Allow popups and try again.");
         try {
-          const { authorizationUrl } = await startOAuth({ data: { provider, targetOrigin: window.location.origin } });
+          const { authorizationUrl } = await startOAuth({
+            data: { provider, targetOrigin: window.location.origin },
+          });
           const authUrl = new URL(authorizationUrl);
-          const expectedOrigin = provider === "google" ? "https://accounts.google.com" : "https://login.microsoftonline.com";
-          if (authUrl.origin !== expectedOrigin) throw new Error("Unexpected calendar authorization URL");
+          const expectedOrigin =
+            provider === "google"
+              ? "https://accounts.google.com"
+              : "https://login.microsoftonline.com";
+          if (authUrl.origin !== expectedOrigin)
+            throw new Error("Unexpected calendar authorization URL");
           popup.location.href = authUrl.href;
           await new Promise<void>((resolve, reject) => {
-            const cleanup = () => { window.removeEventListener("message", onMessage); clearInterval(timer); };
+            const cleanup = () => {
+              window.removeEventListener("message", onMessage);
+              clearInterval(timer);
+            };
             const onMessage = (event: MessageEvent) => {
               if (event.origin !== window.location.origin || event.source !== popup) return;
-              if (event.data?.type !== "cyloo:calendar-oauth" || event.data.provider !== provider) return;
-              cleanup(); popup.close();
+              if (event.data?.type !== "cyloo:calendar-oauth" || event.data.provider !== provider)
+                return;
+              cleanup();
+              popup.close();
               if (event.data.success === true) resolve();
               else reject(new Error(`${PROVIDER_META[provider].name} connection failed`));
             };
             window.addEventListener("message", onMessage);
             const timer = setInterval(() => {
-              if (popup.closed) { cleanup(); reject(new Error("Calendar sign-in was cancelled")); }
+              if (popup.closed) {
+                cleanup();
+                reject(new Error("Calendar sign-in was cancelled"));
+              }
             }, 500);
           });
-        } catch (cause) { popup.close(); throw cause; }
+        } catch (cause) {
+          popup.close();
+          throw cause;
+        }
         toast.success(`${PROVIDER_META[provider].name} connected`);
         refresh();
         return;
@@ -197,9 +213,7 @@ function CalendarIntegrationsPage() {
       </header>
 
       <section>
-        <h2 className="text-sm font-medium uppercase text-muted-foreground mb-3">
-          Providers
-        </h2>
+        <h2 className="text-sm font-medium uppercase text-muted-foreground mb-3">Providers</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Card>
             <CardHeader className="pb-2">

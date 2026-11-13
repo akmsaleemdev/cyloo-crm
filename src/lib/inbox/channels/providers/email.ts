@@ -10,9 +10,19 @@ export const emailChannel: ChannelProvider = {
   label: "Email",
   implemented: false,
   capabilities: new Set([
-    "text", "image", "video", "audio", "document",
-    "reply_quote", "forward", "threads",
+    "text",
+    "image",
+    "video",
+    "audio",
+    "document",
+    "reply_quote",
+    "forward",
+    "threads",
   ]),
-  async parseWebhook() { return []; },
-  async send() { throw new Error("email: not configured"); },
+  async parseWebhook() {
+    return [];
+  },
+  async send() {
+    throw new Error("email: not configured");
+  },
 };

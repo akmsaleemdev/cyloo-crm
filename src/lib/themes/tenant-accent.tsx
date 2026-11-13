@@ -11,19 +11,31 @@
  * The colour maths lives in `./accent-color` (pure, test-importable); it is
  * re-exported here so existing import sites keep working.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getWhiteLabel } from '@/lib/white-label/white-label.functions';
-import { applyThemeTokens } from '@/lib/themes/apply';
-import { supabase } from '@/integrations/supabase/client';
-import { useThemeRealtime } from '@/lib/themes/use-theme-realtime';
-import { DEFAULT_ACCENT, accentTokens, accentForeground, isValidAccent } from '@/lib/themes/accent-color';
-import { usePlatformBranding } from '@/hooks/use-platform-branding';
-import { readActiveWorkspaceId, subscribeActiveTenant } from '@/lib/tenant/active-tenant';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getWhiteLabel } from "@/lib/white-label/white-label.functions";
+import { applyThemeTokens } from "@/lib/themes/apply";
+import { supabase } from "@/integrations/supabase/client";
+import { useThemeRealtime } from "@/lib/themes/use-theme-realtime";
+import {
+  DEFAULT_ACCENT,
+  accentTokens,
+  accentForeground,
+  isValidAccent,
+} from "@/lib/themes/accent-color";
+import { usePlatformBranding } from "@/hooks/use-platform-branding";
+import { readActiveWorkspaceId, subscribeActiveTenant } from "@/lib/tenant/active-tenant";
 
-export * from '@/lib/themes/accent-color';
-
-
+export * from "@/lib/themes/accent-color";
 
 type AccentContextValue = {
   /** Accent currently in effect (preview when previewing, otherwise saved). */
@@ -47,7 +59,9 @@ function useHasSession() {
     supabase.auth.getSession().then(({ data }) => {
       if (mounted) setHasSession(!!data.session);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => setHasSession(!!session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) =>
+      setHasSession(!!session),
+    );
     return () => {
       mounted = false;
       sub.subscription.unsubscribe();
@@ -73,7 +87,7 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
   );
 
   const { data, isLoading } = useQuery({
-    queryKey: ['white-label', workspaceId],
+    queryKey: ["white-label", workspaceId],
     queryFn: () => getWhiteLabel({ data: { workspaceId } } as any),
     // Cache the resolved theme rather than dropping it on every remount.
     // With staleTime/gcTime at 0 the config was evicted whenever this
@@ -90,19 +104,18 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     placeholderData: (prev) => prev,
-    refetchOnMount: 'always',
+    refetchOnMount: "always",
     refetchOnWindowFocus: true,
     enabled,
     retry: false,
   });
-
 
   // Keep every open tab in sync when branding/theme rows change.
   useThemeRealtime((data as { workspaceId?: string | null } | undefined)?.workspaceId ?? null);
 
   const config = data?.config as Record<string, unknown> | undefined;
   const active = Boolean(config?.is_active);
-  const stored = typeof config?.accent_color === 'string' ? config.accent_color : null;
+  const stored = typeof config?.accent_color === "string" ? config.accent_color : null;
   // Platform Settings → Branding accent is the platform-wide default; a
   // workspace white-label accent still overrides it.
   const branding = usePlatformBranding();
@@ -113,7 +126,7 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
   // `--primary` precedence: workspace white-label primary → Platform Settings →
   // Branding primary → the live accent. Without this the accent tokens would
   // always clobber the platform primary colour.
-  const wlPrimary = typeof config?.primary_color === 'string' ? config.primary_color : null;
+  const wlPrimary = typeof config?.primary_color === "string" ? config.primary_color : null;
   const primaryOverride =
     (active && isValidAccent(wlPrimary) ? wlPrimary.trim() : null) ??
     (isValidAccent(branding.primaryColor) ? branding.primaryColor.trim() : null);
@@ -124,14 +137,14 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
   // Tracks the active colour scheme so the AA-safe derivatives are computed
   // against the surface they actually render on.
   const [isDark, setIsDark] = useState(
-    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+    typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
   );
   useEffect(() => {
     const el = document.documentElement;
-    const sync = () => setIsDark(el.classList.contains('dark'));
+    const sync = () => setIsDark(el.classList.contains("dark"));
     sync();
     const mo = new MutationObserver(sync);
-    mo.observe(el, { attributes: true, attributeFilter: ['class'] });
+    mo.observe(el, { attributes: true, attributeFilter: ["class"] });
     return () => mo.disconnect();
   }, []);
 
@@ -146,8 +159,8 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
   const tokens = useMemo(() => {
     const next = accentTokens(accent, isDark);
     if (primaryOverride) {
-      next['--primary'] = primaryOverride;
-      next['--primary-foreground'] = accentForeground(primaryOverride);
+      next["--primary"] = primaryOverride;
+      next["--primary-foreground"] = accentForeground(primaryOverride);
     }
     return next;
   }, [accent, isDark, primaryOverride]);
@@ -155,8 +168,6 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     applyThemeTokens(tokens);
   }, [tokens]);
-
-
 
   const setPreviewAccent = useCallback((hex: string | null) => {
     setPreview(hex && isValidAccent(hex) ? hex.trim() : null);

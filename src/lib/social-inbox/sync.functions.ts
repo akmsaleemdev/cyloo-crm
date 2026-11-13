@@ -8,7 +8,13 @@ const MIN_INTERVAL_MS = 60_000;
 
 export interface SocialInboxSyncSummary {
   ran: boolean;
-  accounts: Array<{ platform: string; name: string; ok: boolean; inserted: number; error?: string }>;
+  accounts: Array<{
+    platform: string;
+    name: string;
+    ok: boolean;
+    inserted: number;
+    error?: string;
+  }>;
 }
 
 /** Pull new comments for the caller's workspace now (throttled). */

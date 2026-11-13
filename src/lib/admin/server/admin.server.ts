@@ -5,8 +5,14 @@ export async function getAdminKpisInternal() {
   const [orgs, users, tickets, announcements] = await Promise.all([
     sbAny(supabaseAdmin).from("organizations").select("id", { count: "exact", head: true }),
     sbAny(supabaseAdmin).from("profiles").select("id", { count: "exact", head: true }),
-    sbAny(supabaseAdmin).from("platform_support_tickets").select("id", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
-    sbAny(supabaseAdmin).from("platform_announcements").select("id", { count: "exact", head: true }).not("published_at", "is", null),
+    sbAny(supabaseAdmin)
+      .from("platform_support_tickets")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["open", "in_progress"]),
+    sbAny(supabaseAdmin)
+      .from("platform_announcements")
+      .select("id", { count: "exact", head: true })
+      .not("published_at", "is", null),
   ]);
 
   return {

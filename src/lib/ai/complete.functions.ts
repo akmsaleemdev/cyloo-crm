@@ -261,62 +261,62 @@ export async function runChat(
       .slice(0, 2);
     const models = [request.model, ...alternates];
     for (let attempt = 0; attempt < models.length; attempt++) {
-    const attemptRequest = { ...request, model: models[attempt]! };
-    const start = Date.now();
-    try {
-      const res = await callWithProvider(provider, attemptRequest);
-      const model = await loadModel(provider.id, attemptRequest.model).catch(() => null);
-      const usage = res.usage ?? {
-        prompt_tokens: estimateMessageTokens(request.messages),
-        completion_tokens: Math.ceil((res.content?.length ?? 0) / 4),
-        total_tokens: 0,
-      };
-      usage.total_tokens = usage.prompt_tokens + usage.completion_tokens;
-      const cost = computeCost(model, usage);
-      await logAIRequest({
-        workspaceId: opts.workspaceId,
-        userId: opts.userId,
-        providerId: provider.id,
-        providerKind: provider.kind,
-        model: attemptRequest.model,
-        operation: "chat",
-        feature: opts.feature,
-        status: "success",
-        latencyMs: Date.now() - start,
-        usage,
-        costUsd: cost,
-        requestPreview: { messages: request.messages.slice(-3) },
-        responsePreview: { content: res.content?.slice(0, 800) },
-      });
-      return { ...res, usage, providerId: provider.id, providerKind: provider.kind };
-    } catch (e) {
-      const err = e as AIError | Error;
-      lastError = err;
-      const aiErr = err instanceof AIError ? err : null;
-      await logAIRequest({
-        workspaceId: opts.workspaceId,
-        userId: opts.userId,
-        providerId: provider.id,
-        providerKind: provider.kind,
-        model: attemptRequest.model,
-        operation: "chat",
-        feature: opts.feature,
-        status:
-          aiErr?.type === "rate_limit"
-            ? "rate_limited"
-            : aiErr?.type === "timeout"
-              ? "timeout"
-              : "error",
-        httpStatus: aiErr?.httpStatus,
-        latencyMs: Date.now() - start,
-        errorType: aiErr?.type,
-        errorMessage: err.message,
-      });
-      if (aiErr?.type === "server" && attempt < models.length - 1) continue;
-      // Only fall through for retryable errors.
-      if (aiErr && !aiErr.retryable) throw aiErr;
-      break;
-    }
+      const attemptRequest = { ...request, model: models[attempt]! };
+      const start = Date.now();
+      try {
+        const res = await callWithProvider(provider, attemptRequest);
+        const model = await loadModel(provider.id, attemptRequest.model).catch(() => null);
+        const usage = res.usage ?? {
+          prompt_tokens: estimateMessageTokens(request.messages),
+          completion_tokens: Math.ceil((res.content?.length ?? 0) / 4),
+          total_tokens: 0,
+        };
+        usage.total_tokens = usage.prompt_tokens + usage.completion_tokens;
+        const cost = computeCost(model, usage);
+        await logAIRequest({
+          workspaceId: opts.workspaceId,
+          userId: opts.userId,
+          providerId: provider.id,
+          providerKind: provider.kind,
+          model: attemptRequest.model,
+          operation: "chat",
+          feature: opts.feature,
+          status: "success",
+          latencyMs: Date.now() - start,
+          usage,
+          costUsd: cost,
+          requestPreview: { messages: request.messages.slice(-3) },
+          responsePreview: { content: res.content?.slice(0, 800) },
+        });
+        return { ...res, usage, providerId: provider.id, providerKind: provider.kind };
+      } catch (e) {
+        const err = e as AIError | Error;
+        lastError = err;
+        const aiErr = err instanceof AIError ? err : null;
+        await logAIRequest({
+          workspaceId: opts.workspaceId,
+          userId: opts.userId,
+          providerId: provider.id,
+          providerKind: provider.kind,
+          model: attemptRequest.model,
+          operation: "chat",
+          feature: opts.feature,
+          status:
+            aiErr?.type === "rate_limit"
+              ? "rate_limited"
+              : aiErr?.type === "timeout"
+                ? "timeout"
+                : "error",
+          httpStatus: aiErr?.httpStatus,
+          latencyMs: Date.now() - start,
+          errorType: aiErr?.type,
+          errorMessage: err.message,
+        });
+        if (aiErr?.type === "server" && attempt < models.length - 1) continue;
+        // Only fall through for retryable errors.
+        if (aiErr && !aiErr.retryable) throw aiErr;
+        break;
+      }
     }
   }
   throw lastError ?? new AIError("unknown", "All providers failed");

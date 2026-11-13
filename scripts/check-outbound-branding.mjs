@@ -32,7 +32,7 @@ import { join, relative, sep } from "node:path";
 const ROOT = process.cwd();
 // Retired product names. Current brand is "CYLOO"; all predecessors stay
 // flagged so stale copy cannot creep back into outbound content.
-const NEEDLE = /wadiff|swiffer|wacrm|wrapcoders/i;
+const NEEDLE = /wadiff|swiffer|wacrm|wrapcoders|monday\.com/i;
 const EXEMPT_MARKER = /cyloo-branding-ok\b/i;
 
 // Roots that ship user-facing outbound copy. Everything under these paths is
@@ -48,6 +48,7 @@ const SCAN_ROOTS = [
   { dir: "src/routes", recursive: false },
   // Component libraries that emit rendered outbound copy.
   "src/components/marketing",
+  "src/components/marketing-redesign",
   "src/components/landing",
   "src/components/emails",
   "src/components/notifications",
@@ -62,24 +63,42 @@ const SCAN_ROOTS = [
 
 // File extensions that can carry rendered text.
 const SCAN_EXTS = new Set([
-  ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs",
-  ".md", ".mdx", ".html", ".htm", ".txt",
-  ".json", ".webmanifest", ".yaml", ".yml",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".md",
+  ".mdx",
+  ".html",
+  ".htm",
+  ".txt",
+  ".json",
+  ".webmanifest",
+  ".yaml",
+  ".yml",
 ]);
 
 // Directory names that are never user-facing outbound content.
 const EXCLUDE_DIR = new Set([
-  "node_modules", ".git", "dist", "build", ".output", ".vinxi",
-  "coverage", "playwright-report", "test-results",
-  "__mocks__", "__fixtures__", "fixtures",
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  ".output",
+  ".vinxi",
+  "coverage",
+  "playwright-report",
+  "test-results",
+  "__mocks__",
+  "__fixtures__",
+  "fixtures",
   "integrations", // src/integrations/* is generated backend glue
 ]);
 
 // File-level allowlist. Matches by suffix on the project-relative POSIX path.
-const EXCLUDE_FILE_SUFFIX = [
-  "routeTree.gen.ts",
-  ".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx",
-];
+const EXCLUDE_FILE_SUFFIX = ["routeTree.gen.ts", ".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"];
 
 // Route files that are authenticated-only chrome (not outbound) can be listed
 // here explicitly. Keep this list SHORT — err on the side of scanning.
@@ -89,13 +108,24 @@ const EXCLUDE_FILES = new Set([
 
 function walk(dir, out) {
   let entries;
-  try { entries = readdirSync(dir); } catch { return; }
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return;
+  }
   for (const name of entries) {
     if (EXCLUDE_DIR.has(name)) continue;
     const abs = join(dir, name);
     let s;
-    try { s = statSync(abs); } catch { continue; }
-    if (s.isDirectory()) { walk(abs, out); continue; }
+    try {
+      s = statSync(abs);
+    } catch {
+      continue;
+    }
+    if (s.isDirectory()) {
+      walk(abs, out);
+      continue;
+    }
     if (!s.isFile()) continue;
     const ext = name.slice(name.lastIndexOf("."));
     if (!SCAN_EXTS.has(ext)) continue;
@@ -115,7 +145,11 @@ for (const entry of SCAN_ROOTS) {
     for (const name of readdirSync(abs)) {
       const child = join(abs, name);
       let s;
-      try { s = statSync(child); } catch { continue; }
+      try {
+        s = statSync(child);
+      } catch {
+        continue;
+      }
       if (!s.isFile()) continue;
       const ext = name.slice(name.lastIndexOf("."));
       if (!SCAN_EXTS.has(ext)) continue;
@@ -131,7 +165,11 @@ for (const entry of SCAN_ROOTS) {
 const failures = [];
 for (const { abs, rel } of files) {
   let text;
-  try { text = readFileSync(abs, "utf8"); } catch { continue; }
+  try {
+    text = readFileSync(abs, "utf8");
+  } catch {
+    continue;
+  }
   if (!NEEDLE.test(text)) continue;
   const lines = text.split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
@@ -147,7 +185,9 @@ if (failures.length === 0) {
   process.exit(0);
 }
 
-console.error(`\n✗ outbound branding: ${failures.length} retired brand reference(s) in user-facing content:\n`);
+console.error(
+  `\n✗ outbound branding: ${failures.length} retired brand reference(s) in user-facing content:\n`,
+);
 for (const f of failures) {
   console.error(`  ${f.rel}:${f.line}  ${f.text}`);
 }

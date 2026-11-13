@@ -296,19 +296,21 @@ function Pricing() {
                           label: value,
                         });
                       }}
-                      className={`rounded-full px-3 py-2 font-medium transition-all duration-200 sm:px-4 ${interval === value
-                        ? "bg-primary text-white shadow-sm"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                        }`}
+                      className={`rounded-full px-3 py-2 font-medium transition-all duration-200 sm:px-4 ${
+                        interval === value
+                          ? "bg-primary text-white shadow-sm"
+                          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      }`}
                     >
                       {value === "month" ? "Monthly" : "Yearly"}
                       <span className="hidden sm:inline"> Billing</span>
                       {value === "year" && savingsPct > 0 && (
                         <span
-                          className={`ml-1.5 hidden text-[11px] font-semibold uppercase sm:inline ${interval === value
-                            ? "text-emerald-200"
-                            : "text-primary dark:text-emerald-400"
-                            }`}
+                          className={`ml-1.5 hidden text-[11px] font-semibold uppercase sm:inline ${
+                            interval === value
+                              ? "text-emerald-200"
+                              : "text-primary dark:text-emerald-400"
+                          }`}
                         >
                           −{savingsPct}%
                         </span>
@@ -364,10 +366,11 @@ function Pricing() {
               return (
                 <div
                   key={p.id}
-                  className={`group relative flex min-w-0 flex-col overflow-hidden rounded-0 border-r border-b border-border p-6 transition-all duration-300 ${isLastMobileRow ? "border-b-0" : ""} sm:border-b sm:[&:nth-child(2n)]:border-r-0 sm:p-4 ${isLastTabletRow ? "sm:border-b-0" : ""} lg:border-b lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 ${isLastDesktopRow ? "lg:border-b-0" : ""} ${p.highlight
+                  className={`group relative flex min-w-0 flex-col overflow-hidden rounded-0 border-r border-b border-border p-6 transition-all duration-300 ${isLastMobileRow ? "border-b-0" : ""} sm:border-b sm:[&:nth-child(2n)]:border-r-0 sm:p-4 ${isLastTabletRow ? "sm:border-b-0" : ""} lg:border-b lg:[&:nth-child(2n)]:border-r lg:[&:nth-child(4n)]:border-r-0 ${isLastDesktopRow ? "lg:border-b-0" : ""} ${
+                    p.highlight
                     // ? "border-[#015941]/45 bg-[#eff9f2] dark:border-emerald-400/35 dark:bg-emerald-950/30"
                     // : "border-border bg-background hover:shadow-xl"
-                    } ${currentPlan ? "ring-2 ring-inset ring-[#25D366]/60" : ""}`}
+                  } ${currentPlan ? "ring-2 ring-inset ring-[#25D366]/60" : ""}`}
                 >
                   {/* {p.highlight && (
                     <div aria-hidden className="absolute inset-x-0 top-0 h-1 bg-primary" />

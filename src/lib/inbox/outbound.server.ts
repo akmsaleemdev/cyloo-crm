@@ -235,10 +235,15 @@ export async function deliverInboxMessage(args: {
 
     const cleanTo = to.replace(/[^\d+]/g, "");
     const providerReplyId = await findProviderReplyId(
-      admin, msg.workspace_id, msg.conversation_id, msg.reply_to_id,
+      admin,
+      msg.workspace_id,
+      msg.conversation_id,
+      msg.reply_to_id,
     );
     if (msg.reply_to_id && !providerReplyId) {
-      return markFailed("The original message has not been delivered to WhatsApp yet. Retry this reply after it arrives.");
+      return markFailed(
+        "The original message has not been delivered to WhatsApp yet. Retry this reply after it arrives.",
+      );
     }
 
     const isTemplate = msg.message_type === "template";
@@ -382,7 +387,8 @@ export async function deliverInboxMessage(args: {
     } catch (err) {
       const providerError = err as Error & { code?: string };
       const rawReason = [providerError?.code, providerError?.message ?? "WhatsApp delivery failed"]
-        .filter(Boolean).join(": ");
+        .filter(Boolean)
+        .join(": ");
       const { explainWhatsAppDeliveryFailure } =
         await import("@/lib/messaging/whatsapp-delivery-errors");
       const failure = explainWhatsAppDeliveryFailure(rawReason);
@@ -410,7 +416,11 @@ export async function deliverInboxMessage(args: {
           metadata: clearDeliveryError(deliveryMetadata(msg.metadata)),
         })
         .eq("id", msg.id);
-      return { delivered: true, status: "sent", providerMessageId: res.providerMessageId ?? undefined };
+      return {
+        delivered: true,
+        status: "sent",
+        providerMessageId: res.providerMessageId ?? undefined,
+      };
     } catch (err) {
       return markFailed(redactSecrets((err as Error).message ?? "TikTok message failed"));
     }

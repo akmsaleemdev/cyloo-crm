@@ -18,10 +18,17 @@ type SB = any;
 export type BackupScope = "database" | "storage" | "media" | "config" | "full";
 export type BackupType = "full" | "incremental";
 export type BackupDestination =
-  | "lovable_cloud" | "s3" | "gcs" | "azure_blob" | "r2" | "wasabi" | "backblaze" | "local";
+  "lovable_cloud" | "s3" | "gcs" | "azure_blob" | "r2" | "wasabi" | "backblaze" | "local";
 export type BackupStatus =
-  | "queued" | "running" | "completed" | "failed" | "verifying" | "verified"
-  | "restoring" | "restored" | "cancelled";
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "verifying"
+  | "verified"
+  | "restoring"
+  | "restored"
+  | "cancelled";
 
 export type BackupJob = {
   id: string;
@@ -125,7 +132,10 @@ async function getWorkspaceId(supabase: SB, userId: string): Promise<string | nu
   return resolveActiveWorkspaceId(supabase, userId);
 }
 
-function computeHealth(m: BackupOverview["metrics"]): { score: number; posture: BackupOverview["posture"] } {
+function computeHealth(m: BackupOverview["metrics"]): {
+  score: number;
+  posture: BackupOverview["posture"];
+} {
   let score = 100;
   if (m.total_backups === 0) return { score: 0, posture: "critical" };
   if (m.failed_last_30d > 0) score -= Math.min(30, m.failed_last_30d * 5);
@@ -166,12 +176,20 @@ export const getBackupOverview = createServerFn({ method: "GET" })
       health_score: 0,
       posture: "critical",
       metrics: {
-        total_backups: 0, successful_last_30d: 0, failed_last_30d: 0,
-        verified_backups: 0, encrypted_backups: 0, total_size_bytes: 0,
-        active_schedules: 0, last_successful_at: null,
-        hours_since_last_backup: null, restore_operations_30d: 0,
+        total_backups: 0,
+        successful_last_30d: 0,
+        failed_last_30d: 0,
+        verified_backups: 0,
+        encrypted_backups: 0,
+        total_size_bytes: 0,
+        active_schedules: 0,
+        last_successful_at: null,
+        hours_since_last_backup: null,
+        restore_operations_30d: 0,
       },
-      scope_breakdown: [], destination_breakdown: [], recent_jobs: [],
+      scope_breakdown: [],
+      destination_breakdown: [],
+      recent_jobs: [],
       engine: BACKUP_ENGINE,
     };
     if (!workspaceId) return empty;
@@ -196,17 +214,22 @@ export const getBackupOverview = createServerFn({ method: "GET" })
       : null;
 
     const { count: schedCount } = await supabase
-      .from("backup_schedules").select("*", { count: "exact", head: true })
-      .eq("workspace_id", workspaceId).eq("is_active", true);
+      .from("backup_schedules")
+      .select("*", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId)
+      .eq("is_active", true);
     const { count: restoreCount } = await supabase
-      .from("backup_restore_operations").select("*", { count: "exact", head: true })
-      .eq("workspace_id", workspaceId).gte("created_at", d30);
+      .from("backup_restore_operations")
+      .select("*", { count: "exact", head: true })
+      .eq("workspace_id", workspaceId)
+      .gte("created_at", d30);
 
     const scopeMap = new Map<BackupScope, { count: number; total_size: number }>();
     const destMap = new Map<BackupDestination, number>();
     for (const j of jobs) {
       const s = scopeMap.get(j.scope) ?? { count: 0, total_size: 0 };
-      s.count += 1; s.total_size += j.size_bytes ?? 0;
+      s.count += 1;
+      s.total_size += j.size_bytes ?? 0;
       scopeMap.set(j.scope, s);
       destMap.set(j.destination, (destMap.get(j.destination) ?? 0) + 1);
     }
@@ -231,7 +254,10 @@ export const getBackupOverview = createServerFn({ method: "GET" })
       posture,
       metrics,
       scope_breakdown: Array.from(scopeMap.entries()).map(([scope, v]) => ({ scope, ...v })),
-      destination_breakdown: Array.from(destMap.entries()).map(([destination, count]) => ({ destination, count })),
+      destination_breakdown: Array.from(destMap.entries()).map(([destination, count]) => ({
+        destination,
+        count,
+      })),
       recent_jobs: jobs.slice(0, 25),
       engine: BACKUP_ENGINE,
     };
@@ -244,15 +270,19 @@ export const listBackupJobs = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<BackupJob[]> => {
     const { supabase } = context;
     const { data } = await supabase
-      .from("backup_jobs").select("*")
-      .order("created_at", { ascending: false }).limit(200);
+      .from("backup_jobs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
     return (data ?? []) as BackupJob[];
   });
 
 const CreateBackupInput = z.object({
   scope: z.enum(["database", "storage", "media", "config", "full"]),
   backup_type: z.enum(["full", "incremental"]).default("full"),
-  destination: z.enum(["s3", "gcs", "azure_blob", "r2", "wasabi", "backblaze", "local"]).default("local"),
+  destination: z
+    .enum(["s3", "gcs", "azure_blob", "r2", "wasabi", "backblaze", "local"])
+    .default("local"),
   destination_config: z.record(z.string(), z.any()).default({}),
   is_encrypted: z.boolean().default(true),
   encryption_algorithm: z.string().default("AES-256-GCM"),
@@ -288,7 +318,8 @@ export const createBackup = createServerFn({ method: "POST" })
         created_by: userId,
         manifest: { requested_at: now, scope: data.scope, type: data.backup_type },
       })
-      .select("*").single();
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as BackupJob;
   });
@@ -300,7 +331,8 @@ export const cancelBackup = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("backup_jobs")
       .update({ status: "cancelled", completed_at: new Date().toISOString() })
-      .eq("id", data.id).in("status", ["queued", "running"]);
+      .eq("id", data.id)
+      .in("status", ["queued", "running"]);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -337,7 +369,9 @@ export const verifyBackup = createServerFn({ method: "POST" })
         status: "verified",
         verification_details: details,
       })
-      .eq("id", data.id).select("*").single();
+      .eq("id", data.id)
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as BackupJob;
   });
@@ -348,7 +382,8 @@ export const listBackupSchedules = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<BackupSchedule[]> => {
     const { data } = await context.supabase
-      .from("backup_schedules").select("*")
+      .from("backup_schedules")
+      .select("*")
       .order("created_at", { ascending: false });
     return (data ?? []) as BackupSchedule[];
   });
@@ -363,7 +398,9 @@ const UpsertScheduleInput = z.object({
   timezone: z.string().default("UTC"),
   retention_days: z.number().int().min(1).max(3650).default(30),
   keep_last_n: z.number().int().min(1).max(1000).default(30),
-  destination: z.enum(["s3", "gcs", "azure_blob", "r2", "wasabi", "backblaze", "local"]).default("local"),
+  destination: z
+    .enum(["s3", "gcs", "azure_blob", "r2", "wasabi", "backblaze", "local"])
+    .default("local"),
   destination_config: z.record(z.string(), z.any()).default({}),
   is_encrypted: z.boolean().default(true),
   notify_on_success: z.boolean().default(false),
@@ -391,12 +428,19 @@ export const upsertBackupSchedule = createServerFn({ method: "POST" })
     };
     if (id) {
       const { data: row, error } = await supabase
-        .from("backup_schedules").update(payload).eq("id", id).select("*").single();
+        .from("backup_schedules")
+        .update(payload)
+        .eq("id", id)
+        .select("*")
+        .single();
       if (error) throw new Error(error.message);
       return row as BackupSchedule;
     }
     const { data: row, error } = await supabase
-      .from("backup_schedules").insert(payload).select("*").single();
+      .from("backup_schedules")
+      .insert(payload)
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as BackupSchedule;
   });
@@ -405,7 +449,10 @@ export const deleteBackupSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    const { error } = await sbAny(context.supabase).from("backup_schedules").delete().eq("id", data.id);
+    const { error } = await sbAny(context.supabase)
+      .from("backup_schedules")
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -417,7 +464,9 @@ export const toggleBackupSchedule = createServerFn({ method: "POST" })
     // Pausing is always safe; ACTIVATING a schedule that nothing will run is not.
     if (data.is_active) requireBackupEngine("Activating a backup schedule");
     const { error } = await context.supabase
-      .from("backup_schedules").update({ is_active: data.is_active }).eq("id", data.id);
+      .from("backup_schedules")
+      .update({ is_active: data.is_active })
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -428,8 +477,10 @@ export const listRestoreOperations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<RestoreOperation[]> => {
     const { data } = await context.supabase
-      .from("backup_restore_operations").select("*")
-      .order("created_at", { ascending: false }).limit(100);
+      .from("backup_restore_operations")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
     return (data ?? []) as RestoreOperation[];
   });
 
@@ -454,8 +505,10 @@ export const previewRestore = createServerFn({ method: "POST" })
     let size = 0;
     if (data.backup_id) {
       const { data: backup } = await supabase
-        .from("backup_jobs").select("manifest, size_bytes, scope, backup_type, created_at")
-        .eq("id", data.backup_id).maybeSingle();
+        .from("backup_jobs")
+        .select("manifest, size_bytes, scope, backup_type, created_at")
+        .eq("id", data.backup_id)
+        .maybeSingle();
       manifest = (backup?.manifest as Record<string, any>) ?? {};
       size = (backup?.size_bytes as number) ?? 0;
     }
@@ -466,8 +519,14 @@ export const previewRestore = createServerFn({ method: "POST" })
       estimated_size_bytes: size,
       estimated_duration_minutes: Math.max(1, Math.round(size / (1024 * 1024 * 20))),
       tables_to_restore: [
-        "conversations", "messages", "contacts", "deals", "invoices",
-        "campaigns", "workflow_runs", "settings",
+        "conversations",
+        "messages",
+        "contacts",
+        "deals",
+        "invoices",
+        "campaigns",
+        "workflow_runs",
+        "settings",
       ],
       warnings: [
         data.restore_mode === "in_place"
@@ -489,14 +548,17 @@ export const previewRestore = createServerFn({ method: "POST" })
         affected_tables: summary.tables_to_restore,
         created_by: userId,
       })
-      .select("*").single();
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return op as RestoreOperation;
   });
 
 export const executeRestore = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v) => z.object({ operation_id: z.string().uuid(), confirm: z.literal(true) }).parse(v))
+  .validator((v) =>
+    z.object({ operation_id: z.string().uuid(), confirm: z.literal(true) }).parse(v),
+  )
   .handler(async ({ data, context }): Promise<RestoreOperation> => {
     // It used to mark the operation "restoring" and do nothing further.
     requireBackupEngine("Restoring a backup");
@@ -507,7 +569,9 @@ export const executeRestore = createServerFn({ method: "POST" })
         status: "restoring",
         started_at: now,
       })
-      .eq("id", data.operation_id).select("*").single();
+      .eq("id", data.operation_id)
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return op as RestoreOperation;
   });
@@ -518,15 +582,20 @@ export const listBackupNotifications = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data } = await context.supabase
-      .from("backup_notifications").select("*")
-      .order("created_at", { ascending: false }).limit(50);
-    return (data ?? []);
+      .from("backup_notifications")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return data ?? [];
   });
 
 export const markNotificationRead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    await sbAny(context.supabase).from("backup_notifications").update({ is_read: true }).eq("id", data.id);
+    await sbAny(context.supabase)
+      .from("backup_notifications")
+      .update({ is_read: true })
+      .eq("id", data.id);
     return { ok: true };
   });

@@ -2,12 +2,26 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
-  listKbCategories, upsertKbCategory, deleteKbCategory,
-  listKbArticles, getKbArticle, upsertKbArticle, deleteKbArticle,
-  listKbArticleVersions, reindexKbArticle, reindexKbWorkspace,
-  searchKb, generateKbAnswer, trackKbEvent, kbAnalyticsOverview,
-  importKbFromStorage, suggestKbForConversation,
-  type KbArticle, type KbCategory, type KbSearchHit, type KbStatus,
+  listKbCategories,
+  upsertKbCategory,
+  deleteKbCategory,
+  listKbArticles,
+  getKbArticle,
+  upsertKbArticle,
+  deleteKbArticle,
+  listKbArticleVersions,
+  reindexKbArticle,
+  reindexKbWorkspace,
+  searchKb,
+  generateKbAnswer,
+  trackKbEvent,
+  kbAnalyticsOverview,
+  importKbFromStorage,
+  suggestKbForConversation,
+  type KbArticle,
+  type KbCategory,
+  type KbSearchHit,
+  type KbStatus,
   type KbSourceType,
 } from "@/lib/kb/kb.functions";
 
@@ -92,12 +106,15 @@ export function useDeleteKbCategory(workspaceId: string | undefined) {
   });
 }
 
-export function useKbArticles(workspaceId: string | undefined, filters?: {
-  status?: KbStatus;
-  categoryId?: string | null;
-  search?: string;
-  isFaq?: boolean;
-}) {
+export function useKbArticles(
+  workspaceId: string | undefined,
+  filters?: {
+    status?: KbStatus;
+    categoryId?: string | null;
+    search?: string;
+    isFaq?: boolean;
+  },
+) {
   const fn = useServerFn(listKbArticles);
   return useQuery({
     queryKey: ["kb", "articles", workspaceId, filters],
@@ -134,7 +151,9 @@ export function useUpsertKbArticle() {
     mutationFn: async (input: UpsertArticleInput): Promise<KbArticle> => {
       const row = await fn({ data: input });
       if (row.needs_reindex) {
-        reindex({ data: { articleId: row.id } }).catch(() => { /* non-fatal */ });
+        reindex({ data: { articleId: row.id } }).catch(() => {
+          /* non-fatal */
+        });
       }
       return row;
     },
@@ -190,7 +209,9 @@ export function useReindexKbWorkspace() {
       fn({ data: { workspaceId: input.workspaceId, force: input.force ?? false, limit: 20 } }),
     onSuccess: (res, vars) => {
       qc.invalidateQueries({ queryKey: ["kb", "articles", vars.workspaceId] });
-      toast.success(`Reindexed ${res.articles} article${res.articles === 1 ? "" : "s"} (${res.chunks} chunks)`);
+      toast.success(
+        `Reindexed ${res.articles} article${res.articles === 1 ? "" : "s"} (${res.chunks} chunks)`,
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -252,7 +273,9 @@ export function useImportKbFromStorage() {
   return useMutation({
     mutationFn: async (input: ImportKbInput): Promise<KbArticle> => {
       const row = await fn({ data: input });
-      reindex({ data: { articleId: row.id } }).catch(() => { /* non-fatal */ });
+      reindex({ data: { articleId: row.id } }).catch(() => {
+        /* non-fatal */
+      });
       return row;
     },
     onSuccess: (row) => {
@@ -273,9 +296,13 @@ export function useSuggestKbForConversation() {
 // ==================== Collections & URL ingest & Timeseries ====================
 
 import {
-  listKbCollections, upsertKbCollection, deleteKbCollection,
-  setKbCollectionArticles, listKbCollectionArticles,
-  ingestKbFromUrl, kbAnalyticsTimeseries,
+  listKbCollections,
+  upsertKbCollection,
+  deleteKbCollection,
+  setKbCollectionArticles,
+  listKbCollectionArticles,
+  ingestKbFromUrl,
+  kbAnalyticsTimeseries,
   type KbCollection,
 } from "@/lib/kb/kb.functions";
 
@@ -295,8 +322,15 @@ export function useUpsertKbCollection() {
   const qc = useQueryClient();
   const fn = useServerFn(upsertKbCollection);
   return useMutation({
-    mutationFn: (input: { id?: string; workspaceId: string; name: string; description?: string | null; color?: string | null; icon?: string | null; isPublic?: boolean; }) =>
-      fn({ data: input }),
+    mutationFn: (input: {
+      id?: string;
+      workspaceId: string;
+      name: string;
+      description?: string | null;
+      color?: string | null;
+      icon?: string | null;
+      isPublic?: boolean;
+    }) => fn({ data: input }),
     onSuccess: (row) => {
       qc.invalidateQueries({ queryKey: ["kb", "collections", row.workspace_id] });
       toast.success("Collection saved");
@@ -342,9 +376,16 @@ export function useIngestKbFromUrl() {
   const fn = useServerFn(ingestKbFromUrl);
   const reindex = useServerFn(reindexKbArticle);
   return useMutation({
-    mutationFn: async (input: { workspaceId: string; url: string; categoryId?: string | null; autoPublish?: boolean }) => {
+    mutationFn: async (input: {
+      workspaceId: string;
+      url: string;
+      categoryId?: string | null;
+      autoPublish?: boolean;
+    }) => {
       const row = await fn({ data: input });
-      reindex({ data: { articleId: row.id } }).catch(() => { /* non-fatal */ });
+      reindex({ data: { articleId: row.id } }).catch(() => {
+        /* non-fatal */
+      });
       return row;
     },
     onSuccess: (row) => {

@@ -199,21 +199,23 @@ export async function replayDeliveries(
       .eq("id", candidate.deliveryId);
 
     // Synthetic delivery row so the health panel reflects the replay.
-    await sbAny(supabaseAdmin).from("payment_gateway_webhook_deliveries").insert({
-      provider_id: filter.providerId,
-      provider_event_id: candidate.eventId,
-      event_type: candidate.eventType,
-      status: ok ? "processed" : "failed",
-      http_status: ok ? 200 : 400,
-      latency_ms: Date.now() - startedAt,
-      signature_verified: true,
-      error_message: message,
-      replay_of_id: candidate.deliveryId,
-      replayed_by: actor.id,
-      replayed_at: new Date().toISOString(),
-      replay_status: ok ? "succeeded" : "failed",
-      metadata: { replay: true, replayed_by_email: actor.email },
-    } as never);
+    await sbAny(supabaseAdmin)
+      .from("payment_gateway_webhook_deliveries")
+      .insert({
+        provider_id: filter.providerId,
+        provider_event_id: candidate.eventId,
+        event_type: candidate.eventType,
+        status: ok ? "processed" : "failed",
+        http_status: ok ? 200 : 400,
+        latency_ms: Date.now() - startedAt,
+        signature_verified: true,
+        error_message: message,
+        replay_of_id: candidate.deliveryId,
+        replayed_by: actor.id,
+        replayed_at: new Date().toISOString(),
+        replay_status: ok ? "succeeded" : "failed",
+        metadata: { replay: true, replayed_by_email: actor.email },
+      } as never);
 
     outcomes.push({
       ...candidate,

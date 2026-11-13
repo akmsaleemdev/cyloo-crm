@@ -14,11 +14,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-import {
-  formatGatewayErrors,
-  hasGatewayErrors,
-  validateGatewayForm,
-} from "./gateway-validation";
+import { formatGatewayErrors, hasGatewayErrors, validateGatewayForm } from "./gateway-validation";
 import { listBillingProviders } from "./providers";
 import { sbAny } from "@/lib/supabase/untyped";
 
@@ -85,7 +81,6 @@ async function assertSuperAdmin(supabase: any, userId: string) {
   if (!data) throw new Error(GATEWAY_FORBIDDEN_MESSAGE);
 }
 
-
 /** Actor identity for the audit trail (email comes from the verified token). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function actorEmail(claims: any): string | null {
@@ -113,7 +108,6 @@ export const listGateways = createServerFn({ method: "GET" })
       .from("payment_gateway_settings")
       .select(SELECT_COLS);
     if (error) throw error;
-
 
     const rows = (data ?? []) as unknown as GatewaySetting[];
     const byId = new Map(rows.map((r) => [r.provider_id, r]));
@@ -156,13 +150,7 @@ export const listGateways = createServerFn({ method: "GET" })
     const customs = rows
       .filter((r) => !known.has(r.provider_id))
       .map((r) =>
-        shape(
-          r.provider_id,
-          r.display_label || r.provider_id,
-          customAdapterSupports,
-          r,
-          false,
-        ),
+        shape(r.provider_id, r.display_label || r.provider_id, customAdapterSupports, r, false),
       );
 
     return [...builtIns, ...customs];
@@ -191,16 +179,14 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
       }
     }
 
-    const { error } = await supabase
-      .from("payment_gateway_settings")
-      .upsert(
-        {
-          provider_id: data.provider_id,
-          enabled: data.enabled,
-          updated_by: userId,
-        } as never,
-        { onConflict: "provider_id" },
-      );
+    const { error } = await supabase.from("payment_gateway_settings").upsert(
+      {
+        provider_id: data.provider_id,
+        enabled: data.enabled,
+        updated_by: userId,
+      } as never,
+      { onConflict: "provider_id" },
+    );
     if (error) throw error;
 
     await audit({
@@ -230,17 +216,15 @@ export const setDefaultGateway = createServerFn({ method: "POST" })
       .eq("is_default", true);
     if (clear.error) throw clear.error;
 
-    const { error } = await supabase
-      .from("payment_gateway_settings")
-      .upsert(
-        {
-          provider_id: data.provider_id,
-          enabled: true,
-          is_default: true,
-          updated_by: userId,
-        } as never,
-        { onConflict: "provider_id" },
-      );
+    const { error } = await supabase.from("payment_gateway_settings").upsert(
+      {
+        provider_id: data.provider_id,
+        enabled: true,
+        is_default: true,
+        updated_by: userId,
+      } as never,
+      { onConflict: "provider_id" },
+    );
     if (error) throw error;
 
     await audit({
@@ -259,19 +243,16 @@ export const setDefaultGateway = createServerFn({ method: "POST" })
 export const setGatewayMode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z
-      .object({ provider_id: z.string().min(1), mode: z.enum(["sandbox", "live"]) })
-      .parse(input),
+    z.object({ provider_id: z.string().min(1), mode: z.enum(["sandbox", "live"]) }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
     const { error } = await supabase
       .from("payment_gateway_settings")
-      .upsert(
-        { provider_id: data.provider_id, mode: data.mode, updated_by: userId } as never,
-        { onConflict: "provider_id" },
-      );
+      .upsert({ provider_id: data.provider_id, mode: data.mode, updated_by: userId } as never, {
+        onConflict: "provider_id",
+      });
     if (error) throw error;
 
     await audit({
@@ -312,7 +293,9 @@ const upsertSchema = z.object({
   webhook_url: z.string().url().optional().or(z.literal("")),
   supported_methods: z.array(z.string().min(1)).default(["card"]),
   notes: z.string().max(2000).optional().or(z.literal("")),
-  config: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).default({}),
+  config: z
+    .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+    .default({}),
   is_custom: z.boolean().default(false),
 });
 
@@ -348,36 +331,31 @@ export const upsertGateway = createServerFn({ method: "POST" })
 
     const nullable = (v?: string | null) => (v && v.trim() ? v.trim() : null);
 
-
     const { data: existing } = await supabase
       .from("payment_gateway_settings")
       .select("provider_id")
       .eq("provider_id", data.provider_id)
       .maybeSingle();
 
-    const { error } = await supabase
-      .from("payment_gateway_settings")
-      .upsert(
-        {
-          provider_id: data.provider_id,
-          adapter_id: data.adapter_id,
-          display_label: nullable(data.display_label),
-          mode: data.mode,
-          enabled: data.enabled,
-          publishable_key: nullable(data.publishable_key),
-          secret_name: nullable(data.secret_name),
-          webhook_secret_name: nullable(data.webhook_secret_name),
-          webhook_url: nullable(data.webhook_url),
-          supported_methods: data.supported_methods.length
-            ? data.supported_methods
-            : ["card"],
-          notes: nullable(data.notes),
-          config: data.config,
-          is_custom: data.is_custom,
-          updated_by: userId,
-        } as never,
-        { onConflict: "provider_id" },
-      );
+    const { error } = await supabase.from("payment_gateway_settings").upsert(
+      {
+        provider_id: data.provider_id,
+        adapter_id: data.adapter_id,
+        display_label: nullable(data.display_label),
+        mode: data.mode,
+        enabled: data.enabled,
+        publishable_key: nullable(data.publishable_key),
+        secret_name: nullable(data.secret_name),
+        webhook_secret_name: nullable(data.webhook_secret_name),
+        webhook_url: nullable(data.webhook_url),
+        supported_methods: data.supported_methods.length ? data.supported_methods : ["card"],
+        notes: nullable(data.notes),
+        config: data.config,
+        is_custom: data.is_custom,
+        updated_by: userId,
+      } as never,
+      { onConflict: "provider_id" },
+    );
     if (error) throw error;
 
     await audit({
@@ -405,7 +383,6 @@ export const upsertGateway = createServerFn({ method: "POST" })
     return { ok: true, provider_id: data.provider_id };
   });
 
-
 /** Remove a custom gateway (built-in adapters can only be disabled). */
 export const deleteGateway = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -421,7 +398,8 @@ export const deleteGateway = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (!row) throw new Error("Gateway not found");
-    if (row.is_default) throw new Error("Make another gateway the default before removing this one.");
+    if (row.is_default)
+      throw new Error("Make another gateway the default before removing this one.");
     if (!row.is_custom) {
       throw new Error("Built-in gateways cannot be removed — disable them instead.");
     }
@@ -464,7 +442,6 @@ export const listGatewayAuditLog = createServerFn({ method: "GET" })
       const pid = data.provider_id.replace(/[^A-Za-z0-9_-]/g, "");
       if (pid) query = query.or(`resource_id.eq.${pid},changes->>provider_id.eq.${pid}`);
     }
-
 
     const { data: rows, error } = await query.returns<GatewayAuditRow[]>();
     if (error) throw error;
@@ -582,4 +559,3 @@ export const listGatewayWebhookDeliveries = createServerFn({ method: "GET" })
       summaries,
     };
   });
-

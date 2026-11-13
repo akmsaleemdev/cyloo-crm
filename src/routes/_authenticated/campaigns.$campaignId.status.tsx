@@ -185,9 +185,7 @@ function CampaignStatusPage() {
                   <span className="text-sm font-medium text-muted-foreground">{meta.label}</span>
                   <Icon className={`h-4 w-4 ${meta.tone}`} />
                 </div>
-                <div className="mt-2 text-2xl font-semibold ">
-                  {counts[b].toLocaleString()}
-                </div>
+                <div className="mt-2 text-2xl font-semibold ">{counts[b].toLocaleString()}</div>
                 <div className="mt-1 text-xs text-muted-foreground">{pct}% of loaded</div>
               </button>
             );

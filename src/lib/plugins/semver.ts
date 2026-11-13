@@ -24,28 +24,28 @@ export function compareSemver(a: Semver, b: Semver): number {
   // A version without prerelease is greater than one with.
   if (a.pre && !b.pre) return -1;
   if (!a.pre && b.pre) return 1;
-  return (a.pre ?? '').localeCompare(b.pre ?? '');
+  return (a.pre ?? "").localeCompare(b.pre ?? "");
 }
 
 /** Match `range` against `version`. Supports ^, ~, >=, >, <=, <, =, and *. */
 export function satisfies(version: string, range: string): boolean {
   const r = range.trim();
-  if (r === '*' || r === '' || r === 'x') return true;
+  if (r === "*" || r === "" || r === "x") return true;
   const v = parseSemver(version);
   if (!v) return false;
 
   const ops: Array<[string, (a: Semver, b: Semver) => boolean]> = [
-    ['>=', (a, b) => compareSemver(a, b) >= 0],
-    ['<=', (a, b) => compareSemver(a, b) <= 0],
-    ['>', (a, b) => compareSemver(a, b) > 0],
-    ['<', (a, b) => compareSemver(a, b) < 0],
-    ['=', (a, b) => compareSemver(a, b) === 0],
+    [">=", (a, b) => compareSemver(a, b) >= 0],
+    ["<=", (a, b) => compareSemver(a, b) <= 0],
+    [">", (a, b) => compareSemver(a, b) > 0],
+    ["<", (a, b) => compareSemver(a, b) < 0],
+    ["=", (a, b) => compareSemver(a, b) === 0],
   ];
 
   // Space-separated compound ranges: ">=1.0.0 <2.0.0"
   const parts = r.split(/\s+/);
   for (const part of parts) {
-    if (part.startsWith('^')) {
+    if (part.startsWith("^")) {
       const b = parseSemver(part.slice(1));
       if (!b) return false;
       // ^1.2.3 → >=1.2.3 <2.0.0
@@ -54,7 +54,7 @@ export function satisfies(version: string, range: string): boolean {
       if (compareSemver(v, upper) >= 0) return false;
       continue;
     }
-    if (part.startsWith('~')) {
+    if (part.startsWith("~")) {
       const b = parseSemver(part.slice(1));
       if (!b) return false;
       // ~1.2.3 → >=1.2.3 <1.3.0
@@ -84,7 +84,9 @@ export function satisfies(version: string, range: string): boolean {
 export type DepSpec = { slug: string; range: string };
 
 /** Topologically order plugins by dependency (Kahn's algorithm). */
-export function topologicalOrder<T extends { slug: string; dependencies?: DepSpec[] }>(items: T[]): T[] {
+export function topologicalOrder<T extends { slug: string; dependencies?: DepSpec[] }>(
+  items: T[],
+): T[] {
   const bySlug = new Map(items.map((i) => [i.slug, i]));
   const indeg = new Map<string, number>();
   const edges = new Map<string, string[]>();
@@ -128,7 +130,8 @@ export function resolveDependencies(
   for (const dep of target.dependencies ?? []) {
     const found = installed.find((i) => i.slug === dep.slug);
     if (!found) missing.push(dep);
-    else if (!satisfies(found.version, dep.range)) incompatible.push({ ...dep, installed: found.version });
+    else if (!satisfies(found.version, dep.range))
+      incompatible.push({ ...dep, installed: found.version });
   }
   if (missing.length || incompatible.length) return { ok: false, missing, incompatible };
   return { ok: true };

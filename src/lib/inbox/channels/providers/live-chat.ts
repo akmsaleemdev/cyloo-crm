@@ -10,14 +10,27 @@ export const liveChatChannel: ChannelProvider = {
   label: "Live Chat (Website)",
   implemented: true,
   capabilities: new Set([
-    "text", "emoji", "image", "video", "audio", "document",
-    "location", "interactive_buttons", "interactive_list",
-    "reply_quote", "edit", "delete", "typing_indicator",
-    "read_receipt", "delivery_receipt", "presence",
+    "text",
+    "emoji",
+    "image",
+    "video",
+    "audio",
+    "document",
+    "location",
+    "interactive_buttons",
+    "interactive_list",
+    "reply_quote",
+    "edit",
+    "delete",
+    "typing_indicator",
+    "read_receipt",
+    "delivery_receipt",
+    "presence",
   ]),
   async parseWebhook(body, account) {
     // Widget posts events already in near-unified shape; caller adapts.
-    void body; void account;
+    void body;
+    void account;
     return [];
   },
   async send(draft) {

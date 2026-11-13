@@ -29,7 +29,13 @@ async function loadEventType(supabase: Supa, workspaceId: string, eventTypeId: s
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Meeting type not found in this workspace.");
-  return data as { id: string; name: string; slug: string; duration_minutes: number; is_active: boolean };
+  return data as {
+    id: string;
+    name: string;
+    slug: string;
+    duration_minutes: number;
+    is_active: boolean;
+  };
 }
 
 /** Inserts a confirmed appointment the same way createAppointment does, then sends the confirmation. */
@@ -75,20 +81,31 @@ export async function createWorkflowAppointment(
     }
     throw new Error(error.message);
   }
-  const created = row as { id: string; manage_token: string; start_at: string; end_at: string; status: string };
+  const created = row as {
+    id: string;
+    manage_token: string;
+    start_at: string;
+    end_at: string;
+    status: string;
+  };
 
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { sendAppointmentNotification, scheduleAppointmentReminders } = await import(
-      "@/lib/booking/notifications-engine.server"
-    );
+    const { sendAppointmentNotification, scheduleAppointmentReminders } =
+      await import("@/lib/booking/notifications-engine.server");
     await sendAppointmentNotification(supabaseAdmin, created.id, "confirmation");
     await scheduleAppointmentReminders(supabaseAdmin, created.id);
   } catch (e) {
     console.error("[booking] workflow notify(confirmation) failed", e);
   }
 
-  return { id: created.id, status: created.status, start_at: created.start_at, end_at: created.end_at, manage_token: created.manage_token };
+  return {
+    id: created.id,
+    status: created.status,
+    start_at: created.start_at,
+    end_at: created.end_at,
+    manage_token: created.manage_token,
+  };
 }
 
 /** Cancels an appointment in this workspace, then notifies and clears queued reminders (as cancelAppointment does). */
@@ -110,7 +127,8 @@ export async function cancelWorkflowAppointment(
 
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { sendAppointmentNotification } = await import("@/lib/booking/notifications-engine.server");
+    const { sendAppointmentNotification } =
+      await import("@/lib/booking/notifications-engine.server");
     await sendAppointmentNotification(supabaseAdmin, appointmentId, "cancellation");
     await sbAny(supabaseAdmin)
       .from("booking_reminders")
@@ -136,7 +154,8 @@ export async function queueWorkflowBookingLink(
   input: { eventTypeId: string; channel: "whatsapp" | "email" | "sms"; to: string },
 ): Promise<{ url: string; queued: true }> {
   const et = await loadEventType(supabase, workspaceId, input.eventTypeId);
-  if (!et.is_active) throw new Error("This meeting type is not active, so its booking link cannot be sent.");
+  if (!et.is_active)
+    throw new Error("This meeting type is not active, so its booking link cannot be sent.");
 
   const url = `${SITE_URL}/book/${et.slug}`;
   const body = `Book a ${et.name} with us here: ${url}`;

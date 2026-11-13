@@ -54,17 +54,19 @@ export async function runLivechatAction(
   switch (type) {
     case "action.livechat.open_widget": {
       if (!visitorId) return { pushed: false, reason: "no_visitor" };
-      const { error } = await sbAny(supabase).from("livechat_visitor_events").insert({
-        workspace_id: workspaceId,
-        visitor_id: visitorId,
-        session_id: sessionId,
-        event_type: "automation",
-        event_name: "open_widget",
-        properties: {
-          message: s(input.with_message),
-          sound: Boolean(input.sound),
-        },
-      });
+      const { error } = await sbAny(supabase)
+        .from("livechat_visitor_events")
+        .insert({
+          workspace_id: workspaceId,
+          visitor_id: visitorId,
+          session_id: sessionId,
+          event_type: "automation",
+          event_name: "open_widget",
+          properties: {
+            message: s(input.with_message),
+            sound: Boolean(input.sound),
+          },
+        });
       if (error) throw new Error(error.message);
       return { pushed: true };
     }
@@ -91,39 +93,42 @@ export async function runLivechatAction(
 
     case "action.livechat.start_ai_chat": {
       if (!visitorId) return { pushed: false, reason: "no_visitor" };
-      const { error } = await sbAny(supabase).from("livechat_visitor_events").insert({
-        workspace_id: workspaceId,
-        visitor_id: visitorId,
-        session_id: sessionId,
-        event_type: "automation",
-        event_name: "start_ai_chat",
-        properties: {
-          chatbot_id: s(input.chatbot_id),
-          prompt: s(input.prompt),
-        },
-      });
+      const { error } = await sbAny(supabase)
+        .from("livechat_visitor_events")
+        .insert({
+          workspace_id: workspaceId,
+          visitor_id: visitorId,
+          session_id: sessionId,
+          event_type: "automation",
+          event_name: "start_ai_chat",
+          properties: {
+            chatbot_id: s(input.chatbot_id),
+            prompt: s(input.prompt),
+          },
+        });
       if (error) throw new Error(error.message);
       return { session_id: sessionId, chatbot_id: s(input.chatbot_id) };
     }
 
     case "action.livechat.assign_agent": {
       const target = s(input.target) ?? "queue";
-      const priority = (s(input.priority) ?? "normal") as
-        | "low" | "normal" | "high" | "urgent";
+      const priority = (s(input.priority) ?? "normal") as "low" | "normal" | "high" | "urgent";
 
       if (target === "agent" || target === "department") {
-        const { error } = await sbAny(supabase).from("livechat_visitor_events").insert({
-          workspace_id: workspaceId,
-          visitor_id: visitorId,
-          session_id: sessionId,
-          event_type: "automation",
-          event_name: "assign",
-          properties: {
-            agent_id: s(input.agent_id),
-            department_id: s(input.department_id),
-            priority,
-          },
-        });
+        const { error } = await sbAny(supabase)
+          .from("livechat_visitor_events")
+          .insert({
+            workspace_id: workspaceId,
+            visitor_id: visitorId,
+            session_id: sessionId,
+            event_type: "automation",
+            event_name: "assign",
+            properties: {
+              agent_id: s(input.agent_id),
+              department_id: s(input.department_id),
+              priority,
+            },
+          });
         if (error) throw new Error(error.message);
         return {
           assigned_to: s(input.agent_id) ?? s(input.department_id),
@@ -180,9 +185,8 @@ export async function runLivechatAction(
       const title = s(input.title);
       if (!title) throw new Error("title required");
       const dueHours = n(input.due_in_hours);
-      const dueAt = dueHours !== null
-        ? new Date(Date.now() + dueHours * 3_600_000).toISOString()
-        : null;
+      const dueAt =
+        dueHours !== null ? new Date(Date.now() + dueHours * 3_600_000).toISOString() : null;
       const { data, error } = await supabase
         .from("tasks")
         .insert({

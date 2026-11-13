@@ -35,12 +35,7 @@ type Props = {
  * Bulk contact picker — re-links many "Unknown contact" conversations to the
  * same CRM contact in one action.
  */
-export function BulkLinkContactDialog({
-  open,
-  onOpenChange,
-  conversationIds,
-  onLinked,
-}: Props) {
+export function BulkLinkContactDialog({ open, onOpenChange, conversationIds, onLinked }: Props) {
   const { active } = useCurrentWorkspace();
   const workspaceId = active?.id;
   const [q, setQ] = useState("");
@@ -62,10 +57,9 @@ export function BulkLinkContactDialog({
         conversationIds,
         contactId: contact.id,
       });
-      toast.success(
-        `Linked ${res.count} conversation${res.count === 1 ? "" : "s"}`,
-        { description: resolveContactDisplayName(contact) },
-      );
+      toast.success(`Linked ${res.count} conversation${res.count === 1 ? "" : "s"}`, {
+        description: resolveContactDisplayName(contact),
+      });
       onLinked?.(contact.id, res.count);
       onOpenChange(false);
     } catch (e: unknown) {
@@ -84,9 +78,8 @@ export function BulkLinkContactDialog({
             Link {count} conversation{count === 1 ? "" : "s"} to a contact
           </DialogTitle>
           <DialogDescription>
-            All selected conversations will be re-linked to the contact you
-            pick. This is useful for merging "Unknown contact" threads into a
-            single CRM record.
+            All selected conversations will be re-linked to the contact you pick. This is useful for
+            merging "Unknown contact" threads into a single CRM record.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,9 +128,7 @@ export function BulkLinkContactDialog({
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium truncate">{name}</div>
                           {sub && (
-                            <div className="text-xs text-muted-foreground truncate">
-                              {sub}
-                            </div>
+                            <div className="text-xs text-muted-foreground truncate">{sub}</div>
                           )}
                         </div>
                         {bulkRelink.isPending ? (
@@ -153,8 +144,8 @@ export function BulkLinkContactDialog({
             )}
           </ScrollArea>
           <p className="text-[11px] text-muted-foreground">
-            Tip: use the "Unknown" filter to select all unlinked conversations
-            first, then apply a single contact here.
+            Tip: use the "Unknown" filter to select all unlinked conversations first, then apply a
+            single contact here.
           </p>
         </div>
       </DialogContent>

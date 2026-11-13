@@ -58,14 +58,20 @@ export interface ChannelProvider {
   sendTyping?(to: string, account: ChannelAccountRef): Promise<void>;
 
   /** Optional: fetch remote profile for a channel identity. */
-  fetchProfile?(externalId: string, account: ChannelAccountRef): Promise<{
+  fetchProfile?(
+    externalId: string,
+    account: ChannelAccountRef,
+  ): Promise<{
     displayName?: string;
     avatarUrl?: string;
     metadata?: Record<string, unknown>;
   } | null>;
 
   /** Optional: download media referenced by providerMediaId to a Blob/URL. */
-  downloadMedia?(providerMediaId: string, account: ChannelAccountRef): Promise<{
+  downloadMedia?(
+    providerMediaId: string,
+    account: ChannelAccountRef,
+  ): Promise<{
     url?: string;
     bytes?: ArrayBuffer;
     mimeType?: string;

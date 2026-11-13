@@ -5,7 +5,8 @@ import { useCurrentWorkspace } from "@/hooks/use-workspace";
 
 export type ConsentStatus = "opted_in" | "opted_out" | "pending" | "unsubscribed";
 export type ConsentChannel = "whatsapp" | "email" | "sms" | "voice" | "push";
-export type ConsentPurpose = "marketing" | "transactional" | "utility" | "authentication" | "service";
+export type ConsentPurpose =
+  "marketing" | "transactional" | "utility" | "authentication" | "service";
 
 export type ConsentRecord = {
   id: string;
@@ -44,9 +45,7 @@ export function useConsentRecords(opts?: {
     queryFn: async () => {
       let q = supabase
         .from("consent_records")
-        .select(
-          "*, contact:contacts(id, first_name, last_name, phone_number:phone, email)"
-        )
+        .select("*, contact:contacts(id, first_name, last_name, phone_number:phone, email)")
         .eq("workspace_id", active!.id)
         .order("effective_at", { ascending: false })
         .limit(opts?.limit ?? 500);
@@ -103,9 +102,7 @@ export function useConsentStats() {
         stats.byPurpose[row.purpose] = (stats.byPurpose[row.purpose] ?? 0) + 1;
       }
       const complianceScore =
-        stats.total === 0
-          ? 100
-          : Math.round(((stats.optedIn) / Math.max(stats.total, 1)) * 100);
+        stats.total === 0 ? 100 : Math.round((stats.optedIn / Math.max(stats.total, 1)) * 100);
       return { ...stats, complianceScore };
     },
   });
@@ -119,9 +116,7 @@ export function useSuppressionList() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("consent_records")
-        .select(
-          "*, contact:contacts(id, first_name, last_name, phone_number:phone, email)"
-        )
+        .select("*, contact:contacts(id, first_name, last_name, phone_number:phone, email)")
         .eq("workspace_id", active!.id)
         .in("status", ["opted_out", "unsubscribed"])
         .order("effective_at", { ascending: false })
@@ -154,8 +149,7 @@ export function useRecordConsent() {
           input.status === "opted_out" || input.status === "unsubscribed"
             ? new Date().toISOString()
             : null,
-        user_agent:
-          typeof navigator !== "undefined" ? navigator.userAgent : null,
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
       };
       const { data, error } = await supabase
         .from("consent_records")
@@ -224,12 +218,7 @@ export function useCreateGdprRequest() {
       subject_type: string;
       subject_id: string;
       subject_identifier?: string;
-      request_type:
-        | "export"
-        | "erasure"
-        | "restriction"
-        | "rectification"
-        | "portability";
+      request_type: "export" | "erasure" | "restriction" | "rectification" | "portability";
       reason?: string;
     }) => {
       const { data, error } = await supabase
@@ -241,8 +230,7 @@ export function useCreateGdprRequest() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["gdpr-requests"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["gdpr-requests"] }),
   });
 }
 
@@ -272,19 +260,13 @@ export function useConsentRealtime() {
     if (!active?.id) return;
     const ch = supabase
       .channel(`consent-${active.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "consent_records" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["consent-records"] });
-          qc.invalidateQueries({ queryKey: ["consent-stats"] });
-          qc.invalidateQueries({ queryKey: ["consent-suppression"] });
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "gdpr_requests" },
-        () => qc.invalidateQueries({ queryKey: ["gdpr-requests"] })
+      .on("postgres_changes", { event: "*", schema: "public", table: "consent_records" }, () => {
+        qc.invalidateQueries({ queryKey: ["consent-records"] });
+        qc.invalidateQueries({ queryKey: ["consent-stats"] });
+        qc.invalidateQueries({ queryKey: ["consent-suppression"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "gdpr_requests" }, () =>
+        qc.invalidateQueries({ queryKey: ["gdpr-requests"] }),
       )
       .subscribe();
     return () => {
@@ -309,7 +291,7 @@ export function useContactConsentSummary(contactId: string | undefined) {
       history: data,
       current: Array.from(latestByKey.values()),
       hasMarketingConsent: Array.from(latestByKey.values()).some(
-        (r) => r.purpose === "marketing" && r.status === "opted_in"
+        (r) => r.purpose === "marketing" && r.status === "opted_in",
       ),
     };
   }, [data, contactId]);

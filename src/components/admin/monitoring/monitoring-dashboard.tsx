@@ -2,15 +2,33 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Activity, AlertTriangle, CheckCircle2, Cpu, Database, HardDrive,
-  Loader2, MessageSquare, RefreshCw, Server, Signal, Timer, Webhook, Wifi, Zap,
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Cpu,
+  Database,
+  HardDrive,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  Server,
+  Signal,
+  Timer,
+  Webhook,
+  Wifi,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { getMonitoringSnapshot, retryFailedJobs, type MonitoringSnapshot, type SystemStatus } from "@/lib/admin/monitoring.functions";
+import {
+  getMonitoringSnapshot,
+  retryFailedJobs,
+  type MonitoringSnapshot,
+  type SystemStatus,
+} from "@/lib/admin/monitoring.functions";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -22,17 +40,32 @@ const statusColors: Record<SystemStatus, string> = {
 };
 
 const statusLabels: Record<SystemStatus, string> = {
-  healthy: "Healthy", degraded: "Degraded", down: "Down", unknown: "Unknown",
+  healthy: "Healthy",
+  degraded: "Degraded",
+  down: "Down",
+  unknown: "Unknown",
 };
 
 function StatusDot({ status }: { status: SystemStatus }) {
   return (
-    <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control border text-xs font-medium", statusColors[status])}>
-      <span className={cn("w-1.5 h-1.5 rounded-full animate-pulse",
-        status === "healthy" ? "bg-emerald-500" :
-        status === "degraded" ? "bg-amber-500" :
-        status === "down" ? "bg-red-500" : "bg-muted-foreground"
-      )} />
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-control border text-xs font-medium",
+        statusColors[status],
+      )}
+    >
+      <span
+        className={cn(
+          "w-1.5 h-1.5 rounded-full animate-pulse",
+          status === "healthy"
+            ? "bg-emerald-500"
+            : status === "degraded"
+              ? "bg-amber-500"
+              : status === "down"
+                ? "bg-red-500"
+                : "bg-muted-foreground",
+        )}
+      />
       {statusLabels[status]}
     </span>
   );
@@ -41,17 +74,29 @@ function StatusDot({ status }: { status: SystemStatus }) {
 function formatBytes(n: number | null): string {
   if (n == null) return "—";
   const units = ["B", "KB", "MB", "GB", "TB"];
-  let v = n, i = 0;
-  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  let v = n,
+    i = 0;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
   return `${v.toFixed(1)} ${units[i]}`;
 }
 
 function MetricCard({
-  icon: Icon, label, value, sub, progress, tone = "default",
+  icon: Icon,
+  label,
+  value,
+  sub,
+  progress,
+  tone = "default",
 }: {
   icon: React.ComponentType<{ className?: string }>;
-  label: string; value: string; sub?: string;
-  progress?: number | null; tone?: "default" | "warn" | "danger" | "ok";
+  label: string;
+  value: string;
+  sub?: string;
+  progress?: number | null;
+  tone?: "default" | "warn" | "danger" | "ok";
 }) {
   const toneClasses = {
     default: "text-foreground",
@@ -62,7 +107,9 @@ function MetricCard({
   return (
     <Card className="p-4 space-y-3 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {label}
+        </span>
         <Icon className={cn("w-4 h-4", toneClasses[tone])} />
       </div>
       <div>
@@ -82,7 +129,9 @@ function ProviderRow({ p }: { p: MonitoringSnapshot["aiProviders"][number] }) {
           <span className="font-medium text-sm truncate">{p.name}</span>
           <span className="text-xs text-muted-foreground">{p.kind}</span>
         </div>
-        {p.message && <div className="text-xs text-muted-foreground truncate mt-0.5">{p.message}</div>}
+        {p.message && (
+          <div className="text-xs text-muted-foreground truncate mt-0.5">{p.message}</div>
+        )}
       </div>
       <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
         {p.latencyMs != null && <span className="">{p.latencyMs}ms</span>}
@@ -114,22 +163,32 @@ export function MonitoringDashboard() {
   useEffect(() => {
     const channel = supabase
       .channel("admin-monitoring")
-      .on("postgres_changes", { event: "*", schema: "public", table: "workflow_queue" },
-        () => qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "message_outbox" },
-        () => qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "webhook_events" },
-        () => qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }))
-      .on("postgres_changes", { event: "*", schema: "public", table: "ai_provider_health" },
-        () => qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "workflow_queue" }, () =>
+        qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_outbox" }, () =>
+        qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "webhook_events" }, () =>
+        qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }),
+      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "ai_provider_health" }, () =>
+        qc.invalidateQueries({ queryKey: ["admin-monitoring-snapshot"] }),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [qc]);
 
   const totalFailed = useMemo(() => {
     if (!data) return 0;
-    return data.queues.workflow.failed + data.queues.campaigns.failed +
-      data.queues.outbox.failed + data.queues.webhooks.failed;
+    return (
+      data.queues.workflow.failed +
+      data.queues.campaigns.failed +
+      data.queues.outbox.failed +
+      data.queues.webhooks.failed
+    );
   }, [data]);
 
   async function handleRetry(queue: "workflow" | "campaigns" | "outbox" | "webhooks") {
@@ -177,48 +236,62 @@ export function MonitoringDashboard() {
       {/* Core metrics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <MetricCard
-          icon={Cpu} label="CPU Usage"
+          icon={Cpu}
+          label="CPU Usage"
           value={data.system.cpuUsagePct != null ? `${data.system.cpuUsagePct}%` : "—"}
           sub="Compute instance"
           progress={data.system.cpuUsagePct}
           tone={data.system.cpuUsagePct && data.system.cpuUsagePct > 80 ? "danger" : "default"}
         />
         <MetricCard
-          icon={Server} label="Memory Usage"
+          icon={Server}
+          label="Memory Usage"
           value={data.system.memoryUsagePct != null ? `${data.system.memoryUsagePct}%` : "—"}
           sub="RAM saturation"
           progress={data.system.memoryUsagePct}
-          tone={data.system.memoryUsagePct && data.system.memoryUsagePct > 85 ? "danger" : "default"}
+          tone={
+            data.system.memoryUsagePct && data.system.memoryUsagePct > 85 ? "danger" : "default"
+          }
         />
         <MetricCard
-          icon={Database} label="Database"
+          icon={Database}
+          label="Database"
           value={formatBytes(data.database.sizeBytes)}
-          sub={data.database.connections != null ? `${data.database.connections}/${data.database.maxConnections ?? "?"} connections` : "Postgres"}
+          sub={
+            data.database.connections != null
+              ? `${data.database.connections}/${data.database.maxConnections ?? "?"} connections`
+              : "Postgres"
+          }
           progress={data.database.usagePct}
         />
         <MetricCard
-          icon={HardDrive} label="Storage"
+          icon={HardDrive}
+          label="Storage"
           value={formatBytes(data.storage.usedBytes)}
           sub={`${data.storage.fileCount.toLocaleString()} files`}
         />
         <MetricCard
-          icon={Signal} label="Bandwidth"
+          icon={Signal}
+          label="Bandwidth"
           value={data.system.bandwidthMbps != null ? `${data.system.bandwidthMbps} Mbps` : "—"}
           sub="Egress"
         />
         <MetricCard
-          icon={Wifi} label="Realtime"
+          icon={Wifi}
+          label="Realtime"
           value={data.realtime.connections.toLocaleString()}
           sub={`${data.realtime.activeConversations} active conversations`}
           tone="ok"
         />
         <MetricCard
-          icon={Timer} label="Response Time"
+          icon={Timer}
+          label="Response Time"
           value={data.api.avgResponseMs != null ? `${data.api.avgResponseMs}ms` : "—"}
           sub={data.api.p95ResponseMs != null ? `p95 ${data.api.p95ResponseMs}ms` : "Last 5m"}
         />
         <MetricCard
-          icon={Activity} label="API Health"
+          icon={Activity}
+          label="API Health"
           value={`${(100 - data.api.errorRatePct).toFixed(1)}%`}
           sub={`${data.api.requestsLast5m} req · ${data.api.errorsLast5m} errors`}
           tone={data.api.errorRatePct > 5 ? "danger" : data.api.errorRatePct > 1 ? "warn" : "ok"}
@@ -229,12 +302,29 @@ export function MonitoringDashboard() {
       <div>
         <h3 className="font-bold text-xl mb-3">Queues & Jobs</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {([
-            { key: "workflow", label: "Workflow Queue", icon: Zap, q: data.queues.workflow },
-            { key: "campaigns", label: "Campaign Dispatch", icon: MessageSquare, q: data.queues.campaigns },
-            { key: "outbox", label: "Message Outbox", icon: MessageSquare, q: { ...data.queues.outbox, running: 0 } },
-            { key: "webhooks", label: "Webhook Queue", icon: Webhook, q: { ...data.queues.webhooks, running: 0 } },
-          ] as const).map(({ key, label, icon: Icon, q }) => (
+          {(
+            [
+              { key: "workflow", label: "Workflow Queue", icon: Zap, q: data.queues.workflow },
+              {
+                key: "campaigns",
+                label: "Campaign Dispatch",
+                icon: MessageSquare,
+                q: data.queues.campaigns,
+              },
+              {
+                key: "outbox",
+                label: "Message Outbox",
+                icon: MessageSquare,
+                q: { ...data.queues.outbox, running: 0 },
+              },
+              {
+                key: "webhooks",
+                label: "Webhook Queue",
+                icon: Webhook,
+                q: { ...data.queues.webhooks, running: 0 },
+              },
+            ] as const
+          ).map(({ key, label, icon: Icon, q }) => (
             <Card key={key} className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -242,7 +332,12 @@ export function MonitoringDashboard() {
                   <span className="text-sm font-medium">{label}</span>
                 </div>
                 {q.failed > 0 && (
-                  <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => handleRetry(key)}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-xs"
+                    onClick={() => handleRetry(key)}
+                  >
                     Retry all
                   </Button>
                 )}
@@ -253,11 +348,15 @@ export function MonitoringDashboard() {
                   <div className="text-[11px] text-muted-foreground uppercase">Pending</div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold  text-blue-500">{"running" in q ? q.running : 0}</div>
+                  <div className="text-lg font-semibold  text-blue-500">
+                    {"running" in q ? q.running : 0}
+                  </div>
                   <div className="text-[11px] text-muted-foreground uppercase">Running</div>
                 </div>
                 <div>
-                  <div className={cn("text-lg font-semibold ", q.failed > 0 ? "text-red-500" : "")}>{q.failed}</div>
+                  <div className={cn("text-lg font-semibold ", q.failed > 0 ? "text-red-500" : "")}>
+                    {q.failed}
+                  </div>
                   <div className="text-[11px] text-muted-foreground uppercase">Failed</div>
                 </div>
               </div>
@@ -271,34 +370,58 @@ export function MonitoringDashboard() {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-sm">AI Providers</h4>
-            <Badge variant="secondary" className="text-xs">{data.aiProviders.length}</Badge>
+            <Badge variant="secondary" className="text-xs">
+              {data.aiProviders.length}
+            </Badge>
           </div>
           <div className="space-y-1">
-            {data.aiProviders.length === 0
-              ? <div className="text-xs text-muted-foreground py-4 text-center">No providers configured</div>
-              : data.aiProviders.map((p: MonitoringSnapshot["aiProviders"][number]) => <ProviderRow key={p.id} p={p} />)}
+            {data.aiProviders.length === 0 ? (
+              <div className="text-xs text-muted-foreground py-4 text-center">
+                No providers configured
+              </div>
+            ) : (
+              data.aiProviders.map((p: MonitoringSnapshot["aiProviders"][number]) => (
+                <ProviderRow key={p.id} p={p} />
+              ))
+            )}
           </div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-sm">WhatsApp Providers</h4>
-            <Badge variant="secondary" className="text-xs">{data.whatsappProviders.length}</Badge>
+            <Badge variant="secondary" className="text-xs">
+              {data.whatsappProviders.length}
+            </Badge>
           </div>
           <div className="space-y-1">
-            {data.whatsappProviders.length === 0
-              ? <div className="text-xs text-muted-foreground py-4 text-center">No channels connected</div>
-              : data.whatsappProviders.map((p: MonitoringSnapshot["whatsappProviders"][number]) => <ProviderRow key={p.id} p={p} />)}
+            {data.whatsappProviders.length === 0 ? (
+              <div className="text-xs text-muted-foreground py-4 text-center">
+                No channels connected
+              </div>
+            ) : (
+              data.whatsappProviders.map((p: MonitoringSnapshot["whatsappProviders"][number]) => (
+                <ProviderRow key={p.id} p={p} />
+              ))
+            )}
           </div>
         </Card>
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium text-sm">Payment Gateways</h4>
-            <Badge variant="secondary" className="text-xs">{data.paymentProviders.length}</Badge>
+            <Badge variant="secondary" className="text-xs">
+              {data.paymentProviders.length}
+            </Badge>
           </div>
           <div className="space-y-1">
-            {data.paymentProviders.length === 0
-              ? <div className="text-xs text-muted-foreground py-4 text-center">No gateways configured</div>
-              : data.paymentProviders.map((p: MonitoringSnapshot["paymentProviders"][number]) => <ProviderRow key={p.id} p={p} />)}
+            {data.paymentProviders.length === 0 ? (
+              <div className="text-xs text-muted-foreground py-4 text-center">
+                No gateways configured
+              </div>
+            ) : (
+              data.paymentProviders.map((p: MonitoringSnapshot["paymentProviders"][number]) => (
+                <ProviderRow key={p.id} p={p} />
+              ))
+            )}
           </div>
         </Card>
       </div>
@@ -317,13 +440,18 @@ export function MonitoringDashboard() {
         ) : (
           <div className="space-y-2">
             {data.incidents.map((i: MonitoringSnapshot["incidents"][number]) => (
-              <div key={i.id} className="flex items-start gap-3 p-2 rounded-control hover:bg-muted/50">
+              <div
+                key={i.id}
+                className="flex items-start gap-3 p-2 rounded-control hover:bg-muted/50"
+              >
                 <StatusDot status={i.severity} />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium">{i.source}</div>
                   <div className="text-xs text-muted-foreground truncate">{i.message}</div>
                 </div>
-                <span className="text-xs text-muted-foreground shrink-0">{new Date(i.at).toLocaleTimeString()}</span>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {new Date(i.at).toLocaleTimeString()}
+                </span>
               </div>
             ))}
           </div>

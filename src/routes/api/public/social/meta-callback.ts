@@ -1,4 +1,4 @@
-import { savedOAuthRedirect } from '@/lib/social/oauth-origin.server';
+import { savedOAuthRedirect } from "@/lib/social/oauth-origin.server";
 /**
  * Meta OAuth callback: exchanges the code for a long-lived user token, reads
  * the Pages (and linked Instagram accounts) the user granted, and stores each
@@ -34,28 +34,45 @@ export const Route = createFileRoute("/api/public/social/meta-callback")({
         const origin = url.origin;
         const stateRaw = url.searchParams.get("state") ?? "";
         const state = decodeState(stateRaw);
-        if (!state) return back(origin, "/social", { meta_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, "/social", {
+            meta_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, state.returnTo, { meta_error: err });
 
         const code = url.searchParams.get("code");
-        if (!code) return back(origin, state.returnTo, { meta_error: "Meta did not return an authorization code." });
+        if (!code)
+          return back(origin, state.returnTo, {
+            meta_error: "Meta did not return an authorization code.",
+          });
 
         const appId = process.env["META_APP_ID"];
         const appSecret = process.env["META_APP_SECRET"];
-        if (!appId || !appSecret) return back(origin, state.returnTo, { meta_error: "Meta app credentials are not configured." });
+        if (!appId || !appSecret)
+          return back(origin, state.returnTo, {
+            meta_error: "Meta app credentials are not configured.",
+          });
 
         try {
           const tokenUrl = new URL(`${META_GRAPH}/oauth/access_token`);
           tokenUrl.searchParams.set("client_id", appId);
           tokenUrl.searchParams.set("client_secret", appSecret);
-          tokenUrl.searchParams.set("redirect_uri", savedOAuthRedirect(state.redirectUri, metaRedirectUri(origin)));
+          tokenUrl.searchParams.set(
+            "redirect_uri",
+            savedOAuthRedirect(state.redirectUri, metaRedirectUri(origin)),
+          );
           tokenUrl.searchParams.set("code", code);
           const tokenRes = await fetch(tokenUrl.toString());
-          const tokenJson = (await tokenRes.json()) as { access_token?: string; error?: { message: string } };
+          const tokenJson = (await tokenRes.json()) as {
+            access_token?: string;
+            error?: { message: string };
+          };
           if (!tokenRes.ok || !tokenJson.access_token) {
-            return back(origin, state.returnTo, { meta_error: tokenJson.error?.message ?? "Token exchange failed." });
+            return back(origin, state.returnTo, {
+              meta_error: tokenJson.error?.message ?? "Token exchange failed.",
+            });
           }
 
           // Upgrade to a long-lived (≈60 day) user token before reading pages.
@@ -76,17 +93,26 @@ export const Route = createFileRoute("/api/public/social/meta-callback")({
           pagesUrl.searchParams.set("limit", "100");
           pagesUrl.searchParams.set("access_token", userToken);
           const pagesRes = await fetch(pagesUrl.toString());
-          const pagesJson = (await pagesRes.json()) as { data?: PageRow[]; error?: { message: string } };
+          const pagesJson = (await pagesRes.json()) as {
+            data?: PageRow[];
+            error?: { message: string };
+          };
           if (!pagesRes.ok) {
-            return back(origin, state.returnTo, { meta_error: pagesJson.error?.message ?? "Could not read your Pages." });
+            return back(origin, state.returnTo, {
+              meta_error: pagesJson.error?.message ?? "Could not read your Pages.",
+            });
           }
           const pages = pagesJson.data ?? [];
           if (!pages.length) {
             return back(origin, state.returnTo, {
-              meta_error: "No Facebook Pages were granted. Re-run the connect flow and tick at least one Page.",
+              meta_error:
+                "No Facebook Pages were granted. Re-run the connect flow and tick at least one Page.",
             });
           }
-          if (state.target === "instagram" && !pages.some((p) => p.instagram_business_account?.id)) {
+          if (
+            state.target === "instagram" &&
+            !pages.some((p) => p.instagram_business_account?.id)
+          ) {
             return back(origin, state.returnTo, {
               meta_error:
                 "None of the granted Pages has an Instagram Business account linked. In Instagram, switch to a Business/Creator account and link it to a Facebook Page, then try again.",

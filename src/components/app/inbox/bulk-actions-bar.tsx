@@ -16,11 +16,7 @@ import { BulkLinkContactDialog } from "./bulk-link-contact-dialog";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { LabelChip } from "./label-manager";
 import { useCurrentWorkspace, useWorkspaceMembers } from "@/hooks/use-workspace";
@@ -72,10 +68,7 @@ export function BulkActionsBar({
   };
 
   const assignTo = async (userId: string) => {
-    await run(
-      { assigned_to: userId === "unassigned" ? "" : userId },
-      "Assigned",
-    );
+    await run({ assigned_to: userId === "unassigned" ? "" : userId }, "Assigned");
   };
 
   const applyTags = async () => {
@@ -155,9 +148,7 @@ export function BulkActionsBar({
 
   return (
     <div className="border-t border-border bg-background/95 backdrop-blur px-3 py-2 flex items-center gap-2 shadow-lg">
-      <span className="text-xs font-medium">
-        {selectedIds.length} selected
-      </span>
+      <span className="text-xs font-medium">{selectedIds.length} selected</span>
 
       <div className="flex-1" />
 
@@ -197,9 +188,7 @@ export function BulkActionsBar({
                   >
                     <Icon className="h-3.5 w-3.5" />
                     <span className="flex-1 text-left">{it.label}</span>
-                    {it.hasChildren && (
-                      <ChevronRight className="h-3.5 w-3.5 opacity-60" />
-                    )}
+                    {it.hasChildren && <ChevronRight className="h-3.5 w-3.5 opacity-60" />}
                   </button>
                 );
               })}
@@ -246,9 +235,7 @@ export function BulkActionsBar({
                     </button>
                   ))}
                   {members.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-3">
-                      No members
-                    </p>
+                    <p className="text-xs text-muted-foreground text-center py-3">No members</p>
                   )}
                 </div>
               )}
@@ -259,10 +246,7 @@ export function BulkActionsBar({
                     {labels.map((l) => (
                       <label
                         key={l.id}
-                        className={menuItemClass(
-                          "default",
-                          "w-full text-xs cursor-pointer",
-                        )}
+                        className={menuItemClass("default", "w-full text-xs cursor-pointer")}
                       >
                         <Checkbox
                           checked={pickedLabels.has(l.id)}

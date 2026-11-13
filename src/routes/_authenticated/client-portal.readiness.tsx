@@ -146,7 +146,10 @@ function ReadinessPage() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {items.map((c) => (
-                        <div key={c.id} className="flex items-start gap-2 rounded-control border p-3">
+                        <div
+                          key={c.id}
+                          className="flex items-start gap-2 rounded-control border p-3"
+                        >
                           <div className="mt-0.5">{ICONS[c.status]}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">

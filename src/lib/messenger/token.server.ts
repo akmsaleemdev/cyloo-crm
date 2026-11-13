@@ -41,7 +41,13 @@ export async function verifyMessengerPageToken(
   try {
     token = decryptToken(accessTokenCipher);
   } catch {
-    return { ok: false, expired: true, reason: "Stored token could not be decrypted", expiresAt: null, scopes: null };
+    return {
+      ok: false,
+      expired: true,
+      reason: "Stored token could not be decrypted",
+      expiresAt: null,
+      scopes: null,
+    };
   }
 
   // 1) Cheap page-scoped ping — catches revoked/removed tokens fast.
@@ -146,10 +152,7 @@ export async function markMessengerAccountConnected(
  * OAuth/auth failure, flip the account row to `expired`. Callers should
  * still re-throw so the send path fails loudly.
  */
-export async function handleMessengerSendError(
-  accountId: string,
-  err: unknown,
-): Promise<void> {
+export async function handleMessengerSendError(accountId: string, err: unknown): Promise<void> {
   const e = err as { isAuthError?: boolean; metaCode?: number; message?: string };
   if (!e?.isAuthError) return;
   await markMessengerAccountExpired(

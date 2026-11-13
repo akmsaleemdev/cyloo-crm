@@ -19,13 +19,11 @@ export type TemplateBodyIssue = {
   suggestion?: string;
 };
 
-
 const TOKEN_RE = /\{\{([^{}]*)\}\}/g;
 
 const isPositionalToken = (t: string) => /^\d+$/.test(t);
 
 const isEmptyToken = (t: string) => t.trim() === "";
-
 
 type TextComponent = { type?: string; text?: string };
 
@@ -87,7 +85,6 @@ export function remapTemplateComponentTokens(components: unknown): {
   return { components: fixes.length > 0 ? next : list, fixes };
 }
 
-
 /**
  * The exact index every distinct placeholder would receive after renumbering,
  * so error messages can spell out "{{order_id}} → {{1}}".
@@ -109,10 +106,7 @@ const list = (items: string[]) =>
     ? items.join("")
     : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 
-function checkText(
-  component: TemplateBodyIssue["component"],
-  text: string,
-): TemplateBodyIssue[] {
+function checkText(component: TemplateBodyIssue["component"], text: string): TemplateBodyIssue[] {
   const tokens = extractTemplateTokens(text);
   if (tokens.length === 0) return [];
 
@@ -158,23 +152,23 @@ function checkText(
 
   if (issues.length > 0) return issues;
 
-
   const unique = Array.from(new Set(tokens.map(Number))).sort((a, b) => a - b);
   const sequential = unique.every((n, i) => n === i + 1);
   if (!sequential) {
     const rename = Array.from(renameMap.entries())
       .filter(([from, to]) => Number(from) !== to)
       .map(([from, to]) => ({ from: `{{${from}}}`, to: `{{${to}}}` }));
-    return [{
-      component,
-      kind: "non-sequential",
-      tokens: rename.map((r) => r.from),
-      rename,
-      message: `${component} placeholders must start at {{1}} and run in order without gaps — found ${list(unique.map((n) => `{{${n}}}`))}${rename.length > 0 ? `. Replace ${list(rename.map((r) => `${r.from} with ${r.to}`))}` : ""}.`,
-      suggestion,
-    }];
+    return [
+      {
+        component,
+        kind: "non-sequential",
+        tokens: rename.map((r) => r.from),
+        rename,
+        message: `${component} placeholders must start at {{1}} and run in order without gaps — found ${list(unique.map((n) => `{{${n}}}`))}${rename.length > 0 ? `. Replace ${list(rename.map((r) => `${r.from} with ${r.to}`))}` : ""}.`,
+        suggestion,
+      },
+    ];
   }
-
 
   return [];
 }

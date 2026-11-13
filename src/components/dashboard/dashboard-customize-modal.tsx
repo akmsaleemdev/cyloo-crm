@@ -23,10 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  type DashboardWidgetConfig,
-  type WidgetSize,
-} from "./dashboard-preferences";
+import { type DashboardWidgetConfig, type WidgetSize } from "./dashboard-preferences";
 import { toast } from "sonner";
 
 interface DashboardCustomizeModalProps {
@@ -54,9 +51,7 @@ export function DashboardCustomizeModal({
   }, [open, widgets]);
 
   const toggleVisibility = (id: string) => {
-    setLocalWidgets((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)),
-    );
+    setLocalWidgets((prev) => prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
   };
 
   const cycleSize = (id: string) => {
@@ -131,11 +126,7 @@ export function DashboardCustomizeModal({
             className="space-y-2.5"
           >
             {localWidgets.map((widget, index) => (
-              <Reorder.Item
-                key={widget.id}
-                value={widget}
-                className="select-none touch-none"
-              >
+              <Reorder.Item key={widget.id} value={widget} className="select-none touch-none">
                 <div
                   className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
                     widget.visible
@@ -179,7 +170,10 @@ export function DashboardCustomizeModal({
                         <span className="text-sm font-medium text-foreground truncate">
                           {widget.title}
                         </span>
-                        <Badge variant="outline" className="text-[10px] uppercase py-0 px-1.5 font-normal">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] uppercase py-0 px-1.5 font-normal"
+                        >
                           {widget.category}
                         </Badge>
                       </div>
@@ -199,9 +193,15 @@ export function DashboardCustomizeModal({
                       className="h-8 px-2.5 text-xs font-normal capitalize gap-1.5"
                       title={`Current size: ${widget.size}. Click to cycle.`}
                     >
-                      {widget.size === "compact" && <Columns className="w-3.5 h-3.5 text-muted-foreground" />}
-                      {widget.size === "medium" && <LayoutGrid className="w-3.5 h-3.5 text-muted-foreground" />}
-                      {widget.size === "full" && <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />}
+                      {widget.size === "compact" && (
+                        <Columns className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
+                      {widget.size === "medium" && (
+                        <LayoutGrid className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
+                      {widget.size === "full" && (
+                        <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
+                      )}
                       <span>{widget.size}</span>
                     </Button>
 
@@ -245,4 +245,3 @@ export function DashboardCustomizeModal({
     </Dialog>
   );
 }
-

@@ -70,7 +70,9 @@ export function DataTable<T>({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-control border border-border bg-surface", className)}>
+    <div
+      className={cn("overflow-hidden rounded-control border border-border bg-surface", className)}
+    >
       <div role="table" aria-label={caption} className="min-w-full text-sm">
         {caption && <span className="sr-only">{caption}</span>}
         {/* Header */}
@@ -83,10 +85,16 @@ export function DataTable<T>({
             const isSorted = sort?.key === col.key;
             const ariaSort: "ascending" | "descending" | "none" | undefined = col.sortable
               ? isSorted
-                ? sort.direction === "asc" ? "ascending" : "descending"
+                ? sort.direction === "asc"
+                  ? "ascending"
+                  : "descending"
                 : "none"
               : undefined;
-            const Icon = isSorted ? (sort.direction === "asc" ? ChevronUp : ChevronDown) : ChevronsUpDown;
+            const Icon = isSorted
+              ? sort.direction === "asc"
+                ? ChevronUp
+                : ChevronDown
+              : ChevronsUpDown;
             return (
               <div
                 key={col.key}
@@ -121,13 +129,13 @@ export function DataTable<T>({
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonTableRow key={i} cols={columns.length} />
               ))}
-              <span role="status" aria-live="polite" className="sr-only">Loading data</span>
+              <span role="status" aria-live="polite" className="sr-only">
+                Loading data
+              </span>
             </div>
           )}
 
-          {!loading && Boolean(error) && (
-            <ErrorState onRetry={onRetry} />
-          )}
+          {!loading && Boolean(error) && <ErrorState onRetry={onRetry} />}
 
           {!loading && !error && rows && rows.length === 0 && (
             <EmptyState
@@ -137,50 +145,55 @@ export function DataTable<T>({
             />
           )}
 
-          {!loading && !error && rows && rows.length > 0 && rows.map((row) => {
-            const key = rowKey(row);
-            const selected = selectedKey === key;
-            return (
-              <div
-                key={key}
-                role="row"
-                aria-selected={selected || undefined}
-                tabIndex={onRowClick ? 0 : -1}
-                onClick={onRowClick ? () => onRowClick(row) : undefined}
-                onKeyDown={
-                  onRowClick
-                    ? (e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onRowClick(row);
+          {!loading &&
+            !error &&
+            rows &&
+            rows.length > 0 &&
+            rows.map((row) => {
+              const key = rowKey(row);
+              const selected = selectedKey === key;
+              return (
+                <div
+                  key={key}
+                  role="row"
+                  aria-selected={selected || undefined}
+                  tabIndex={onRowClick ? 0 : -1}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            onRowClick(row);
+                          }
                         }
-                      }
-                    : undefined
-                }
-                className={cn(
-                  "grid gap-3 border-b border-border/60 last:border-b-0 transition-colors",
-                  onRowClick && "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-                  selected ? "bg-accent-muted" : "hover:bg-muted/50",
-                )}
-                style={{ gridTemplateColumns: gridTemplate }}
-              >
-                {columns.map((col) => (
-                  <div
-                    key={col.key}
-                    role="cell"
-                    className={cn(
-                      cellPad,
-                      "min-w-0 truncate",
-                      col.align === "right" && "text-right ",
-                      col.className,
-                    )}
-                  >
-                    {col.cell(row)}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+                      : undefined
+                  }
+                  className={cn(
+                    "grid gap-3 border-b border-border/60 last:border-b-0 transition-colors",
+                    onRowClick &&
+                      "cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                    selected ? "bg-accent-muted" : "hover:bg-muted/50",
+                  )}
+                  style={{ gridTemplateColumns: gridTemplate }}
+                >
+                  {columns.map((col) => (
+                    <div
+                      key={col.key}
+                      role="cell"
+                      className={cn(
+                        cellPad,
+                        "min-w-0 truncate",
+                        col.align === "right" && "text-right ",
+                        col.className,
+                      )}
+                    >
+                      {col.cell(row)}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
         </div>
       </div>
     </div>

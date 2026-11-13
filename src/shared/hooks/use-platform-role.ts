@@ -20,7 +20,10 @@ export function usePlatformRole(): { role: PlatformRole; loading: boolean } {
     (async () => {
       const { data: userRes } = await supabase.auth.getUser();
       if (!userRes.user) {
-        if (!cancelled) { setRole(null); setLoading(false); }
+        if (!cancelled) {
+          setRole(null);
+          setLoading(false);
+        }
         return;
       }
       // Best-effort read; ignore errors when the table doesn't exist yet.
@@ -35,7 +38,9 @@ export function usePlatformRole(): { role: PlatformRole; loading: boolean } {
       setRole(r);
       setLoading(false);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { role, loading };

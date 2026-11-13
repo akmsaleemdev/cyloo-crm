@@ -7,7 +7,10 @@ import { useRouterState } from "@tanstack/react-router";
 import { usePlatformRuntime } from "@/hooks/use-platform-runtime";
 import { resolveWhatsAppCta, type ResolvedWhatsAppCta } from "@/lib/marketing/whatsapp-cta";
 
-export function useWhatsAppCta(overrides?: { message?: string; label?: string }): ResolvedWhatsAppCta & {
+export function useWhatsAppCta(overrides?: {
+  message?: string;
+  label?: string;
+}): ResolvedWhatsAppCta & {
   enabled: boolean;
 } {
   const { config } = usePlatformRuntime();

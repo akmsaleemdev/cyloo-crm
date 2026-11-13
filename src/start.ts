@@ -27,7 +27,6 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   }
 });
 
-
 /**
  * Security audit trail for every server function call. Any failure that looks
  * like an access denial (RLS policy, missing GRANT, 401/403, unauthorized

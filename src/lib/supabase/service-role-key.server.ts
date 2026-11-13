@@ -11,26 +11,25 @@
 // they carry no RLS-bypassing privilege, so accepting one degrades every admin
 // operation to anon access silently instead of failing at boot.
 
-export type ServiceRoleKeyFormat = 'secret' | 'legacy-service-role-jwt';
+export type ServiceRoleKeyFormat = "secret" | "legacy-service-role-jwt";
 
 export type ServiceRoleKeyVerdict =
-  | { ok: true; format: ServiceRoleKeyFormat }
-  | { ok: false; reason: string };
+  { ok: true; format: ServiceRoleKeyFormat } | { ok: false; reason: string };
 
-const SECRET_PREFIX = 'sb_secret_';
-const PUBLISHABLE_PREFIX = 'sb_publishable_';
+const SECRET_PREFIX = "sb_secret_";
+const PUBLISHABLE_PREFIX = "sb_publishable_";
 
 /** Reads `role` out of a JWT payload without verifying the signature. */
 function jwtRole(value: string): string | null {
-  const segments = value.split('.');
+  const segments = value.split(".");
   if (segments.length !== 3) return null;
   try {
     const payload: unknown = JSON.parse(
-      Buffer.from(segments[1]!.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'),
+      Buffer.from(segments[1]!.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf8"),
     );
-    if (typeof payload !== 'object' || payload === null) return null;
+    if (typeof payload !== "object" || payload === null) return null;
     const role = (payload as { role?: unknown }).role;
-    return typeof role === 'string' ? role : null;
+    return typeof role === "string" ? role : null;
   } catch {
     return null;
   }
@@ -42,15 +41,15 @@ function jwtRole(value: string): string | null {
  */
 export function inspectServiceRoleKey(
   value: string | undefined | null,
-  varName = 'SUPABASE_SERVICE_ROLE_KEY',
+  varName = "SUPABASE_SERVICE_ROLE_KEY",
 ): ServiceRoleKeyVerdict {
-  if (value === undefined || value === null || value.trim() === '') {
+  if (value === undefined || value === null || value.trim() === "") {
     return { ok: false, reason: `${varName} is not set in the server environment.` };
   }
 
   const key = value.trim();
 
-  if (key.startsWith(SECRET_PREFIX)) return { ok: true, format: 'secret' };
+  if (key.startsWith(SECRET_PREFIX)) return { ok: true, format: "secret" };
 
   if (key.startsWith(PUBLISHABLE_PREFIX)) {
     return {
@@ -63,7 +62,7 @@ export function inspectServiceRoleKey(
   }
 
   const role = jwtRole(key);
-  if (role === 'service_role') return { ok: true, format: 'legacy-service-role-jwt' };
+  if (role === "service_role") return { ok: true, format: "legacy-service-role-jwt" };
   if (role !== null) {
     return {
       ok: false,
@@ -84,7 +83,7 @@ export function inspectServiceRoleKey(
 /** Throws with an actionable, value-free message unless the key is privileged. */
 export function assertServiceRoleKey(
   value: string | undefined | null,
-  varName = 'SUPABASE_SERVICE_ROLE_KEY',
+  varName = "SUPABASE_SERVICE_ROLE_KEY",
 ): ServiceRoleKeyFormat {
   const verdict = inspectServiceRoleKey(value, varName);
   if (!verdict.ok) throw new Error(verdict.reason);

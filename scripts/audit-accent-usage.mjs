@@ -117,7 +117,11 @@ function classify(prefix) {
   if (has("hover", "group-hover", "peer-hover")) return "HOVER";
   if (has("active", "group-active", "peer-active")) return "ACTIVE";
   if (has("focus", "focus-visible", "focus-within", "group-focus", "peer-focus")) return "FOCUS";
-  if (parts.some((p) => p.startsWith("data-[") || p.startsWith("aria-") || p.startsWith("group-data-["))) {
+  if (
+    parts.some(
+      (p) => p.startsWith("data-[") || p.startsWith("aria-") || p.startsWith("group-data-["),
+    )
+  ) {
     return "DATA";
   }
   // Any other pseudo variant (dark:, sm:, disabled:, etc.) on a plain
@@ -184,9 +188,7 @@ async function main() {
     }
   }
 
-  const summary = Object.fromEntries(
-    Object.entries(BUCKETS).map(([k, v]) => [k, v.items.length]),
-  );
+  const summary = Object.fromEntries(Object.entries(BUCKETS).map(([k, v]) => [k, v.items.length]));
   const failing = Object.entries(BUCKETS)
     .filter(([, v]) => v.fail && v.items.length > 0)
     .map(([k]) => k);
@@ -243,7 +245,9 @@ async function main() {
   } else {
     out.push("OK — no hover / active / focus usage of bg-accent detected.");
     if (BUCKETS.DATA.items.length > 0 && !STRICT) {
-      out.push(`     (${BUCKETS.DATA.items.length} data-state matches — re-run with --strict to fail on those too.)`);
+      out.push(
+        `     (${BUCKETS.DATA.items.length} data-state matches — re-run with --strict to fail on those too.)`,
+      );
     }
   }
 

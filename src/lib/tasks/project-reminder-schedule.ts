@@ -15,15 +15,20 @@ export function minutesUntilProjectDeadline(now: Date, dueDate: string, timezone
   try {
     parts = new Intl.DateTimeFormat("en-US", {
       timeZone: timezone,
-      year: "numeric", month: "2-digit", day: "2-digit",
-      hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
     }).formatToParts(now);
   } catch {
     return minutesUntilProjectDeadline(now, dueDate, "UTC");
   }
   const get = (kind: string) => Number(parts.find((part) => part.type === kind)?.value ?? 0);
-  const dayDelta = (Date.UTC(year, month - 1, day) -
-    Date.UTC(get("year"), get("month") - 1, get("day"))) / 86_400_000;
+  const dayDelta =
+    (Date.UTC(year, month - 1, day) - Date.UTC(get("year"), get("month") - 1, get("day"))) /
+    86_400_000;
   return dayDelta * 1440 + 9 * 60 - (get("hour") * 60 + get("minute"));
 }
 

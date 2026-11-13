@@ -22,24 +22,12 @@ describe("RBAC Type System", () => {
   // ─── Workspace Roles ─────────────────────────────────────────────────
 
   it("should define valid workspace roles", () => {
-    const validRoles: WorkspaceRole[] = [
-      "owner",
-      "admin",
-      "manager",
-      "agent",
-      "viewer",
-    ];
+    const validRoles: WorkspaceRole[] = ["owner", "admin", "manager", "agent", "viewer"];
     expect(validRoles).toHaveLength(5);
   });
 
   it("should have a hierarchy where owner > admin > manager > agent > viewer", () => {
-    const hierarchy: WorkspaceRole[] = [
-      "owner",
-      "admin",
-      "manager",
-      "agent",
-      "viewer",
-    ];
+    const hierarchy: WorkspaceRole[] = ["owner", "admin", "manager", "agent", "viewer"];
     // The hierarchy should be 5 distinct levels
     expect(new Set(hierarchy).size).toBe(5);
   });
@@ -47,9 +35,7 @@ describe("RBAC Type System", () => {
 
 describe("RBAC Permission Scopes", () => {
   it("should follow namespace:action pattern in module features", async () => {
-    const { ENTERPRISE_MODULES } = await import(
-      "@/config/enterprise-modules"
-    );
+    const { ENTERPRISE_MODULES } = await import("@/config/enterprise-modules");
 
     for (const mod of ENTERPRISE_MODULES) {
       for (const feat of mod.features) {
@@ -61,4 +47,3 @@ describe("RBAC Permission Scopes", () => {
     }
   });
 });
-

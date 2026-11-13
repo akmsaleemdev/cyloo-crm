@@ -228,9 +228,7 @@ function ForecastBox({
   return (
     <div className="border rounded-control p-2">
       <div className="text-[11px] uppercase text-muted-foreground">{label}</div>
-      <div className={cn("text-base font-semibold ", cls)}>
-        {money(value ?? 0, currency)}
-      </div>
+      <div className={cn("text-base font-semibold ", cls)}>{money(value ?? 0, currency)}</div>
     </div>
   );
 }

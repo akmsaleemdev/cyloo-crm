@@ -20,10 +20,7 @@ export { DataTable, type Column, type SortState } from "./data-table";
 export { InfoTooltip } from "./info-tooltip";
 export { Kbd } from "./kbd";
 export { LabeledDivider } from "./labeled-divider";
-export {
-  SegmentedControl,
-  type SegmentedControlOption,
-} from "./segmented-control";
+export { SegmentedControl, type SegmentedControlOption } from "./segmented-control";
 export { DatePicker, DateRangePicker, toDateString, fromDateString } from "./date-picker";
 export { BirthdayPicker } from "./birthday-picker";
 export { DateTimePicker, toLocalDateTimeString, fromLocalDateTimeString } from "./date-time-picker";
@@ -37,7 +34,11 @@ export { PageHeader, Section } from "./page-header";
 export { SearchBox, type SearchBoxProps } from "./search-box";
 export { SideDrawer } from "./side-drawer";
 export {
-  Skeleton, SkeletonCard, SkeletonCircle, SkeletonTableRow, SkeletonText,
+  Skeleton,
+  SkeletonCard,
+  SkeletonCircle,
+  SkeletonTableRow,
+  SkeletonText,
   LoadingAnnouncer,
 } from "./skeleton";
 export { SkipLink } from "./skip-link";

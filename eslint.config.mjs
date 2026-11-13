@@ -48,7 +48,6 @@ const noHardcodedHeaderValueGlobal = [
   },
 ];
 
-
 /**
  * Strict rules — apply only to files that OWN the app shell chrome (topbar,
  * sidebar, footer, root layout). Mirrors the CHROME_FILES allowlist in
@@ -85,7 +84,21 @@ const noHardcodedHeaderUtilityChrome = [
 ];
 
 export default tseslint.config(
-  { ignores: ["dist", ".output", ".vinxi"] },
+  {
+    ignores: [
+      "dist/**",
+      ".output/**",
+      ".vinxi/**",
+      ".tanstack/**",
+      ".wrangler/**",
+      "coverage/**",
+      "test-results/**",
+      "playwright-report/**",
+      "mobile/.expo/**",
+      "src/routeTree.gen.ts",
+      "src/integrations/supabase/types.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -145,4 +158,3 @@ export default tseslint.config(
 
   eslintPluginPrettier,
 );
-

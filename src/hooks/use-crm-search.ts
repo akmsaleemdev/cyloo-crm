@@ -26,11 +26,18 @@ async function searchContacts(ws: string, q: string): Promise<SearchHit[]> {
     .select("id, first_name, last_name, display_name, email, job_title")
     .eq("workspace_id", ws)
     .is("deleted_at", null)
-    .or(`display_name.ilike.%${sanitizeSearchTerm(q)}%,first_name.ilike.%${sanitizeSearchTerm(q)}%,last_name.ilike.%${sanitizeSearchTerm(q)}%,email.ilike.%${sanitizeSearchTerm(q)}%`)
+    .or(
+      `display_name.ilike.%${sanitizeSearchTerm(q)}%,first_name.ilike.%${sanitizeSearchTerm(q)}%,last_name.ilike.%${sanitizeSearchTerm(q)}%,email.ilike.%${sanitizeSearchTerm(q)}%`,
+    )
     .limit(LIMIT);
   return (data ?? []).map((r: any) => ({
-    id: r.id, entity: "contact" as const,
-    title: r.display_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || r.email || "Contact",
+    id: r.id,
+    entity: "contact" as const,
+    title:
+      r.display_name ||
+      [r.first_name, r.last_name].filter(Boolean).join(" ") ||
+      r.email ||
+      "Contact",
     subtitle: r.job_title || r.email,
     extra: null,
   }));
@@ -41,11 +48,15 @@ async function searchCompanies(ws: string, q: string): Promise<SearchHit[]> {
     .select("id, name, industry, website, city, country")
     .eq("workspace_id", ws)
     .is("deleted_at", null)
-    .or(`name.ilike.%${sanitizeSearchTerm(q)}%,website.ilike.%${sanitizeSearchTerm(q)}%,industry.ilike.%${sanitizeSearchTerm(q)}%,city.ilike.%${sanitizeSearchTerm(q)}%`)
+    .or(
+      `name.ilike.%${sanitizeSearchTerm(q)}%,website.ilike.%${sanitizeSearchTerm(q)}%,industry.ilike.%${sanitizeSearchTerm(q)}%,city.ilike.%${sanitizeSearchTerm(q)}%`,
+    )
     .limit(LIMIT);
   return (data ?? []).map((r: any) => ({
-    id: r.id, entity: "company" as const,
-    title: r.name, subtitle: r.industry,
+    id: r.id,
+    entity: "company" as const,
+    title: r.name,
+    subtitle: r.industry,
     extra: [r.city, r.country].filter(Boolean).join(", ") || r.website,
   }));
 }
@@ -55,10 +66,13 @@ async function searchLeads(ws: string, q: string): Promise<SearchHit[]> {
     .select("id, first_name, last_name, email, company_name, status, source")
     .eq("workspace_id", ws)
     .is("deleted_at", null)
-    .or(`first_name.ilike.%${sanitizeSearchTerm(q)}%,last_name.ilike.%${sanitizeSearchTerm(q)}%,email.ilike.%${sanitizeSearchTerm(q)}%,company_name.ilike.%${sanitizeSearchTerm(q)}%`)
+    .or(
+      `first_name.ilike.%${sanitizeSearchTerm(q)}%,last_name.ilike.%${sanitizeSearchTerm(q)}%,email.ilike.%${sanitizeSearchTerm(q)}%,company_name.ilike.%${sanitizeSearchTerm(q)}%`,
+    )
     .limit(LIMIT);
   return (data ?? []).map((r: any) => ({
-    id: r.id, entity: "lead" as const,
+    id: r.id,
+    entity: "lead" as const,
     title: [r.first_name, r.last_name].filter(Boolean).join(" ") || r.email || "Lead",
     subtitle: r.company_name || r.email,
     extra: `${r.status ?? ""}${r.source ? ` · ${r.source}` : ""}`,
@@ -73,7 +87,8 @@ async function searchDeals(ws: string, q: string, fallbackCurrency: string): Pro
     .ilike("title", `%${sanitizeSearchTerm(q)}%`)
     .limit(LIMIT);
   return (data ?? []).map((r: any) => ({
-    id: r.id, entity: "deal" as const,
+    id: r.id,
+    entity: "deal" as const,
     title: r.title,
     subtitle: `${r.currency ?? fallbackCurrency} ${Number(r.amount ?? 0).toLocaleString()}`,
     extra: r.status,
@@ -88,8 +103,11 @@ async function searchTasks(ws: string, q: string): Promise<SearchHit[]> {
     .ilike("title", `%${sanitizeSearchTerm(q)}%`)
     .limit(LIMIT);
   return (data ?? []).map((r: any) => ({
-    id: r.id, entity: "task" as const,
-    title: r.title, subtitle: r.status, extra: r.priority,
+    id: r.id,
+    entity: "task" as const,
+    title: r.title,
+    subtitle: r.status,
+    extra: r.priority,
   }));
 }
 
@@ -99,7 +117,11 @@ const SEARCHERS: Record<
   SearchEntity,
   (ws: string, q: string, fallbackCurrency: string) => Promise<SearchHit[]>
 > = {
-  contact: searchContacts, company: searchCompanies, lead: searchLeads, deal: searchDeals, task: searchTasks,
+  contact: searchContacts,
+  company: searchCompanies,
+  lead: searchLeads,
+  deal: searchDeals,
+  task: searchTasks,
 };
 
 export function useCrmSearch(query: string, entities?: SearchEntity[]) {
@@ -121,8 +143,13 @@ export function useCrmSearch(query: string, entities?: SearchEntity[]) {
       const results = await Promise.all(
         list.map((e) => SEARCHERS[e](ws!.id, debounced, tenantCurrency)),
       );
-      const out = { contact: [], company: [], lead: [], deal: [], task: [] } as Record<SearchEntity, SearchHit[]>;
-      list.forEach((e, i) => { out[e] = results[i]; });
+      const out = { contact: [], company: [], lead: [], deal: [], task: [] } as Record<
+        SearchEntity,
+        SearchHit[]
+      >;
+      list.forEach((e, i) => {
+        out[e] = results[i];
+      });
       return out;
     },
     staleTime: 15_000,

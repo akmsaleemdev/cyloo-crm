@@ -1,4 +1,4 @@
-import { savedOAuthRedirect } from '@/lib/social/oauth-origin.server';
+import { savedOAuthRedirect } from "@/lib/social/oauth-origin.server";
 /**
  * Threads OAuth callback. Exchanges the code for a short-lived token, upgrades
  * it to a 60-day long-lived token, and stores the Threads account as a channel.
@@ -23,12 +23,18 @@ export const Route = createFileRoute("/api/public/social/threads-callback")({
         const origin = url.origin;
         const mod = await import("@/lib/social/oauth.server");
         const state = mod.decodeState(url.searchParams.get("state") ?? "");
-        if (!state) return back(origin, "/social", { social_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, "/social", {
+            social_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, state.returnTo, { social_error: err });
         const code = (url.searchParams.get("code") ?? "").replace(/#_$/, "");
-        if (!code) return back(origin, state.returnTo, { social_error: "Threads did not return an authorization code." });
+        if (!code)
+          return back(origin, state.returnTo, {
+            social_error: "Threads did not return an authorization code.",
+          });
 
         try {
           const creds = mod.oauthCreds("threads");
@@ -39,7 +45,10 @@ export const Route = createFileRoute("/api/public/social/threads-callback")({
               client_id: creds.clientId,
               client_secret: creds.clientSecret,
               grant_type: "authorization_code",
-              redirect_uri: savedOAuthRedirect(state.redirectUri, mod.callbackUri(origin, "threads")),
+              redirect_uri: savedOAuthRedirect(
+                state.redirectUri,
+                mod.callbackUri(origin, "threads"),
+              ),
               code,
             }),
           });
@@ -51,7 +60,10 @@ export const Route = createFileRoute("/api/public/social/threads-callback")({
           };
           if (!tokenRes.ok || !tokenJson.access_token) {
             return back(origin, state.returnTo, {
-              social_error: tokenJson.error_message ?? tokenJson.error?.message ?? "Threads token exchange failed.",
+              social_error:
+                tokenJson.error_message ??
+                tokenJson.error?.message ??
+                "Threads token exchange failed.",
             });
           }
 
@@ -107,7 +119,10 @@ export const Route = createFileRoute("/api/public/social/threads-callback")({
             : await sbAny(db).from("social_channels").insert(row);
           if (error) return back(origin, state.returnTo, { social_error: error.message });
 
-          return back(origin, state.returnTo, { social_connected: "1", social_platform: "Threads" });
+          return back(origin, state.returnTo, {
+            social_connected: "1",
+            social_platform: "Threads",
+          });
         } catch (e) {
           return back(origin, state.returnTo, {
             social_error: e instanceof Error ? e.message : "Threads connect failed.",

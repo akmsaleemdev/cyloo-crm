@@ -36,16 +36,25 @@ export const Route = createFileRoute("/api/public/social/youtube-callback")({
         const origin = url.origin;
         const mod = await import("@/lib/social/oauth.server");
         const state = mod.decodeState(url.searchParams.get("state") ?? "");
-        if (!state) return back(origin, "/social", { social_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, "/social", {
+            social_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, state.returnTo, { social_error: err });
         const code = url.searchParams.get("code");
-        if (!code) return back(origin, state.returnTo, { social_error: "Google did not return an authorization code." });
+        if (!code)
+          return back(origin, state.returnTo, {
+            social_error: "Google did not return an authorization code.",
+          });
 
         try {
           const creds = mod.oauthCreds("youtube");
-          const redirectUri = savedOAuthRedirect(state.redirectUri, mod.callbackUri(origin, "youtube"));
+          const redirectUri = savedOAuthRedirect(
+            state.redirectUri,
+            mod.callbackUri(origin, "youtube"),
+          );
           const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -60,23 +69,32 @@ export const Route = createFileRoute("/api/public/social/youtube-callback")({
           const token = (await tokenRes.json()) as GoogleTokenResponse;
           if (!tokenRes.ok || !token.access_token) {
             return back(origin, state.returnTo, {
-              social_error: token.error_description ?? token.error ?? "Google token exchange failed.",
+              social_error:
+                token.error_description ?? token.error ?? "Google token exchange failed.",
             });
           }
 
-          const meRes = await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", {
-            headers: { Authorization: `Bearer ${token.access_token}` },
-          });
+          const meRes = await fetch(
+            "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
+            {
+              headers: { Authorization: `Bearer ${token.access_token}` },
+            },
+          );
           const me = (await meRes.json()) as {
             items?: Array<{
               id?: string;
-              snippet?: { title?: string; customUrl?: string; thumbnails?: { default?: { url?: string } } };
+              snippet?: {
+                title?: string;
+                customUrl?: string;
+                thumbnails?: { default?: { url?: string } };
+              };
             }>;
           };
           const channel = me.items?.[0];
           if (!channel?.id) {
             return back(origin, state.returnTo, {
-              social_error: "This Google account has no YouTube channel. Create one or pick another account.",
+              social_error:
+                "This Google account has no YouTube channel. Create one or pick another account.",
             });
           }
 
@@ -98,12 +116,16 @@ export const Route = createFileRoute("/api/public/social/youtube-callback")({
             username: channel.snippet?.customUrl?.replace(/^@/, "") ?? null,
             avatar_url: channel.snippet?.thumbnails?.default?.url ?? null,
             access_token: encryptToken(token.access_token),
-            token_expires_at: new Date(Date.now() + (token.expires_in ?? 3600) * 1000).toISOString(),
+            token_expires_at: new Date(
+              Date.now() + (token.expires_in ?? 3600) * 1000,
+            ).toISOString(),
             token_refresh_error: null,
             status: "connected",
             metadata: {
               granted_scopes: granted,
-              can_publish: granted.some((s) => s.endsWith("/youtube.force-ssl") || s.endsWith("/youtube.upload")),
+              can_publish: granted.some(
+                (s) => s.endsWith("/youtube.force-ssl") || s.endsWith("/youtube.upload"),
+              ),
               auto_refresh: !!token.refresh_token,
             },
           };
@@ -115,7 +137,10 @@ export const Route = createFileRoute("/api/public/social/youtube-callback")({
             : await db.from("social_channels").insert(row);
           if (error) return back(origin, state.returnTo, { social_error: error.message });
 
-          const params: Record<string, string> = { social_connected: "1", social_platform: "YouTube" };
+          const params: Record<string, string> = {
+            social_connected: "1",
+            social_platform: "YouTube",
+          };
           if (!token.refresh_token && !existing?.id) {
             params.social_warning =
               "Connected, but Google did not return a refresh token, so the connection will expire in about an hour. Remove CYLOO from your Google account permissions and connect again.";

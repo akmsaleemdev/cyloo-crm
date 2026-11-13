@@ -68,7 +68,9 @@ function PublicStore() {
     const rows = (data?.plugins ?? []) as any[];
     const term = q.trim().toLowerCase();
     return term
-      ? rows.filter((p) => `${p.name} ${p.tagline ?? ""} ${p.category}`.toLowerCase().includes(term))
+      ? rows.filter((p) =>
+          `${p.name} ${p.tagline ?? ""} ${p.category}`.toLowerCase().includes(term),
+        )
       : rows;
   }, [data, q]);
 
@@ -79,12 +81,17 @@ function PublicStore() {
           <Brand /> Store
         </h1>
         <p className="text-muted-foreground max-w-2xl">
-          Every plugin that extends {brandName} — messaging, social publishing, AI, automation, support and
-          commerce. Browse freely; you only need an account to install.
+          Every plugin that extends {brandName} — messaging, social publishing, AI, automation,
+          support and commerce. Browse freely; you only need an account to install.
         </p>
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search plugins" className="pl-9" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search plugins"
+            className="pl-9"
+          />
         </div>
       </header>
 
@@ -106,7 +113,11 @@ function PublicStore() {
             <CardContent className="mt-auto space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">
-                  {formatListingPrice(p.price_cents, p.currency || platformCurrency, p.pricing_model)}
+                  {formatListingPrice(
+                    p.price_cents,
+                    p.currency || platformCurrency,
+                    p.pricing_model,
+                  )}
                 </span>
                 <span className="text-muted-foreground flex items-center gap-1">
                   <Star className="size-3" />

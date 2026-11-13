@@ -4,13 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
 
-export type TagEntity =
-  | "contact"
-  | "company"
-  | "lead"
-  | "customer"
-  | "deal"
-  | "task";
+export type TagEntity = "contact" | "company" | "lead" | "customer" | "deal" | "task";
 
 export const TAG_ENTITIES: { value: TagEntity; label: string }[] = [
   { value: "contact", label: "Contacts" },
@@ -126,15 +120,13 @@ export function useTagsRealtime() {
     const ch = supabase
       .channel("crm-tags-rt")
       .on("postgres_changes", { event: "*", schema: "public", table: "crm_tags" }, () =>
-        qc.invalidateQueries({ queryKey: ["crm-tags"] })
+        qc.invalidateQueries({ queryKey: ["crm-tags"] }),
       )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "crm_tag_assignments" },
-        () => qc.invalidateQueries({ queryKey: ["crm-tag-assignments"] })
+      .on("postgres_changes", { event: "*", schema: "public", table: "crm_tag_assignments" }, () =>
+        qc.invalidateQueries({ queryKey: ["crm-tag-assignments"] }),
       )
       .on("postgres_changes", { event: "*", schema: "public", table: "crm_segments" }, () =>
-        qc.invalidateQueries({ queryKey: ["crm-segments"] })
+        qc.invalidateQueries({ queryKey: ["crm-segments"] }),
       )
       .subscribe();
     return () => {
@@ -279,11 +271,7 @@ export function useBulkAssignTag() {
   const { active } = useCurrentWorkspace();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: {
-      tagId: string;
-      entityType: TagEntity;
-      entityIds: string[];
-    }) => {
+    mutationFn: async (params: { tagId: string; entityType: TagEntity; entityIds: string[] }) => {
       if (!active?.id) throw new Error("No workspace");
       const rows = params.entityIds.map((id) => ({
         workspace_id: active.id,
@@ -402,9 +390,13 @@ function matchCondition(entity: any, c: SegmentCondition, tagIds: string[]): boo
     case "contains":
       return typeof v === "string" && v.toLowerCase().includes(String(c.value ?? "").toLowerCase());
     case "not_contains":
-      return typeof v === "string" && !v.toLowerCase().includes(String(c.value ?? "").toLowerCase());
+      return (
+        typeof v === "string" && !v.toLowerCase().includes(String(c.value ?? "").toLowerCase())
+      );
     case "starts_with":
-      return typeof v === "string" && v.toLowerCase().startsWith(String(c.value ?? "").toLowerCase());
+      return (
+        typeof v === "string" && v.toLowerCase().startsWith(String(c.value ?? "").toLowerCase())
+      );
     case "gt":
       return typeof v === "number" && v > Number(c.value);
     case "gte":
@@ -443,9 +435,7 @@ export function useTagAnalytics() {
           .select("id,name,color,is_favorite,is_smart,is_ai_generated")
           .eq("workspace_id", active!.id)
           .is("deleted_at", null),
-        anyFrom("crm_tag_assignments")
-          .select("tag_id,entity_type")
-          .eq("workspace_id", active!.id),
+        anyFrom("crm_tag_assignments").select("tag_id,entity_type").eq("workspace_id", active!.id),
       ]);
       const counts = new Map<string, Record<string, number>>();
       for (const a of (assigns || []) as { tag_id: string; entity_type: string }[]) {

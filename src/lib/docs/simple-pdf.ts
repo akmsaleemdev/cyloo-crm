@@ -164,8 +164,12 @@ export function buildPdf(blocks: PdfBlock[], meta: { title: string; author: stri
     return objects.length; // 1-based object number
   };
 
-  const fontRegular = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
-  const fontBold = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  const fontRegular = addObject(
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+  );
+  const fontBold = addObject(
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+  );
 
   const pagesObjNumber = objects.length + 1 + pages.length * 2 + 1; // placeholder, fixed below
   const pageObjNumbers: number[] = [];
@@ -184,9 +188,7 @@ export function buildPdf(blocks: PdfBlock[], meta: { title: string; author: stri
       );
     }
     const stream = parts.join("\n");
-    const contentNumber = addObject(
-      `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
-    );
+    const contentNumber = addObject(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
     const pageNumber = addObject(
       `<< /Type /Page /Parent ${pagesObjNumber} 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] /Resources << /Font << /F1 ${fontRegular} 0 R /F2 ${fontBold} 0 R >> >> /Contents ${contentNumber} 0 R >>`,
     );

@@ -78,7 +78,8 @@ function loadProvider(config: AnalyticsConfig): void {
       injectScript(`${host}/static/array.js`, { "data-ph-token": key });
       const started = Date.now();
       const boot = window.setInterval(() => {
-        const ph = w()?.posthog as { init?: (t: string, o: Record<string, unknown>) => void } | undefined;
+        const ph = w()?.posthog as
+          { init?: (t: string, o: Record<string, unknown>) => void } | undefined;
         if (ph?.init) {
           ph.init(key, { api_host: host, capture_pageview: false });
           window.clearInterval(boot);

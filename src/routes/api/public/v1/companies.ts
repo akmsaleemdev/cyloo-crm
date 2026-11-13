@@ -38,12 +38,21 @@ export const Route = createFileRoute("/api/public/v1/companies")({
         });
         const { data, error, count } = await q;
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-        return jsonOk(data ?? [], { requestId: ctx.requestId, meta: { total: count ?? 0, limit: parsed.limit, offset: parsed.offset } });
+        return jsonOk(data ?? [], {
+          requestId: ctx.requestId,
+          meta: { total: count ?? 0, limit: parsed.limit, offset: parsed.offset },
+        });
       }),
       POST: withGateway({ requiredScopes: ["contacts:write"] }, async (ctx, req) => {
         const body = await parseJson<unknown>(req);
         const parsed = CreateCompanySchema.safeParse(body);
-        if (!parsed.success) return jsonError("validation_error", "Invalid payload", { issues: parsed.error.issues }, ctx.requestId);
+        if (!parsed.success)
+          return jsonError(
+            "validation_error",
+            "Invalid payload",
+            { issues: parsed.error.issues },
+            ctx.requestId,
+          );
         const { data, error } = await ctx.supabase
           .from("companies")
           .insert({ ...parsed.data, organization_id: ctx.organizationId })

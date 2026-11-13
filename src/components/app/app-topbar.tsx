@@ -90,7 +90,9 @@ export function AppTopbar({
           aria-label="Open command palette"
         >
           <Search className="h-3.5 w-3.5 text-muted-foreground/70" />
-          <span className="flex-1 text-left truncate">Ask CYLOO anything, @ context, / for commands</span>
+          <span className="flex-1 text-left truncate">
+            Ask CYLOO anything, @ context, / for commands
+          </span>
           <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border/60 bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
             ⌘K
           </kbd>
@@ -106,17 +108,19 @@ export function AppTopbar({
         </button>
 
         <div className="ml-auto flex items-center gap-1">
-          {SHOW_RESOURCE_LINKS && <a
-            href={docsUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center gap-1.5 rounded-control px-2.5 h-9 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label="Open documentation"
-            title="Documentation"
-          >
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden lg:inline">Docs</span>
-          </a>}
+          {SHOW_RESOURCE_LINKS && (
+            <a
+              href={docsUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 rounded-control px-2.5 h-9 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Open documentation"
+              title="Documentation"
+            >
+              <BookOpen className="h-4 w-4" />
+              <span className="hidden lg:inline">Docs</span>
+            </a>
+          )}
           <PwaInstallButton />
           <QuickActions />
           <ThemeSwitcher />
@@ -134,7 +138,9 @@ export function AppTopbar({
             <div className="mt-1 flex min-w-0 items-baseline gap-3">
               <h1 className="shrink-0 font-display text-lg font-semibold lg:text-xl">{title}</h1>
               {subtitle && (
-                <p className="hidden min-w-0 flex-1 truncate text-xs text-muted-foreground sm:block">{subtitle}</p>
+                <p className="hidden min-w-0 flex-1 truncate text-xs text-muted-foreground sm:block">
+                  {subtitle}
+                </p>
               )}
             </div>
             {subtitle && (

@@ -1,4 +1,4 @@
-import { savedOAuthRedirect } from '@/lib/social/oauth-origin.server';
+import { savedOAuthRedirect } from "@/lib/social/oauth-origin.server";
 /**
  * LinkedIn OAuth 2.0 / OpenID Connect callback.
  *
@@ -29,17 +29,25 @@ export const Route = createFileRoute("/api/public/social/linkedin-callback")({
         const origin = url.origin;
         const mod = await import("@/lib/social/oauth.server");
         const state = mod.decodeState(url.searchParams.get("state") ?? "");
-        if (!state) return back(origin, "/social", { social_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, "/social", {
+            social_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, state.returnTo, { social_error: err });
         const code = url.searchParams.get("code");
         if (!code)
-          return back(origin, state.returnTo, { social_error: "LinkedIn did not return an authorization code." });
+          return back(origin, state.returnTo, {
+            social_error: "LinkedIn did not return an authorization code.",
+          });
 
         try {
           const creds = mod.oauthCreds("linkedin");
-          const redirectUri = savedOAuthRedirect(state.redirectUri, mod.callbackUri(origin, "linkedin"));
+          const redirectUri = savedOAuthRedirect(
+            state.redirectUri,
+            mod.callbackUri(origin, "linkedin"),
+          );
           const tokenRes = await fetch("https://www.linkedin.com/oauth/v2/accessToken", {
             method: "POST",
             headers: {

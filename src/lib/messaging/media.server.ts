@@ -15,7 +15,9 @@ async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const buf = new ArrayBuffer(bytes.byteLength);
   new Uint8Array(buf).set(bytes);
   const hash = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export interface FetchAndCacheResult {
@@ -41,7 +43,11 @@ export async function fetchAndCacheMedia(
 
   if (existing) {
     const e = existing as unknown as {
-      status: string; storage_path: string | null; mime_type: string | null; size_bytes: number | null; sha256: string | null;
+      status: string;
+      storage_path: string | null;
+      mime_type: string | null;
+      size_bytes: number | null;
+      sha256: string | null;
     };
     if (e.status === "ready" && e.storage_path) {
       return {
@@ -60,11 +66,20 @@ export async function fetchAndCacheMedia(
   const correlationId = makeCorrelationId();
 
   const { bytes, mimeType, filename } = await impl.fetchMedia(externalMediaId, {
-    account, credentials: creds, correlationId,
-    log: (level, scope, message, data) => log({
-      workspaceId: account.workspaceId, channelAccountId: account.id, provider,
-      level, scope, message, data, correlationId,
-    }),
+    account,
+    credentials: creds,
+    correlationId,
+    log: (level, scope, message, data) =>
+      log({
+        workspaceId: account.workspaceId,
+        channelAccountId: account.id,
+        provider,
+        level,
+        scope,
+        message,
+        data,
+        correlationId,
+      }),
   });
 
   const hash = await sha256Hex(bytes);
@@ -77,18 +92,23 @@ export async function fetchAndCacheMedia(
   });
   if (up.error) throw new Error(`storage upload failed: ${up.error.message}`);
 
-  await sbAny(supabaseAdmin).from("provider_media_cache" as never).upsert({
-    provider,
-    channel_account_id: account.id,
-    external_media_id: externalMediaId,
-    storage_bucket: "attachments",
-    storage_path: storagePath,
-    mime_type: mimeType,
-    size_bytes: bytes.byteLength,
-    sha256: hash,
-    status: "ready",
-    fetched_at: new Date().toISOString(),
-  } as never, { onConflict: "provider,external_media_id" } as never);
+  await sbAny(supabaseAdmin)
+    .from("provider_media_cache" as never)
+    .upsert(
+      {
+        provider,
+        channel_account_id: account.id,
+        external_media_id: externalMediaId,
+        storage_bucket: "attachments",
+        storage_path: storagePath,
+        mime_type: mimeType,
+        size_bytes: bytes.byteLength,
+        sha256: hash,
+        status: "ready",
+        fetched_at: new Date().toISOString(),
+      } as never,
+      { onConflict: "provider,external_media_id" } as never,
+    );
 
   return { storagePath, mimeType, sizeBytes: bytes.byteLength, sha256: hash, cached: false };
 }

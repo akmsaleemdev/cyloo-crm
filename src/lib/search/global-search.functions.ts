@@ -106,7 +106,7 @@ function esc(v: string): string {
   return v.replace(/[%_,]/g, (m) => `\\${m}`);
 }
 
-/** Expand a natural-language query into keyword terms + intent using Lovable AI. */
+/** Expand a natural-language query into keywords and intent using the configured AI provider. */
 async function expandQuery(
   q: string,
 ): Promise<{ terms: string[]; intent: string | null; suggestions: string[] }> {

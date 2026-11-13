@@ -96,7 +96,12 @@ export function useMessageTemplates(search?: string) {
       .channel(`message-templates:${workspaceId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "message_templates", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "message_templates",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["message-templates", workspaceId] }),
       )
       .subscribe();
@@ -320,7 +325,12 @@ export function useScheduledMessages(conversationId?: string) {
       .channel(`scheduled-messages:${workspaceId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "scheduled_messages", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "scheduled_messages",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["scheduled-messages", workspaceId] }),
       )
       .subscribe();

@@ -6,14 +6,26 @@ export const instagramChannel: ChannelProvider = {
   label: "Instagram Direct",
   implemented: false,
   capabilities: new Set([
-    "text", "emoji", "image", "video", "audio", "voice_note",
-    "reaction", "reply_quote", "typing_indicator", "read_receipt",
+    "text",
+    "emoji",
+    "image",
+    "video",
+    "audio",
+    "voice_note",
+    "reaction",
+    "reply_quote",
+    "typing_indicator",
+    "read_receipt",
   ]),
   extractAccountRouting(body: unknown) {
     const b = body as { entry?: Array<{ id?: string }> };
     const pageId = b?.entry?.[0]?.id;
     return pageId ? { externalAccountId: pageId } : null;
   },
-  async parseWebhook() { return []; },
-  async send() { throw new Error("instagram: not configured"); },
+  async parseWebhook() {
+    return [];
+  },
+  async send() {
+    throw new Error("instagram: not configured");
+  },
 };

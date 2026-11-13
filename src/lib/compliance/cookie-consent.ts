@@ -105,7 +105,11 @@ export function readCookieConsent(): StoredCookieConsent | null {
     const raw = store.getItem(COOKIE_CONSENT_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<StoredCookieConsent>;
-    if (parsed?.decision !== "accepted" && parsed?.decision !== "declined" && parsed?.decision !== "custom") {
+    if (
+      parsed?.decision !== "accepted" &&
+      parsed?.decision !== "declined" &&
+      parsed?.decision !== "custom"
+    ) {
       return null;
     }
     if (parsed.version !== COOKIE_CONSENT_VERSION) return null;
@@ -177,16 +181,18 @@ export async function recordCookieConsent(
 
   try {
     const { data } = await supabase.auth.getSession();
-    const { error } = await sbAny(supabase).from("cookie_consents").insert({
-      visitor_id: visitorId,
-      decision: stored.decision,
-      categories,
-      policy_version: COOKIE_CONSENT_VERSION,
-      page_path: typeof window !== "undefined" ? window.location.pathname : null,
-      referrer: typeof document !== "undefined" ? document.referrer || null : null,
-      user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
-      user_id: data.session?.user?.id ?? null,
-    });
+    const { error } = await sbAny(supabase)
+      .from("cookie_consents")
+      .insert({
+        visitor_id: visitorId,
+        decision: stored.decision,
+        categories,
+        policy_version: COOKIE_CONSENT_VERSION,
+        page_path: typeof window !== "undefined" ? window.location.pathname : null,
+        referrer: typeof document !== "undefined" ? document.referrer || null : null,
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
+        user_id: data.session?.user?.id ?? null,
+      });
     if (error) console.warn("[cookie-consent] could not log consent", error.message);
   } catch (err) {
     console.warn("[cookie-consent] consent logging failed", err);

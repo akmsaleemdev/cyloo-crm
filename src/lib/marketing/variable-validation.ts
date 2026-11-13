@@ -21,14 +21,7 @@ export type TemplateVarSpec = {
 };
 
 export type TemplateVarFormat =
-  | "text"
-  | "url"
-  | "phone"
-  | "email"
-  | "otp"
-  | "amount"
-  | "date"
-  | "name";
+  "text" | "url" | "phone" | "email" | "otp" | "amount" | "date" | "name";
 
 export type VariableIssue = {
   token: string;
@@ -45,11 +38,9 @@ function inferFormat(token: string): TemplateVarFormat {
   if (/(phone|mobile|whatsapp|contact_no|number)/.test(t)) return "phone";
   if (/email|e_?mail/.test(t)) return "email";
   if (/^(otp|code|pin|verification|token)$/.test(t)) return "otp";
-  if (/(amount|price|total|cost|balance|payable|invoice_total)/.test(t))
-    return "amount";
+  if (/(amount|price|total|cost|balance|payable|invoice_total)/.test(t)) return "amount";
   if (/(date|time|expiry|expires|scheduled_at|deadline)/.test(t)) return "date";
-  if (/^(name|first_name|last_name|full_name|customer|user)$/.test(t))
-    return "name";
+  if (/^(name|first_name|last_name|full_name|customer|user)$/.test(t)) return "name";
   return "text";
 }
 
@@ -57,9 +48,7 @@ function inferFormat(token: string): TemplateVarFormat {
  * Extract every unique variable referenced by a template's `components`.
  * Preserves insertion order and location so the UI can group inputs.
  */
-export function extractTemplateVariables(
-  components: unknown,
-): TemplateVarSpec[] {
+export function extractTemplateVariables(components: unknown): TemplateVarSpec[] {
   if (!Array.isArray(components)) return [];
   const seen = new Set<string>();
   const out: TemplateVarSpec[] = [];
@@ -117,41 +106,32 @@ function validateOne(spec: TemplateVarSpec, value: string): string | null {
   const v = value ?? "";
   if (!v.trim()) return `Missing value for {{${spec.token}}}`;
   const limit = LIMITS[spec.format];
-  if (v.length > limit.max)
-    return `{{${spec.token}}} exceeds max ${limit.max} chars`;
-  if (FORBIDDEN_CTRL.test(v))
-    return `{{${spec.token}}} cannot contain line breaks or tabs`;
-  if (FORBIDDEN_4_SPACES.test(v))
-    return `{{${spec.token}}} cannot contain 5+ consecutive spaces`;
+  if (v.length > limit.max) return `{{${spec.token}}} exceeds max ${limit.max} chars`;
+  if (FORBIDDEN_CTRL.test(v)) return `{{${spec.token}}} cannot contain line breaks or tabs`;
+  if (FORBIDDEN_4_SPACES.test(v)) return `{{${spec.token}}} cannot contain 5+ consecutive spaces`;
 
   switch (spec.format) {
     case "url":
-      if (!URL_RE.test(v.trim()))
-        return `{{${spec.token}}} must be a valid https:// URL`;
+      if (!URL_RE.test(v.trim())) return `{{${spec.token}}} must be a valid https:// URL`;
       break;
     case "phone":
       if (!PHONE_RE.test(v.trim()))
         return `{{${spec.token}}} must be a valid phone (E.164, e.g. +15551234567)`;
       break;
     case "email":
-      if (!EMAIL_RE.test(v.trim()))
-        return `{{${spec.token}}} must be a valid email address`;
+      if (!EMAIL_RE.test(v.trim())) return `{{${spec.token}}} must be a valid email address`;
       break;
     case "otp":
-      if (!OTP_RE.test(v.trim()))
-        return `{{${spec.token}}} must be 3–15 alphanumeric characters`;
+      if (!OTP_RE.test(v.trim())) return `{{${spec.token}}} must be 3–15 alphanumeric characters`;
       break;
     case "amount":
-      if (!AMOUNT_RE.test(v.trim()))
-        return `{{${spec.token}}} must be a number (e.g. 199.00)`;
+      if (!AMOUNT_RE.test(v.trim())) return `{{${spec.token}}} must be a number (e.g. 199.00)`;
       break;
     case "date":
-      if (Number.isNaN(Date.parse(v.trim())))
-        return `{{${spec.token}}} must be a valid date/time`;
+      if (Number.isNaN(Date.parse(v.trim()))) return `{{${spec.token}}} must be a valid date/time`;
       break;
     case "name":
-      if (v.trim().length < 1)
-        return `{{${spec.token}}} must be at least 1 character`;
+      if (v.trim().length < 1) return `{{${spec.token}}} must be at least 1 character`;
       break;
   }
   return null;

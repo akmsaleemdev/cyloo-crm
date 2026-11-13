@@ -412,7 +412,10 @@ function WebhookAutomationPage() {
                   </h3>
                   <p className="text-xs text-muted-foreground mt-0.5 font-mono">{detail.code}</p>
                 </div>
-                <button onClick={() => setDetail(null)} className="p-1 rounded-control hover:bg-muted">
+                <button
+                  onClick={() => setDetail(null)}
+                  className="p-1 rounded-control hover:bg-muted"
+                >
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>

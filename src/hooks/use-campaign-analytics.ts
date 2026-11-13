@@ -132,10 +132,19 @@ export function computeMetrics(campaigns: CampaignRow[], events: EventRow[]): Me
   const revenue = conv.reduce((s, e) => s + eventRevenue(e), 0);
   const cost = sent * COST_PER_MESSAGE;
   const totalCampaigns = campaigns.length;
-  const activeCampaigns = campaigns.filter((c) => c.status === "running" || c.status === "scheduled").length;
+  const activeCampaigns = campaigns.filter(
+    (c) => c.status === "running" || c.status === "scheduled",
+  ).length;
   const div = (a: number, b: number) => (b > 0 ? a / b : 0);
   return {
-    sent, delivered, read, failed, replied, clicked, optedOut, conversions,
+    sent,
+    delivered,
+    read,
+    failed,
+    replied,
+    clicked,
+    optedOut,
+    conversions,
     deliveryRate: div(delivered, sent),
     readRate: div(read, delivered),
     responseRate: div(replied, delivered),
@@ -170,7 +179,16 @@ export function buildTrend(events: EventRow[], range: Range): TrendPoint[] {
   cursor.setHours(0, 0, 0, 0);
   while (cursor <= end) {
     const k = dayKey(cursor);
-    days[k] = { date: k, sent: 0, delivered: 0, read: 0, replied: 0, clicked: 0, failed: 0, conversions: 0 };
+    days[k] = {
+      date: k,
+      sent: 0,
+      delivered: 0,
+      read: 0,
+      replied: 0,
+      clicked: 0,
+      failed: 0,
+      conversions: 0,
+    };
     cursor.setTime(cursor.getTime() + DAY);
   }
   for (const e of events) {
@@ -226,7 +244,8 @@ export function topCampaigns(campaigns: CampaignRow[], events: EventRow[], limit
   return campaigns
     .map((c) => {
       const r = revByCampaign.get(c.id) ?? { conv: 0, rev: 0 };
-      const engagement = c.delivered_count > 0 ? (c.replied_count + c.clicked_count) / c.delivered_count : 0;
+      const engagement =
+        c.delivered_count > 0 ? (c.replied_count + c.clicked_count) / c.delivered_count : 0;
       return {
         id: c.id,
         name: c.name,

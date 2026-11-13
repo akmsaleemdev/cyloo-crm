@@ -14,7 +14,12 @@ function DefaultNotFound() {
         <p className="text-xs uppercase text-muted-foreground">{brand.platformName}</p>
         <h1 className="mt-4 font-display text-7xl font-semibold">404</h1>
         <p className="mt-2 text-sm text-muted-foreground">This page doesn't exist.</p>
-        <Link to="/" className="mt-6 inline-flex rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">Return home</Link>
+        <Link
+          to="/"
+          className="mt-6 inline-flex rounded-control bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          Return home
+        </Link>
       </div>
     </div>
   );
@@ -24,8 +29,8 @@ const RELOAD_FLAG = "platform.chunk-reload";
 
 function isStaleChunkError(error: Error) {
   const msg = `${error?.message ?? ""}`;
-  return (
-    /dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(msg)
+  return /dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(
+    msg,
   );
 }
 
@@ -42,7 +47,9 @@ function DefaultError({ error: rawError, reset }: { error: unknown; reset: () =>
     <div className="flex min-h-[60vh] items-center justify-center px-4">
       <div className="max-w-md text-center">
         <h2 className="font-display text-xl font-semibold">Something went wrong</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{(error as Error).message || "Please try again."}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {(error as Error).message || "Please try again."}
+        </p>
         <button
           onClick={() => {
             if (typeof window !== "undefined") window.sessionStorage.removeItem(RELOAD_FLAG);

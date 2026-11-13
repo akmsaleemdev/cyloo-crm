@@ -1,14 +1,18 @@
-import { createFileRoute, ClientOnly, Link, notFound, useNavigate, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  ClientOnly,
+  Link,
+  notFound,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import * as React from "react";
 import { AlertTriangle, ArrowLeft, Loader2, RefreshCw, WifiOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WorkflowBuilder } from "@/components/app/automations/builder/workflow-builder";
 
 import { supabase } from "@/integrations/supabase/client";
-import {
-  readActiveWorkspaceId,
-  writeActiveWorkspaceId,
-} from "@/lib/tenant/active-tenant";
+import { readActiveWorkspaceId, writeActiveWorkspaceId } from "@/lib/tenant/active-tenant";
 import { pushTenantBreadcrumb } from "@/lib/tenant/tenant-breadcrumbs";
 import { currentUrlOrgId, reportTenantOutcome } from "@/lib/tenant/tenant-guard-report";
 import { useWorkflowAccessWatch } from "@/hooks/use-workflow-access-watch";
@@ -18,7 +22,6 @@ import { useWorkflowAccessWatch } from "@/hooks/use-workflow-access-watch";
  * means every guard probe succeeded.
  */
 type DegradedReason = "workflow_lookup" | "membership_probe" | null;
-
 
 export const Route = createFileRoute("/_authenticated/automations/$workflowId")({
   // The session and the active tenant both live in browser storage, so the
@@ -51,7 +54,11 @@ export const Route = createFileRoute("/_authenticated/automations/$workflowId")(
         probe: "workflow_lookup",
         message: `workflow lookup failed, letting the builder retry: ${error.message}`,
       });
-      return { workflowId: params.workflowId, ownerWorkspaceId: null, degraded: "workflow_lookup" as const };
+      return {
+        workflowId: params.workflowId,
+        ownerWorkspaceId: null,
+        degraded: "workflow_lookup" as const,
+      };
     }
 
     if (!data) {
@@ -67,7 +74,8 @@ export const Route = createFileRoute("/_authenticated/automations/$workflowId")(
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user?.id;
     // No session at all is handled by the `_authenticated` gate; don't 404 here.
-    if (!userId) return { workflowId: data.id, ownerWorkspaceId: data.workspace_id, degraded: null };
+    if (!userId)
+      return { workflowId: data.id, ownerWorkspaceId: data.workspace_id, degraded: null };
 
     const { data: membership, error: memberError } = await supabase
       .from("workspace_members")
@@ -97,7 +105,6 @@ export const Route = createFileRoute("/_authenticated/automations/$workflowId")(
       throw notFound();
     }
 
-
     // The link may carry a different tenant than the one currently active
     // (e.g. a shared `?org=` URL). The user is a member of the owning
     // workspace, so align the active tenant instead of blocking them —
@@ -116,7 +123,6 @@ export const Route = createFileRoute("/_authenticated/automations/$workflowId")(
   notFoundComponent: WorkflowUnavailable,
   component: WorkflowBuilderPage,
 });
-
 
 function WorkflowUnavailable() {
   const navigate = useNavigate();
@@ -142,8 +148,8 @@ function WorkflowUnavailable() {
         </div>
         <div className="text-sm font-semibold">Not available in this workspace</div>
         <p className="text-xs text-muted-foreground">
-          This workflow belongs to a different organization, or it no longer exists.
-          Switch organization from the sidebar to open it. Returning you to workflows
+          This workflow belongs to a different organization, or it no longer exists. Switch
+          organization from the sidebar to open it. Returning you to workflows
         </p>
         <div className="flex items-center justify-center pt-1">
           <Link
@@ -157,7 +163,6 @@ function WorkflowUnavailable() {
     </div>
   );
 }
-
 
 const DEGRADED_COPY: Record<Exclude<DegradedReason, null>, string> = {
   workflow_lookup:
@@ -188,8 +193,8 @@ function DegradedAccessNotice({ reason }: { reason: Exclude<DegradedReason, null
       <div className="min-w-0 flex-1">
         <div className="text-xs font-semibold">Working with limited connection</div>
         <p className="text-xs text-muted-foreground">
-          {DEGRADED_COPY[reason]} Anything you save is still protected by your
-          workspace permissions.
+          {DEGRADED_COPY[reason]} Anything you save is still protected by your workspace
+          permissions.
         </p>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
@@ -264,4 +269,3 @@ function WorkflowBuilderPage() {
     </ClientOnly>
   );
 }
-

@@ -32,12 +32,14 @@ export const Route = createFileRoute("/api/public/hooks/dispatch-activity-remind
           await supabaseAdmin
             .from("sales_activities")
             .update({ reminder_sent: true })
-            .in("id", due.map((d: { id: string }) => d.id));
+            .in(
+              "id",
+              due.map((d: { id: string }) => d.id),
+            );
         }
-        return new Response(
-          JSON.stringify({ ok: true, reminders_fired: due?.length ?? 0 }),
-          { headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ ok: true, reminders_fired: due?.length ?? 0 }), {
+          headers: { "Content-Type": "application/json" },
+        });
       },
     },
   },

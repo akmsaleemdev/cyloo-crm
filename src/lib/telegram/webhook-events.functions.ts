@@ -10,12 +10,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue };
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 export interface TelegramWebhookEvent {
   id: string;
@@ -58,9 +53,7 @@ export const listTelegramWebhookEvents = createServerFn({ method: "POST" })
 
 export const retryTelegramWebhookEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: { eventId: string }) =>
-    z.object({ eventId: z.string().uuid() }).parse(input),
-  )
+  .validator((input: { eventId: string }) => z.object({ eventId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     // RLS: the read below only succeeds for members of the owning workspace.
     const { data: eventRaw, error } = await context.supabase

@@ -134,9 +134,9 @@ export function InstallTemplateDialog({
       list.push({
         icon: <UserRound className="h-4 w-4" />,
         label: "Escalate to a human agent",
-        detail: `Hands off when keywords like ${(cfg.handoff_keywords ?? [])
-          .slice(0, 3)
-          .join(", ") || "help, agent, human"} are detected.`,
+        detail: `Hands off when keywords like ${
+          (cfg.handoff_keywords ?? []).slice(0, 3).join(", ") || "help, agent, human"
+        } are detected.`,
       });
     if (cfg.model)
       list.push({
@@ -182,7 +182,6 @@ export function InstallTemplateDialog({
   return (
     <Dialog open={open} onOpenChange={(o) => !o && !installMut.isPending && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-primary" />
@@ -207,9 +206,7 @@ export function InstallTemplateDialog({
               {cfg.language && <Badge variant="outline">{cfg.language}</Badge>}
               {cfg.tone && <Badge variant="outline">{cfg.tone}</Badge>}
             </div>
-            {tpl.description && (
-              <p className="text-sm text-muted-foreground">{tpl.description}</p>
-            )}
+            {tpl.description && <p className="text-sm text-muted-foreground">{tpl.description}</p>}
             <div className="rounded-control border border-border divide-y divide-border">
               {permissions.map((p, i) => (
                 <div key={i} className="flex items-start gap-3 p-3">
@@ -325,7 +322,11 @@ function fmt(v: DiffValue): string {
   return s.length > 140 ? s.slice(0, 140) + "" : s;
 }
 
-function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolean; isFetching: boolean } }) {
+function DiffPanel({
+  query,
+}: {
+  query: { data?: PreviewResult; isLoading: boolean; isFetching: boolean };
+}) {
   if (query.isLoading) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -343,7 +344,8 @@ function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolea
         <div>
           <div className="font-medium text-emerald-700 dark:text-emerald-400">New chatbot</div>
           <div className="text-muted-foreground">
-            No existing chatbot named “{data.template.name}” in this workspace. A fresh one will be created.
+            No existing chatbot named “{data.template.name}” in this workspace. A fresh one will be
+            created.
           </div>
         </div>
       </div>
@@ -359,13 +361,23 @@ function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolea
         <div className="min-w-0 flex-1">
           <div className="text-sm font-medium flex items-center gap-2 flex-wrap">
             Existing chatbot found
-            <Badge variant="outline" className="capitalize text-[11px]">{existing.status}</Badge>
-            {existing.disabled && <Badge variant="outline" className="text-[11px] text-amber-600 border-amber-500/40">Disabled</Badge>}
-            {existing.installedFromSameTemplate && <Badge variant="outline" className="text-[11px]">Same template</Badge>}
+            <Badge variant="outline" className="capitalize text-[11px]">
+              {existing.status}
+            </Badge>
+            {existing.disabled && (
+              <Badge variant="outline" className="text-[11px] text-amber-600 border-amber-500/40">
+                Disabled
+              </Badge>
+            )}
+            {existing.installedFromSameTemplate && (
+              <Badge variant="outline" className="text-[11px]">
+                Same template
+              </Badge>
+            )}
           </div>
           <div className="text-xs text-muted-foreground">
-            Installing will create a second chatbot named “{existing.name}”. Rename above to install as a new bot, or
-            update the existing one from its settings.
+            Installing will create a second chatbot named “{existing.name}”. Rename above to install
+            as a new bot, or update the existing one from its settings.
           </div>
         </div>
       </div>
@@ -376,7 +388,9 @@ function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolea
           {query.isFetching && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
         </div>
         {diffs.length === 0 ? (
-          <div className="text-xs text-muted-foreground">No configuration changes — the existing chatbot already matches this template.</div>
+          <div className="text-xs text-muted-foreground">
+            No configuration changes — the existing chatbot already matches this template.
+          </div>
         ) : (
           <ul className="space-y-1.5">
             {diffs.map((d) => (
@@ -390,11 +404,15 @@ function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolea
                 <div className="mt-1 grid grid-cols-2 gap-2 text-[11px]">
                   <div>
                     <div className="text-muted-foreground mb-0.5">Current</div>
-                    <div className="rounded bg-destructive/5 border border-destructive/20 px-1.5 py-1 break-words">{fmt(d.current)}</div>
+                    <div className="rounded bg-destructive/5 border border-destructive/20 px-1.5 py-1 break-words">
+                      {fmt(d.current)}
+                    </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground mb-0.5">Incoming</div>
-                    <div className="rounded bg-emerald-500/5 border border-emerald-500/20 px-1.5 py-1 break-words">{fmt(d.incoming)}</div>
+                    <div className="rounded bg-emerald-500/5 border border-emerald-500/20 px-1.5 py-1 break-words">
+                      {fmt(d.incoming)}
+                    </div>
                   </div>
                 </div>
               </li>
@@ -405,4 +423,3 @@ function DiffPanel({ query }: { query: { data?: PreviewResult; isLoading: boolea
     </div>
   );
 }
-

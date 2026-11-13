@@ -64,13 +64,7 @@ export function MotionStagger({
     visible: { transition: { staggerChildren: gap, delayChildren: delay } },
   });
   return (
-    <Component
-      variants={v}
-      initial="hidden"
-      animate="visible"
-      className={className}
-      {...rest}
-    >
+    <Component variants={v} initial="hidden" animate="visible" className={className} {...rest}>
       {children}
     </Component>
   );
@@ -145,7 +139,11 @@ export function SuccessCheck({ size = 56, className }: { size?: number; classNam
         strokeWidth="2"
         variants={{
           hidden: { pathLength: 0, opacity: 0 },
-          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.4, ease: EASE.emphasized } },
+          visible: {
+            pathLength: 1,
+            opacity: 1,
+            transition: { duration: 0.4, ease: EASE.emphasized },
+          },
         }}
       />
       <motion.path
@@ -157,7 +155,10 @@ export function SuccessCheck({ size = 56, className }: { size?: number; classNam
         strokeLinejoin="round"
         variants={{
           hidden: { pathLength: 0 },
-          visible: { pathLength: 1, transition: { duration: 0.35, ease: EASE.emphasized, delay: 0.2 } },
+          visible: {
+            pathLength: 1,
+            transition: { duration: 0.35, ease: EASE.emphasized, delay: 0.2 },
+          },
         }}
       />
     </motion.svg>
@@ -181,7 +182,12 @@ export function ErrorCross({ size = 56, className }: { size?: number; className?
     >
       <svg viewBox="0 0 52 52" width={size} height={size} aria-hidden>
         <circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" strokeWidth="2" />
-        <path d="M18 18l16 16M34 18L18 34" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <path
+          d="M18 18l16 16M34 18L18 34"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
       </svg>
     </motion.div>
   );
@@ -192,7 +198,13 @@ export function ErrorCross({ size = 56, className }: { size?: number; className?
 /**
  * Three-dot typing indicator for chat / assistant surfaces.
  */
-export function TypingIndicator({ label = "Typing", className }: { label?: string; className?: string }) {
+export function TypingIndicator({
+  label = "Typing",
+  className,
+}: {
+  label?: string;
+  className?: string;
+}) {
   const dot = (delay: number) => ({
     animate: { y: [0, -3, 0], opacity: [0.4, 1, 0.4] },
     transition: { duration: 1, repeat: Infinity, ease: EASE.inOut, delay },
@@ -207,11 +219,7 @@ export function TypingIndicator({ label = "Typing", className }: { label?: strin
       )}
     >
       {[0, 0.15, 0.3].map((d) => (
-        <motion.span
-          key={d}
-          {...dot(d)}
-          className="block h-1.5 w-1.5 rounded-full bg-current"
-        />
+        <motion.span key={d} {...dot(d)} className="block h-1.5 w-1.5 rounded-full bg-current" />
       ))}
     </span>
   );
@@ -249,7 +257,12 @@ export function LivePulse({
           transition={{ duration: 1.6, repeat: Infinity, ease: "easeOut" }}
         />
       )}
-      <span className={cn("relative inline-block h-3 w-3 rounded-full", active ? toneCls : "bg-muted-foreground")} />
+      <span
+        className={cn(
+          "relative inline-block h-3 w-3 rounded-full",
+          active ? toneCls : "bg-muted-foreground",
+        )}
+      />
     </span>
   );
 }

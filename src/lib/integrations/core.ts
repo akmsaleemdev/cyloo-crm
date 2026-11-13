@@ -27,11 +27,11 @@ export type IntegrationCategory =
   | "Developer";
 
 export type AuthType =
-  | "oauth2"          // provider handles OAuth (per-user or workspace)
-  | "api_key"         // static API key entered during setup
-  | "webhook_url"     // outbound webhook, only needs a URL + optional secret
-  | "signed_request"  // inbound webhook trigger, signature verified
-  | "none";           // no auth (dev/testing helpers)
+  | "oauth2" // provider handles OAuth (per-user or workspace)
+  | "api_key" // static API key entered during setup
+  | "webhook_url" // outbound webhook, only needs a URL + optional secret
+  | "signed_request" // inbound webhook trigger, signature verified
+  | "none"; // no auth (dev/testing helpers)
 
 export interface ConfigField {
   key: string;
@@ -54,7 +54,12 @@ export interface IntegrationCapability {
   kind: "action" | "trigger";
   description?: string;
   /** JSON-schema-ish input contract for workflow builder wiring. */
-  inputs?: Array<{ key: string; label: string; type: "string" | "number" | "boolean" | "json"; required?: boolean }>;
+  inputs?: Array<{
+    key: string;
+    label: string;
+    type: "string" | "number" | "boolean" | "json";
+    required?: boolean;
+  }>;
 }
 
 /**

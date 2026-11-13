@@ -41,7 +41,8 @@ export function FeatureUpsell({ feature }: { feature: string }) {
           Not included in your plan
         </div>
         <p className="text-sm text-muted-foreground">
-          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{feature}</code> requires a higher plan.
+          <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{feature}</code> requires a
+          higher plan.
         </p>
         <Button asChild size="sm">
           <Link to="/portal">

@@ -221,7 +221,9 @@ function ComplianceCenterPage() {
               <Stat
                 icon={Database}
                 label={
-                  data && data.metrics.active_retention_policies > 0 && !data.metrics.retention_enforced
+                  data &&
+                  data.metrics.active_retention_policies > 0 &&
+                  !data.metrics.retention_enforced
                     ? "Retention (not running)"
                     : "Active retention"
                 }

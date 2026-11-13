@@ -70,9 +70,7 @@ function ReadinessPage() {
         }
       />
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-6">
-        {isLoading && (
-          <div className="py-16 text-center text-muted-foreground">Running checks</div>
-        )}
+        {isLoading && <div className="py-16 text-center text-muted-foreground">Running checks</div>}
 
         {data && (
           <>
@@ -114,7 +112,10 @@ function ReadinessPage() {
                     </CardHeader>
                     <CardContent className="space-y-2">
                       {items.map((c) => (
-                        <div key={c.id} className="flex items-start gap-2 rounded-control border p-3">
+                        <div
+                          key={c.id}
+                          className="flex items-start gap-2 rounded-control border p-3"
+                        >
                           <div className="mt-0.5">{ICONS[c.status]}</div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -151,7 +152,10 @@ function ReadinessPage() {
                   <div className="text-sm font-medium">Workflow Automation</div>
                   <div className="text-xs text-muted-foreground">Booking triggers</div>
                 </Link>
-                <Link to="/booking/ai-assistant" className="rounded-control border p-3 hover:bg-muted">
+                <Link
+                  to="/booking/ai-assistant"
+                  className="rounded-control border p-3 hover:bg-muted"
+                >
                   <div className="text-sm font-medium">AI Scheduling</div>
                   <div className="text-xs text-muted-foreground">11 AI features</div>
                 </Link>

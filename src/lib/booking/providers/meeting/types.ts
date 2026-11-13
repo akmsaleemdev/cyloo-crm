@@ -6,19 +6,10 @@
  * providers without touching business logic.
  */
 
-export type MeetingProviderKind =
-  | "zoom"
-  | "google_meet"
-  | "microsoft_teams"
-  | "jitsi"
-  | "livekit";
+export type MeetingProviderKind = "zoom" | "google_meet" | "microsoft_teams" | "jitsi" | "livekit";
 
 export type MeetingLocationKind =
-  | "in_person"
-  | "phone"
-  | "whatsapp"
-  | "custom"
-  | MeetingProviderKind;
+  "in_person" | "phone" | "whatsapp" | "custom" | MeetingProviderKind;
 
 export interface MeetingAccount {
   id: string;
@@ -80,14 +71,8 @@ export interface MeetingProvider {
     req: MeetingRequest,
   ): Promise<MeetingArtifact>;
   cancelMeeting?(account: MeetingAccount | null, externalId: string): Promise<void>;
-  fetchAttendance?(
-    account: MeetingAccount | null,
-    externalId: string,
-  ): Promise<MeetingAttendee[]>;
-  fetchRecordingUrl?(
-    account: MeetingAccount | null,
-    externalId: string,
-  ): Promise<string | null>;
+  fetchAttendance?(account: MeetingAccount | null, externalId: string): Promise<MeetingAttendee[]>;
+  fetchRecordingUrl?(account: MeetingAccount | null, externalId: string): Promise<string | null>;
 }
 
 export interface MeetingAttendee {

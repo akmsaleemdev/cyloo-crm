@@ -58,7 +58,7 @@ export interface TimelineEvent {
   id: string;
   kind: TimelineKind;
   channel: TimelineChannel;
-  at: string;               // ISO timestamp used for sorting
+  at: string; // ISO timestamp used for sorting
   title: string;
   preview?: string | null;
   direction?: "in" | "out" | null;
@@ -133,8 +133,7 @@ export const getUnifiedTimeline = createServerFn({ method: "POST" })
           kind: "message",
           channel: mapMessageChannel(ch),
           at: m.created_at as string,
-          title:
-            (m.direction as string) === "outbound" ? "Outbound message" : "Inbound message",
+          title: (m.direction as string) === "outbound" ? "Outbound message" : "Inbound message",
           preview: (m.body as string) ?? null,
           direction: (m.direction as string) === "outbound" ? "out" : "in",
           status: (m.status as string) ?? null,
@@ -177,7 +176,13 @@ export const getUnifiedTimeline = createServerFn({ method: "POST" })
     for (const c of comms ?? []) {
       const ch = (c.channel as string) ?? "system";
       const kind: TimelineKind =
-        ch === "call" || ch === "voice" ? "call" : ch === "email" ? "email" : ch === "sms" ? "sms" : "activity";
+        ch === "call" || ch === "voice"
+          ? "call"
+          : ch === "email"
+            ? "email"
+            : ch === "sms"
+              ? "sms"
+              : "activity";
       events.push({
         id: `comm:${c.id}`,
         kind,
@@ -300,18 +305,13 @@ export const getUnifiedTimeline = createServerFn({ method: "POST" })
     // -- campaign recipients (delivered / read / replied) ------------------
     const { data: crs } = await sb
       .from("campaign_recipients")
-      .select(
-        "id, campaign_id, status, sent_at, delivered_at, read_at, replied_at, failed_at",
-      )
+      .select("id, campaign_id, status, sent_at, delivered_at, read_at, replied_at, failed_at")
       .eq("contact_id", contactId)
       .order("sent_at", { ascending: false, nullsFirst: false })
       .limit(50);
     if (crs?.length) {
       const ids = Array.from(new Set(crs.map((r) => r.campaign_id as string)));
-      const { data: camps } = await sb
-        .from("campaigns")
-        .select("id, name, channel")
-        .in("id", ids);
+      const { data: camps } = await sb.from("campaigns").select("id, name, channel").in("id", ids);
       const campName = new Map<string, { name: string; channel?: string }>(
         (camps ?? []).map((c) => [
           c.id as string,

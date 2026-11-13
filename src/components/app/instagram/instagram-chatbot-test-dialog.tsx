@@ -1,8 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Bot, Send, Instagram as InstagramIcon, Sparkles, Loader2, RefreshCw, User2 } from "lucide-react";
+import {
+  Bot,
+  Send,
+  Instagram as InstagramIcon,
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  User2,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +69,13 @@ export function InstagramChatbotTestDialog({
     if (!open || !bot) return;
     setTurns(
       bot.welcome_message || bot.greeting
-        ? [{ role: "assistant", content: bot.welcome_message ?? bot.greeting ?? "", ts: Date.now() }]
+        ? [
+            {
+              role: "assistant",
+              content: bot.welcome_message ?? bot.greeting ?? "",
+              ts: Date.now(),
+            },
+          ]
         : [],
     );
     setInput("");
@@ -112,10 +132,7 @@ export function InstagramChatbotTestDialog({
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "AI request failed";
       toast.error(message);
-      setTurns((cur) => [
-        ...cur,
-        { role: "assistant", content: `⚠️ ${message}`, ts: Date.now() },
-      ]);
+      setTurns((cur) => [...cur, { role: "assistant", content: `⚠️ ${message}`, ts: Date.now() }]);
     } finally {
       setPending(false);
     }
@@ -124,7 +141,13 @@ export function InstagramChatbotTestDialog({
   const reset = () => {
     setTurns(
       bot.welcome_message || bot.greeting
-        ? [{ role: "assistant", content: bot.welcome_message ?? bot.greeting ?? "", ts: Date.now() }]
+        ? [
+            {
+              role: "assistant",
+              content: bot.welcome_message ?? bot.greeting ?? "",
+              ts: Date.now(),
+            },
+          ]
         : [],
     );
     setInput("");
@@ -233,7 +256,11 @@ export function InstagramChatbotTestDialog({
                 <Button size="sm" variant="ghost" onClick={reset} disabled={pending}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Reset
                 </Button>
-                <Button size="sm" onClick={() => void send(input)} disabled={pending || !input.trim()}>
+                <Button
+                  size="sm"
+                  onClick={() => void send(input)}
+                  disabled={pending || !input.trim()}
+                >
                   {pending ? (
                     <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                   ) : (
@@ -248,18 +275,14 @@ export function InstagramChatbotTestDialog({
           {/* Sidebar */}
           <div className="p-4 space-y-4 text-sm bg-background">
             <div>
-              <div className="text-[11px] uppercase text-muted-foreground mb-1.5">
-                Status
-              </div>
+              <div className="text-[11px] uppercase text-muted-foreground mb-1.5">Status</div>
               <Badge variant="outline" className="gap-1 text-[11px]">
                 <Sparkles className="w-3 h-3" /> Preview mode — replies are not sent
               </Badge>
             </div>
 
             <div>
-              <div className="text-[11px] uppercase text-muted-foreground mb-1.5">
-                Try a sample
-              </div>
+              <div className="text-[11px] uppercase text-muted-foreground mb-1.5">Try a sample</div>
               <div className="flex flex-col gap-1.5">
                 {SAMPLES.map((s) => (
                   <button
@@ -275,8 +298,8 @@ export function InstagramChatbotTestDialog({
             </div>
 
             <div className="text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-3">
-              This console runs the same prompt config the live bot uses, against the AI Gateway.
-              No message is delivered to Instagram.
+              This console runs the same prompt config the live bot uses, against the AI Gateway. No
+              message is delivered to Instagram.
             </div>
           </div>
         </div>

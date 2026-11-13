@@ -43,9 +43,7 @@ export function SegmentList({ entityType, activeId, onSelect, showAllRecords = t
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold uppercase text-muted-foreground">
-          Segments
-        </p>
+        <p className="text-xs font-semibold uppercase text-muted-foreground">Segments</p>
         <Button variant="ghost" size="icon" onClick={() => setCreating(true)}>
           <Plus className="h-4 w-4" />
         </Button>
@@ -97,10 +95,7 @@ export function SegmentList({ entityType, activeId, onSelect, showAllRecords = t
                 }`}
               />
             </button>
-            <button
-              className="opacity-0 group-hover:opacity-100"
-              onClick={() => setEditing(s)}
-            >
+            <button className="opacity-0 group-hover:opacity-100" onClick={() => setEditing(s)}>
               <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             <button
@@ -109,7 +104,8 @@ export function SegmentList({ entityType, activeId, onSelect, showAllRecords = t
                 if (confirm(`Delete segment "${s.name}"?`)) {
                   del.mutate(s.id, {
                     onSuccess: () => toast.success("Segment deleted"),
-                    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete segment"),
+                    onError: (e) =>
+                      toast.error(e instanceof Error ? e.message : "Failed to delete segment"),
                   });
                 }
               }}
@@ -119,9 +115,7 @@ export function SegmentList({ entityType, activeId, onSelect, showAllRecords = t
           </div>
         ))}
         {!isLoading && !error && segments.length === 0 && (
-          <p className="text-xs text-muted-foreground px-2 py-1">
-            No saved segments yet.
-          </p>
+          <p className="text-xs text-muted-foreground px-2 py-1">No saved segments yet.</p>
         )}
       </div>
 
@@ -156,7 +150,7 @@ function SegmentEditor({
   const [isFavorite, setIsFavorite] = useState(existing?.is_favorite ?? false);
   const [isShared, setIsShared] = useState(existing?.is_shared ?? true);
   const [rules, setRules] = useState<SegmentRules>(
-    existing?.rules ?? { operator: "AND", conditions: [] }
+    existing?.rules ?? { operator: "AND", conditions: [] },
   );
 
   const submit = async () => {
@@ -229,7 +223,9 @@ function SegmentEditor({
           </Card>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={submit} disabled={create.isPending || update.isPending}>
             {existing ? "Save" : "Create"}
           </Button>

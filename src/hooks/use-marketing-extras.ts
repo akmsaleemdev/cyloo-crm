@@ -331,7 +331,9 @@ export function useMarketingDashboard() {
         await Promise.all([
           (supabase as any)
             .from("campaigns")
-            .select("id,status,total_recipients,sent_count,delivered_count,read_count,replied_count,failed_count,created_at")
+            .select(
+              "id,status,total_recipients,sent_count,delivered_count,read_count,replied_count,failed_count,created_at",
+            )
             .eq("workspace_id", active!.id)
             .order("created_at", { ascending: false })
             .limit(500),
@@ -343,14 +345,8 @@ export function useMarketingDashboard() {
             .from("contact_lists")
             .select("id,member_count")
             .eq("workspace_id", active!.id),
-          (supabase as any)
-            .from("campaign_templates")
-            .select("id")
-            .eq("workspace_id", active!.id),
-          (supabase as any)
-            .from("consent_records")
-            .select("status")
-            .eq("workspace_id", active!.id),
+          (supabase as any).from("campaign_templates").select("id").eq("workspace_id", active!.id),
+          (supabase as any).from("consent_records").select("status").eq("workspace_id", active!.id),
           (supabase as any)
             .from("drip_sequences")
             .select("id,status,enrolled_count,completed_count")
@@ -366,7 +362,9 @@ export function useMarketingDashboard() {
 
       const consent = (consentRes.data ?? []) as any[];
       const optedIn = consent.filter((r) => r.status === "opted_in").length;
-      const optedOut = consent.filter((r) => r.status === "opted_out" || r.status === "unsubscribed").length;
+      const optedOut = consent.filter(
+        (r) => r.status === "opted_out" || r.status === "unsubscribed",
+      ).length;
 
       return {
         campaigns,

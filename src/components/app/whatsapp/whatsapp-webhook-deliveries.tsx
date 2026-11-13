@@ -63,8 +63,18 @@ export function WhatsAppWebhookDeliveries({ limit = 25 }: { limit?: number }) {
             Newest {limit} envelopes received from Meta, refreshed every 30s.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching} className="gap-1.5">
-          {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="gap-1.5"
+        >
+          {isFetching ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
           Refresh
         </Button>
       </div>
@@ -80,8 +90,8 @@ export function WhatsAppWebhookDeliveries({ limit = 25 }: { limit?: number }) {
           <ShieldAlert className="w-4 h-4" />
           <AlertTitle>No webhook deliveries yet</AlertTitle>
           <AlertDescription>
-            Once Meta is pointed at the callback URL above, inbound envelopes
-            appear here within seconds of the first message or status update.
+            Once Meta is pointed at the callback URL above, inbound envelopes appear here within
+            seconds of the first message or status update.
           </AlertDescription>
         </Alert>
       ) : (
@@ -103,7 +113,7 @@ export function WhatsAppWebhookDeliveries({ limit = 25 }: { limit?: number }) {
                   <td className="px-3 py-2 whitespace-nowrap">{relative(d.received_at)}</td>
                   <td className="px-3 py-2">
                     {d.channel_account_id
-                      ? accountNames.get(d.channel_account_id) ?? "Unmatched"
+                      ? (accountNames.get(d.channel_account_id) ?? "Unmatched")
                       : "Unmatched"}
                   </td>
                   <td className="px-3 py-2 font-mono">{d.event_type ?? "—"}</td>
@@ -120,7 +130,9 @@ export function WhatsAppWebhookDeliveries({ limit = 25 }: { limit?: number }) {
                   </td>
                   <td className="px-3 py-2">
                     {d.dead_letter_at ? (
-                      <Badge variant="destructive" className="text-[11px]">Dead letter</Badge>
+                      <Badge variant="destructive" className="text-[11px]">
+                        Dead letter
+                      </Badge>
                     ) : d.processed ? (
                       <Badge variant="outline" className="text-[11px]">
                         Processed {relative(d.processed_at)}
@@ -132,11 +144,13 @@ export function WhatsAppWebhookDeliveries({ limit = 25 }: { limit?: number }) {
                     )}
                   </td>
                   <td className="px-3 py-2 max-w-[22rem] text-muted-foreground break-words">
-                    {d.process_error
-                      ? `${d.last_error_kind ? `[${d.last_error_kind}] ` : ""}${d.process_error}`
-                      : d.external_event_id
-                        ? <span className="font-mono">{d.external_event_id}</span>
-                        : "—"}
+                    {d.process_error ? (
+                      `${d.last_error_kind ? `[${d.last_error_kind}] ` : ""}${d.process_error}`
+                    ) : d.external_event_id ? (
+                      <span className="font-mono">{d.external_event_id}</span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                 </tr>
               ))}

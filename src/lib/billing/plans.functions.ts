@@ -21,11 +21,23 @@ import { sbAny } from "@/lib/supabase/untyped";
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const planTierEnum = z.enum(["free", "starter", "professional", "growth", "business", "enterprise", "custom"]);
+const planTierEnum = z.enum([
+  "free",
+  "starter",
+  "professional",
+  "growth",
+  "business",
+  "enterprise",
+  "custom",
+]);
 const planIntervalEnum = z.enum(["month", "year", "lifetime"]);
 
 const planInputShape = z.object({
-  code: z.string().min(2).max(64).regex(/^[a-z0-9_]+$/),
+  code: z
+    .string()
+    .min(2)
+    .max(64)
+    .regex(/^[a-z0-9_]+$/),
   name: z.string().min(2).max(80),
   tier: planTierEnum,
   description: z.string().max(500).nullable().optional(),
@@ -58,7 +70,9 @@ export const listPublicPlans = createServerFn({ method: "GET" }).handler(async (
   const supa = createClient(url, key, { auth: { persistSession: false } });
   const { data, error } = await supa
     .from("plans")
-    .select("id, code, name, tier, description, tagline, badge, cta_label, price_cents, currency, interval, trial_days, features, limits, highlight, sort_order, is_custom, monthly_plan_code")
+    .select(
+      "id, code, name, tier, description, tagline, badge, cta_label, price_cents, currency, interval, trial_days, features, limits, highlight, sort_order, is_custom, monthly_plan_code",
+    )
     .eq("is_active", true)
     .eq("is_public", true)
     .order("sort_order", { ascending: true });
@@ -124,14 +138,17 @@ export const recommendPlan = createServerFn({ method: "GET" })
     const plans = await context.supabase
       .from("plans")
       .select("code, name, tier, price_cents, interval, limits, highlight")
-      .eq("is_active", true).eq("is_public", true).eq("interval", "month")
+      .eq("is_active", true)
+      .eq("is_public", true)
+      .eq("interval", "month")
       .order("price_cents", { ascending: true });
 
     const candidates = (plans.data ?? []).filter((p: any) => {
       const cap = Number((p.limits as any)?.messages_per_month ?? -1);
       return cap === -1 || cap >= projected;
     });
-    const pick = candidates[0] ?? (plans.data ?? []).find((p: any) => p.tier === "professional") ?? null;
+    const pick =
+      candidates[0] ?? (plans.data ?? []).find((p: any) => p.tier === "professional") ?? null;
     return {
       recommended_plan: pick,
       observed_peak: peak,
@@ -190,7 +207,9 @@ export const deletePlan = createServerFn({ method: "POST" })
 
 async function assertOrgAdmin(supabase: any, org_id: string, user_id: string) {
   const { data, error } = await sbAny(supabase).rpc("has_org_role", {
-    _org_id: org_id, _user_id: user_id, _roles: ["owner", "admin"],
+    _org_id: org_id,
+    _user_id: user_id,
+    _roles: ["owner", "admin"],
   });
   if (error) throw error;
   if (!data) throw new Error("forbidden");
@@ -204,7 +223,11 @@ export const startTrial = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.supabase, data.organization_id, context.userId);
-    const plan = await sbAny(context.supabase).from("plans").select("id, trial_days").eq("code", data.plan_code).maybeSingle();
+    const plan = await sbAny(context.supabase)
+      .from("plans")
+      .select("id, trial_days")
+      .eq("code", data.plan_code)
+      .maybeSingle();
     if (!plan.data) throw new Error("plan_not_found");
     const trialDays = Math.max(1, plan.data.trial_days || 14);
     const trialEnds = new Date(Date.now() + trialDays * 86400_000).toISOString();
@@ -229,31 +252,41 @@ export const startTrial = createServerFn({ method: "POST" })
 export const changePlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({
-      organization_id: z.string().uuid(),
-      plan_code: z.string(),
-      /** When true, effective at next renewal instead of immediately. */
-      at_period_end: z.boolean().default(false),
-    }).parse(input),
+    z
+      .object({
+        organization_id: z.string().uuid(),
+        plan_code: z.string(),
+        /** When true, effective at next renewal instead of immediately. */
+        at_period_end: z.boolean().default(false),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.supabase, data.organization_id, context.userId);
-    const plan = await sbAny(context.supabase).from("plans").select("id, interval").eq("code", data.plan_code).maybeSingle();
+    const plan = await sbAny(context.supabase)
+      .from("plans")
+      .select("id, interval")
+      .eq("code", data.plan_code)
+      .maybeSingle();
     if (!plan.data) throw new Error("plan_not_found");
 
     const existing = await context.supabase
-      .from("subscriptions").select("*").eq("organization_id", data.organization_id).maybeSingle();
+      .from("subscriptions")
+      .select("*")
+      .eq("organization_id", data.organization_id)
+      .maybeSingle();
 
     const now = new Date();
-    const periodEnd = plan.data.interval === "year"
-      ? new Date(now.getTime() + 365 * 86400_000)
-      : plan.data.interval === "lifetime"
-        ? null
-        : new Date(now.getTime() + 30 * 86400_000);
+    const periodEnd =
+      plan.data.interval === "year"
+        ? new Date(now.getTime() + 365 * 86400_000)
+        : plan.data.interval === "lifetime"
+          ? null
+          : new Date(now.getTime() + 30 * 86400_000);
 
     if (data.at_period_end && existing.data?.current_period_end) {
       // Schedule change via metadata; actual switch happens at renewal.
-      const meta = { ...(existing.data.metadata as any ?? {}), pending_plan_id: plan.data.id };
+      const meta = { ...((existing.data.metadata as any) ?? {}), pending_plan_id: plan.data.id };
       const { data: row, error } = await context.supabase
         .from("subscriptions")
         .update({ metadata: meta })
@@ -286,26 +319,42 @@ export const changePlan = createServerFn({ method: "POST" })
 export const cancelSubscriptionForOrg = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({
-      organization_id: z.string().uuid(),
-      at_period_end: z.boolean().default(true),
-      reason: z.string().max(500).optional(),
-    }).parse(input),
+    z
+      .object({
+        organization_id: z.string().uuid(),
+        at_period_end: z.boolean().default(true),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.supabase, data.organization_id, context.userId);
     const existing = await context.supabase
-      .from("subscriptions").select("*").eq("organization_id", data.organization_id).maybeSingle();
+      .from("subscriptions")
+      .select("*")
+      .eq("organization_id", data.organization_id)
+      .maybeSingle();
     if (!existing.data) throw new Error("no_active_subscription");
 
     const now = new Date().toISOString();
     const patch = data.at_period_end
-      ? { cancel_at: existing.data.current_period_end ?? now, metadata: { ...(existing.data.metadata as any ?? {}), cancel_reason: data.reason } }
-      : { status: "canceled" as const, canceled_at: now, cancel_at: now, metadata: { ...(existing.data.metadata as any ?? {}), cancel_reason: data.reason } };
+      ? {
+          cancel_at: existing.data.current_period_end ?? now,
+          metadata: { ...((existing.data.metadata as any) ?? {}), cancel_reason: data.reason },
+        }
+      : {
+          status: "canceled" as const,
+          canceled_at: now,
+          cancel_at: now,
+          metadata: { ...((existing.data.metadata as any) ?? {}), cancel_reason: data.reason },
+        };
 
     const { data: row, error } = await context.supabase
-      .from("subscriptions").update(patch).eq("organization_id", data.organization_id)
-      .select("*, plan:plans!plan_id(*)").single();
+      .from("subscriptions")
+      .update(patch)
+      .eq("organization_id", data.organization_id)
+      .select("*, plan:plans!plan_id(*)")
+      .single();
     if (error) throw error;
     return row;
   });
@@ -314,15 +363,21 @@ export const cancelSubscriptionForOrg = createServerFn({ method: "POST" })
 export const pauseSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) =>
-    z.object({ organization_id: z.string().uuid(), resume_at: z.string().datetime().optional() }).parse(input),
+    z
+      .object({ organization_id: z.string().uuid(), resume_at: z.string().datetime().optional() })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertOrgAdmin(context.supabase, data.organization_id, context.userId);
     const { data: row, error } = await context.supabase
       .from("subscriptions")
-      .update({ status: "paused", metadata: { paused_at: new Date().toISOString(), resume_at: data.resume_at ?? null } })
+      .update({
+        status: "paused",
+        metadata: { paused_at: new Date().toISOString(), resume_at: data.resume_at ?? null },
+      })
       .eq("organization_id", data.organization_id)
-      .select("*, plan:plans!plan_id(*)").single();
+      .select("*, plan:plans!plan_id(*)")
+      .single();
     if (error) throw error;
     return row;
   });
@@ -337,7 +392,8 @@ export const resumeSubscription = createServerFn({ method: "POST" })
       .from("subscriptions")
       .update({ status: "active" })
       .eq("organization_id", data.organization_id)
-      .select("*, plan:plans!plan_id(*)").single();
+      .select("*, plan:plans!plan_id(*)")
+      .single();
     if (error) throw error;
     return row;
   });
@@ -365,7 +421,9 @@ export const getMyPlanSummary = createServerFn({ method: "GET" })
 
     const { data: sub } = await context.supabase
       .from("subscriptions")
-      .select("status, trial_ends_at, current_period_end, cancel_at, plan:plans!plan_id(code, name, tier, interval)")
+      .select(
+        "status, trial_ends_at, current_period_end, cancel_at, plan:plans!plan_id(code, name, tier, interval)",
+      )
       .eq("organization_id", orgId)
       .maybeSingle();
     if (!sub) return null;

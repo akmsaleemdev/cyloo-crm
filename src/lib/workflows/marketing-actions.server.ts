@@ -39,7 +39,10 @@ async function loadCampaign(ctx: Ctx, campaignId: string) {
   return data as { id: string; status: string; approval_status: string | null };
 }
 
-export async function startCampaignForWorkflow(ctx: Ctx, campaignId: string): Promise<CampaignWorkflowResult> {
+export async function startCampaignForWorkflow(
+  ctx: Ctx,
+  campaignId: string,
+): Promise<CampaignWorkflowResult> {
   const campaign = await loadCampaign(ctx, campaignId);
   if (CLOSED_STATUSES.includes(campaign.status)) {
     throw new Error(`Cannot start a ${campaign.status} campaign.`);
@@ -51,7 +54,9 @@ export async function startCampaignForWorkflow(ctx: Ctx, campaignId: string): Pr
     return { campaign_id: campaign.id, status: campaign.status, changed: false };
   }
   if (campaign.status !== "paused") {
-    throw new Error("Launch this campaign from the Marketing screen first. A workflow can only start a paused campaign.");
+    throw new Error(
+      "Launch this campaign from the Marketing screen first. A workflow can only start a paused campaign.",
+    );
   }
 
   const { data, error } = await sbAny(ctx.supabase)

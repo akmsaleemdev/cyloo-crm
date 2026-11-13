@@ -5,7 +5,7 @@
  * follow-up suggestions, email/WhatsApp drafting, proposal ideas, coaching,
  * revenue prediction, deal probability, pipeline health, CRM notes.
  *
- * All calls go through the Lovable AI Gateway using GEMINI_API_KEY (server-only).
+ * Calls use the configured direct AI provider with server-only credentials.
  */
 
 import { createServerFn } from "@tanstack/react-start";

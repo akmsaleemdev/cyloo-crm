@@ -54,19 +54,11 @@ function normalCdf(z: number): number {
   const t = 1 / (1 + 0.2316419 * Math.abs(z));
   const d = 0.3989422804 * Math.exp((-z * z) / 2);
   const p =
-    d *
-    t *
-    (0.3193815 +
-      t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
   return z > 0 ? 1 - p : p;
 }
 
-export function twoProportionPValue(
-  x1: number,
-  n1: number,
-  x2: number,
-  n2: number,
-): number {
+export function twoProportionPValue(x1: number, n1: number, x2: number, n2: number): number {
   if (n1 === 0 || n2 === 0) return 1;
   const p1 = x1 / n1;
   const p2 = x2 / n2;
@@ -116,9 +108,7 @@ export function analyzeAb(
   const baseline = variants[0];
   const totalSent = variants.reduce((s, v) => s + v.sent_count, 0);
   const overallRate =
-    totalSent > 0
-      ? variants.reduce((s, v) => s + successFor(v, metric), 0) / totalSent
-      : 0;
+    totalSent > 0 ? variants.reduce((s, v) => s + successFor(v, metric), 0) / totalSent : 0;
   const minPerVariant = minSamplePerVariant(Math.max(overallRate, 0.02), mde);
 
   const analytics: VariantAnalytics[] = variants.map((v) => {
@@ -130,18 +120,10 @@ export function analyzeAb(
     let pValue: number | null = null;
     let vsBaselinePct: number | null = null;
     if (!isBaseline && baseline) {
-      pValue = twoProportionPValue(
-        successFor(baseline, metric),
-        baseline.sent_count,
-        successes,
-        n,
-      );
+      pValue = twoProportionPValue(successFor(baseline, metric), baseline.sent_count, successes, n);
       const baseRate =
-        baseline.sent_count > 0
-          ? successFor(baseline, metric) / baseline.sent_count
-          : 0;
-      vsBaselinePct =
-        baseRate > 0 ? ((rate - baseRate) / baseRate) * 100 : null;
+        baseline.sent_count > 0 ? successFor(baseline, metric) / baseline.sent_count : 0;
+      vsBaselinePct = baseRate > 0 ? ((rate - baseRate) / baseRate) * 100 : null;
     }
     return {
       id: v.id,
@@ -164,19 +146,20 @@ export function analyzeAb(
   const best = ranking[0];
   const hasEnough = analytics.every((a) => a.sampleSufficient) && analytics.length >= 2;
   const winner =
-    hasEnough &&
-    best &&
-    best !== analytics[0] &&
-    best.pValue !== null &&
-    best.pValue < 0.05
+    hasEnough && best && best !== analytics[0] && best.pValue !== null && best.pValue < 0.05
       ? best
-      : hasEnough && best && best === analytics[0] && ranking[1]?.pValue !== null && ranking[1]!.pValue! < 0.05
-      ? best
-      : null;
+      : hasEnough &&
+          best &&
+          best === analytics[0] &&
+          ranking[1]?.pValue !== null &&
+          ranking[1]!.pValue! < 0.05
+        ? best
+        : null;
 
-  const confidence = best?.pValue !== null && best?.pValue !== undefined
-    ? Math.max(0, Math.min(1, 1 - best.pValue))
-    : 0;
+  const confidence =
+    best?.pValue !== null && best?.pValue !== undefined
+      ? Math.max(0, Math.min(1, 1 - best.pValue))
+      : 0;
 
   return {
     metric,

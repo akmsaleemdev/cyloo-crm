@@ -2,7 +2,7 @@
  * Per-user auth preferences (biometrics enabled, remembered device, active
  * workspace). Stored in MMKV so switching users works.
  */
-import { kv } from '@/lib/storage';
+import { kv } from "@/lib/storage";
 
 type Prefs = {
   biometricEnabled: boolean;

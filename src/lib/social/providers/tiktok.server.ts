@@ -6,7 +6,6 @@
  * the creator's explicit options and the provider verifies completion.
  */
 
-
 export interface TikTokPublishInput {
   /** TikTok open_id (unused for direct post; kept for symmetry). */
   openId?: string;
@@ -28,5 +27,7 @@ export async function publishToTikTok(_input: TikTokPublishInput): Promise<TikTo
   // disclosure and consent before /video/init/. The current composer persists
   // none of those choices. Do not silently publish a public video or mistake a
   // publish_id (an asynchronous tracking ID) for a completed post.
-  throw new Error("TikTok direct posting needs privacy, disclosure and consent controls plus creator-info verification. Save this as a draft until TikTok publishing is configured.");
+  throw new Error(
+    "TikTok direct posting needs privacy, disclosure and consent controls plus creator-info verification. Save this as a draft until TikTok publishing is configured.",
+  );
 }

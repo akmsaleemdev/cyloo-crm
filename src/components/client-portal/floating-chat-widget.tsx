@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageCircle, X, Send, Loader2, Minus, AlertCircle, RotateCw, Paperclip, Volume2, VolumeX, Maximize2, Minimize2 } from "lucide-react";
+import {
+  MessageCircle,
+  X,
+  Send,
+  Loader2,
+  Minus,
+  AlertCircle,
+  RotateCw,
+  Paperclip,
+  Volume2,
+  VolumeX,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import {
   getOrCreatePortalChat,
@@ -15,7 +28,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { usePendingMessages } from "@/hooks/use-pending-messages";
 import { usePortalAttachments } from "@/hooks/use-portal-attachments";
-import { AttachmentPreviews, BubbleAttachments } from "@/components/client-portal/attachment-previews";
+import {
+  AttachmentPreviews,
+  BubbleAttachments,
+} from "@/components/client-portal/attachment-previews";
 import { useBrandName } from "@/hooks/use-brand-name";
 
 const STORAGE_KEY = "cyloo.portal.chat.open";
@@ -40,10 +56,16 @@ export function FloatingChatWidget() {
   useEffect(() => {
     try {
       if (localStorage.getItem(STORAGE_KEY) === "1") setOpen(true);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, open ? "1" : "0"); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(STORAGE_KEY, open ? "1" : "0");
+    } catch {
+      /* ignore */
+    }
   }, [open]);
 
   // Once the visitor opens the widget for the first time, keep it "bootstrapped"
@@ -51,12 +73,20 @@ export function FloatingChatWidget() {
   // the panel is closed on later visits.
   const [bootstrapped, setBootstrapped] = useState(false);
   useEffect(() => {
-    try { if (localStorage.getItem(BOOTSTRAPPED_KEY) === "1") setBootstrapped(true); } catch { /* ignore */ }
+    try {
+      if (localStorage.getItem(BOOTSTRAPPED_KEY) === "1") setBootstrapped(true);
+    } catch {
+      /* ignore */
+    }
   }, []);
   useEffect(() => {
     if (open && !bootstrapped) {
       setBootstrapped(true);
-      try { localStorage.setItem(BOOTSTRAPPED_KEY, "1"); } catch { /* ignore */ }
+      try {
+        localStorage.setItem(BOOTSTRAPPED_KEY, "1");
+      } catch {
+        /* ignore */
+      }
     }
   }, [open, bootstrapped]);
 
@@ -90,7 +120,9 @@ export function FloatingChatWidget() {
     try {
       const raw = localStorage.getItem(SEEN_KEY_PREFIX + conversationId);
       if (raw) setLastSeenAt(Number(raw) || 0);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [conversationId]);
   useEffect(() => {
     if (!conversationId) return;
@@ -98,7 +130,11 @@ export function FloatingChatWidget() {
     if (!iso) return;
     const ts = new Date(iso).getTime();
     setLastSeenAt((prev) => (ts > prev ? ts : prev));
-    try { localStorage.setItem(SEEN_KEY_PREFIX + conversationId, String(ts)); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(SEEN_KEY_PREFIX + conversationId, String(ts));
+    } catch {
+      /* ignore */
+    }
   }, [conversationId, readStateQ.data]);
 
   // Realtime updates for this conversation — refresh detail (and thus unread
@@ -113,12 +149,42 @@ export function FloatingChatWidget() {
     const invalidateReadState = () => {
       qc.invalidateQueries({ queryKey: ["portal-widget-read-state", conversationId] });
     };
-    const ch = supabase.channel(`portal-widget-${conversationId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` }, invalidateDetail)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations", filter: `id=eq.${conversationId}` }, invalidateDetail)
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_read_state", filter: `conversation_id=eq.${conversationId}` }, invalidateReadState)
+    const ch = supabase
+      .channel(`portal-widget-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        invalidateDetail,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversations",
+          filter: `id=eq.${conversationId}`,
+        },
+        invalidateDetail,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "conversation_read_state",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        invalidateReadState,
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [conversationId, qc]);
 
   // Mark read + advance watermark (locally, in cache, and on the server) when opened
@@ -127,18 +193,22 @@ export function FloatingChatWidget() {
       const nowIso = new Date().toISOString();
       const now = Date.now();
       setLastSeenAt(now);
-      try { localStorage.setItem(SEEN_KEY_PREFIX + conversationId, String(now)); } catch { /* ignore */ }
+      try {
+        localStorage.setItem(SEEN_KEY_PREFIX + conversationId, String(now));
+      } catch {
+        /* ignore */
+      }
       readFn({ data: { conversation_id: conversationId, last_read_at: nowIso } })
-        .then(() => qc.invalidateQueries({ queryKey: ["portal-widget-read-state", conversationId] }))
+        .then(() =>
+          qc.invalidateQueries({ queryKey: ["portal-widget-read-state", conversationId] }),
+        )
         .catch(() => 0);
     }
   }, [open, conversationId, readFn, qc]);
 
-
-  const { pending, send, retry, discard, isSending } = usePendingMessages(
-    conversationId,
-    [["portal-widget-conversation", conversationId]],
-  );
+  const { pending, send, retry, discard, isSending } = usePendingMessages(conversationId, [
+    ["portal-widget-conversation", conversationId],
+  ]);
   const attachments = usePortalAttachments(conversationId);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,22 +226,28 @@ export function FloatingChatWidget() {
   const agent = detailQ.data?.conversation.agent;
 
   const bottomRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages.length, open]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, open]);
 
   // Unread = outbound (agent) messages newer than the local last-seen watermark,
   // ignored while the panel is open.
-  const unread = open ? 0 : messages.reduce((n, m) => {
-    if (m.direction !== "outbound" || m.deleted_at) return n;
-    const t = new Date(m.created_at).getTime();
-    return t > lastSeenAt ? n + 1 : n;
-  }, 0);
+  const unread = open
+    ? 0
+    : messages.reduce((n, m) => {
+        if (m.direction !== "outbound" || m.deleted_at) return n;
+        const t = new Date(m.created_at).getTime();
+        return t > lastSeenAt ? n + 1 : n;
+      }, 0);
 
   // Reflect unread in the document title so it's visible on background tabs.
   useEffect(() => {
     if (typeof document === "undefined") return;
     const original = document.title.replace(/^\(\d+\+?\)\s+/, "");
     document.title = unread > 0 ? `(${unread > 9 ? "9+" : unread}) ${original}` : original;
-    return () => { document.title = original; };
+    return () => {
+      document.title = original;
+    };
   }, [unread]);
 
   // Sound preference (per-browser). Defaults to ON so first-time visitors hear
@@ -181,12 +257,18 @@ export function FloatingChatWidget() {
     try {
       const v = localStorage.getItem(SOUND_KEY);
       if (v === "0") setSoundOn(false);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
   const toggleSound = () => {
     setSoundOn((prev) => {
       const next = !prev;
-      try { localStorage.setItem(SOUND_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+      try {
+        localStorage.setItem(SOUND_KEY, next ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
       return next;
     });
   };
@@ -197,9 +279,9 @@ export function FloatingChatWidget() {
   const lastAgentIdRef = useRef<string | null>(null);
   const primedRef = useRef(false);
   useEffect(() => {
-    const latestAgent = [...messages].reverse().find(
-      (m) => m.direction === "outbound" && !m.deleted_at,
-    );
+    const latestAgent = [...messages]
+      .reverse()
+      .find((m) => m.direction === "outbound" && !m.deleted_at);
     if (!latestAgent) return;
     if (!primedRef.current) {
       primedRef.current = true;
@@ -211,7 +293,8 @@ export function FloatingChatWidget() {
     if (!soundOn) return;
     try {
       const AC: typeof AudioContext | undefined =
-        window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (!AC) return;
       const ctx = new AC();
       const now = ctx.currentTime;
@@ -230,11 +313,10 @@ export function FloatingChatWidget() {
       play(660, 0);
       play(880, 0.12);
       setTimeout(() => ctx.close().catch(() => 0), 500);
-    } catch { /* browser blocked or unsupported — silent */ }
+    } catch {
+      /* browser blocked or unsupported — silent */
+    }
   }, [messages, soundOn]);
-
-
-
 
   return (
     <>
@@ -242,14 +324,21 @@ export function FloatingChatWidget() {
       {!open && (
         <button
           type="button"
-          aria-label={unread > 0 ? `Open live chat, ${unread} unread message${unread === 1 ? "" : "s"}` : "Open live chat"}
+          aria-label={
+            unread > 0
+              ? `Open live chat, ${unread} unread message${unread === 1 ? "" : "s"}`
+              : "Open live chat"
+          }
           onClick={() => setOpen(true)}
           className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg grid place-items-center hover:scale-105 transition-transform"
         >
           <MessageCircle className="w-6 h-6" />
           {unread > 0 && (
             <>
-              <span aria-hidden className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 animate-ping rounded-full bg-destructive/60" />
+              <span
+                aria-hidden
+                className="absolute -top-1 -right-1 inline-flex h-5 min-w-5 animate-ping rounded-full bg-destructive/60"
+              />
               <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-semibold grid place-items-center ring-2 ring-background">
                 {unread > 9 ? "9+" : unread}
               </span>
@@ -257,7 +346,6 @@ export function FloatingChatWidget() {
           )}
         </button>
       )}
-
 
       {/* Panel */}
       {open && (
@@ -272,12 +360,15 @@ export function FloatingChatWidget() {
               : "sm:bottom-5 sm:right-5 sm:left-auto sm:top-auto sm:h-[600px] sm:w-[420px] sm:rounded-control",
           )}
         >
-
           {/* Header */}
           <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-primary text-primary-foreground">
             <div className="w-9 h-9 rounded-full bg-primary-foreground/15 grid place-items-center shrink-0">
               {agent?.avatar_url ? (
-                <img src={agent.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                <img
+                  src={agent.avatar_url}
+                  alt=""
+                  className="w-full h-full rounded-full object-cover"
+                />
               ) : (
                 <MessageCircle className="w-4 h-4" />
               )}
@@ -287,7 +378,9 @@ export function FloatingChatWidget() {
                 {agent?.display_name ?? "Support team"}
               </p>
               <p className="text-[11px] opacity-80 truncate">
-                {agent ? "Typically replies within a few minutes" : "We'll reply as soon as possible"}
+                {agent
+                  ? "Typically replies within a few minutes"
+                  : "We'll reply as soon as possible"}
               </p>
             </div>
             <button
@@ -313,7 +406,10 @@ export function FloatingChatWidget() {
             <button
               type="button"
               aria-label="Minimize chat"
-              onClick={() => { setOpen(false); setMaximized(false); }}
+              onClick={() => {
+                setOpen(false);
+                setMaximized(false);
+              }}
               className="p-1.5 rounded-control hover:bg-primary-foreground/15"
             >
               <Minus className="w-4 h-4" />
@@ -349,13 +445,18 @@ export function FloatingChatWidget() {
                 const isCustomer = m.direction === "inbound";
                 const atts = (detailQ.data?.attachments ?? []).filter((a) => a.message_id === m.id);
                 return (
-                  <div key={m.id} className={cn("flex", isCustomer ? "justify-end" : "justify-start")}>
-                    <div className={cn(
-                      "max-w-[80%] rounded-control px-3 py-2 text-sm shadow-sm animate-in fade-in slide-in-from-bottom-1",
-                      isCustomer
-                        ? "bg-primary text-primary-foreground rounded-br-sm"
-                        : "bg-surface border border-border rounded-bl-sm",
-                    )}>
+                  <div
+                    key={m.id}
+                    className={cn("flex", isCustomer ? "justify-end" : "justify-start")}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[80%] rounded-control px-3 py-2 text-sm shadow-sm animate-in fade-in slide-in-from-bottom-1",
+                        isCustomer
+                          ? "bg-primary text-primary-foreground rounded-br-sm"
+                          : "bg-surface border border-border rounded-bl-sm",
+                      )}
+                    >
                       {m.deleted_at ? (
                         <p className="italic opacity-70">This message was deleted</p>
                       ) : (
@@ -363,18 +464,28 @@ export function FloatingChatWidget() {
                           {atts.length > 0 && (
                             <BubbleAttachments
                               attachments={atts.map((a) => ({
-                                id: a.id, url: a.url, mime_type: a.mime_type,
-                                file_name: a.file_name, thumb: a.thumbnail_url,
+                                id: a.id,
+                                url: a.url,
+                                mime_type: a.mime_type,
+                                file_name: a.file_name,
+                                thumb: a.thumbnail_url,
                               }))}
                               onOwnBubble={isCustomer}
                             />
                           )}
                           {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
-                          <p className={cn(
-                            "text-[11px] mt-1",
-                            isCustomer ? "text-primary-foreground/70 text-right" : "text-muted-foreground",
-                          )}>
-                            {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          <p
+                            className={cn(
+                              "text-[11px] mt-1",
+                              isCustomer
+                                ? "text-primary-foreground/70 text-right"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {new Date(m.created_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
                         </>
                       )}
@@ -385,14 +496,19 @@ export function FloatingChatWidget() {
             )}
             {pending.map((p) => (
               <div key={p.tempId} className="flex justify-end">
-                <div className={cn(
-                  "max-w-[80%] rounded-control rounded-br-sm px-3 py-2 text-sm shadow-sm bg-primary text-primary-foreground animate-in fade-in slide-in-from-bottom-1",
-                  p.status === "failed" && "opacity-90 ring-1 ring-destructive/60",
-                )}>
+                <div
+                  className={cn(
+                    "max-w-[80%] rounded-control rounded-br-sm px-3 py-2 text-sm shadow-sm bg-primary text-primary-foreground animate-in fade-in slide-in-from-bottom-1",
+                    p.status === "failed" && "opacity-90 ring-1 ring-destructive/60",
+                  )}
+                >
                   {p.attachments.length > 0 && (
                     <BubbleAttachments
                       attachments={p.attachments.map((a) => ({
-                        tempId: a.storage_path, url: a.preview_url, mime_type: a.mime_type, file_name: a.file_name,
+                        tempId: a.storage_path,
+                        url: a.preview_url,
+                        mime_type: a.mime_type,
+                        file_name: a.file_name,
                       }))}
                       onOwnBubble
                     />
@@ -400,7 +516,10 @@ export function FloatingChatWidget() {
                   {p.body && <p className="whitespace-pre-wrap break-words">{p.body}</p>}
                   <div className="flex items-center gap-1.5 mt-1 text-[11px] text-primary-foreground/80 justify-end">
                     {p.status === "sending" ? (
-                      <><Loader2 className="w-3 h-3 animate-spin" /><span>Sending</span></>
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Sending</span>
+                      </>
                     ) : (
                       <>
                         <AlertCircle className="w-3 h-3" />
@@ -477,16 +596,27 @@ export function FloatingChatWidget() {
               size="icon"
               className="h-10 w-10 shrink-0"
               onClick={submit}
-              disabled={!conversationId || (!draft.trim() && !attachments.anyReady) || attachments.anyUploading || !attachments.canSend}
+              disabled={
+                !conversationId ||
+                (!draft.trim() && !attachments.anyReady) ||
+                attachments.anyUploading ||
+                !attachments.canSend
+              }
               aria-label="Send message"
             >
-              {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {isSending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
             </Button>
           </div>
 
-
           <div className="px-3 pb-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <Link to="/client/conversations" className="hover:text-foreground underline-offset-2 hover:underline">
+            <Link
+              to="/client/conversations"
+              className="hover:text-foreground underline-offset-2 hover:underline"
+            >
               Open full inbox
             </Link>
             <span>Powered by {brandName}</span>

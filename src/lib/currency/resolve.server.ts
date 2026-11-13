@@ -59,7 +59,9 @@ export async function platformEnabledCurrencies(): Promise<string[]> {
   const configured = values
     .map(normalise)
     .filter((currency): currency is string => currency !== null);
-  return [...new Set(configured.length ? configured : [(await platformDefaultCurrency()) ?? LAST_RESORT])];
+  return [
+    ...new Set(configured.length ? configured : [(await platformDefaultCurrency()) ?? LAST_RESORT]),
+  ];
 }
 
 /**

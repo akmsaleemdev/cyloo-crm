@@ -2,12 +2,12 @@
 // Server-side Supabase client with service role key - bypasses RLS.
 // Use this for admin operations in server functions and server routes only.
 // For user-authenticated queries (with RLS), use the auth middleware instead.
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "./types";
 import { assertServiceRoleKey } from "@/lib/supabase/service-role-key.server";
 
 // Polyfill global WebSocket for server-side Supabase client if not present (Node < 22)
-if (typeof globalThis !== 'undefined' && !globalThis.WebSocket) {
+if (typeof globalThis !== "undefined" && !globalThis.WebSocket) {
   class NoopWebSocket {
     static readonly CONNECTING = 0;
     static readonly OPEN = 1;
@@ -15,7 +15,9 @@ if (typeof globalThis !== 'undefined' && !globalThis.WebSocket) {
     static readonly CLOSED = 3;
     addEventListener() {}
     removeEventListener() {}
-    dispatchEvent() { return false; }
+    dispatchEvent() {
+      return false;
+    }
     send() {}
     close() {}
   }
@@ -23,13 +25,13 @@ if (typeof globalThis !== 'undefined' && !globalThis.WebSocket) {
 }
 
 function isNewSupabaseApiKey(value: string): boolean {
-  return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
+  return value.startsWith("sb_publishable_") || value.startsWith("sb_secret_");
 }
 
 function createSupabaseFetch(supabaseKey: string): typeof fetch {
   return (input, init) => {
     const headers = new Headers(
-      typeof Request !== 'undefined' && input instanceof Request ? input.headers : undefined,
+      typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
     );
 
     if (init?.headers) {
@@ -37,11 +39,14 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
     }
 
     // New Supabase API keys are opaque strings, not bearer JWTs.
-    if (isNewSupabaseApiKey(supabaseKey) && headers.get('Authorization') === `Bearer ${supabaseKey}`) {
-      headers.delete('Authorization');
+    if (
+      isNewSupabaseApiKey(supabaseKey) &&
+      headers.get("Authorization") === `Bearer ${supabaseKey}`
+    ) {
+      headers.delete("Authorization");
     }
 
-    headers.set('apikey', supabaseKey);
+    headers.set("apikey", supabaseKey);
     return fetch(input, { ...init, headers });
   };
 }
@@ -52,10 +57,10 @@ function createSupabaseAdminClient() {
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     const missing = [
-      ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
-      ...(!SUPABASE_SERVICE_ROLE_KEY ? ['SUPABASE_SERVICE_ROLE_KEY'] : []),
+      ...(!SUPABASE_URL ? ["SUPABASE_URL"] : []),
+      ...(!SUPABASE_SERVICE_ROLE_KEY ? ["SUPABASE_SERVICE_ROLE_KEY"] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Configure the server environment.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(", ")}. Configure the server environment.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
@@ -72,7 +77,7 @@ function createSupabaseAdminClient() {
       storage: undefined,
       persistSession: false,
       autoRefreshToken: false,
-    }
+    },
   });
 }
 

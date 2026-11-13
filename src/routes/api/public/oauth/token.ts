@@ -27,7 +27,10 @@ export const Route = createFileRoute("/api/public/oauth/token")({
       POST: async ({ request }) => {
         const ct = request.headers.get("content-type") ?? "";
         if (!ct.includes("application/x-www-form-urlencoded"))
-          return json(400, { error: "invalid_request", error_description: "content-type must be application/x-www-form-urlencoded" });
+          return json(400, {
+            error: "invalid_request",
+            error_description: "content-type must be application/x-www-form-urlencoded",
+          });
 
         const body = new URLSearchParams(await request.text());
         const grant = body.get("grant_type") ?? "";
@@ -78,7 +81,11 @@ export const Route = createFileRoute("/api/public/oauth/token")({
           if (row.redirect_uri !== redirectUri) return json(400, { error: "invalid_grant" });
 
           if (row.code_challenge) {
-            const ok = await oauth.verifyPKCE(verifier, row.code_challenge, row.code_challenge_method);
+            const ok = await oauth.verifyPKCE(
+              verifier,
+              row.code_challenge,
+              row.code_challenge_method,
+            );
             if (!ok) return json(400, { error: "invalid_grant", error_description: "PKCE failed" });
           } else if (client.require_pkce) {
             return json(400, { error: "invalid_grant" });
@@ -121,7 +128,10 @@ export const Route = createFileRoute("/api/public/oauth/token")({
               .eq("client_id", row.client_id)
               .eq("user_id", row.user_id)
               .is("revoked_at", null);
-            return json(400, { error: "invalid_grant", error_description: "refresh token revoked" });
+            return json(400, {
+              error: "invalid_grant",
+              error_description: "refresh token revoked",
+            });
           }
           if (new Date(row.expires_at).getTime() < Date.now())
             return json(400, { error: "invalid_grant" });
@@ -131,8 +141,7 @@ export const Route = createFileRoute("/api/public/oauth/token")({
           let scopes = row.scopes as string[];
           if (requestedScope) {
             const req = requestedScope.split(/\s+/).filter(Boolean);
-            if (req.some((s) => !scopes.includes(s)))
-              return json(400, { error: "invalid_scope" });
+            if (req.some((s) => !scopes.includes(s))) return json(400, { error: "invalid_scope" });
             scopes = req;
           }
 

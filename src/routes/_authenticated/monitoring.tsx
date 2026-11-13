@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
-import { MonitoringDashboard, MonitoringTabs, type TabId } from "@/components/app/monitoring/monitoring-dashboard";
+import {
+  MonitoringDashboard,
+  MonitoringTabs,
+  type TabId,
+} from "@/components/app/monitoring/monitoring-dashboard";
 
 export const Route = createFileRoute("/_authenticated/monitoring")({
   component: MonitoringPage,

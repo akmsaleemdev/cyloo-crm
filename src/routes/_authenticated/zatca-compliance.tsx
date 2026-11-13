@@ -119,27 +119,24 @@ export function ZatcaCompliancePage() {
   const [invoiceAmount, setInvoiceAmount] = useState("10000.00");
   const [vatAmount, setVatAmount] = useState("1500.00");
   const [generatedTLV, setGeneratedTLV] = useState(
-    "AQ9DWUxPTyBDUk0gU29sdXRpb25zIEtTQQLDMzEwOTk5OTk5OTAwMDAzAxQyMDI2LTExLTA4VDA5OjMwOjAwWgQIMTE1MDAuMDAFBTE1MDAuMDA="
+    "AQ9DWUxPTyBDUk0gU29sdXRpb25zIEtTQQLDMzEwOTk5OTk5OTAwMDAzAxQyMDI2LTExLTA4VDA5OjMwOjAwWgQIMTE1MDAuMDAFBTE1MDAuMDA=",
   );
 
   const handleGenerateQR = () => {
     // Generate simulated Base64 TLV
     const simulatedTLV = btoa(
-      `Tag1:${sellerName}|Tag2:${sellerVAT}|Tag3:${new Date().toISOString()}|Tag4:${invoiceAmount}|Tag5:${vatAmount}`
+      `Tag1:${sellerName}|Tag2:${sellerVAT}|Tag3:${new Date().toISOString()}|Tag4:${invoiceAmount}|Tag5:${vatAmount}`,
     );
     setGeneratedTLV(simulatedTLV.slice(0, 96) + "==");
     toast.success("ZATCA Cryptographic TLV QR code payload recomputed.");
   };
 
   const handleTestZatcaAPI = () => {
-    toast.promise(
-      new Promise((res) => setTimeout(res, 1200)),
-      {
-        loading: "Testing ZATCA FATOORA Clearance API Sandbox...",
-        success: "Clearance API Connection Verified: HTTP 200 (CSID Active, GAZT Compliant)",
-        error: "Failed to connect to ZATCA endpoint",
-      }
-    );
+    toast.promise(new Promise((res) => setTimeout(res, 1200)), {
+      loading: "Testing ZATCA FATOORA Clearance API Sandbox...",
+      success: "Clearance API Connection Verified: HTTP 200 (CSID Active, GAZT Compliant)",
+      error: "Failed to connect to ZATCA endpoint",
+    });
   };
 
   return (
@@ -150,13 +147,19 @@ export function ZatcaCompliancePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">ZATCA e-Invoicing & GCC Fiscal Compliance</h1>
-              <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                ZATCA e-Invoicing & GCC Fiscal Compliance
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+              >
                 Module 27 • Hub 6
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Saudi ZATCA FATOORA Phase 2 engine, UBL 2.1 XML generation, cryptographic stamps (CSID), and TLV QR codes.
+              Saudi ZATCA FATOORA Phase 2 engine, UBL 2.1 XML generation, cryptographic stamps
+              (CSID), and TLV QR codes.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -220,7 +223,9 @@ export function ZatcaCompliancePage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
-            <TabsTrigger value="invoices">Sequential Invoice Ledger ({invoices.length})</TabsTrigger>
+            <TabsTrigger value="invoices">
+              Sequential Invoice Ledger ({invoices.length})
+            </TabsTrigger>
             <TabsTrigger value="qr_generator">TLV QR Code Inspector</TabsTrigger>
             <TabsTrigger value="ubl_xml">UBL 2.1 XML Generator</TabsTrigger>
             <TabsTrigger value="csid_settings">Cryptographic Stamp (CSID)</TabsTrigger>
@@ -265,7 +270,9 @@ export function ZatcaCompliancePage() {
                         <div className="font-medium text-foreground">{inv.buyerName}</div>
                         <div className="text-muted-foreground font-mono">{inv.vatNumber}</div>
                       </td>
-                      <td className="px-4 py-3 font-medium">SAR {inv.amountSAR.toLocaleString()}</td>
+                      <td className="px-4 py-3 font-medium">
+                        SAR {inv.amountSAR.toLocaleString()}
+                      </td>
                       <td className="px-4 py-3 text-emerald-600 font-medium">
                         SAR {inv.vatAmountSAR.toLocaleString()}
                       </td>
@@ -294,7 +301,8 @@ export function ZatcaCompliancePage() {
                 <CardHeader>
                   <CardTitle className="text-base">ZATCA Base64 TLV Encoding Simulator</CardTitle>
                   <CardDescription>
-                    Computes mandatory 5-tag TLV (Tag-Length-Value) structure per ZATCA specifications
+                    Computes mandatory 5-tag TLV (Tag-Length-Value) structure per ZATCA
+                    specifications
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -349,7 +357,9 @@ export function ZatcaCompliancePage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Generated Cryptographic QR Payload</CardTitle>
-                  <CardDescription>Encoded byte stream rendered on printed/PDF invoices</CardDescription>
+                  <CardDescription>
+                    Encoded byte stream rendered on printed/PDF invoices
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 flex flex-col items-center justify-center pt-2">
                   <div className="p-6 bg-white rounded-lg border flex flex-col items-center">
@@ -405,7 +415,9 @@ export function ZatcaCompliancePage() {
           <TabsContent value="csid_settings" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Cryptographic Stamp Identifier (CSID) Credentials</CardTitle>
+                <CardTitle className="text-base">
+                  Cryptographic Stamp Identifier (CSID) Credentials
+                </CardTitle>
                 <CardDescription>
                   Hardware-encrypted production keys stored in Supabase Vault (pg_vault)
                 </CardDescription>
@@ -424,7 +436,9 @@ export function ZatcaCompliancePage() {
                 </div>
                 <div className="p-4 rounded-lg border bg-muted/30 flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-foreground">Compliance Secret & Private Key</div>
+                    <div className="font-semibold text-foreground">
+                      Compliance Secret & Private Key
+                    </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
                       Encrypted at rest via AES-256 envelope in pg_vault
                     </div>
@@ -441,4 +455,3 @@ export function ZatcaCompliancePage() {
     </div>
   );
 }
-

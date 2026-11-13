@@ -3,8 +3,7 @@ import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPageShell } from "@/components/app/legal-page-shell";
 
-const DESCRIPTION =
-  `${BRAND_NAME}'s Data Processing Agreement covering roles, security measures, sub-processors, international transfers, and data subject rights.`;
+const DESCRIPTION = `${BRAND_NAME}'s Data Processing Agreement covering roles, security measures, sub-processors, international transfers, and data subject rights.`;
 const TITLE = "Data Processing Agreement";
 
 export const Route = createFileRoute("/legal/dpa")({
@@ -27,15 +26,12 @@ export const Route = createFileRoute("/legal/dpa")({
 
 function DpaPage() {
   return (
-    <LegalPageShell
-      title="Data Processing Agreement"
-      subtitle="Last updated: July 30, 2026"
-    >
+    <LegalPageShell title="Data Processing Agreement" subtitle="Last updated: July 30, 2026">
       <p>
-        This Data Processing Agreement (&ldquo;DPA&rdquo;) forms part of the Terms of Service between
-        you (the &ldquo;Customer&rdquo;, acting as data controller) and <Brand /> (acting as data
-        processor) and applies whenever <Brand /> processes personal data on the Customer&rsquo;s
-        behalf.
+        This Data Processing Agreement (&ldquo;DPA&rdquo;) forms part of the Terms of Service
+        between you (the &ldquo;Customer&rdquo;, acting as data controller) and <Brand /> (acting as
+        data processor) and applies whenever <Brand /> processes personal data on the
+        Customer&rsquo;s behalf.
       </p>
 
       <h2>1. Definitions</h2>
@@ -90,11 +86,11 @@ function DpaPage() {
 
       <h2>7. Sub-processors</h2>
       <p>
-        The Customer grants general authorisation for <Brand /> to engage sub-processors for hosting,
-        infrastructure, messaging delivery, payments, and analytics. <Brand /> imposes data protection
-        obligations on each sub-processor that are no less protective than this DPA and remains
-        liable for their performance. <Brand /> will give reasonable notice of new sub-processors so
-        the Customer may object on legitimate grounds.
+        The Customer grants general authorisation for <Brand /> to engage sub-processors for
+        hosting, infrastructure, messaging delivery, payments, and analytics. <Brand /> imposes data
+        protection obligations on each sub-processor that are no less protective than this DPA and
+        remains liable for their performance. <Brand /> will give reasonable notice of new
+        sub-processors so the Customer may object on legitimate grounds.
       </p>
 
       <h2>8. International transfers</h2>
@@ -121,17 +117,17 @@ function DpaPage() {
 
       <h2>11. Audits</h2>
       <p>
-        <Brand /> makes available information reasonably necessary to demonstrate compliance with this
-        DPA and allows for audits, including inspections, conducted by the Customer or an
+        <Brand /> makes available information reasonably necessary to demonstrate compliance with
+        this DPA and allows for audits, including inspections, conducted by the Customer or an
         independent auditor mandated by the Customer, on reasonable notice and subject to
         confidentiality.
       </p>
 
       <h2>12. Deletion and return of data</h2>
       <p>
-        On termination of the service, <Brand /> deletes or returns the Customer&rsquo;s personal data
-        in accordance with the retention periods described in the Privacy Policy, unless applicable
-        law requires further storage.
+        On termination of the service, <Brand /> deletes or returns the Customer&rsquo;s personal
+        data in accordance with the retention periods described in the Privacy Policy, unless
+        applicable law requires further storage.
       </p>
 
       <h2>13. Contact</h2>

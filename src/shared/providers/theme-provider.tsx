@@ -107,11 +107,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const cachedTheme = readCachedTheme();
       // Older builds cached the implicit "system" default. Treat that cache
       // entry as a default when there is no saved user preference.
-      hasUserPreferenceRef.current = isTheme(data?.theme_mode) || (cachedTheme !== null && cachedTheme !== DEFAULT_THEME);
-      const persistedTheme =
-        hasUserPreferenceRef.current
-          ? cachedTheme ?? data?.theme_mode
-          : workspaceDefaultRef.current;
+      hasUserPreferenceRef.current =
+        isTheme(data?.theme_mode) || (cachedTheme !== null && cachedTheme !== DEFAULT_THEME);
+      const persistedTheme = hasUserPreferenceRef.current
+        ? (cachedTheme ?? data?.theme_mode)
+        : workspaceDefaultRef.current;
       setThemeState(persistedTheme);
       if (hasUserPreferenceRef.current) storeTheme(persistedTheme);
       setIsLoading(false);

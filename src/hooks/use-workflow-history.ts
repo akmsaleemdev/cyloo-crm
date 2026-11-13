@@ -23,7 +23,8 @@ export function useWorkflowHistory(initial: WorkflowGraph) {
   const commit = React.useCallback(
     (next: WorkflowGraph | ((g: WorkflowGraph) => WorkflowGraph)) => {
       setGraphState((prev) => {
-        const value = typeof next === "function" ? (next as (g: WorkflowGraph) => WorkflowGraph)(prev) : next;
+        const value =
+          typeof next === "function" ? (next as (g: WorkflowGraph) => WorkflowGraph)(prev) : next;
         if (JSON.stringify(value) === JSON.stringify(prev)) return prev;
         past.current.push(prev);
         if (past.current.length > LIMIT) past.current.shift();

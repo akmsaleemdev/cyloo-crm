@@ -25,8 +25,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type Draft = {
   provider_id: string;
@@ -78,7 +90,12 @@ export function PlanGatewayLinksDialog({
     enabled: open,
   });
 
-  const gateways = (gwQ.data ?? []) as Array<{ id: string; displayName: string; enabled: boolean; mode: string }>;
+  const gateways = (gwQ.data ?? []) as Array<{
+    id: string;
+    displayName: string;
+    enabled: boolean;
+    mode: string;
+  }>;
   const links = (linksQ.data ?? []) as PlanGatewayLink[];
 
   const saveMut = useMutation({
@@ -114,7 +131,8 @@ export function PlanGatewayLinksDialog({
       const s = res.summary;
       const bad = s.mismatch + s.missing + s.error;
       if (res.results.length === 0) toast.info("No gateway links to verify");
-      else if (bad === 0) toast.success(`All ${res.results.length} link(s) verified against the gateway`);
+      else if (bad === 0)
+        toast.success(`All ${res.results.length} link(s) verified against the gateway`);
       else toast.warning(`${bad} of ${res.results.length} link(s) need attention`);
       qc.invalidateQueries({ queryKey: ["admin", "plan-gateways", planId] });
     },
@@ -133,8 +151,8 @@ export function PlanGatewayLinksDialog({
             <Link2 className="w-4 h-4" /> Payment gateways — {planName}
           </DialogTitle>
           <DialogDescription>
-            Map this plan to the price or product it corresponds to in each gateway. Checkout picks the
-            link matching the tenant&apos;s default enabled gateway.
+            Map this plan to the price or product it corresponds to in each gateway. Checkout picks
+            the link matching the tenant&apos;s default enabled gateway.
           </DialogDescription>
         </DialogHeader>
 
@@ -180,11 +198,11 @@ export function PlanGatewayLinksDialog({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium">{gw?.displayName ?? l.provider_id}</span>
-                        <Badge variant="outline" className="capitalize">{l.mode}</Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {l.mode}
+                        </Badge>
                         {!l.enabled && <Badge variant="outline">Off</Badge>}
-                        {gw && !gw.enabled && (
-                          <Badge variant="destructive">Gateway disabled</Badge>
-                        )}
+                        {gw && !gw.enabled && <Badge variant="destructive">Gateway disabled</Badge>}
                         {l.verification_status && (
                           <Badge
                             variant={
@@ -238,11 +256,14 @@ export function PlanGatewayLinksDialog({
                 value={draft.provider_id}
                 onValueChange={(v) => setDraft((d) => ({ ...d, provider_id: v }))}
               >
-                <SelectTrigger><SelectValue placeholder="Select a gateway" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a gateway" />
+                </SelectTrigger>
                 <SelectContent>
                   {gateways.map((g) => (
                     <SelectItem key={g.id} value={g.id}>
-                      {g.displayName}{g.enabled ? "" : " (disabled)"}
+                      {g.displayName}
+                      {g.enabled ? "" : " (disabled)"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -254,7 +275,9 @@ export function PlanGatewayLinksDialog({
                 value={draft.mode}
                 onValueChange={(v) => setDraft((d) => ({ ...d, mode: v as Draft["mode"] }))}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sandbox">Test</SelectItem>
                   <SelectItem value="live">Live</SelectItem>
@@ -293,7 +316,9 @@ export function PlanGatewayLinksDialog({
                 onCheckedChange={(v) => setDraft((d) => ({ ...d, enabled: v }))}
                 id="pgl-enabled"
               />
-              <Label htmlFor="pgl-enabled" className="text-sm font-normal">Active</Label>
+              <Label htmlFor="pgl-enabled" className="text-sm font-normal">
+                Active
+              </Label>
             </div>
             <Button disabled={!canSave || saveMut.isPending} onClick={() => saveMut.mutate(draft)}>
               {saveMut.isPending ? (

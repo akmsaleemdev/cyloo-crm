@@ -65,7 +65,11 @@ export function ContactListMembersSheet({
     const q = memberSearch.trim().toLowerCase();
     const rows = members ?? [];
     if (!q) return rows;
-    return rows.filter((m) => contactLabel(m.contact ?? {}).toLowerCase().includes(q));
+    return rows.filter((m) =>
+      contactLabel(m.contact ?? {})
+        .toLowerCase()
+        .includes(q),
+    );
   }, [members, memberSearch]);
 
   const candidates = useMemo(

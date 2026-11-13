@@ -9,13 +9,7 @@ import { BUCKETS, workspaceObjectPath } from "@/lib/storage/buckets";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const db = supabase as any;
 
-export type TimelineEntity =
-  | "contact"
-  | "company"
-  | "lead"
-  | "customer"
-  | "deal"
-  | "task";
+export type TimelineEntity = "contact" | "company" | "lead" | "customer" | "deal" | "task";
 
 export type NoteRow = {
   id: string;
@@ -73,7 +67,10 @@ export type TimelineItem =
 
 /* -------------------------------- Notes -------------------------------- */
 
-export function useEntityNotes(entityType: TimelineEntity | undefined, entityId: string | undefined) {
+export function useEntityNotes(
+  entityType: TimelineEntity | undefined,
+  entityId: string | undefined,
+) {
   return useQuery({
     queryKey: ["notes", entityType, entityId],
     enabled: !!entityType && !!entityId,
@@ -92,7 +89,10 @@ export function useEntityNotes(entityType: TimelineEntity | undefined, entityId:
   });
 }
 
-export function useEntityActivities(entityType: TimelineEntity | undefined, entityId: string | undefined) {
+export function useEntityActivities(
+  entityType: TimelineEntity | undefined,
+  entityId: string | undefined,
+) {
   return useQuery({
     queryKey: ["activities", entityType, entityId],
     enabled: !!entityType && !!entityId,
@@ -111,7 +111,10 @@ export function useEntityActivities(entityType: TimelineEntity | undefined, enti
   });
 }
 
-export function useEntityAttachments(entityType: TimelineEntity | undefined, entityId: string | undefined) {
+export function useEntityAttachments(
+  entityType: TimelineEntity | undefined,
+  entityId: string | undefined,
+) {
   return useQuery({
     queryKey: ["attachments", entityType, entityId],
     enabled: !!entityType && !!entityId,
@@ -128,7 +131,10 @@ export function useEntityAttachments(entityType: TimelineEntity | undefined, ent
   });
 }
 
-export function useTimelineRealtime(entityType: TimelineEntity | undefined, entityId: string | undefined) {
+export function useTimelineRealtime(
+  entityType: TimelineEntity | undefined,
+  entityId: string | undefined,
+) {
   const qc = useQueryClient();
   useEffect(() => {
     if (!entityType || !entityId) return;
@@ -144,18 +150,15 @@ export function useTimelineRealtime(entityType: TimelineEntity | undefined, enti
         { event: "*", schema: "public", table: "notes", filter: `entity_id=eq.${entityId}` },
         invalidate,
       )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "activities" },
-        (payload) => {
-          const row = (payload.new || payload.old) as ActivityRow | undefined;
-          if (!row) return;
-          if (
-            (row.target_type === entityType && row.target_id === entityId) ||
-            (row.object_type === entityType && row.object_id === entityId)
-          ) invalidate();
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "activities" }, (payload) => {
+        const row = (payload.new || payload.old) as ActivityRow | undefined;
+        if (!row) return;
+        if (
+          (row.target_type === entityType && row.target_id === entityId) ||
+          (row.object_type === entityType && row.object_id === entityId)
+        )
+          invalidate();
+      })
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "attachments", filter: `entity_id=eq.${entityId}` },
@@ -168,7 +171,10 @@ export function useTimelineRealtime(entityType: TimelineEntity | undefined, enti
   }, [entityType, entityId, qc]);
 }
 
-export function useMergedTimeline(entityType: TimelineEntity | undefined, entityId: string | undefined) {
+export function useMergedTimeline(
+  entityType: TimelineEntity | undefined,
+  entityId: string | undefined,
+) {
   const notes = useEntityNotes(entityType, entityId);
   const acts = useEntityActivities(entityType, entityId);
   const atts = useEntityAttachments(entityType, entityId);
@@ -206,16 +212,20 @@ export function useCreateNote() {
       is_pinned?: boolean;
     }) => {
       if (!ws?.id || !user?.id) throw new Error("Not signed in");
-      const { data, error } = await sbAny(db).from("notes").insert({
-        workspace_id: ws.id,
-        author_id: user.id,
-        entity_type: input.entity_type,
-        entity_id: input.entity_id,
-        body: input.body,
-        mentions: input.mentions ?? [],
-        is_pinned: input.is_pinned ?? false,
-        pinned_at: input.is_pinned ? new Date().toISOString() : null,
-      }).select("*").single();
+      const { data, error } = await sbAny(db)
+        .from("notes")
+        .insert({
+          workspace_id: ws.id,
+          author_id: user.id,
+          entity_type: input.entity_type,
+          entity_id: input.entity_id,
+          body: input.body,
+          mentions: input.mentions ?? [],
+          is_pinned: input.is_pinned ?? false,
+          pinned_at: input.is_pinned ? new Date().toISOString() : null,
+        })
+        .select("*")
+        .single();
       if (error) throw error;
       return data as NoteRow;
     },
@@ -229,12 +239,22 @@ export function useCreateNote() {
 export function useUpdateNote() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; body?: string; is_pinned?: boolean; mentions?: string[] }) => {
+    mutationFn: async (input: {
+      id: string;
+      body?: string;
+      is_pinned?: boolean;
+      mentions?: string[];
+    }) => {
       const patch: Record<string, unknown> = {};
       if (input.body !== undefined) patch.body = input.body;
       if (input.is_pinned !== undefined) patch.is_pinned = input.is_pinned;
       if (input.mentions !== undefined) patch.mentions = input.mentions;
-      const { data, error } = await sbAny(db).from("notes").update(patch).eq("id", input.id).select("*").single();
+      const { data, error } = await sbAny(db)
+        .from("notes")
+        .update(patch)
+        .eq("id", input.id)
+        .select("*")
+        .single();
       if (error) throw error;
       return data as NoteRow;
     },
@@ -249,7 +269,10 @@ export function useDeleteNote() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { id: string; entity_type: TimelineEntity; entity_id: string }) => {
-      const { error } = await sbAny(db).from("notes").update({ deleted_at: new Date().toISOString() }).eq("id", input.id);
+      const { error } = await sbAny(db)
+        .from("notes")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", input.id);
       if (error) throw error;
       return input;
     },
@@ -265,7 +288,11 @@ export function useUploadAttachment() {
   const { data: ws } = useCurrentWorkspace();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (input: { entity_type: TimelineEntity | "note"; entity_id: string; file: File }) => {
+    mutationFn: async (input: {
+      entity_type: TimelineEntity | "note";
+      entity_id: string;
+      file: File;
+    }) => {
       if (!ws?.id || !user?.id) throw new Error("Not signed in");
       const bucket = BUCKETS.ATTACHMENTS;
       // Workspace id first. The `attachments` policy authorises on
@@ -284,23 +311,31 @@ export function useUploadAttachment() {
         contentType: input.file.type,
       });
       if (up.error) throw up.error;
-      const { data: fileRow, error: fErr } = await sbAny(db).from("files").insert({
-        workspace_id: ws.id,
-        uploader_id: user.id,
-        bucket,
-        path,
-        name: input.file.name,
-        mime_type: input.file.type || null,
-        size_bytes: input.file.size,
-      }).select("*").single();
+      const { data: fileRow, error: fErr } = await sbAny(db)
+        .from("files")
+        .insert({
+          workspace_id: ws.id,
+          uploader_id: user.id,
+          bucket,
+          path,
+          name: input.file.name,
+          mime_type: input.file.type || null,
+          size_bytes: input.file.size,
+        })
+        .select("*")
+        .single();
       if (fErr) throw fErr;
-      const { data: att, error: aErr } = await sbAny(db).from("attachments").insert({
-        workspace_id: ws.id,
-        file_id: fileRow.id,
-        entity_type: input.entity_type,
-        entity_id: input.entity_id,
-        attached_by: user.id,
-      }).select("*, file:files(id,name,mime_type,size_bytes,bucket,path)").single();
+      const { data: att, error: aErr } = await sbAny(db)
+        .from("attachments")
+        .insert({
+          workspace_id: ws.id,
+          file_id: fileRow.id,
+          entity_type: input.entity_type,
+          entity_id: input.entity_id,
+          attached_by: user.id,
+        })
+        .select("*, file:files(id,name,mime_type,size_bytes,bucket,path)")
+        .single();
       if (aErr) throw aErr;
       return att as AttachmentRow;
     },
@@ -323,9 +358,24 @@ export function formatVerb(verb: string, summary: string | null): string {
   return verb.replace(/[._]/g, " ");
 }
 
-export function verbCategory(verb: string):
-  | "created" | "updated" | "assigned" | "status" | "note" | "message" | "call"
-  | "email" | "meeting" | "task" | "tag" | "campaign" | "ai" | "automation" | "generic" {
+export function verbCategory(
+  verb: string,
+):
+  | "created"
+  | "updated"
+  | "assigned"
+  | "status"
+  | "note"
+  | "message"
+  | "call"
+  | "email"
+  | "meeting"
+  | "task"
+  | "tag"
+  | "campaign"
+  | "ai"
+  | "automation"
+  | "generic" {
   if (verb.endsWith(".created")) return "created";
   if (verb.startsWith("note.")) return "note";
   if (verb.endsWith(".assigned")) return "assigned";

@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useContacts, primaryPhone, primaryEmail } from "@/hooks/use-contacts";
 import { Play, Search, User, Loader2, FlaskConical } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -78,15 +85,17 @@ export function SimulateRunDialog({
             <FlaskConical className="w-4 h-4 text-primary" /> Simulate flow
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Pick a sample contact and payload, then run the current graph in dry-run mode. Actions won't
-            send real messages — you'll see step-by-step results in the drawer.
+            Pick a sample contact and payload, then run the current graph in dry-run mode. Actions
+            won't send real messages — you'll see step-by-step results in the drawer.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           {/* Contacts */}
           <section className="min-w-0">
-            <div className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Sample contact</div>
+            <div className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+              Sample contact
+            </div>
             <div className="relative mb-2">
               <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -108,7 +117,8 @@ export function SimulateRunDialog({
               )}
               {!isLoading && list.length === 0 && (
                 <div className="p-4 text-xs text-muted-foreground text-center">
-                  No contacts. You can still run with no contact — trigger data will still be evaluated.
+                  No contacts. You can still run with no contact — trigger data will still be
+                  evaluated.
                 </div>
               )}
               {list.map((c) => {
@@ -123,14 +133,18 @@ export function SimulateRunDialog({
                       isSel ? "bg-primary/10" : "hover:bg-muted/40"
                     }`}
                   >
-                    <div className={`w-7 h-7 rounded-full grid place-items-center shrink-0 ${isSel ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+                    <div
+                      className={`w-7 h-7 rounded-full grid place-items-center shrink-0 ${isSel ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+                    >
                       <User className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-medium truncate">{name}</div>
                       <div className="text-[11px] text-muted-foreground truncate">{sub}</div>
                     </div>
-                    {isSel && <div className="text-[11px] text-primary font-semibold">SELECTED</div>}
+                    {isSel && (
+                      <div className="text-[11px] text-primary font-semibold">SELECTED</div>
+                    )}
                   </button>
                 );
               })}
@@ -145,8 +159,12 @@ export function SimulateRunDialog({
 
           {/* Trigger payload */}
           <section className="min-w-0">
-            <div className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Trigger payload</div>
-            <label className="block text-[11px] text-muted-foreground mb-1">Simulated inbound message</label>
+            <div className="text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">
+              Trigger payload
+            </div>
+            <label className="block text-[11px] text-muted-foreground mb-1">
+              Simulated inbound message
+            </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -154,7 +172,9 @@ export function SimulateRunDialog({
               className="w-full px-2.5 py-1.5 text-xs rounded-control border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
               placeholder="Text used as {{message.text}}"
             />
-            <label className="block text-[11px] text-muted-foreground mt-3 mb-1">Extra variables (JSON)</label>
+            <label className="block text-[11px] text-muted-foreground mt-3 mb-1">
+              Extra variables (JSON)
+            </label>
             <textarea
               value={extra}
               onChange={(e) => setExtra(e.target.value)}
@@ -165,23 +185,27 @@ export function SimulateRunDialog({
               }`}
               placeholder='{ "utm_source": "test" }'
             />
-            {extraErr && <div className="text-[11px] text-rose-600 mt-1">Invalid JSON: {extraErr}</div>}
+            {extraErr && (
+              <div className="text-[11px] text-rose-600 mt-1">Invalid JSON: {extraErr}</div>
+            )}
 
             {selected && (
               <div className="mt-3 rounded-control border border-border bg-muted/30 p-2.5">
-                <div className="text-[11px] font-semibold text-muted-foreground mb-1">Bound to {`{{contact}}`}</div>
+                <div className="text-[11px] font-semibold text-muted-foreground mb-1">
+                  Bound to {`{{contact}}`}
+                </div>
                 <pre className="text-[11px] font-mono leading-relaxed overflow-x-auto">
-{JSON.stringify(
-  {
-    id: selected.id,
-    name: selected.display_name ?? selected.first_name,
-    phone: primaryPhone(selected),
-    email: primaryEmail(selected),
-    tags: selected.tags ?? [],
-  },
-  null,
-  2,
-)}
+                  {JSON.stringify(
+                    {
+                      id: selected.id,
+                      name: selected.display_name ?? selected.first_name,
+                      phone: primaryPhone(selected),
+                      email: primaryEmail(selected),
+                      tags: selected.tags ?? [],
+                    },
+                    null,
+                    2,
+                  )}
                 </pre>
               </div>
             )}
@@ -201,7 +225,11 @@ export function SimulateRunDialog({
             disabled={running || !!extraErr}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50"
           >
-            {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            {running ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Play className="w-3.5 h-3.5" />
+            )}
             Run simulation
           </button>
         </DialogFooter>

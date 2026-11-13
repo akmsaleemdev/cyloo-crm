@@ -22,7 +22,9 @@ export const listVisitors = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("livechat_visitors")
-      .select("id, visitor_key, display_name, email, phone, country, city, device, browser, os, language, timezone, ip_address, utm_source, utm_medium, utm_campaign, last_referrer, last_page, last_seen_at, first_seen_at, visits_count, page_views, contact_id")
+      .select(
+        "id, visitor_key, display_name, email, phone, country, city, device, browser, os, language, timezone, ip_address, utm_source, utm_medium, utm_campaign, last_referrer, last_page, last_seen_at, first_seen_at, visits_count, page_views, contact_id",
+      )
       .eq("workspace_id", data.workspaceId)
       .order("last_seen_at", { ascending: false })
       .limit(200);
@@ -105,11 +107,7 @@ export const mergeVisitorWithContact = createServerFn({ method: "POST" })
     if (!c) throw new Error("Contact not found");
 
     const { mergeVisitorIntoContact } = await import("@/lib/livechat/visitor-engine.server");
-    const merged = await mergeVisitorIntoContact(
-      data.visitorId,
-      data.workspaceId,
-      data.contactId,
-    );
+    const merged = await mergeVisitorIntoContact(data.visitorId, data.workspaceId, data.contactId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return JSON.parse(JSON.stringify(merged)) as any;
   });
@@ -141,7 +139,6 @@ export const searchContactsForMerge = createServerFn({ method: "POST" })
     return rows ?? [];
   });
 
-
 const RuleInput = z.object({
   id: z.string().uuid().optional(),
   workspaceId: z.string().uuid(),
@@ -156,9 +153,7 @@ const RuleInput = z.object({
   matchVip: z.boolean().nullable().default(null),
   matchPriority: z.array(z.enum(["low", "normal", "high", "urgent"])).default([]),
   requiredSkills: z.array(z.string()).default([]),
-  strategy: z
-    .enum(["auto", "round_robin", "least_busy", "department", "skill"])
-    .default("auto"),
+  strategy: z.enum(["auto", "round_robin", "least_busy", "department", "skill"]).default("auto"),
   customConditions: z.record(z.string(), z.unknown()).default({}),
   routeTo: z.enum(["ai", "department", "agent", "queue"]).default("ai"),
   departmentId: z.string().uuid().nullable().optional(),

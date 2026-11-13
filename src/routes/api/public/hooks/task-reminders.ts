@@ -12,20 +12,18 @@ export const Route = createFileRoute("/api/public/hooks/task-reminders")({
       POST: async ({ request }) => {
         const denied = guardCronRequest(request);
         if (denied) return denied;
-try {
-          const { runTaskReminders } = await import(
-            "@/lib/tasks/reminders-runner.server"
-          );
+        try {
+          const { runTaskReminders } = await import("@/lib/tasks/reminders-runner.server");
           const result = await runTaskReminders();
           const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
           const { runClientProjectUpdates } = await import("@/lib/inbox/client-updates.server");
           const clientUpdates = await runClientProjectUpdates(supabaseAdmin);
           return Response.json({ ok: true, ...result, client_updates: clientUpdates });
         } catch (e: any) {
-          return new Response(
-            JSON.stringify({ ok: false, error: e?.message ?? String(e) }),
-            { status: 500, headers: { "Content-Type": "application/json" } }
-          );
+          return new Response(JSON.stringify({ ok: false, error: e?.message ?? String(e) }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
       },
     },

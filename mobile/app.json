@@ -16,10 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cyloo.app",
-      "associatedDomains": [
-        "applinks:cyloo.app",
-        "applinks:app.cyloo.com"
-      ],
+      "associatedDomains": ["applinks:cyloo.app", "applinks:app.cyloo.com"],
       "infoPlist": {
         "NSCameraUsageDescription": "Take photos, scan documents, and read QR/barcodes.",
         "NSPhotoLibraryUsageDescription": "Attach media from your photo library.",
@@ -70,8 +67,19 @@
       "expo-localization",
       ["expo-local-authentication", { "faceIDPermission": "Use Face ID to unlock CYLOO." }],
       ["expo-image-picker", { "photosPermission": "Allow access to attach media." }],
-      ["expo-camera", { "cameraPermission": "Take photos, scan documents, and read QR/barcodes.", "microphonePermission": "Record voice notes and video." }],
-      ["expo-location", { "locationAlwaysAndWhenInUsePermission": "Attach your location to conversations and check-ins." }],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Take photos, scan documents, and read QR/barcodes.",
+          "microphonePermission": "Record voice notes and video."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Attach your location to conversations and check-ins."
+        }
+      ],
       ["expo-contacts", { "contactsPermission": "Import contacts into your CRM." }]
     ],
     "experiments": { "typedRoutes": true },

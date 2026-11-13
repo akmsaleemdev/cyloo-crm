@@ -20,7 +20,10 @@ export function tiktokDmAppCreds(): { appId: string; secret: string } | null {
 
 function requireCreds() {
   const creds = tiktokDmAppCreds();
-  if (!creds) throw new Error("TIKTOK_BUSINESS_APP_ID and TIKTOK_BUSINESS_APP_SECRET are not set on the server.");
+  if (!creds)
+    throw new Error(
+      "TIKTOK_BUSINESS_APP_ID and TIKTOK_BUSINESS_APP_SECRET are not set on the server.",
+    );
   return creds;
 }
 
@@ -65,7 +68,11 @@ export interface TikTokTokenData {
 const inSeconds = (s: number | undefined) =>
   typeof s === "number" && s > 0 ? new Date(Date.now() + s * 1000).toISOString() : null;
 
-export async function exchangeTikTokDmCode(code: string, redirectUri: string, fetchImpl?: FetchImpl) {
+export async function exchangeTikTokDmCode(
+  code: string,
+  redirectUri: string,
+  fetchImpl?: FetchImpl,
+) {
   const { appId, secret } = requireCreds();
   return call<TikTokTokenData>(
     "/tt_user/oauth2/token/",
@@ -83,13 +90,20 @@ export async function exchangeTikTokDmCode(code: string, redirectUri: string, fe
   );
 }
 
-export async function fetchTikTokBusinessProfile(businessId: string, token: string, fetchImpl?: FetchImpl) {
+export async function fetchTikTokBusinessProfile(
+  businessId: string,
+  token: string,
+  fetchImpl?: FetchImpl,
+) {
   return call<{ username?: string; display_name?: string; profile_image?: string }>(
     "/business/get/",
     {
       method: "GET",
       token,
-      query: { business_id: businessId, fields: JSON.stringify(["username", "display_name", "profile_image"]) },
+      query: {
+        business_id: businessId,
+        fields: JSON.stringify(["username", "display_name", "profile_image"]),
+      },
     },
     fetchImpl,
   );
@@ -126,11 +140,15 @@ export async function validAccessToken(
   if (fresh) return decryptToken(row.access_token);
 
   const refreshUsable =
-    row.refresh_token && (!row.refresh_expires_at || new Date(row.refresh_expires_at).getTime() > Date.now());
+    row.refresh_token &&
+    (!row.refresh_expires_at || new Date(row.refresh_expires_at).getTime() > Date.now());
   if (!refreshUsable) {
     await admin
       .from("tiktok_business_accounts")
-      .update({ status: "reauth_required", last_error: "TikTok authorization expired. Reconnect the account." })
+      .update({
+        status: "reauth_required",
+        last_error: "TikTok authorization expired. Reconnect the account.",
+      })
       .eq("id", row.id);
     throw new Error("TikTok authorization expired. Reconnect the TikTok Business account.");
   }
@@ -151,7 +169,12 @@ export async function validAccessToken(
   );
   await admin
     .from("tiktok_business_accounts")
-    .update({ ...tokenColumns(t), status: "active", last_error: null, updated_at: new Date().toISOString() })
+    .update({
+      ...tokenColumns(t),
+      status: "active",
+      last_error: null,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", row.id);
   return t.access_token;
 }
@@ -183,7 +206,10 @@ export async function getTikTokDmWebhook(fetchImpl?: FetchImpl): Promise<string 
   return data?.callback_url ?? null;
 }
 
-export async function setTikTokDmWebhook(callbackUrl: string, fetchImpl?: FetchImpl): Promise<void> {
+export async function setTikTokDmWebhook(
+  callbackUrl: string,
+  fetchImpl?: FetchImpl,
+): Promise<void> {
   const { appId, secret } = requireCreds();
   await call(
     "/business/webhook/update/",

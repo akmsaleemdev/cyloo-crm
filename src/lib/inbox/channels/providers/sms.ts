@@ -6,6 +6,10 @@ export const smsChannel: ChannelProvider = {
   label: "SMS",
   implemented: false,
   capabilities: new Set(["text", "image", "delivery_receipt"]),
-  async parseWebhook() { return []; },
-  async send() { throw new Error("sms: not configured"); },
+  async parseWebhook() {
+    return [];
+  },
+  async send() {
+    throw new Error("sms: not configured");
+  },
 };

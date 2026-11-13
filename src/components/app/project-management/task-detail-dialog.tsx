@@ -12,7 +12,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FormattedText } from "@/components/app/inbox/formatted-text";
 import type { PmProject, PmTask, PmWorkspaceUser } from "@/lib/project-management/client";
-import { TASK_PRIORITY_LABELS, TASK_PRIORITY_TONE, TASK_STATUS_LABELS, TASK_STATUS_TONE, shortDate } from "./labels";
+import {
+  TASK_PRIORITY_LABELS,
+  TASK_PRIORITY_TONE,
+  TASK_STATUS_LABELS,
+  TASK_STATUS_TONE,
+  shortDate,
+} from "./labels";
 
 type Props = {
   task: PmTask | null;
@@ -51,7 +57,10 @@ export function TaskDetailDialog({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="inline-flex items-center gap-1.5 px-1.5">
-              <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", TASK_STATUS_TONE[task.status])} aria-hidden="true" />
+              <span
+                className={cn("h-1.5 w-1.5 shrink-0 rounded-full", TASK_STATUS_TONE[task.status])}
+                aria-hidden="true"
+              />
               {TASK_STATUS_LABELS[task.status]}
             </Badge>
             <Badge variant="outline" className={TASK_PRIORITY_TONE[task.priority]}>

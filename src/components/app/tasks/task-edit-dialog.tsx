@@ -3,11 +3,22 @@ import { format, parseISO } from "date-fns";
 import { CalendarIcon, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +30,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { useWorkspaceMembers } from "@/hooks/use-workspace";
 import { CustomFieldsSection } from "@/components/app/custom-fields/custom-fields-section";
 import {
-  useCreateTask, useUpdateTask, useDeleteTask,
-  type TaskBoardPriority, type TaskBoardRow, type TaskBoardStatus, type TaskInput,
+  useCreateTask,
+  useUpdateTask,
+  useDeleteTask,
+  type TaskBoardPriority,
+  type TaskBoardRow,
+  type TaskBoardStatus,
+  type TaskInput,
 } from "@/hooks/use-task-board";
 
 type Props = {
@@ -55,7 +71,14 @@ const emptyDraft = (userId: string | undefined): Draft => ({
 
 const errorText = (e: unknown) => (e as { message?: string } | null)?.message;
 
-export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit, canDelete }: Props) {
+export function TaskEditDialog({
+  open,
+  onOpenChange,
+  workspaceId,
+  task,
+  canEdit,
+  canDelete,
+}: Props) {
   const { user } = useAuth();
   const userId = user?.id;
   const members = useWorkspaceMembers(workspaceId ?? undefined);
@@ -133,20 +156,37 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{readOnly ? "Task details" : isEdit ? "Edit task" : "New task"}</DialogTitle>
+            <DialogTitle>
+              {readOnly ? "Task details" : isEdit ? "Edit task" : "New task"}
+            </DialogTitle>
             <DialogDescription>
-              {readOnly ? "You can view this task, but cannot change it." : isEdit ? "Change details, status, due date or assignee." : "Create a task for your team."}
+              {readOnly
+                ? "You can view this task, but cannot change it."
+                : isEdit
+                  ? "Change details, status, due date or assignee."
+                  : "Create a task for your team."}
             </DialogDescription>
           </DialogHeader>
 
           <fieldset disabled={readOnly} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="tk-title">Title</Label>
-              <Input id="tk-title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} autoFocus={!readOnly} />
+              <Input
+                id="tk-title"
+                value={draft.title}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+                autoFocus={!readOnly}
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="tk-desc">Description</Label>
-              <RichTextarea id="tk-desc" rows={3} value={draft.description} onChange={(value) => setDraft({ ...draft, description: value })} disabled={readOnly} />
+              <RichTextarea
+                id="tk-desc"
+                rows={3}
+                value={draft.description}
+                onChange={(value) => setDraft({ ...draft, description: value })}
+                disabled={readOnly}
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -155,7 +195,9 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
                   id="tk-status"
                   className="h-9 w-full rounded-control border border-input bg-background px-2 text-sm"
                   value={draft.status}
-                  onChange={(e) => setDraft({ ...draft, status: e.target.value as TaskBoardStatus })}
+                  onChange={(e) =>
+                    setDraft({ ...draft, status: e.target.value as TaskBoardStatus })
+                  }
                 >
                   <option value="open">Open</option>
                   <option value="in_progress">In progress</option>
@@ -169,7 +211,9 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
                   id="tk-priority"
                   className="h-9 w-full rounded-control border border-input bg-background px-2 text-sm"
                   value={draft.priority}
-                  onChange={(e) => setDraft({ ...draft, priority: e.target.value as TaskBoardPriority })}
+                  onChange={(e) =>
+                    setDraft({ ...draft, priority: e.target.value as TaskBoardPriority })
+                  }
                 >
                   <option value="low">Low</option>
                   <option value="normal">Normal</option>
@@ -183,7 +227,11 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
                 <Label>Due date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button type="button" variant="outline" className="w-full justify-start font-normal">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-start font-normal"
+                    >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {draft.due ? format(parseISO(draft.due), "PPP") : "No date"}
                     </Button>
@@ -192,12 +240,20 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
                     <Calendar
                       mode="single"
                       selected={draft.due ? parseISO(draft.due) : undefined}
-                      onSelect={(d) => setDraft({ ...draft, due: d ? format(d, "yyyy-MM-dd") : "" })}
+                      onSelect={(d) =>
+                        setDraft({ ...draft, due: d ? format(d, "yyyy-MM-dd") : "" })
+                      }
                       initialFocus
                     />
                     {draft.due && (
                       <div className="border-t p-2">
-                        <Button type="button" variant="ghost" size="sm" className="w-full" onClick={() => setDraft({ ...draft, due: "" })}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setDraft({ ...draft, due: "" })}
+                        >
                           Clear date
                         </Button>
                       </div>
@@ -216,7 +272,8 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
                   <option value="">Unassigned</option>
                   {(members.data ?? []).map((m) => (
                     <option key={m.user_id} value={m.user_id}>
-                      {(m.display_name || m.email || "Member") + (m.user_id === userId ? " (you)" : "")}
+                      {(m.display_name || m.email || "Member") +
+                        (m.user_id === userId ? " (you)" : "")}
                     </option>
                   ))}
                 </select>
@@ -232,14 +289,25 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
 
           <DialogFooter className="flex-row sm:justify-between gap-2">
             {isEdit && canDelete ? (
-              <Button type="button" variant="ghost" className="text-destructive" onClick={() => setConfirmDelete(true)} disabled={busy}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="text-destructive"
+                onClick={() => setConfirmDelete(true)}
+                disabled={busy}
+              >
                 <Trash2 className="h-4 w-4" /> Delete
               </Button>
             ) : (
               <span />
             )}
             <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+                disabled={busy}
+              >
                 {readOnly ? "Close" : "Cancel"}
               </Button>
               {!readOnly && (
@@ -257,11 +325,16 @@ export function TaskEditDialog({ open, onOpenChange, workspaceId, task, canEdit,
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this task?</AlertDialogTitle>
-            <AlertDialogDescription>The task will be removed from the board.</AlertDialogDescription>
+            <AlertDialogDescription>
+              The task will be removed from the board.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={doDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={doDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

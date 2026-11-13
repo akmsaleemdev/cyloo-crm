@@ -9,13 +9,15 @@
 
 /** Strip PostgREST grammar characters and LIKE wildcards from a search term. */
 export function sanitizeSearchTerm(input: string, maxLength = 100): string {
-  return input
-    .replace(/[,.()":*%\\]/g, " ")
-    // Control characters have no place in a filter string either.
-    .replace(/[\u0000-\u001f\u007f]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, maxLength);
+  return (
+    input
+      .replace(/[,.()":*%\\]/g, " ")
+      // Control characters have no place in a filter string either.
+      .replace(/[\u0000-\u001f\u007f]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, maxLength)
+  );
 }
 
 /** Build a safe `ilike` pattern (`%term%`) for use inside `.or()`. */

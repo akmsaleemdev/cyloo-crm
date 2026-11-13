@@ -48,7 +48,9 @@ function sanitize(changes: Record<string, unknown> | undefined) {
       key,
       SENSITIVE.test(key) && typeof value === "string" && value.length > 0
         ? // Secret *names* are safe to keep; anything longer is redacted.
-          (/^[A-Za-z_][A-Za-z0-9_]*$/.test(value) ? value : "[redacted]")
+          /^[A-Za-z_][A-Za-z0-9_]*$/.test(value)
+          ? value
+          : "[redacted]"
         : value,
     ]),
   );
@@ -57,15 +59,17 @@ function sanitize(changes: Record<string, unknown> | undefined) {
 export async function recordGatewayAudit(input: GatewayAuditInput): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    await sbAny(supabaseAdmin).from("platform_audit_logs").insert({
-      actor_id: input.actorId,
-      actor_email: input.actorEmail ?? null,
-      action: input.action,
-      resource_type: input.resourceType ?? "payment_gateway",
-      resource_id: input.resourceId ?? input.providerId,
-      summary: input.summary,
-      changes: sanitize(input.changes),
-    } as never);
+    await sbAny(supabaseAdmin)
+      .from("platform_audit_logs")
+      .insert({
+        actor_id: input.actorId,
+        actor_email: input.actorEmail ?? null,
+        action: input.action,
+        resource_type: input.resourceType ?? "payment_gateway",
+        resource_id: input.resourceId ?? input.providerId,
+        summary: input.summary,
+        changes: sanitize(input.changes),
+      } as never);
   } catch (error) {
     console.error("[gateway-audit] failed to record", input.action, error);
   }

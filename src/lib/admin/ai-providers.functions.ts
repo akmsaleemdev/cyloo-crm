@@ -346,8 +346,8 @@ export const listPlatformAiModels = createServerFn({ method: "POST" })
   });
 
 /**
- * Pull the provider's live model list (or the curated catalog for the Lovable
- * gateway, which does not expose /models) and upsert it into `ai_models`.
+ * Pull the provider's live model list (or a curated fallback catalog)
+ * and upsert it into `ai_models`.
  */
 export const syncPlatformProviderModels = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

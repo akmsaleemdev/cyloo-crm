@@ -1,5 +1,5 @@
-import { TextInput, View, Text, type TextInputProps } from 'react-native';
-import { useTheme } from '@/theme/ThemeProvider';
+import { TextInput, View, Text, type TextInputProps } from "react-native";
+import { useTheme } from "@/theme/ThemeProvider";
 
 export function Input({
   label,
@@ -10,7 +10,7 @@ export function Input({
   return (
     <View style={{ gap: 6 }}>
       {label ? (
-        <Text style={{ color: t.colors.mutedFg, fontSize: 13, fontWeight: '500' }}>{label}</Text>
+        <Text style={{ color: t.colors.mutedFg, fontSize: 13, fontWeight: "500" }}>{label}</Text>
       ) : null}
       <TextInput
         placeholderTextColor={t.colors.mutedFg}

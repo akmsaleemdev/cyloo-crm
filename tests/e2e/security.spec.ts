@@ -37,9 +37,7 @@ test.describe("Security Headers", () => {
     }
   });
 
-  test("should not expose sensitive data in error responses", async ({
-    page,
-  }) => {
+  test("should not expose sensitive data in error responses", async ({ page }) => {
     // Try an invalid API endpoint
     const response = await page.goto(`${BASE_URL}/api/v1/nonexistent`);
     const body = await page.textContent("body");
@@ -50,4 +48,3 @@ test.describe("Security Headers", () => {
     }
   });
 });
-

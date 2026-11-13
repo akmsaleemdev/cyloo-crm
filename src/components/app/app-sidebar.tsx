@@ -363,8 +363,12 @@ export function AppSidebar() {
                     </div>
                     {!sidebarCollapsed && (
                       <div className="min-w-0 flex-1 leading-tight">
-                        <p className="text-xs font-semibold text-sidebar-foreground truncate">{userName}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{user?.email ?? "Workspace User"}</p>
+                        <p className="text-xs font-semibold text-sidebar-foreground truncate">
+                          {userName}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {user?.email ?? "Workspace User"}
+                        </p>
                       </div>
                     )}
                   </button>

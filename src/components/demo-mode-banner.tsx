@@ -15,7 +15,8 @@ export function DemoModeBanner() {
     if (!DEMO_MODE_ENABLED) return;
     let cancelled = false;
     const dismissed =
-      typeof window !== "undefined" && window.sessionStorage.getItem("cyloo.demo-mode.dismissed") === "1";
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem("cyloo.demo-mode.dismissed") === "1";
     if (dismissed) return;
 
     async function check() {

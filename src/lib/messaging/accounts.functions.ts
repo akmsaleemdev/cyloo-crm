@@ -22,7 +22,6 @@ import { parseChannelAccountRows } from "@/lib/messaging/channel-account-schema"
 import { assertWritableProvider } from "@/lib/inbox/provider-validation";
 import { sbAny } from "@/lib/supabase/untyped";
 
-
 const GRAPH_VERSION = "v21.0";
 const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_VERSION}`;
 
@@ -30,14 +29,17 @@ const GRAPH_BASE = `https://graph.facebook.com/${GRAPH_VERSION}`;
 // list accounts for the current workspace
 // ---------------------------------------------------------------------------
 
-
 /** Admin-only lookup of a channel account's secret column values. */
 async function loadAccountSecrets(
   supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> },
   workspaceId: string,
   accountId: string,
   actorId?: string | null,
-): Promise<{ verify_token: string | null; access_token_secret_name: string | null; app_secret_name: string | null }> {
+): Promise<{
+  verify_token: string | null;
+  access_token_secret_name: string | null;
+  app_secret_name: string | null;
+}> {
   const { data } = await sbAny(supabase).rpc("channel_account_secrets", {
     _workspace_id: workspaceId,
     _account_id: accountId,
@@ -57,17 +59,17 @@ async function loadAccountSecrets(
     });
   }
 
-  const row = (Array.isArray(data) ? data[0] : null) as
-    | { verify_token: string | null; access_token_secret_name: string | null; app_secret_name: string | null }
-    | null;
+  const row = (Array.isArray(data) ? data[0] : null) as {
+    verify_token: string | null;
+    access_token_secret_name: string | null;
+    app_secret_name: string | null;
+  } | null;
   return row ?? { verify_token: null, access_token_secret_name: null, app_secret_name: null };
 }
 
 export const listChannelAccounts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("channel_accounts" as never)
@@ -79,10 +81,13 @@ export const listChannelAccounts = createServerFn({ method: "GET" })
       .eq("workspace_id", data.workspaceId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    const { data: secrets } = await sbAny(context.supabase).rpc("channel_account_secrets" as never, {
-      _workspace_id: data.workspaceId,
-    } as never);
-    
+    const { data: secrets } = await sbAny(context.supabase).rpc(
+      "channel_account_secrets" as never,
+      {
+        _workspace_id: data.workspaceId,
+      } as never,
+    );
+
     // Audit mass secret view
     const secretsList = (secrets ?? []) as any[];
     if (secretsList.length > 0) {
@@ -98,8 +103,14 @@ export const listChannelAccounts = createServerFn({ method: "GET" })
     }
 
     const secretById = new Map(
-      ((secrets ?? []) as Array<{ id: string; verify_token: string | null; access_token_secret_name: string | null; app_secret_name: string | null }>)
-        .map((s) => [s.id, s]),
+      (
+        (secrets ?? []) as Array<{
+          id: string;
+          verify_token: string | null;
+          access_token_secret_name: string | null;
+          app_secret_name: string | null;
+        }>
+      ).map((s) => [s.id, s]),
     );
     const merged = ((rows ?? []) as Array<Record<string, unknown>>).map((r) => ({
       ...r,
@@ -113,7 +124,6 @@ export const listChannelAccounts = createServerFn({ method: "GET" })
     return { accounts: parsed.accounts, invalid: parsed.invalid };
   });
 
-
 // ---------------------------------------------------------------------------
 // connect account — create a channel_accounts row
 // ---------------------------------------------------------------------------
@@ -126,14 +136,20 @@ const ConnectSchema = z.object({
   phoneNumberId: z.string().min(1),
   wabaId: z.string().min(1),
   businessId: z.string().optional(),
-  accessTokenSecretName: z.string().regex(/^[A-Z_][A-Z0-9_]*$/).max(512),
-  appSecretName: z.string().regex(/^[A-Z_][A-Z0-9_]*$/).max(512).optional(),
+  accessTokenSecretName: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/)
+    .max(512),
+  appSecretName: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/)
+    .max(512)
+    .optional(),
   verifyToken: z.string().min(8).max(128),
   isDefault: z.boolean().optional(),
   // Free-form on purpose: the strict check happens in the handler so unknown
   // values return a descriptive 4xx instead of a generic schema error.
   provider: z.string().max(120).optional(),
-
 });
 
 async function requireWorkspaceAdmin(
@@ -187,7 +203,9 @@ export const connectChannelAccount = createServerFn({ method: "POST" })
         is_default: data.isDefault ?? false,
         created_by: context.userId,
       } as never)
-      .select("id, workspace_id, inbox_id, provider, display_name, phone_number, phone_number_id, waba_id, business_id, status, status_reason, metadata, is_default, last_verified_at, created_at, updated_at")
+      .select(
+        "id, workspace_id, inbox_id, provider, display_name, phone_number, phone_number_id, waba_id, business_id, status, status_reason, metadata, is_default, last_verified_at, created_at, updated_at",
+      )
       .single();
     if (error) throw new Error(error.message);
 
@@ -213,8 +231,17 @@ const UpdateSchema = z.object({
   id: z.string().uuid(),
   displayName: z.string().min(1).max(200).optional(),
   inboxId: z.string().uuid().nullable().optional(),
-  accessTokenSecretName: z.string().regex(/^[A-Z_][A-Z0-9_]*$/).max(512).optional(),
-  appSecretName: z.string().regex(/^[A-Z_][A-Z0-9_]*$/).max(512).nullable().optional(),
+  accessTokenSecretName: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/)
+    .max(512)
+    .optional(),
+  appSecretName: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/)
+    .max(512)
+    .nullable()
+    .optional(),
   verifyToken: z.string().min(8).max(128).optional(),
   isDefault: z.boolean().optional(),
   // Strictly checked in the handler (clear 4xx for unknown values).
@@ -248,24 +275,29 @@ export const updateChannelAccount = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = {};
     if (data.displayName !== undefined) patch.display_name = data.displayName;
     if (data.inboxId !== undefined) patch.inbox_id = data.inboxId;
-    if (data.accessTokenSecretName !== undefined) patch.access_token_secret_name = data.accessTokenSecretName;
+    if (data.accessTokenSecretName !== undefined)
+      patch.access_token_secret_name = data.accessTokenSecretName;
     if (data.appSecretName !== undefined) patch.app_secret_name = data.appSecretName;
     if (data.verifyToken !== undefined) patch.verify_token = data.verifyToken;
     if (data.isDefault !== undefined) patch.is_default = data.isDefault;
     if (provider !== undefined) patch.provider = provider;
 
-
     const { data: row, error } = await context.supabase
       .from("channel_accounts" as never)
       .update(patch as never)
       .eq("id", data.id)
-      .select("id, workspace_id, inbox_id, provider, display_name, phone_number, phone_number_id, waba_id, business_id, status, status_reason, metadata, is_default, last_verified_at, created_at, updated_at")
+      .select(
+        "id, workspace_id, inbox_id, provider, display_name, phone_number, phone_number_id, waba_id, business_id, status, status_reason, metadata, is_default, last_verified_at, created_at, updated_at",
+      )
       .single();
     if (error) throw new Error(error.message);
 
     const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
-    const rotatesSecrets = data.accessTokenSecretName !== undefined || data.appSecretName !== undefined || data.verifyToken !== undefined;
-    
+    const rotatesSecrets =
+      data.accessTokenSecretName !== undefined ||
+      data.appSecretName !== undefined ||
+      data.verifyToken !== undefined;
+
     void recordServerAuditEvent({
       eventType: rotatesSecrets ? "secrets.rotate" : "channel_account.update",
       severity: rotatesSecrets ? "warning" : "info",
@@ -273,9 +305,9 @@ export const updateChannelAccount = createServerFn({ method: "POST" })
       actorId: context.userId,
       resourceType: "channel_account",
       resourceId: data.id,
-      data: { 
+      data: {
         updated_fields: Object.keys(patch),
-        rotates_secrets: rotatesSecrets 
+        rotates_secrets: rotatesSecrets,
       },
     });
 
@@ -296,7 +328,11 @@ export const disconnectChannelAccount = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
     if (!existing) throw new Error("Not found");
-    await requireWorkspaceAdmin(context.supabase, (existing as { workspace_id: string }).workspace_id, context.userId);
+    await requireWorkspaceAdmin(
+      context.supabase,
+      (existing as { workspace_id: string }).workspace_id,
+      context.userId,
+    );
 
     const { error } = await context.supabase
       .from("channel_accounts" as never)
@@ -316,7 +352,11 @@ export const deleteChannelAccount = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
     if (!existing) throw new Error("Not found");
-    await requireWorkspaceAdmin(context.supabase, (existing as { workspace_id: string }).workspace_id, context.userId);
+    await requireWorkspaceAdmin(
+      context.supabase,
+      (existing as { workspace_id: string }).workspace_id,
+      context.userId,
+    );
 
     const { error } = await context.supabase
       .from("channel_accounts" as never)
@@ -336,9 +376,14 @@ async function graphGet<T>(path: string, accessToken: string): Promise<T> {
   });
   const text = await res.text();
   let body: unknown = null;
-  try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    body = text;
+  }
   if (!res.ok) {
-    const err = (body as { error?: { message?: string } } | null)?.error?.message ?? `Graph ${res.status}`;
+    const err =
+      (body as { error?: { message?: string } } | null)?.error?.message ?? `Graph ${res.status}`;
     const e = new Error(err) as Error & { status?: number; raw?: unknown };
     e.status = res.status;
     e.raw = body;
@@ -347,7 +392,11 @@ async function graphGet<T>(path: string, accessToken: string): Promise<T> {
   return body as T;
 }
 
-async function graphPost<T>(path: string, accessToken: string, body: Record<string, unknown>): Promise<T> {
+async function graphPost<T>(
+  path: string,
+  accessToken: string,
+  body: Record<string, unknown>,
+): Promise<T> {
   const res = await fetch(`${GRAPH_BASE}${path}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
@@ -355,9 +404,14 @@ async function graphPost<T>(path: string, accessToken: string, body: Record<stri
   });
   const text = await res.text();
   let parsed: unknown = null;
-  try { parsed = text ? JSON.parse(text) : null; } catch { parsed = text; }
+  try {
+    parsed = text ? JSON.parse(text) : null;
+  } catch {
+    parsed = text;
+  }
   if (!res.ok) {
-    const err = (parsed as { error?: { message?: string } } | null)?.error?.message ?? `Graph ${res.status}`;
+    const err =
+      (parsed as { error?: { message?: string } } | null)?.error?.message ?? `Graph ${res.status}`;
     throw new Error(err);
   }
   return parsed as T;
@@ -416,7 +470,7 @@ export function diagnoseConnectionError(
   if (
     lower.includes("access token") ||
     lower.includes("session has expired") ||
-    lower.includes("oauthexception") && lower.includes("invalid")
+    (lower.includes("oauthexception") && lower.includes("invalid"))
   ) {
     return {
       field: "access_token_value",
@@ -505,24 +559,36 @@ export const testChannelAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!acc) throw new Error("Not found");
     const row = acc as unknown as {
-      id: string; workspace_id: string; provider: string;
-      phone_number_id: string | null; waba_id: string | null;
+      id: string;
+      workspace_id: string;
+      provider: string;
+      phone_number_id: string | null;
+      waba_id: string | null;
     };
     await requireWorkspaceAdmin(context.supabase, row.workspace_id, context.userId);
 
-    const accSecrets = await loadAccountSecrets(context.supabase as never, row.workspace_id, data.id);
+    const accSecrets = await loadAccountSecrets(
+      context.supabase as never,
+      row.workspace_id,
+      data.id,
+    );
     const secretName = accSecrets.access_token_secret_name ?? "WHATSAPP_ACCESS_TOKEN";
     let token: string;
-    try { token = readAccessToken(accSecrets.access_token_secret_name); }
-    catch (err) {
+    try {
+      token = readAccessToken(accSecrets.access_token_secret_name);
+    } catch (err) {
       const diagnosis = diagnoseConnectionError(err, {
         secretName,
         phoneNumberId: row.phone_number_id,
         wabaId: row.waba_id,
       });
-      await sbAny(context.supabase).from("channel_accounts" as never).update({
-        status: "error", status_reason: diagnosis.raw,
-      } as never).eq("id", row.id);
+      await sbAny(context.supabase)
+        .from("channel_accounts" as never)
+        .update({
+          status: "error",
+          status_reason: diagnosis.raw,
+        } as never)
+        .eq("id", row.id);
       return { ok: false, error: diagnosis.raw, diagnosis };
     }
 
@@ -551,17 +617,17 @@ export const testChannelAccount = createServerFn({ method: "POST" })
       // cannot be marked connected while the Inbox receives nothing.
       if (isValid && row.waba_id) {
         try {
-          await graphPost<{ success?: boolean }>(
-            `/${row.waba_id}/subscribed_apps`,
-            token,
-            {},
-          );
+          await graphPost<{ success?: boolean }>(`/${row.waba_id}/subscribed_apps`, token, {});
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Unable to subscribe the app to this WABA";
-          await sbAny(context.supabase).from("channel_accounts" as never).update({
-            status: "error",
-            status_reason: `Webhook subscription failed: ${message}`,
-          } as never).eq("id", row.id);
+          const message =
+            err instanceof Error ? err.message : "Unable to subscribe the app to this WABA";
+          await sbAny(context.supabase)
+            .from("channel_accounts" as never)
+            .update({
+              status: "error",
+              status_reason: `Webhook subscription failed: ${message}`,
+            } as never)
+            .eq("id", row.id);
           return {
             ok: false as const,
             error: message,
@@ -579,29 +645,38 @@ export const testChannelAccount = createServerFn({ method: "POST" })
       }
 
       const status = isValid ? "connected" : "error";
-      await sbAny(context.supabase).from("channel_accounts" as never).update({
-        status,
-        status_reason: isValid ? null : (tokenInfo?.data?.error?.message ?? "token invalid"),
-        phone_number: phone.display_phone_number ?? undefined,
-        last_verified_at: new Date().toISOString(),
-        metadata: {
-          verified_name: phone.verified_name,
-          code_verification_status: phone.code_verification_status,
-          quality_rating: phone.quality_rating,
-          name_status: phone.name_status,
-          platform_type: phone.platform_type,
-          throughput: phone.throughput,
-          token_expires_at: expiresAt,
-          token_scopes: tokenInfo?.data?.scopes ?? null,
-        },
-      } as never).eq("id", row.id);
+      await sbAny(context.supabase)
+        .from("channel_accounts" as never)
+        .update({
+          status,
+          status_reason: isValid ? null : (tokenInfo?.data?.error?.message ?? "token invalid"),
+          phone_number: phone.display_phone_number ?? undefined,
+          last_verified_at: new Date().toISOString(),
+          metadata: {
+            verified_name: phone.verified_name,
+            code_verification_status: phone.code_verification_status,
+            quality_rating: phone.quality_rating,
+            name_status: phone.name_status,
+            platform_type: phone.platform_type,
+            throughput: phone.throughput,
+            token_expires_at: expiresAt,
+            token_scopes: tokenInfo?.data?.scopes ?? null,
+          },
+        } as never)
+        .eq("id", row.id);
 
       if (!isValid) {
         const diagnosis = diagnoseConnectionError(
           new Error(tokenInfo?.data?.error?.message ?? "Access token is no longer valid"),
           { secretName, phoneNumberId: row.phone_number_id, wabaId: row.waba_id },
         );
-        return { ok: false as const, error: diagnosis.raw, diagnosis, phone, tokenExpiresAt: expiresAt };
+        return {
+          ok: false as const,
+          error: diagnosis.raw,
+          diagnosis,
+          phone,
+          tokenExpiresAt: expiresAt,
+        };
       }
       return { ok: true as const, phone, tokenExpiresAt: expiresAt };
     } catch (err) {
@@ -610,9 +685,13 @@ export const testChannelAccount = createServerFn({ method: "POST" })
         phoneNumberId: row.phone_number_id,
         wabaId: row.waba_id,
       });
-      await sbAny(context.supabase).from("channel_accounts" as never).update({
-        status: "error", status_reason: diagnosis.raw,
-      } as never).eq("id", row.id);
+      await sbAny(context.supabase)
+        .from("channel_accounts" as never)
+        .update({
+          status: "error",
+          status_reason: diagnosis.raw,
+        } as never)
+        .eq("id", row.id);
       return { ok: false, error: diagnosis.raw, diagnosis };
     }
   });
@@ -650,7 +729,8 @@ export const fetchBusinessProfile = createServerFn({ method: "POST" })
     await requireWorkspaceAdmin(context.supabase, row.workspace_id, context.userId);
 
     const token = readAccessToken(
-      (await loadAccountSecrets(context.supabase as never, row.workspace_id, data.id)).access_token_secret_name,
+      (await loadAccountSecrets(context.supabase as never, row.workspace_id, data.id))
+        .access_token_secret_name,
     );
     const res = await graphGet<BusinessProfileResponse>(
       `/${row.phone_number_id}/whatsapp_business_profile?fields=${PROFILE_FIELDS}`,
@@ -666,11 +746,29 @@ const UpdateProfileSchema = z.object({
   description: z.string().max(512).optional(),
   email: z.string().email().max(128).optional(),
   websites: z.array(z.string().url()).max(2).optional(),
-  vertical: z.enum([
-    "UNDEFINED","OTHER","AUTO","BEAUTY","APPAREL","EDU","ENTERTAIN","EVENT_PLAN",
-    "FINANCE","GROCERY","GOVT","HOTEL","HEALTH","NONPROFIT","PROF_SERVICES",
-    "RETAIL","TRAVEL","RESTAURANT","NOT_A_BIZ",
-  ]).optional(),
+  vertical: z
+    .enum([
+      "UNDEFINED",
+      "OTHER",
+      "AUTO",
+      "BEAUTY",
+      "APPAREL",
+      "EDU",
+      "ENTERTAIN",
+      "EVENT_PLAN",
+      "FINANCE",
+      "GROCERY",
+      "GOVT",
+      "HOTEL",
+      "HEALTH",
+      "NONPROFIT",
+      "PROF_SERVICES",
+      "RETAIL",
+      "TRAVEL",
+      "RESTAURANT",
+      "NOT_A_BIZ",
+    ])
+    .optional(),
 });
 
 export const updateBusinessProfile = createServerFn({ method: "POST" })
@@ -687,7 +785,8 @@ export const updateBusinessProfile = createServerFn({ method: "POST" })
     await requireWorkspaceAdmin(context.supabase, row.workspace_id, context.userId);
 
     const token = readAccessToken(
-      (await loadAccountSecrets(context.supabase as never, row.workspace_id, data.id)).access_token_secret_name,
+      (await loadAccountSecrets(context.supabase as never, row.workspace_id, data.id))
+        .access_token_secret_name,
     );
     const payload: Record<string, unknown> = { messaging_product: "whatsapp" };
     if (data.about !== undefined) payload.about = data.about;
@@ -707,7 +806,10 @@ export const updateBusinessProfile = createServerFn({ method: "POST" })
 
 const ListWabaSchema = z.object({
   wabaId: z.string().min(1),
-  accessTokenSecretName: z.string().regex(/^[A-Z_][A-Z0-9_]*$/).max(512),
+  accessTokenSecretName: z
+    .string()
+    .regex(/^[A-Z_][A-Z0-9_]*$/)
+    .max(512),
 });
 
 export const listWabaPhoneNumbers = createServerFn({ method: "POST" })

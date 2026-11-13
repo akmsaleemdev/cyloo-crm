@@ -7,8 +7,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { validatePlatformSettingValue } from "@/lib/admin/platform-settings-validation";
 
-
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertPlatformStaff(supabase: any, userId: string) {
   const { data, error } = await supabase
@@ -69,12 +67,18 @@ export const updatePlatformSetting = createServerFn({ method: "POST" })
     const value = validatePlatformSettingValue(data.key, data.value);
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
 
-    const { error } = await supabaseAdmin
-      .from("settings")
-      .upsert(
-        { scope: "platform", key: data.key, value: value as Json, organization_id: null, workspace_id: null, user_id: null, updated_at: new Date().toISOString() },
-        { onConflict: "scope,organization_id,workspace_id,user_id,key" },
-      );
+    const { error } = await supabaseAdmin.from("settings").upsert(
+      {
+        scope: "platform",
+        key: data.key,
+        value: value as Json,
+        organization_id: null,
+        workspace_id: null,
+        user_id: null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "scope,organization_id,workspace_id,user_id,key" },
+    );
     if (error) throw new Error(error.message);
 
     await supabaseAdmin
@@ -87,7 +91,10 @@ export const updatePlatformSetting = createServerFn({ method: "POST" })
         changes: { platform_action: "settings.update", key: data.key },
         metadata: { source: "super_admin" },
       })
-      .then(() => undefined, () => undefined);
+      .then(
+        () => undefined,
+        () => undefined,
+      );
 
     return { ok: true };
   });

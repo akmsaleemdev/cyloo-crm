@@ -17,7 +17,6 @@ import type { ChannelAccountRow } from "@/hooks/use-channel-accounts";
 import { externalAccountId } from "@/lib/inbox/external-account-ids";
 import type { ExternalAccountChannel } from "@/lib/inbox/external-account-ids";
 
-
 type Status = ChannelAccountRow["status"];
 
 function toStatus(raw: string | null | undefined): Status {
@@ -86,7 +85,8 @@ export function useExternalChannelAccounts(workspaceId: string | undefined) {
     enabled: !!workspaceId,
     staleTime: 30_000,
     queryFn: async (): Promise<ChannelAccountRow[]> => {
-      const base = "id, workspace_id, status, status_reason, metadata, last_verified_at, created_at, updated_at";
+      const base =
+        "id, workspace_id, status, status_reason, metadata, last_verified_at, created_at, updated_at";
       const [tg, ms, ig, em, sm, so, tt] = await Promise.all([
         supabase
           .from("telegram_accounts")
@@ -118,7 +118,9 @@ export function useExternalChannelAccounts(workspaceId: string | undefined) {
           .in("platform", ["facebook", "youtube", "linkedin"]),
         sbAny(supabase)
           .from("tiktok_business_accounts")
-          .select("id, workspace_id, business_id, username, display_name, status, last_error, created_at, updated_at")
+          .select(
+            "id, workspace_id, business_id, username, display_name, status, last_error, created_at, updated_at",
+          )
           .eq("workspace_id", workspaceId!)
           .neq("status", "disconnected"),
       ]);
@@ -140,34 +142,51 @@ export function useExternalChannelAccounts(workspaceId: string | undefined) {
         return p && isKnownProvider(p) ? p : fallback;
       };
 
-      for (const r of ((tg.data ?? []) as unknown) as (BaseRow & {
+      for (const r of (tg.data ?? []) as unknown as (BaseRow & {
         bot_name: string | null;
         bot_username: string | null;
         bot_id: string | null;
       })[]) {
         out.push(
-          shape("telegram", "telegram", r, r.bot_name?.trim() || r.bot_username || "Telegram bot",
-            r.bot_username ? `@${r.bot_username.replace(/^@/, "")}` : null),
+          shape(
+            "telegram",
+            "telegram",
+            r,
+            r.bot_name?.trim() || r.bot_username || "Telegram bot",
+            r.bot_username ? `@${r.bot_username.replace(/^@/, "")}` : null,
+          ),
         );
       }
 
-      for (const r of ((ms.data ?? []) as unknown) as (BaseRow & {
+      for (const r of (ms.data ?? []) as unknown as (BaseRow & {
         page_name: string | null;
         page_id: string | null;
       })[]) {
         out.push(
-          shape("messenger", "meta_messenger", r, r.page_name?.trim() || "Facebook Page", r.page_id),
+          shape(
+            "messenger",
+            "meta_messenger",
+            r,
+            r.page_name?.trim() || "Facebook Page",
+            r.page_id,
+          ),
         );
         // The same Page's post comments are a separate Inbox channel.
         out.push(
-          shape("facebook", "facebook_comments", r, r.page_name?.trim() || "Facebook Page", "Page comments"),
+          shape(
+            "facebook",
+            "facebook_comments",
+            r,
+            r.page_name?.trim() || "Facebook Page",
+            "Page comments",
+          ),
         );
       }
 
       const pageKeys = new Set(
         ((ms.data ?? []) as unknown as Array<{ page_id: string | null }>).map((r) => r.page_id),
       );
-      for (const r of ((so.data ?? []) as unknown) as Array<{
+      for (const r of (so.data ?? []) as unknown as Array<{
         id: string;
         workspace_id: string;
         platform: "facebook" | "youtube" | "linkedin" | "tiktok";
@@ -194,8 +213,13 @@ export function useExternalChannelAccounts(workspaceId: string | undefined) {
         };
         const provider = r.platform === "facebook" ? "facebook_comments" : r.platform;
         out.push(
-          shape(r.platform, provider, row, r.name?.trim() || r.username || r.platform,
-            r.username ? `@${r.username.replace(/^@/, "")}` : "Comments"),
+          shape(
+            r.platform,
+            provider,
+            row,
+            r.name?.trim() || r.username || r.platform,
+            r.username ? `@${r.username.replace(/^@/, "")}` : "Comments",
+          ),
         );
       }
 
@@ -222,41 +246,61 @@ export function useExternalChannelAccounts(workspaceId: string | undefined) {
           updated_at: r.updated_at,
         };
         out.push(
-          shape("tiktok", "tiktok", row, r.display_name?.trim() || r.username || "TikTok account",
-            r.username ? `@${r.username.replace(/^@/, "")}` : "Messages + comments"),
+          shape(
+            "tiktok",
+            "tiktok",
+            row,
+            r.display_name?.trim() || r.username || "TikTok account",
+            r.username ? `@${r.username.replace(/^@/, "")}` : "Messages + comments",
+          ),
         );
       }
 
-      for (const r of ((ig.data ?? []) as unknown) as (BaseRow & {
+      for (const r of (ig.data ?? []) as unknown as (BaseRow & {
         username: string | null;
         name: string | null;
         ig_user_id: string | null;
       })[]) {
         out.push(
-          shape("instagram", "meta_instagram", r, r.name?.trim() || r.username || "Instagram account",
-            r.username ? `@${r.username.replace(/^@/, "")}` : null),
+          shape(
+            "instagram",
+            "meta_instagram",
+            r,
+            r.name?.trim() || r.username || "Instagram account",
+            r.username ? `@${r.username.replace(/^@/, "")}` : null,
+          ),
         );
       }
 
-      for (const r of ((em.data ?? []) as unknown) as (BaseRow & {
+      for (const r of (em.data ?? []) as unknown as (BaseRow & {
         display_name: string | null;
         from_email: string | null;
         provider: string | null;
       })[]) {
         out.push(
-          shape("email", providerFor("email", r.provider), r, r.display_name?.trim() || r.from_email || "Email account",
-            r.from_email),
+          shape(
+            "email",
+            providerFor("email", r.provider),
+            r,
+            r.display_name?.trim() || r.from_email || "Email account",
+            r.from_email,
+          ),
         );
       }
 
-      for (const r of ((sm.data ?? []) as unknown) as (BaseRow & {
+      for (const r of (sm.data ?? []) as unknown as (BaseRow & {
         display_name: string | null;
         phone_number: string | null;
         provider: string | null;
       })[]) {
         out.push(
-          shape("sms", providerFor("sms", r.provider), r, r.display_name?.trim() || r.phone_number || "SMS number",
-            r.phone_number),
+          shape(
+            "sms",
+            providerFor("sms", r.provider),
+            r,
+            r.display_name?.trim() || r.phone_number || "SMS number",
+            r.phone_number,
+          ),
         );
       }
 

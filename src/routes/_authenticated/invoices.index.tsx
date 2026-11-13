@@ -78,17 +78,13 @@ function InvoicesPage() {
         <div className="grid gap-3 md:grid-cols-3">
           <Card className="p-4">
             <div className="text-xs  text-muted-foreground">Outstanding</div>
-            <div className="text-2xl font-semibold mt-1 ">
-              {money(totalOutstanding)}
-            </div>
+            <div className="text-2xl font-semibold mt-1 ">{money(totalOutstanding)}</div>
           </Card>
           <Card className="p-4">
             <div className="text-xs  text-muted-foreground flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5" /> Overdue
             </div>
-            <div className="text-2xl font-semibold mt-1  text-red-600">
-              {money(totalOverdue)}
-            </div>
+            <div className="text-2xl font-semibold mt-1  text-red-600">{money(totalOverdue)}</div>
           </Card>
           <Card className="p-4">
             <div className="text-xs  text-muted-foreground">Invoices</div>

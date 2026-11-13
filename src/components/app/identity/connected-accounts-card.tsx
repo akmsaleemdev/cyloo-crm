@@ -90,7 +90,10 @@ function ChannelChip({ channel, className }: { channel: string; className?: stri
   const color = CHANNEL_COLORS[channel] ?? "#64748B";
   return (
     <span
-      className={cn("inline-flex shrink-0 items-center justify-center rounded-control bg-card", className)}
+      className={cn(
+        "inline-flex shrink-0 items-center justify-center rounded-control bg-card",
+        className,
+      )}
     >
       <Icon className="h-3.5 w-3.5" style={{ color }} />
     </span>
@@ -115,7 +118,8 @@ export function ConnectedAccountsCard({ contactId }: { contactId: string }) {
           <p className="text-xs text-muted-foreground">Loading</p>
         ) : !identities || identities.length === 0 ? (
           <p className="text-xs text-muted-foreground">
-            No channels linked yet. This customer will get linked automatically the first time they message you.
+            No channels linked yet. This customer will get linked automatically the first time they
+            message you.
           </p>
         ) : (
           identities.map((i) => {

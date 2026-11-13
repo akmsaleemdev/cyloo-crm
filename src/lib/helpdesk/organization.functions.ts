@@ -70,7 +70,10 @@ export const deleteQueue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await sbAny(context.supabase).from("support_queues").delete().eq("id", data.id);
+    const { error } = await sbAny(context.supabase)
+      .from("support_queues")
+      .delete()
+      .eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
@@ -129,13 +132,16 @@ async function pickAgent(
 
   if (queue.vip_only || ticket.is_vip) pool = pool.filter((a) => a.handles_vip);
   if ((queue.required_skills ?? []).length > 0)
-    pool = pool.filter((a) => queue.required_skills.every((s: string) => (a.skills ?? []).includes(s)));
+    pool = pool.filter((a) =>
+      queue.required_skills.every((s: string) => (a.skills ?? []).includes(s)),
+    );
   if (ticket.required_skill)
     pool = pool.filter((a) => (a.skills ?? []).includes(ticket.required_skill));
   if ((queue.required_languages ?? []).length > 0)
-    pool = pool.filter((a) => queue.required_languages.some((l: string) => (a.languages ?? []).includes(l)));
-  if (ticket.language)
-    pool = pool.filter((a) => (a.languages ?? []).includes(ticket.language));
+    pool = pool.filter((a) =>
+      queue.required_languages.some((l: string) => (a.languages ?? []).includes(l)),
+    );
+  if (ticket.language) pool = pool.filter((a) => (a.languages ?? []).includes(ticket.language));
   pool = pool.filter((a) => (a.current_load ?? 0) < (a.max_concurrent ?? 10));
   if (pool.length === 0) return null;
 
@@ -235,7 +241,11 @@ export const assignTicket = createServerFn({ method: "POST" })
     if (data.user_id) {
       await sbAny(context.supabase)
         .from("queue_tickets")
-        .update({ assigned_to: data.user_id, status: "assigned", assigned_at: new Date().toISOString() })
+        .update({
+          assigned_to: data.user_id,
+          status: "assigned",
+          assigned_at: new Date().toISOString(),
+        })
         .eq("ticket_id", data.ticket_id);
     }
     return { ok: true };
@@ -262,17 +272,19 @@ export const transferTicket = createServerFn({ method: "POST" })
       .select("assigned_to")
       .eq("id", data.ticket_id)
       .single();
-    const { error } = await sbAny(context.supabase).from("conversation_transfers").insert({
-      workspace_id: wsId,
-      conversation_id: data.ticket_id,
-      from_user_id: current?.assigned_to ?? null,
-      to_user_id: data.to_user_id ?? null,
-      to_department_id: data.to_department_id ?? null,
-      transfer_type: data.transfer_type,
-      reason: data.reason,
-      note: data.note,
-      performed_by: context.userId,
-    });
+    const { error } = await sbAny(context.supabase)
+      .from("conversation_transfers")
+      .insert({
+        workspace_id: wsId,
+        conversation_id: data.ticket_id,
+        from_user_id: current?.assigned_to ?? null,
+        to_user_id: data.to_user_id ?? null,
+        to_department_id: data.to_department_id ?? null,
+        transfer_type: data.transfer_type,
+        reason: data.reason,
+        note: data.note,
+        performed_by: context.userId,
+      });
     if (error) throw error;
     if (data.to_user_id) {
       await sbAny(context.supabase)
@@ -290,7 +302,9 @@ export const listWatchers = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows } = await sbAny(context.supabase)
       .from("ticket_watchers")
-      .select("*, profile:profiles!ticket_watchers_user_id_fkey(id, display_name, avatar_url, email)")
+      .select(
+        "*, profile:profiles!ticket_watchers_user_id_fkey(id, display_name, avatar_url, email)",
+      )
       .eq("ticket_id", data.ticket_id);
     return rows ?? [];
   });
@@ -360,8 +374,13 @@ export const createMention = createServerFn({ method: "POST" })
       const admin = sbAny(supabaseAdmin);
       const [workspace, member] = await Promise.all([
         admin.from("workspaces").select("organization_id").eq("id", wsId).single(),
-        admin.from("workspace_members").select("user_id").eq("workspace_id", wsId)
-          .eq("user_id", data.mentioned_user_id).eq("status", "active").maybeSingle(),
+        admin
+          .from("workspace_members")
+          .select("user_id")
+          .eq("workspace_id", wsId)
+          .eq("user_id", data.mentioned_user_id)
+          .eq("status", "active")
+          .maybeSingle(),
       ]);
       if (workspace.error || member.error) throw workspace.error ?? member.error;
       if (workspace.data?.organization_id && member.data) {
@@ -415,7 +434,9 @@ export const listTeamInboxes = createServerFn({ method: "GET" })
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
     const { data } = await sbAny(context.supabase)
       .from("inboxes")
-      .select("*, members:inbox_members(user_id, role, profile:profiles!inbox_members_user_id_fkey(display_name, avatar_url))")
+      .select(
+        "*, members:inbox_members(user_id, role, profile:profiles!inbox_members_user_id_fkey(display_name, avatar_url))",
+      )
       .eq("workspace_id", wsId)
       .eq("is_archived", false);
     return data ?? [];
@@ -427,7 +448,9 @@ export const listWorkspaceMembers = createServerFn({ method: "GET" })
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
     const { data } = await sbAny(context.supabase)
       .from("workspace_members")
-      .select("user_id, role, profile:profiles!workspace_members_user_id_fkey(id, display_name, avatar_url, email)")
+      .select(
+        "user_id, role, profile:profiles!workspace_members_user_id_fkey(id, display_name, avatar_url, email)",
+      )
       .eq("workspace_id", wsId);
     return data ?? [];
   });

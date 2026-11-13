@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { MarketingShell } from "@/components/app/marketing-shell";
 import platformPreviewImg from "@/assets/marketing/platform-preview.jpg";
-import integrationsChannelsImg from "@/assets/marketing/platform-stack-illustration.png";
+import integrationsChannelsImg from "@/assets/marketing/cyloo-platform.svg";
 import { redirectSignedInFromMarketing } from "@/lib/auth/marketing-redirect";
 
 export const Route = createFileRoute("/about")({
@@ -90,7 +90,9 @@ function AboutPage() {
               />
             </div>
             <div className="max-w-xl">
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">Why we&apos;re building <Brand /></span>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
+                Why we&apos;re building <Brand />
+              </span>
               <h2 className="text-marketing-title mt-3">
                 One conversation should carry its context with it.
               </h2>
@@ -122,7 +124,9 @@ function AboutPage() {
 
           <div className="mt-14 grid items-center gap-8 border-y border-border py-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:py-14">
             <div className="max-w-xl">
-              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">Made for the way teams work</span>
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
+                Made for the way teams work
+              </span>
               <h2 className="text-marketing-title mt-3">
                 Keep channels connected. Give every team the same picture.
               </h2>

@@ -8,10 +8,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import {
-  assertWritableProvider,
-  providerErrorResponse,
-} from "@/lib/inbox/provider-validation";
+import { assertWritableProvider, providerErrorResponse } from "@/lib/inbox/provider-validation";
 
 export const repairWorkspaceProvider = createServerFn({ method: "POST" })
   .validator((input: unknown) =>
@@ -51,7 +48,6 @@ export const repairWorkspaceProvider = createServerFn({ method: "POST" })
     if (role !== "owner" && role !== "admin") {
       throw new Error("Forbidden — workspace admin required");
     }
-
 
     const patch =
       data.action === "remap"

@@ -41,7 +41,8 @@ export async function createTaskReminderEmailDelivery(
 ): Promise<(event: TaskEmailReminder) => Promise<void>> {
   const [profiles, accounts] = await Promise.all([
     sbAny(admin).from("profiles").select("id,email").in("id", userIds),
-    sbAny(admin).from("email_accounts")
+    sbAny(admin)
+      .from("email_accounts")
       .select("workspace_id,from_email,from_name,reply_to,api_key_ciphertext")
       .in("workspace_id", workspaceIds)
       .eq("provider", "resend")
@@ -79,15 +80,17 @@ export async function createTaskReminderEmailDelivery(
     };
     const { error: logError } = await sbAny(admin).from("task_reminder_email_log").insert(key);
     if (logError) {
-      if (logError.code !== "23505") result.errors.push(`task email log ${event.taskId}: ${logError.message}`);
+      if (logError.code !== "23505")
+        result.errors.push(`task email log ${event.taskId}: ${logError.message}`);
       return;
     }
     const sourceLabel = event.source === "crm" ? "CRM" : "Project";
-    const timing = event.kind === "overdue"
-      ? `${formatOffset(event.offsetMinutes)} overdue`
-      : event.kind === "due"
-        ? "due now"
-        : `due in ${formatOffset(event.offsetMinutes)}`;
+    const timing =
+      event.kind === "overdue"
+        ? `${formatOffset(event.offsetMinutes)} overdue`
+        : event.kind === "due"
+          ? "due now"
+          : `due in ${formatOffset(event.offsetMinutes)}`;
     try {
       await sendResendEmail({
         apiKeyCipher: sender.api_key_ciphertext,
@@ -100,9 +103,15 @@ export async function createTaskReminderEmailDelivery(
       });
       result.emails_sent++;
     } catch (error) {
-      result.errors.push(`task email ${event.taskId}/${event.userId}: ${error instanceof Error ? error.message : String(error)}`);
-      const { error: rollbackError } = await sbAny(admin).from("task_reminder_email_log").delete().match(key);
-      if (rollbackError) result.errors.push(`task email log rollback ${event.taskId}: ${rollbackError.message}`);
+      result.errors.push(
+        `task email ${event.taskId}/${event.userId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      const { error: rollbackError } = await sbAny(admin)
+        .from("task_reminder_email_log")
+        .delete()
+        .match(key);
+      if (rollbackError)
+        result.errors.push(`task email log rollback ${event.taskId}: ${rollbackError.message}`);
     }
   };
 }

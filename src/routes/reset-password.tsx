@@ -45,8 +45,7 @@ function ResetPasswordPage() {
     const hash = typeof window !== "undefined" ? window.location.hash : "";
     const search = typeof window !== "undefined" ? window.location.search : "";
     const isRecoveryLink =
-      /(?:^|[#&?])type=recovery(?:&|$)/.test(hash) ||
-      /(?:^|[?&])type=recovery(?:&|$)/.test(search);
+      /(?:^|[#&?])type=recovery(?:&|$)/.test(hash) || /(?:^|[?&])type=recovery(?:&|$)/.test(search);
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") setReady(true);
     });
@@ -109,11 +108,16 @@ function ResetPasswordPage() {
             <div className="mt-6 rounded-control border border-border bg-surface p-4 text-sm space-y-3">
               <p className="text-foreground font-medium">Reset link is invalid or expired</p>
               <p className="text-muted-foreground">
-                Password reset links can only be used once and expire after a short time. Request a new one to continue.
+                Password reset links can only be used once and expire after a short time. Request a
+                new one to continue.
               </p>
               <div className="flex gap-3 pt-1">
-                <Link to="/forgot-password" className="text-primary hover:underline">Request a new link</Link>
-                <Link to="/auth" className="text-muted-foreground hover:underline">Back to sign in</Link>
+                <Link to="/forgot-password" className="text-primary hover:underline">
+                  Request a new link
+                </Link>
+                <Link to="/auth" className="text-muted-foreground hover:underline">
+                  Back to sign in
+                </Link>
               </div>
             </div>
           ) : (

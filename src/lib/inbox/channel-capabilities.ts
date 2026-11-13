@@ -52,13 +52,30 @@ export const FILTERABLE_CHANNELS: InboxChannel[] = [
 ];
 
 const ALL: ComposerCapability[] = [
-  "text", "emoji", "media", "document", "location",
-  "contact_card", "voice_note", "templates", "schedule",
+  "text",
+  "emoji",
+  "media",
+  "document",
+  "location",
+  "contact_card",
+  "voice_note",
+  "templates",
+  "schedule",
 ];
 
 export const CHANNEL_COMPOSER_CAPABILITIES: Record<InboxChannel, ComposerCapability[]> = {
   whatsapp: ALL,
-  telegram: ["text", "emoji", "media", "document", "location", "contact_card", "voice_note", "templates", "schedule"],
+  telegram: [
+    "text",
+    "emoji",
+    "media",
+    "document",
+    "location",
+    "contact_card",
+    "voice_note",
+    "templates",
+    "schedule",
+  ],
   messenger: ["text", "emoji", "media", "document", "templates", "schedule"],
   instagram: ["text", "emoji", "media", "voice_note", "templates", "schedule"],
   email: ["text", "emoji", "media", "document", "templates", "schedule"],
@@ -73,13 +90,16 @@ export const CHANNEL_COMPOSER_CAPABILITIES: Record<InboxChannel, ComposerCapabil
   other: ALL,
 };
 
-export function channelCan(channel: InboxChannel | undefined | null, cap: ComposerCapability): boolean {
+export function channelCan(
+  channel: InboxChannel | undefined | null,
+  cap: ComposerCapability,
+): boolean {
   if (!channel) return true;
   return (CHANNEL_COMPOSER_CAPABILITIES[channel] ?? ALL).includes(cap);
 }
 
 export function channelLabel(channel?: string | null): string {
-  return CHANNEL_LABELS[(channel ?? "other") as InboxChannel] ?? (channel ?? "Other");
+  return CHANNEL_LABELS[(channel ?? "other") as InboxChannel] ?? channel ?? "Other";
 }
 
 /**
@@ -90,7 +110,8 @@ export function providerToChannel(provider: string): InboxChannel {
   const p = provider.toLowerCase();
   // Keyword matching (not prefixes) so vendor-prefixed values such as
   // "meta_whatsapp", "twilio_whatsapp" or "360dialog_whatsapp" resolve too.
-  if (p.includes("whatsapp") || p.includes("dialog360") || p.includes("360dialog")) return "whatsapp";
+  if (p.includes("whatsapp") || p.includes("dialog360") || p.includes("360dialog"))
+    return "whatsapp";
   if (p.includes("instagram")) return "instagram";
   if (p.includes("facebook_comment")) return "facebook";
   if (p.includes("youtube")) return "youtube";
@@ -99,9 +120,13 @@ export function providerToChannel(provider: string): InboxChannel {
   if (p.includes("messenger") || p.includes("facebook")) return "messenger";
   if (p.includes("telegram")) return "telegram";
   if (
-    p.includes("email") || p.includes("smtp") || p.includes("imap") || p.includes("mail") ||
+    p.includes("email") ||
+    p.includes("smtp") ||
+    p.includes("imap") ||
+    p.includes("mail") ||
     ["sendgrid", "resend", "postmark", "ses", "smtp2go"].includes(p)
-  ) return "email";
+  )
+    return "email";
   if (p.includes("webchat") || p.startsWith("live")) return "webchat";
   if (p.includes("sms") || ["messagebird", "vonage", "sinch", "plivo"].includes(p)) return "sms";
   if (p.includes("voice") || p.includes("call")) return "voice";

@@ -13,20 +13,20 @@ export const Route = createFileRoute("/_authenticated/developer-tools/cli")({
 });
 
 const COMMANDS = [
-  { cmd: "cyloo init <name>",       desc: "Scaffold a new plugin from a template." },
-  { cmd: "cyloo dev",               desc: "Hot-reload against your sandbox workspace." },
-  { cmd: "cyloo build",             desc: "Type-check and bundle to dist/." },
-  { cmd: "cyloo test [--watch]",    desc: "Run unit and integration tests." },
-  { cmd: "cyloo lint",              desc: `Lint manifest.json + source with the ${BRAND_NAME} ruleset.` },
-  { cmd: "cyloo login",             desc: `Authenticate the CLI with your ${BRAND_NAME} account.` },
-  { cmd: "cyloo link <workspace>",  desc: "Bind the CLI to a workspace and sandbox." },
-  { cmd: "cyloo publish",           desc: "Publish a new version to the Marketplace." },
-  { cmd: "cyloo versions",          desc: "List published versions for the current plugin." },
-  { cmd: "cyloo rollback <ver>",    desc: "Roll a published plugin back to a prior version." },
-  { cmd: "cyloo logs [--tail]",     desc: "Stream logs from an installed plugin." },
-  { cmd: "cyloo invoke <api>",      desc: "Invoke a REST endpoint against the API base URL." },
-  { cmd: "cyloo webhook replay",    desc: "Replay a captured webhook against your local plugin." },
-  { cmd: "cyloo theme <slug>",      desc: "Scaffold or preview a theme package." },
+  { cmd: "cyloo init <name>", desc: "Scaffold a new plugin from a template." },
+  { cmd: "cyloo dev", desc: "Hot-reload against your sandbox workspace." },
+  { cmd: "cyloo build", desc: "Type-check and bundle to dist/." },
+  { cmd: "cyloo test [--watch]", desc: "Run unit and integration tests." },
+  { cmd: "cyloo lint", desc: `Lint manifest.json + source with the ${BRAND_NAME} ruleset.` },
+  { cmd: "cyloo login", desc: `Authenticate the CLI with your ${BRAND_NAME} account.` },
+  { cmd: "cyloo link <workspace>", desc: "Bind the CLI to a workspace and sandbox." },
+  { cmd: "cyloo publish", desc: "Publish a new version to the Marketplace." },
+  { cmd: "cyloo versions", desc: "List published versions for the current plugin." },
+  { cmd: "cyloo rollback <ver>", desc: "Roll a published plugin back to a prior version." },
+  { cmd: "cyloo logs [--tail]", desc: "Stream logs from an installed plugin." },
+  { cmd: "cyloo invoke <api>", desc: "Invoke a REST endpoint against the API base URL." },
+  { cmd: "cyloo webhook replay", desc: "Replay a captured webhook against your local plugin." },
+  { cmd: "cyloo theme <slug>", desc: "Scaffold or preview a theme package." },
 ];
 
 function CliPage() {
@@ -38,7 +38,9 @@ function CliPage() {
             <TerminalIcon className="w-4 h-4" aria-hidden />
           </div>
           <h2 className="font-display text-xl font-semibold">CLI Tool</h2>
-          <Badge variant="secondary" className="text-[11px]">@cyloo/cli · v1.4.0</Badge>
+          <Badge variant="secondary" className="text-[11px]">
+            @cyloo/cli · v1.4.0
+          </Badge>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
           One tool for the whole plugin lifecycle — scaffold, run, test, publish, and roll back.
@@ -46,12 +48,14 @@ function CliPage() {
       </header>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Install</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Install</CardTitle>
+        </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {[
-            { label: "npm",  code: "npm i -g @cyloo/cli" },
+            { label: "npm", code: "npm i -g @cyloo/cli" },
             { label: "pnpm", code: "pnpm add -g @cyloo/cli" },
-            { label: "bun",  code: "bun add -g @cyloo/cli" },
+            { label: "bun", code: "bun add -g @cyloo/cli" },
           ].map((i) => (
             <div key={i.label}>
               <div className="text-xs text-muted-foreground mb-1">{i.label}</div>
@@ -62,7 +66,9 @@ function CliPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Commands</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Commands</CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
           <ul className="divide-y divide-border">
             {COMMANDS.map((c) => (
@@ -79,7 +85,9 @@ function CliPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Configuration</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Configuration</CardTitle>
+        </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground mb-2">
             Store per-project configuration in <code>cyloo.config.json</code>:
@@ -108,7 +116,15 @@ function CopyRow({ code }: { code: string }) {
 
 function CopyBtn({ text }: { text: string }) {
   return (
-    <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(text); toast.success("Copied"); }} aria-label="Copy">
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        toast.success("Copied");
+      }}
+      aria-label="Copy"
+    >
       <Copy className="w-3.5 h-3.5" />
     </Button>
   );

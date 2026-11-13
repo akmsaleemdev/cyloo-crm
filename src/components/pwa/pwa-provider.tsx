@@ -18,7 +18,10 @@ export function PwaProvider() {
     };
     const goOffline = () => {
       setOnline(false);
-      toast.warning("You're offline. Some features may be limited.", { id: "pwa-online", duration: 4000 });
+      toast.warning("You're offline. Some features may be limited.", {
+        id: "pwa-online",
+        duration: 4000,
+      });
     };
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);

@@ -888,7 +888,10 @@ function SidePanel({
             <p className="text-xs text-muted-foreground">No notes yet.</p>
           ) : (
             detail.notes.map((n) => (
-              <div key={n.id} className="text-xs bg-muted/50 border border-border rounded-control p-2.5">
+              <div
+                key={n.id}
+                className="text-xs bg-muted/50 border border-border rounded-control p-2.5"
+              >
                 <p className="whitespace-pre-wrap">{n.body.replace(/^customer:\s*/i, "")}</p>
                 <p className="text-[11px] text-muted-foreground mt-1">
                   {fmtZoned(new Date(n.created_at), { dateStyle: "medium", timeStyle: "short" })}
@@ -1006,7 +1009,12 @@ function MessageMedia({
         }
         if (m.startsWith("video/")) {
           return (
-            <video key={a.id} src={a.url ?? ""} controls className="rounded-control max-h-64 w-full" />
+            <video
+              key={a.id}
+              src={a.url ?? ""}
+              controls
+              className="rounded-control max-h-64 w-full"
+            />
           );
         }
         if (m.startsWith("audio/")) {

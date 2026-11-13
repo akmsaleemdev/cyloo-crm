@@ -27,17 +27,15 @@ export function PageHeader({
       )}
     >
       <div className="min-w-0 space-y-1">
-        {eyebrow && (
-          <div className="text-[11px] uppercase   text-muted-foreground">{eyebrow}</div>
-        )}
+        {eyebrow && <div className="text-[11px] uppercase   text-muted-foreground">{eyebrow}</div>}
         <h1 className="truncate font-display text-xl font-semibold text-foreground lg:text-2xl">
           {title}
         </h1>
-        {description && (
-          <p className="text-sm text-muted-foreground text-pretty">{description}</p>
-        )}
+        {description && <p className="text-sm text-muted-foreground text-pretty">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2 justify-self-end">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2 justify-self-end">{actions}</div>
+      )}
     </header>
   );
 }
@@ -64,7 +62,9 @@ export function Section({
       {(title || actions) && (
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="min-w-0">
-            {title && <h2 className="font-display text-base font-semibold text-foreground">{title}</h2>}
+            {title && (
+              <h2 className="font-display text-base font-semibold text-foreground">{title}</h2>
+            )}
             {description && <p className="text-xs text-muted-foreground">{description}</p>}
           </div>
           {actions && <div className="flex items-center gap-2">{actions}</div>}

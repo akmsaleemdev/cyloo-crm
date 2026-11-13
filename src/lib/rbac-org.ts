@@ -43,7 +43,7 @@ export async function getOrgRole(
     .eq("organization_id", orgId)
     .maybeSingle();
   if (error) return null;
-  return ((data?.role as OrgRole | undefined) ?? null);
+  return (data?.role as OrgRole | undefined) ?? null;
 }
 
 /**

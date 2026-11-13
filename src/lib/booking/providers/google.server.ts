@@ -1,7 +1,13 @@
 /**
  * Google Calendar provider using direct OAuth refresh tokens.
  */
-import type { CalendarProvider, ProviderContext, BusyBlock, ExternalEvent, CalendarListItem } from "./types";
+import type {
+  CalendarProvider,
+  ProviderContext,
+  BusyBlock,
+  ExternalEvent,
+  CalendarListItem,
+} from "./types";
 import { googleAccessTokenFromRefreshToken } from "@/lib/integrations/google-oauth.server";
 
 async function gfetch(ctx: ProviderContext, path: string, init?: RequestInit) {
@@ -80,10 +86,15 @@ export const googleCalendarProvider: CalendarProvider = {
     const calId = encodeURIComponent(ctx.calendarId ?? "primary");
     if (!ctx.connectionKey) return;
     const token = await googleAccessTokenFromRefreshToken(ctx.connectionKey);
-    const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calId}/events/${encodeURIComponent(externalId)}`, {
-      method: "DELETE", headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok && res.status !== 404) throw new Error(`Google Calendar delete failed (${res.status})`);
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calId}/events/${encodeURIComponent(externalId)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (!res.ok && res.status !== 404)
+      throw new Error(`Google Calendar delete failed (${res.status})`);
   },
 };
 

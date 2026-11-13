@@ -10,12 +10,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sbAny } from "@/lib/supabase/untyped";
 
 type Kind =
-  | "confirmation"
-  | "reschedule"
-  | "cancellation"
-  | "reminder"
-  | "follow_up"
-  | "review_request";
+  "confirmation" | "reschedule" | "cancellation" | "reminder" | "follow_up" | "review_request";
 
 type Channel = "whatsapp" | "email" | "sms" | "push" | "in_app";
 type Recipient = "customer" | "host" | "both";
@@ -56,7 +51,10 @@ interface Template {
 }
 
 /** Resolve simple {{token}} placeholders. */
-export function renderTemplate(source: string, vars: Record<string, string | null | undefined>): string {
+export function renderTemplate(
+  source: string,
+  vars: Record<string, string | null | undefined>,
+): string {
   return source.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_m, key: string) => {
     const v = vars[key];
     return v == null ? "" : String(v);
@@ -80,12 +78,16 @@ function buildVars(appt: Appointment, extras: Record<string, string> = {}): Reco
 
 /** Default templates baked in when the workspace hasn't customized. */
 const DEFAULT_BODIES: Record<Kind, string> = {
-  confirmation: "Hi {{customer_name}}, your appointment is confirmed for {{start_at}}. {{join_url}}",
-  reschedule: "Hi {{customer_name}}, your appointment has been rescheduled to {{start_at}}. {{join_url}}",
+  confirmation:
+    "Hi {{customer_name}}, your appointment is confirmed for {{start_at}}. {{join_url}}",
+  reschedule:
+    "Hi {{customer_name}}, your appointment has been rescheduled to {{start_at}}. {{join_url}}",
   cancellation: "Hi {{customer_name}}, your appointment on {{start_at}} has been cancelled.",
   reminder: "Reminder: {{customer_name}}, your appointment is at {{start_at}}. {{join_url}}",
-  follow_up: "Hi {{customer_name}}, thanks for meeting with us on {{start_date}}. Let us know how it went.",
-  review_request: "Hi {{customer_name}}, could you take a moment to share feedback about your session on {{start_date}}?",
+  follow_up:
+    "Hi {{customer_name}}, thanks for meeting with us on {{start_date}}. Let us know how it went.",
+  review_request:
+    "Hi {{customer_name}}, could you take a moment to share feedback about your session on {{start_date}}?",
 };
 
 const DEFAULT_SUBJECTS: Record<Kind, string> = {
@@ -121,8 +123,11 @@ async function loadTemplate(
     .eq("kind", kind)
     .eq("channel", channel)
     .eq("is_active", true);
-  const scoped = (rows ?? []).find((r) => (r as { event_type_id: string | null }).event_type_id === eventTypeId);
-  const fallback = (rows ?? []).find((r) => !(r as { event_type_id: string | null }).event_type_id) ??
+  const scoped = (rows ?? []).find(
+    (r) => (r as { event_type_id: string | null }).event_type_id === eventTypeId,
+  );
+  const fallback =
+    (rows ?? []).find((r) => !(r as { event_type_id: string | null }).event_type_id) ??
     (rows ?? [])[0];
   const picked = (scoped ?? fallback) as Template | undefined;
   if (picked) return picked;
@@ -137,7 +142,9 @@ async function loadRules(
 ): Promise<Rule[]> {
   const { data } = await admin
     .from("booking_notification_rules")
-    .select("id, workspace_id, event_type_id, kind, channels, offset_minutes, send_to, is_active, template_ids")
+    .select(
+      "id, workspace_id, event_type_id, kind, channels, offset_minutes, send_to, is_active, template_ids",
+    )
     .eq("workspace_id", workspaceId)
     .eq("kind", kind)
     .eq("is_active", true);
@@ -153,7 +160,9 @@ export async function scheduleAppointmentReminders(
 ): Promise<{ scheduled: number }> {
   const { data: appt } = await admin
     .from("booking_appointments")
-    .select("id, workspace_id, event_type_id, host_id, start_at, end_at, customer_email, customer_phone, status")
+    .select(
+      "id, workspace_id, event_type_id, host_id, start_at, end_at, customer_email, customer_phone, status",
+    )
     .eq("id", appointmentId)
     .maybeSingle();
   if (!appt) return { scheduled: 0 };
@@ -179,17 +188,19 @@ export async function scheduleAppointmentReminders(
         const recipients: Recipient[] =
           rule.send_to === "both" ? ["customer", "host"] : [rule.send_to];
         for (const recipient of recipients) {
-          await sbAny(admin).from("booking_reminders").insert({
-            appointment_id: a.id,
-            workspace_id: a.workspace_id,
-            rule_id: rule.id,
-            kind,
-            channel,
-            recipient,
-            send_at: sendAt.toISOString(),
-            status: "queued",
-            template_id: rule.template_ids?.[channel] ?? null,
-          } as never);
+          await sbAny(admin)
+            .from("booking_reminders")
+            .insert({
+              appointment_id: a.id,
+              workspace_id: a.workspace_id,
+              rule_id: rule.id,
+              kind,
+              channel,
+              recipient,
+              send_at: sendAt.toISOString(),
+              status: "queued",
+              template_id: rule.template_ids?.[channel] ?? null,
+            } as never);
           scheduled += 1;
         }
       }
@@ -244,7 +255,11 @@ export async function sendAppointmentNotification(
       await dispatchOne(admin, a, kind, job.channel, job.recipient, job.templateId);
       sent += 1;
     } catch (e) {
-      console.error("[booking-notifications] dispatch failed", { kind, channel: job.channel, err: (e as Error).message });
+      console.error("[booking-notifications] dispatch failed", {
+        kind,
+        channel: job.channel,
+        err: (e as Error).message,
+      });
     }
   }
   return { sent };
@@ -282,7 +297,14 @@ export async function dispatchQueuedReminder(
   const a = appt as Appointment;
   if (a.status !== "confirmed") return { ok: false, error: "appointment_not_confirmed" };
   try {
-    const { subject, body } = await dispatchOne(admin, a, rem.kind, rem.channel, rem.recipient, rem.template_id);
+    const { subject, body } = await dispatchOne(
+      admin,
+      a,
+      rem.kind,
+      rem.channel,
+      rem.recipient,
+      rem.template_id,
+    );
     await admin
       .from("booking_reminders")
       .update({
@@ -315,7 +337,14 @@ async function dispatchOne(
   recipient: Recipient,
   overrideTemplateId: string | null,
 ): Promise<{ subject: string; body: string }> {
-  const tpl = await loadTemplate(admin, a.workspace_id, a.event_type_id, kind, channel, overrideTemplateId);
+  const tpl = await loadTemplate(
+    admin,
+    a.workspace_id,
+    a.event_type_id,
+    kind,
+    channel,
+    overrideTemplateId,
+  );
   const vars = buildVars(a);
   const body = renderTemplate(tpl.body, vars);
   const subject = renderTemplate(tpl.subject ?? DEFAULT_SUBJECTS[kind], vars);
@@ -345,14 +374,16 @@ async function dispatchOne(
       target = (prof as { email: string | null } | null)?.email ?? null;
     }
     if (!target) throw new Error("no_email_address");
-    await sbAny(admin).from("message_outbox").insert({
-      workspace_id: a.workspace_id,
-      channel: "email",
-      to_address: target,
-      body,
-      status: "queued",
-      metadata: { ...metadata, subject },
-    } as never);
+    await sbAny(admin)
+      .from("message_outbox")
+      .insert({
+        workspace_id: a.workspace_id,
+        channel: "email",
+        to_address: target,
+        body,
+        status: "queued",
+        metadata: { ...metadata, subject },
+      } as never);
   } else if (channel === "whatsapp" || channel === "sms") {
     if (!toPhone && recipient === "customer") throw new Error("no_customer_phone");
     let target = toPhone;
@@ -365,37 +396,49 @@ async function dispatchOne(
       target = (prof as { phone: string | null } | null)?.phone ?? null;
     }
     if (!target) throw new Error("no_phone_number");
-    await sbAny(admin).from("message_outbox").insert({
-      workspace_id: a.workspace_id,
-      channel,
-      to_address: target,
-      body,
-      status: "queued",
-      metadata,
-    } as never);
+    await sbAny(admin)
+      .from("message_outbox")
+      .insert({
+        workspace_id: a.workspace_id,
+        channel,
+        to_address: target,
+        body,
+        status: "queued",
+        metadata,
+      } as never);
   } else if (channel === "in_app") {
     // The header feed is user-scoped and uses organization_id, category and data.
     const targetUserId = recipient === "host" || recipient === "both" ? a.host_id : null;
     if (!targetUserId) return { subject, body };
-    const { data: workspace, error: workspaceError } = await admin.from("workspaces")
-      .select("organization_id").eq("id", a.workspace_id).single();
-    if (workspaceError || !workspace?.organization_id) throw workspaceError ?? new Error("Workspace organization not found");
-    const { data: member, error: memberError } = await admin.from("workspace_members")
-      .select("user_id").eq("workspace_id", a.workspace_id).eq("user_id", targetUserId)
-      .eq("status", "active").maybeSingle();
+    const { data: workspace, error: workspaceError } = await admin
+      .from("workspaces")
+      .select("organization_id")
+      .eq("id", a.workspace_id)
+      .single();
+    if (workspaceError || !workspace?.organization_id)
+      throw workspaceError ?? new Error("Workspace organization not found");
+    const { data: member, error: memberError } = await admin
+      .from("workspace_members")
+      .select("user_id")
+      .eq("workspace_id", a.workspace_id)
+      .eq("user_id", targetUserId)
+      .eq("status", "active")
+      .maybeSingle();
     if (memberError) throw memberError;
     if (!member) return { subject, body };
-    const { error: notificationError } = await sbAny(admin).from("notifications").insert({
-      user_id: targetUserId,
-      organization_id: workspace.organization_id,
-      channel: "in_app",
-      status: "unread",
-      category: "communication",
-      title: subject,
-      body,
-      action_url: "/booking",
-      data: { ...metadata, workspace_id: a.workspace_id },
-    });
+    const { error: notificationError } = await sbAny(admin)
+      .from("notifications")
+      .insert({
+        user_id: targetUserId,
+        organization_id: workspace.organization_id,
+        channel: "in_app",
+        status: "unread",
+        category: "communication",
+        title: subject,
+        body,
+        action_url: "/booking",
+        data: { ...metadata, workspace_id: a.workspace_id },
+      });
     if (notificationError) throw notificationError;
   } else if (channel === "push") {
     // Web Push: dispatch to any subscription owned by the target user/contact.
@@ -412,14 +455,16 @@ async function dispatchOne(
       .eq("workspace_id", a.workspace_id)
       .eq(ownerFilter, ownerId);
     for (const s of subs ?? []) {
-      await sbAny(admin).from("message_outbox").insert({
-        workspace_id: a.workspace_id,
-        channel: "push",
-        to_address: (s as { endpoint: string }).endpoint,
-        body,
-        status: "queued",
-        metadata: { ...metadata, subject, keys: (s as { keys: unknown }).keys },
-      } as never);
+      await sbAny(admin)
+        .from("message_outbox")
+        .insert({
+          workspace_id: a.workspace_id,
+          channel: "push",
+          to_address: (s as { endpoint: string }).endpoint,
+          body,
+          status: "queued",
+          metadata: { ...metadata, subject, keys: (s as { keys: unknown }).keys },
+        } as never);
     }
   }
 

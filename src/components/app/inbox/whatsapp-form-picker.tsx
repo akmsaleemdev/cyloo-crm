@@ -43,7 +43,11 @@ export interface WhatsAppFormPickerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function WhatsAppFormPicker({ conversationId, open, onOpenChange }: WhatsAppFormPickerProps) {
+export function WhatsAppFormPicker({
+  conversationId,
+  open,
+  onOpenChange,
+}: WhatsAppFormPickerProps) {
   const { data: ws } = useCurrentWorkspace();
   const workspaceId = ws?.id;
   const send = useSendMessage();
@@ -167,7 +171,9 @@ export function WhatsAppFormPicker({ conversationId, open, onOpenChange }: Whats
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium truncate">{f.name}</span>
-                      <Badge variant="outline" className="text-[11px]">{f.category}</Badge>
+                      <Badge variant="outline" className="text-[11px]">
+                        {f.category}
+                      </Badge>
                     </div>
                     {f.description && (
                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2">

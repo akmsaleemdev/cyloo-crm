@@ -197,7 +197,10 @@ export function TaskFormDialog({
                   }
                   disabled={!!current || !!projectId}
                 >
-                  <SelectTrigger id="pm-task-project" className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate">
+                  <SelectTrigger
+                    id="pm-task-project"
+                    className="min-w-0 max-w-full overflow-hidden [&>span]:min-w-0 [&>span]:truncate"
+                  >
                     <SelectValue placeholder="Select project" />
                   </SelectTrigger>
                   <SelectContent className="w-[var(--radix-select-trigger-width)] max-w-[calc(100vw-2rem)]">

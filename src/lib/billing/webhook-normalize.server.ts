@@ -263,10 +263,16 @@ async function normalizeStripe(
     return { kind: "subscription", organization_id, snapshot };
   }
 
-  if (type === "invoice.payment_succeeded" || type === "invoice.paid" || type === "invoice.payment_failed") {
+  if (
+    type === "invoice.payment_succeeded" ||
+    type === "invoice.paid" ||
+    type === "invoice.payment_failed"
+  ) {
     const customerId = stripeCustomerId(object.customer);
     const subscriptionId =
-      typeof object.subscription === "string" ? object.subscription : (object.subscription?.id ?? null);
+      typeof object.subscription === "string"
+        ? object.subscription
+        : (object.subscription?.id ?? null);
     const organization_id = await resolveOrganizationId(supabase, "stripe", {
       metadata_organization_id: object.metadata?.organization_id,
       provider_customer_id: customerId,
@@ -286,7 +292,9 @@ async function normalizeStripe(
           typeof object.payment_intent === "string"
             ? object.payment_intent
             : (object.payment_intent?.id ?? object.id ?? null),
-        amount_cents: failed ? (object.amount_due ?? 0) : (object.amount_paid ?? object.amount_due ?? 0),
+        amount_cents: failed
+          ? (object.amount_due ?? 0)
+          : (object.amount_paid ?? object.amount_due ?? 0),
         currency: String(object.currency ?? "usd").toUpperCase(),
         status: failed ? "failed" : "succeeded",
         failure_code: object.last_finalization_error?.code ?? null,
@@ -302,7 +310,8 @@ async function normalizeStripe(
       metadata_organization_id: object.metadata?.organization_id ?? object.client_reference_id,
       provider_customer_id: customerId,
     });
-    if (organization_id) await ensureCustomerMapping(supabase, "stripe", organization_id, customerId);
+    if (organization_id)
+      await ensureCustomerMapping(supabase, "stripe", organization_id, customerId);
     // The follow-up `customer.subscription.created` carries the full state.
     return { kind: "ignored", reason: "checkout_recorded" };
   }

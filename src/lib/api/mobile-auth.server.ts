@@ -18,8 +18,7 @@ export interface MobileAuth {
 }
 
 function bearer(request: Request): string | null {
-  const auth =
-    request.headers.get("authorization") ?? request.headers.get("Authorization");
+  const auth = request.headers.get("authorization") ?? request.headers.get("Authorization");
   if (!auth?.toLowerCase().startsWith("bearer ")) return null;
   const token = auth.slice(7).trim();
   return token.length > 0 ? token : null;

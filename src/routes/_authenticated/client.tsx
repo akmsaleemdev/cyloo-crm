@@ -1,7 +1,15 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import {
-  LayoutDashboard, MessagesSquare, CalendarDays, Receipt, LifeBuoy,
-  Files, UserCircle, Bell, BookOpen, Sparkles,
+  LayoutDashboard,
+  MessagesSquare,
+  CalendarDays,
+  Receipt,
+  LifeBuoy,
+  Files,
+  UserCircle,
+  Bell,
+  BookOpen,
+  Sparkles,
 } from "lucide-react";
 import { FloatingChatWidget } from "@/components/client-portal/floating-chat-widget";
 
@@ -10,7 +18,11 @@ export const Route = createFileRoute("/_authenticated/client")({
   head: () => ({
     meta: [
       { title: "Customer portal" },
-      { name: "description", content: "Manage your conversations, appointments, invoices, tickets, orders, files, notifications, knowledge base, AI assistant, and profile." },
+      {
+        name: "description",
+        content:
+          "Manage your conversations, appointments, invoices, tickets, orders, files, notifications, knowledge base, AI assistant, and profile.",
+      },
     ],
   }),
   component: ClientPortalLayout,
@@ -49,7 +61,10 @@ function ClientPortalLayout() {
         </div>
       </header>
       <div className="max-w-7xl mx-auto grid md:grid-cols-[220px_1fr] gap-6 md:gap-8 px-4 sm:px-6 py-6">
-        <nav aria-label="Customer portal" className="md:sticky md:top-4 md:self-start md:h-[calc(100dvh-6rem)] md:overflow-y-auto -mx-4 sm:-mx-0 px-4 sm:px-0">
+        <nav
+          aria-label="Customer portal"
+          className="md:sticky md:top-4 md:self-start md:h-[calc(100dvh-6rem)] md:overflow-y-auto -mx-4 sm:-mx-0 px-4 sm:px-0"
+        >
           <ul className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-1 md:pb-0 snap-x">
             {NAV.map((n) => {
               const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
@@ -72,7 +87,9 @@ function ClientPortalLayout() {
             })}
           </ul>
         </nav>
-        <main id="portal-main" className="min-w-0"><Outlet /></main>
+        <main id="portal-main" className="min-w-0">
+          <Outlet />
+        </main>
       </div>
       <FloatingChatWidget />
     </div>

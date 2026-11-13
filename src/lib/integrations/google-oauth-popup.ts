@@ -7,20 +7,28 @@ export async function connectGoogleWorkspacePopup(
   try {
     const { authorizationUrl } = await start(window.location.origin);
     const url = new URL(authorizationUrl);
-    if (url.origin !== "https://accounts.google.com") throw new Error("Unexpected Google authorization URL");
+    if (url.origin !== "https://accounts.google.com")
+      throw new Error("Unexpected Google authorization URL");
     popup.location.href = url.href;
     await new Promise<void>((resolve, reject) => {
-      const cleanup = () => { window.removeEventListener("message", onMessage); clearInterval(timer); };
+      const cleanup = () => {
+        window.removeEventListener("message", onMessage);
+        clearInterval(timer);
+      };
       const onMessage = (event: MessageEvent) => {
         if (event.origin !== window.location.origin || event.source !== popup) return;
         if (event.data?.type !== "cyloo:google-workspace-oauth") return;
-        cleanup(); popup.close();
+        cleanup();
+        popup.close();
         if (event.data.success === true) resolve();
         else reject(new Error("Google connection failed. Check the redirect URI and try again."));
       };
       window.addEventListener("message", onMessage);
       const timer = setInterval(() => {
-        if (popup.closed) { cleanup(); reject(new Error("Google sign-in was cancelled")); }
+        if (popup.closed) {
+          cleanup();
+          reject(new Error("Google sign-in was cancelled"));
+        }
       }, 500);
     });
   } catch (cause) {

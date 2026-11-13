@@ -16,11 +16,7 @@ export const Route = createFileRoute("/api/public/.well-known/oauth-authorizatio
           introspection_endpoint: `${origin}/api/public/oauth/introspect`,
           userinfo_endpoint: `${origin}/api/public/oauth/userinfo`,
           response_types_supported: ["code"],
-          grant_types_supported: [
-            "authorization_code",
-            "refresh_token",
-            "client_credentials",
-          ],
+          grant_types_supported: ["authorization_code", "refresh_token", "client_credentials"],
           token_endpoint_auth_methods_supported: [
             "client_secret_basic",
             "client_secret_post",

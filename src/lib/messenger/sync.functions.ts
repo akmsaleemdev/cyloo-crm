@@ -57,11 +57,14 @@ async function graphGet<T>(url: string): Promise<T> {
   const res = await fetch(url);
   const text = await res.text();
   let body: unknown = null;
-  try { body = JSON.parse(text); } catch { /* ignore */ }
+  try {
+    body = JSON.parse(text);
+  } catch {
+    /* ignore */
+  }
   if (!res.ok) {
     const msg =
-      (body as { error?: { message?: string } } | null)?.error?.message ??
-      text.slice(0, 240);
+      (body as { error?: { message?: string } } | null)?.error?.message ?? text.slice(0, 240);
     throw new Error(`Graph ${res.status}: ${msg}`);
   }
   return body as T;
@@ -192,9 +195,16 @@ async function syncOneThread(ctx: ThreadCtx) {
 
   const { ensureMessengerThread } = await import("./thread.server");
   const { conversationId } = await ensureMessengerThread(admin, {
-    workspaceId, accountId: accountRowId, pageId, customerPsid: customer.id,
-    contactId, graphThreadId: thread.id, inbound: false,
-    preview: thread.snippet, reopen: unread > 0, source: "messenger_sync",
+    workspaceId,
+    accountId: accountRowId,
+    pageId,
+    customerPsid: customer.id,
+    contactId,
+    graphThreadId: thread.id,
+    inbound: false,
+    preview: thread.snippet,
+    reopen: unread > 0,
+    source: "messenger_sync",
   });
 
   // 3) Fetch messages for this thread.
@@ -240,24 +250,30 @@ async function syncOneThread(ctx: ThreadCtx) {
       attachments,
     };
 
-    const { error: insErr } = await sbAny(admin).from("messages").insert({
-      workspace_id: workspaceId,
-      conversation_id: conversationId,
-      direction,
-      status,
-      body: m.message ?? "",
-      media_url: mediaUrl,
-      media_type: mediaType,
-      message_type: messageType,
-      provider_message_id: providerId,
-      from_address: m.from?.id ?? null,
-      to_address: m.to?.data?.[0]?.id ?? null,
-      created_at: m.created_time ?? new Date().toISOString(),
-      metadata,
-    });
+    const { error: insErr } = await sbAny(admin)
+      .from("messages")
+      .insert({
+        workspace_id: workspaceId,
+        conversation_id: conversationId,
+        direction,
+        status,
+        body: m.message ?? "",
+        media_url: mediaUrl,
+        media_type: mediaType,
+        message_type: messageType,
+        provider_message_id: providerId,
+        from_address: m.from?.id ?? null,
+        to_address: m.to?.data?.[0]?.id ?? null,
+        created_at: m.created_time ?? new Date().toISOString(),
+        metadata,
+      });
     if (insErr) {
       // Duplicate deliveries are fine — log and continue.
-      if (!String(insErr.message ?? "").toLowerCase().includes("duplicate")) {
+      if (
+        !String(insErr.message ?? "")
+          .toLowerCase()
+          .includes("duplicate")
+      ) {
         console.warn("[messenger-sync] message insert failed:", insErr.message);
       }
       continue;
@@ -268,11 +284,14 @@ async function syncOneThread(ctx: ThreadCtx) {
   // 4) Refresh last_seen_at on the identity so it sorts recently.
   // The insert trigger increments unread_count for inbound history. Apply
   // Graph's snapshot after insertion so syncing does not count it a second time.
-  const { error: refreshError } = await admin.from("conversations").update({
-    last_message_at: lastAt,
-    last_message_preview: thread.snippet ?? null,
-    unread_count: unread,
-  }).eq("id", conversationId);
+  const { error: refreshError } = await admin
+    .from("conversations")
+    .update({
+      last_message_at: lastAt,
+      last_message_preview: thread.snippet ?? null,
+      unread_count: unread,
+    })
+    .eq("id", conversationId);
   if (refreshError) throw new Error(refreshError.message);
   await admin
     .from("channel_identities")

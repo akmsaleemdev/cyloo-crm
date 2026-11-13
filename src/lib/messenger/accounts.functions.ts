@@ -26,7 +26,10 @@ const META_SCOPES = [
 
 function requireAppId(): string {
   const id = process.env.META_APP_ID;
-  if (!id) throw new Error("META_APP_ID not configured. Add it in project secrets to enable Messenger linking.");
+  if (!id)
+    throw new Error(
+      "META_APP_ID not configured. Add it in project secrets to enable Messenger linking.",
+    );
   return id;
 }
 
@@ -48,13 +51,15 @@ export const startMessengerOAuth = createServerFn({ method: "POST" })
     const redirectUri = `${data.origin.replace(/\/$/, "")}/api/public/messenger/callback`;
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { error } = await sbAny(supabaseAdmin).from("messenger_oauth_states").insert({
-      state,
-      workspace_id: data.workspaceId,
-      user_id: context.userId,
-      redirect_uri: redirectUri,
-      return_to: data.returnTo ?? "/api-config/messenger",
-    });
+    const { error } = await sbAny(supabaseAdmin)
+      .from("messenger_oauth_states")
+      .insert({
+        state,
+        workspace_id: data.workspaceId,
+        user_id: context.userId,
+        redirect_uri: redirectUri,
+        return_to: data.returnTo ?? "/api-config/messenger",
+      });
     if (error) throw new Error(error.message);
 
     const params = new URLSearchParams({

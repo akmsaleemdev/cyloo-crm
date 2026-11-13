@@ -1,7 +1,13 @@
 import { type ReactNode, useState } from "react";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
@@ -60,7 +66,8 @@ export function ConfirmDialog({
             onClick={handleConfirm}
             disabled={pending}
             className={cn(
-              destructive && "bg-danger text-danger-foreground hover:bg-danger/90 focus-visible:ring-danger",
+              destructive &&
+                "bg-danger text-danger-foreground hover:bg-danger/90 focus-visible:ring-danger",
             )}
           >
             {pending && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}

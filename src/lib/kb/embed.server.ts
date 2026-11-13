@@ -4,7 +4,12 @@
  * existing pgvector HNSW column.
  */
 
-import { GEMINI_EMBED_URL, GEMINI_EMBED_MODEL, GEMINI_EMBED_DIMS, requireGeminiApiKey } from "@/lib/ai/gemini.server";
+import {
+  GEMINI_EMBED_URL,
+  GEMINI_EMBED_MODEL,
+  GEMINI_EMBED_DIMS,
+  requireGeminiApiKey,
+} from "@/lib/ai/gemini.server";
 
 export const EMBED_MODEL = GEMINI_EMBED_MODEL;
 export const EMBED_DIMS = GEMINI_EMBED_DIMS;
@@ -48,7 +53,9 @@ export async function embedTexts(inputs: string[]): Promise<number[][]> {
     });
     for (let k = i; k < i + batch.length; k++) {
       if (!Array.isArray(out[k])) {
-        throw new Error(`Embedding missing for chunk ${k} (batch returned ${json.data.length} rows)`);
+        throw new Error(
+          `Embedding missing for chunk ${k} (batch returned ${json.data.length} rows)`,
+        );
       }
     }
   }

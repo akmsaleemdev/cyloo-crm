@@ -39,7 +39,11 @@ async function resolveContact(
     .eq("channel", "instagram")
     .eq("external_id", igsid)
     .maybeSingle();
-  const existing = existingRaw as { id: string; contact_id: string | null; display_name?: string | null } | null;
+  const existing = existingRaw as {
+    id: string;
+    contact_id: string | null;
+    display_name?: string | null;
+  } | null;
 
   if (existing?.contact_id) {
     await admin
@@ -49,7 +53,10 @@ async function resolveContact(
     // A sender first seen before its name could be resolved gets it backfilled
     // here, so later DMs skip the Graph lookup and the inbox shows the name.
     if (displayName && !existing.display_name) {
-      await admin.from("channel_identities").update({ display_name: displayName }).eq("id", existing.id);
+      await admin
+        .from("channel_identities")
+        .update({ display_name: displayName })
+        .eq("id", existing.id);
       await admin
         .from("contacts")
         .update({ name: displayName, display_name: displayName })
@@ -80,7 +87,8 @@ async function resolveContact(
     last_seen_at: new Date().toISOString(),
     metadata: {},
   };
-  if (existing) await sbAny(admin).from("channel_identities").update(identity).eq("id", existing.id);
+  if (existing)
+    await sbAny(admin).from("channel_identities").update(identity).eq("id", existing.id);
   else await sbAny(admin).from("channel_identities").insert(identity);
   return contactId;
 }
@@ -149,24 +157,31 @@ export async function mirrorInstagramMessage(
       if (dupe) return conversationId;
     }
 
-    const { error } = await sbAny(admin).from("messages").insert({
-      workspace_id: account.workspace_id,
-      conversation_id: conversationId,
-      direction: msg.direction,
-      status: msg.direction === "inbound" ? "delivered" : "sent",
-      body: msg.body,
-      media_type: msg.mediaType ?? null,
-      media_url: msg.mediaUrl ?? null,
-      message_type: msg.mediaUrl ? metaAttachmentType(msg.mediaType) : "text",
-      provider_message_id: msg.providerMessageId ?? null,
-      from_address: msg.direction === "inbound" ? igsid : account.ig_user_id,
-      to_address: msg.direction === "inbound" ? account.ig_user_id : igsid,
-      metadata: { source: "instagram_webhook", account_id: account.id },
-    });
+    const { error } = await sbAny(admin)
+      .from("messages")
+      .insert({
+        workspace_id: account.workspace_id,
+        conversation_id: conversationId,
+        direction: msg.direction,
+        status: msg.direction === "inbound" ? "delivered" : "sent",
+        body: msg.body,
+        media_type: msg.mediaType ?? null,
+        media_url: msg.mediaUrl ?? null,
+        message_type: msg.mediaUrl ? metaAttachmentType(msg.mediaType) : "text",
+        provider_message_id: msg.providerMessageId ?? null,
+        from_address: msg.direction === "inbound" ? igsid : account.ig_user_id,
+        to_address: msg.direction === "inbound" ? account.ig_user_id : igsid,
+        metadata: { source: "instagram_webhook", account_id: account.id },
+      });
     // A duplicate means a retry already stored this message: that is success.
     // Any other failure means the message body never landed in the inbox, so
     // report it (null) instead of returning a conversation that looks mirrored.
-    if (error && !String(error.message ?? "").toLowerCase().includes("duplicate")) {
+    if (
+      error &&
+      !String(error.message ?? "")
+        .toLowerCase()
+        .includes("duplicate")
+    ) {
       console.warn("[instagram-bridge] message insert failed:", error.message);
       return null;
     }

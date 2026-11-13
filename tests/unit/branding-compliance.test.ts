@@ -83,4 +83,3 @@ describe("License Compliance", () => {
     expect(content).toContain("MIT License");
   });
 });
-

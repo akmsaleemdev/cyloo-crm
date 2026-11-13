@@ -35,7 +35,11 @@ export function createSignalReader(client: unknown) {
   };
 
   /** Row count; `0` (and a recorded failure) if the query errors. */
-  async function count(table: string, tune: Tune = (q) => q, label: string = table): Promise<number> {
+  async function count(
+    table: string,
+    tune: Tune = (q) => q,
+    label: string = table,
+  ): Promise<number> {
     try {
       const { count: n, error } = await tune(
         sbAny(client).from(table).select("*", { count: "exact", head: true }),
@@ -53,7 +57,12 @@ export function createSignalReader(client: unknown) {
 
   /** Rows; `[]` (and a recorded failure) if the query errors. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function select<T = any>(table: string, cols: string, tune: Tune = (q) => q, label: string = table): Promise<T[]> {
+  async function select<T = any>(
+    table: string,
+    cols: string,
+    tune: Tune = (q) => q,
+    label: string = table,
+  ): Promise<T[]> {
     try {
       const { data, error } = await tune(sbAny(client).from(table).select(cols));
       if (error) {

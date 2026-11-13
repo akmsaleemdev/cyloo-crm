@@ -27,7 +27,10 @@ const META_SCOPES = [
 
 function requireAppId(): string {
   const id = process.env.META_APP_ID;
-  if (!id) throw new Error("META_APP_ID not configured. Add it in project secrets to enable Instagram linking.");
+  if (!id)
+    throw new Error(
+      "META_APP_ID not configured. Add it in project secrets to enable Instagram linking.",
+    );
   return id;
 }
 
@@ -49,13 +52,15 @@ export const startInstagramOAuth = createServerFn({ method: "POST" })
     const redirectUri = `${data.origin.replace(/\/$/, "")}/api/public/instagram/callback`;
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { error } = await sbAny(supabaseAdmin).from("instagram_oauth_states").insert({
-      state,
-      workspace_id: data.workspaceId,
-      user_id: context.userId,
-      redirect_uri: redirectUri,
-      return_to: data.returnTo ?? "/api-config/instagram",
-    });
+    const { error } = await sbAny(supabaseAdmin)
+      .from("instagram_oauth_states")
+      .insert({
+        state,
+        workspace_id: data.workspaceId,
+        user_id: context.userId,
+        redirect_uri: redirectUri,
+        return_to: data.returnTo ?? "/api-config/instagram",
+      });
     if (error) throw new Error(error.message);
 
     const params = new URLSearchParams({
@@ -134,7 +139,8 @@ export const reconnectInstagramAccount = createServerFn({ method: "POST" })
     const { ensureIgPageSubscription } = await import("./capabilities.server");
     const res = await ensureIgPageSubscription(
       acc.page_id,
-      (tokenRow as { access_token_ciphertext?: string | null } | null)?.access_token_ciphertext ?? null,
+      (tokenRow as { access_token_ciphertext?: string | null } | null)?.access_token_ciphertext ??
+        null,
     );
 
     // Only a working subscription may be called connected — an account that

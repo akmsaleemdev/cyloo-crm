@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
-import { Screen } from '@/components/Screen';
-import { useTheme } from '@/theme/ThemeProvider';
-import { useRealtimeTable } from '@/realtime/useRealtimeTable';
-import { listAppointments, type Appointment } from '@/api/sales';
+import { useMemo, useState } from "react";
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
+import { Screen } from "@/components/Screen";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useRealtimeTable } from "@/realtime/useRealtimeTable";
+import { listAppointments, type Appointment } from "@/api/sales";
 
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -22,9 +22,13 @@ export default function CalendarScreen() {
   const monthStart = startOfMonth(cursor);
   const monthEnd = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
 
-  useRealtimeTable('booking_appointments', ['sales', 'appts-cal', cursor.toISOString().slice(0, 7)]);
+  useRealtimeTable("booking_appointments", [
+    "sales",
+    "appts-cal",
+    cursor.toISOString().slice(0, 7),
+  ]);
   const q = useQuery({
-    queryKey: ['sales', 'appts-cal', cursor.toISOString().slice(0, 7)],
+    queryKey: ["sales", "appts-cal", cursor.toISOString().slice(0, 7)],
     queryFn: () => listAppointments({ from: monthStart.toISOString(), to: monthEnd.toISOString() }),
   });
 
@@ -42,7 +46,10 @@ export default function CalendarScreen() {
   const firstWeekday = monthStart.getDay();
   const cells: (Date | null)[] = [
     ...Array(firstWeekday).fill(null),
-    ...Array.from({ length: totalDays }, (_, i) => new Date(cursor.getFullYear(), cursor.getMonth(), i + 1)),
+    ...Array.from(
+      { length: totalDays },
+      (_, i) => new Date(cursor.getFullYear(), cursor.getMonth(), i + 1),
+    ),
   ];
 
   const selKey = selected.toISOString().slice(0, 10);
@@ -50,7 +57,7 @@ export default function CalendarScreen() {
 
   return (
     <Screen style={{ padding: 0 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', padding: 12 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", padding: 12 }}>
         <Pressable
           onPress={() => {
             Haptics.selectionAsync();
@@ -60,8 +67,10 @@ export default function CalendarScreen() {
         >
           <Text style={{ color: t.colors.foreground, fontSize: 20 }}>‹</Text>
         </Pressable>
-        <Text style={[t.typography.h2, { color: t.colors.foreground, flex: 1, textAlign: 'center' }]}>
-          {cursor.toLocaleString([], { month: 'long', year: 'numeric' })}
+        <Text
+          style={[t.typography.h2, { color: t.colors.foreground, flex: 1, textAlign: "center" }]}
+        >
+          {cursor.toLocaleString([], { month: "long", year: "numeric" })}
         </Text>
         <Pressable
           onPress={() => {
@@ -74,13 +83,26 @@ export default function CalendarScreen() {
         </Pressable>
       </View>
 
-      <View style={{ flexDirection: 'row', paddingHorizontal: 12 }}>
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-          <Text key={i} style={{ flex: 1, textAlign: 'center', color: t.colors.mutedFg, fontSize: 11, fontWeight: '600' }}>{d}</Text>
+      <View style={{ flexDirection: "row", paddingHorizontal: 12 }}>
+        {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+          <Text
+            key={i}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              color: t.colors.mutedFg,
+              fontSize: 11,
+              fontWeight: "600",
+            }}
+          >
+            {d}
+          </Text>
         ))}
       </View>
 
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8, paddingVertical: 8 }}>
+      <View
+        style={{ flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 8, paddingVertical: 8 }}
+      >
         {cells.map((d, idx) => {
           if (!d) return <View key={idx} style={{ width: `${100 / 7}%`, aspectRatio: 1 }} />;
           const key = d.toISOString().slice(0, 10);
@@ -100,16 +122,36 @@ export default function CalendarScreen() {
                 style={{
                   flex: 1,
                   borderRadius: 8,
-                  backgroundColor: isSel ? t.colors.primary : isToday ? t.colors.card : 'transparent',
-                  borderColor: isToday && !isSel ? t.colors.primary : 'transparent',
+                  backgroundColor: isSel
+                    ? t.colors.primary
+                    : isToday
+                      ? t.colors.card
+                      : "transparent",
+                  borderColor: isToday && !isSel ? t.colors.primary : "transparent",
                   borderWidth: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <Text style={{ color: isSel ? '#fff' : t.colors.foreground, fontWeight: isToday ? '700' : '500' }}>{d.getDate()}</Text>
+                <Text
+                  style={{
+                    color: isSel ? "#fff" : t.colors.foreground,
+                    fontWeight: isToday ? "700" : "500",
+                  }}
+                >
+                  {d.getDate()}
+                </Text>
                 {count > 0 ? (
-                  <View style={{ position: 'absolute', bottom: 4, width: 4, height: 4, borderRadius: 2, backgroundColor: isSel ? '#fff' : t.colors.primary }} />
+                  <View
+                    style={{
+                      position: "absolute",
+                      bottom: 4,
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: isSel ? "#fff" : t.colors.primary,
+                    }}
+                  />
                 ) : null}
               </View>
             </Pressable>
@@ -118,18 +160,31 @@ export default function CalendarScreen() {
       </View>
 
       <View style={{ paddingHorizontal: 12, paddingTop: 8 }}>
-        <Text style={{ color: t.colors.foreground, fontWeight: '700', marginBottom: 8 }}>
-          {selected.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+        <Text style={{ color: t.colors.foreground, fontWeight: "700", marginBottom: 8 }}>
+          {selected.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}
         </Text>
       </View>
       <ScrollView contentContainerStyle={{ padding: 12, paddingTop: 0, gap: 8, paddingBottom: 40 }}>
         {q.isLoading ? <ActivityIndicator color={t.colors.primary} /> : null}
-        {selApts.length === 0 && !q.isLoading ? <Text style={{ color: t.colors.mutedFg }}>Nothing scheduled.</Text> : null}
+        {selApts.length === 0 && !q.isLoading ? (
+          <Text style={{ color: t.colors.mutedFg }}>Nothing scheduled.</Text>
+        ) : null}
         {selApts.map((a) => (
-          <View key={a.id} style={{ backgroundColor: t.colors.card, borderColor: t.colors.border, borderWidth: 1, borderRadius: t.radius.md, padding: 12 }}>
-            <Text style={{ color: t.colors.foreground, fontWeight: '700' }}>{a.customer_name}</Text>
+          <View
+            key={a.id}
+            style={{
+              backgroundColor: t.colors.card,
+              borderColor: t.colors.border,
+              borderWidth: 1,
+              borderRadius: t.radius.md,
+              padding: 12,
+            }}
+          >
+            <Text style={{ color: t.colors.foreground, fontWeight: "700" }}>{a.customer_name}</Text>
             <Text style={{ color: t.colors.mutedFg, fontSize: 12, marginTop: 2 }}>
-              {new Date(a.start_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(a.end_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {a.status}
+              {new Date(a.start_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{" "}
+              – {new Date(a.end_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}{" "}
+              · {a.status}
             </Text>
           </View>
         ))}

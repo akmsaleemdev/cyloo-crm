@@ -44,12 +44,19 @@ export function ChatbotNodePalette({ onAdd }: { onAdd: (def: ChatbotNodeDef) => 
                   "hover:border-primary/40 hover:shadow-sm px-2.5 py-2 flex items-start gap-2 transition-all",
                 )}
               >
-                <div className={cn("w-7 h-7 rounded-control grid place-items-center shrink-0", d.color)}>
+                <div
+                  className={cn(
+                    "w-7 h-7 rounded-control grid place-items-center shrink-0",
+                    d.color,
+                  )}
+                >
                   <Icon className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-xs font-semibold truncate">{d.label}</div>
-                  <div className="text-[11px] text-muted-foreground line-clamp-2">{d.description}</div>
+                  <div className="text-[11px] text-muted-foreground line-clamp-2">
+                    {d.description}
+                  </div>
                 </div>
               </div>
             );

@@ -44,12 +44,16 @@ const providers: Record<string, BillingProvider> = {
 export function getBillingProvider(id: BillingProviderId): BillingProvider {
   const provider = providers[id];
   if (!provider) {
-    throw new Error(`Unknown billing provider: ${id}. Registered: ${Object.keys(providers).join(", ")}`);
+    throw new Error(
+      `Unknown billing provider: ${id}. Registered: ${Object.keys(providers).join(", ")}`,
+    );
   }
   return provider;
 }
 
-export function listBillingProviders(): Array<Pick<BillingProvider, "id" | "displayName" | "supports">> {
+export function listBillingProviders(): Array<
+  Pick<BillingProvider, "id" | "displayName" | "supports">
+> {
   return Object.values(providers).map((p) => ({
     id: p.id,
     displayName: p.displayName,

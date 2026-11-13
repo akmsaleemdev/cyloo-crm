@@ -27,7 +27,9 @@ export const Route = createFileRoute("/api/public/hooks/drip-tick")({
           let advanced = 0;
           const errors: string[] = [];
           for (const e of (enrollments ?? []) as Array<{ id: string }>) {
-            const { data: staged, error } = await sbAny(admin).rpc("enqueue_due_drip_step", { _enrollment_id: e.id });
+            const { data: staged, error } = await sbAny(admin).rpc("enqueue_due_drip_step", {
+              _enrollment_id: e.id,
+            });
             if (error) errors.push(e.id + ": " + error.message);
             else if (staged) advanced++;
           }

@@ -25,11 +25,22 @@ function json(status: number, body: unknown) {
 
 const MAX_SIZE = 25 * 1024 * 1024; // 25 MB
 const IMAGE_MIMES = new Set([
-  "image/png", "image/jpeg", "image/gif", "image/webp", "image/heic", "image/heif",
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "image/heic",
+  "image/heif",
 ]);
 const AUDIO_MIMES = new Set([
-  "audio/webm", "audio/ogg", "audio/mpeg", "audio/mp4", "audio/wav", "audio/x-wav",
-  "audio/m4a", "audio/x-m4a",
+  "audio/webm",
+  "audio/ogg",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/m4a",
+  "audio/x-m4a",
 ]);
 const DOC_MIMES = new Set([
   "application/pdf",
@@ -39,7 +50,8 @@ const DOC_MIMES = new Set([
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-powerpoint",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "text/plain", "text/csv",
+  "text/plain",
+  "text/csv",
 ]);
 
 function classify(mime: string): "image" | "audio" | "document" | null {

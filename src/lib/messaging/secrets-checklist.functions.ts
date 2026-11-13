@@ -80,17 +80,22 @@ export const checkWhatsAppSecrets = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
     // Secret references are admin-only; merged in via the permission-checked RPC.
-    const { data: accountSecrets } = await sbAny(context.supabase).rpc("channel_account_secrets" as never, {
-      _workspace_id: data.workspaceId,
-      _account_id: data.channelAccountId ?? null,
-    } as never);
+    const { data: accountSecrets } = await sbAny(context.supabase).rpc(
+      "channel_account_secrets" as never,
+      {
+        _workspace_id: data.workspaceId,
+        _account_id: data.channelAccountId ?? null,
+      } as never,
+    );
     const secretById = new Map(
-      ((accountSecrets ?? []) as unknown as Array<{
-        id: string;
-        verify_token: string | null;
-        access_token_secret_name: string | null;
-        app_secret_name: string | null;
-      }>).map((s) => [s.id, s]),
+      (
+        (accountSecrets ?? []) as unknown as Array<{
+          id: string;
+          verify_token: string | null;
+          access_token_secret_name: string | null;
+          app_secret_name: string | null;
+        }>
+      ).map((s) => [s.id, s]),
     );
     const accounts = ((rows ?? []) as Array<{ id: string }>).map((r) => ({
       ...r,

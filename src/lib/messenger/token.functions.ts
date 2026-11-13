@@ -33,7 +33,10 @@ export const verifyMessengerAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!tokRow?.access_token_ciphertext) {
       const { markMessengerAccountExpired } = await import("./token.server");
-      await markMessengerAccountExpired(data.accountId, "Missing stored token — reconnect the page");
+      await markMessengerAccountExpired(
+        data.accountId,
+        "Missing stored token — reconnect the page",
+      );
       return { ok: false, expired: true, reason: "Missing stored token — reconnect the page" };
     }
 

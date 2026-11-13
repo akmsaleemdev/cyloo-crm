@@ -37,9 +37,10 @@ function errMessage(json: Record<string, unknown>, status: number): string {
   const meta = json.error as { message?: string } | string | undefined;
   if (typeof meta === "string") return meta;
   if (meta?.message) return meta.message;
-  const detail = (json as { error_description?: string; message?: string; title?: string }).error_description
-    ?? (json as { message?: string }).message
-    ?? (json as { title?: string }).title;
+  const detail =
+    (json as { error_description?: string; message?: string; title?: string }).error_description ??
+    (json as { message?: string }).message ??
+    (json as { title?: string }).title;
   return detail ?? `Request failed with status ${status}`;
 }
 
@@ -52,7 +53,12 @@ async function probe(platform: Platform, externalId: string | null, token: strin
       );
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
       const pic = (r.json.picture as { data?: { url?: string } } | undefined)?.data?.url;
-      return { ok: true, name: r.json.name as string, username: r.json.username as string | undefined, avatar: pic };
+      return {
+        ok: true,
+        name: r.json.name as string,
+        username: r.json.username as string | undefined,
+        avatar: pic,
+      };
     }
     if (platform === "instagram") {
       if (!externalId) return { ok: false, error: "Instagram user ID is required" };
@@ -60,7 +66,11 @@ async function probe(platform: Platform, externalId: string | null, token: strin
         `https://graph.facebook.com/v21.0/${externalId}?fields=id,username,profile_picture_url&access_token=${encodeURIComponent(token)}`,
       );
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-      return { ok: true, username: r.json.username as string, avatar: r.json.profile_picture_url as string | undefined };
+      return {
+        ok: true,
+        username: r.json.username as string,
+        avatar: r.json.profile_picture_url as string | undefined,
+      };
     }
     if (platform === "threads") {
       const id = externalId || "me";
@@ -68,14 +78,19 @@ async function probe(platform: Platform, externalId: string | null, token: strin
         `https://graph.threads.net/v1.0/${id}?fields=id,username,threads_profile_picture_url&access_token=${encodeURIComponent(token)}`,
       );
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-      return { ok: true, username: r.json.username as string, avatar: r.json.threads_profile_picture_url as string | undefined };
+      return {
+        ok: true,
+        username: r.json.username as string,
+        avatar: r.json.threads_profile_picture_url as string | undefined,
+      };
     }
     if (platform === "x") {
       const r = await getJson("https://api.x.com/2/users/me?user.fields=profile_image_url", {
         Authorization: `Bearer ${token}`,
       });
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-      const d = r.json.data as { name?: string; username?: string; profile_image_url?: string } | undefined;
+      const d = r.json.data as
+        { name?: string; username?: string; profile_image_url?: string } | undefined;
       return { ok: true, name: d?.name, username: d?.username, avatar: d?.profile_image_url };
     }
     if (platform === "tiktok") {
@@ -84,7 +99,9 @@ async function probe(platform: Platform, externalId: string | null, token: strin
         { Authorization: `Bearer ${token}` },
       );
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-      const u = (r.json.data as { user?: { display_name?: string; avatar_url?: string } } | undefined)?.user;
+      const u = (
+        r.json.data as { user?: { display_name?: string; avatar_url?: string } } | undefined
+      )?.user;
       return { ok: true, name: u?.display_name, avatar: u?.avatar_url };
     }
     if (platform === "youtube") {
@@ -93,7 +110,17 @@ async function probe(platform: Platform, externalId: string | null, token: strin
         { Authorization: `Bearer ${token}` },
       );
       if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-      const item = (r.json.items as Array<{ snippet?: { title?: string; customUrl?: string; thumbnails?: { default?: { url?: string } } } }> | undefined)?.[0];
+      const item = (
+        r.json.items as
+          | Array<{
+              snippet?: {
+                title?: string;
+                customUrl?: string;
+                thumbnails?: { default?: { url?: string } };
+              };
+            }>
+          | undefined
+      )?.[0];
       if (!item) return { ok: false, error: "No YouTube channel is available for this token" };
       return {
         ok: true,
@@ -103,9 +130,15 @@ async function probe(platform: Platform, externalId: string | null, token: strin
       };
     }
     // linkedin
-    const r = await getJson("https://api.linkedin.com/v2/userinfo", { Authorization: `Bearer ${token}` });
+    const r = await getJson("https://api.linkedin.com/v2/userinfo", {
+      Authorization: `Bearer ${token}`,
+    });
     if (!r.ok) return { ok: false, error: errMessage(r.json, r.status) };
-    return { ok: true, name: r.json.name as string | undefined, avatar: r.json.picture as string | undefined };
+    return {
+      ok: true,
+      name: r.json.name as string | undefined,
+      avatar: r.json.picture as string | undefined,
+    };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : "Connection failed" };
   }
@@ -158,7 +191,10 @@ export const verifySocialChannel = createServerFn({ method: "POST" })
       if (result.username) patch.username = result.username;
       if (result.avatar) patch.avatar_url = result.avatar;
     }
-    await sbAny(supabaseAdmin).from("social_channels").update(patch as never).eq("id", data.channelId);
+    await sbAny(supabaseAdmin)
+      .from("social_channels")
+      .update(patch as never)
+      .eq("id", data.channelId);
 
     return { ok: result.ok, error: result.error, name: result.name, username: result.username };
   });

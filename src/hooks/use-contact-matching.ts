@@ -33,8 +33,7 @@ export function useUpsertMatchingRule(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: RuleInputData) => fn({ data: input }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["contact-matching-rules", workspaceId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-matching-rules", workspaceId] }),
   });
 }
 
@@ -43,15 +42,13 @@ export function useDeleteMatchingRule(workspaceId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => fn({ data: { id } }),
-    onSuccess: () =>
-      qc.invalidateQueries({ queryKey: ["contact-matching-rules", workspaceId] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["contact-matching-rules", workspaceId] }),
   });
 }
 
 export function usePreviewMatching() {
   const fn = useServerFn(previewMatching);
   return useMutation({
-    mutationFn: (input: { workspaceId: string; rawPhone: string }) =>
-      fn({ data: input }),
+    mutationFn: (input: { workspaceId: string; rawPhone: string }) => fn({ data: input }),
   });
 }

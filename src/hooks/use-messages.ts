@@ -114,7 +114,9 @@ async function hydrateSenders(rows: MessageRow[]): Promise<MessageRow[]> {
 
 /** Historical WhatsApp replies stored only the provider context in metadata. */
 async function hydrateReplyContexts(
-  rows: MessageRow[], workspaceId: string, conversationId: string,
+  rows: MessageRow[],
+  workspaceId: string,
+  conversationId: string,
 ): Promise<MessageRow[]> {
   const contextId = (row: MessageRow): string | null =>
     typeof row.metadata?.context_message_id === "string" ? row.metadata.context_message_id : null;
@@ -123,18 +125,29 @@ async function hydrateReplyContexts(
     if (row.external_message_id) targets.set(row.external_message_id, row);
     if (row.provider_message_id) targets.set(row.provider_message_id, row);
   }
-  const missing = [...new Set(rows
-    .filter((row) => !row.reply_to)
-    .map(contextId)
-    .filter((id): id is string => !!id && !targets.has(id)))];
+  const missing = [
+    ...new Set(
+      rows
+        .filter((row) => !row.reply_to)
+        .map(contextId)
+        .filter((id): id is string => !!id && !targets.has(id)),
+    ),
+  ];
   if (missing.length) {
-    const columns = "id, body, message_type, direction, sent_by, external_message_id, provider_message_id";
+    const columns =
+      "id, body, message_type, direction, sent_by, external_message_id, provider_message_id";
     const [external, provider] = await Promise.all([
-      sbAny(supabase).from("messages").select(columns)
-        .eq("workspace_id", workspaceId).eq("conversation_id", conversationId)
+      sbAny(supabase)
+        .from("messages")
+        .select(columns)
+        .eq("workspace_id", workspaceId)
+        .eq("conversation_id", conversationId)
         .in("external_message_id", missing),
-      sbAny(supabase).from("messages").select(columns)
-        .eq("workspace_id", workspaceId).eq("conversation_id", conversationId)
+      sbAny(supabase)
+        .from("messages")
+        .select(columns)
+        .eq("workspace_id", workspaceId)
+        .eq("conversation_id", conversationId)
         .in("provider_message_id", missing),
     ]);
     for (const row of [...(external.data ?? []), ...(provider.data ?? [])] as MessageRow[]) {
@@ -188,7 +201,11 @@ export function useMessages(conversationId: string | undefined) {
       if (pageParam) q = q.lt("created_at", pageParam as string);
       const { data, error } = await q;
       if (error) throw error;
-      const rows = await hydrateReplyContexts((data ?? []) as unknown as MessageRow[], workspaceId!, conversationId!);
+      const rows = await hydrateReplyContexts(
+        (data ?? []) as unknown as MessageRow[],
+        workspaceId!,
+        conversationId!,
+      );
       return hydrateSenders(rows);
     },
   });
@@ -405,7 +422,9 @@ export function useRetryMessage() {
         throw new Error(result.error ?? "Message could not be delivered");
       }
       if (result.status === "skipped") {
-        throw new Error("The message changed while retrying. Refresh the conversation before sending again.");
+        throw new Error(
+          "The message changed while retrying. Refresh the conversation before sending again.",
+        );
       }
     },
     onSettled: (_d, _e, v) => qc.invalidateQueries({ queryKey: ["messages", v.conversationId] }),

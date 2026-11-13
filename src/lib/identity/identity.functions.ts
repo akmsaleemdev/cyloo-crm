@@ -135,7 +135,10 @@ export const resolveIdentity = createServerFn({ method: "POST" })
     // 2) phone / email deterministic match against contacts
     let matchedContactId: string | null = null;
     if (phone || email) {
-      const q = sbAny(sb).from("contacts").select("id, phone, email").eq("workspace_id", workspaceId);
+      const q = sbAny(sb)
+        .from("contacts")
+        .select("id, phone, email")
+        .eq("workspace_id", workspaceId);
       const { data: rows } = phone
         ? await q.or(`phone.eq.${phone},whatsapp.eq.${phone}`)
         : await q.eq("email", email as string);
@@ -183,9 +186,7 @@ export const resolveIdentity = createServerFn({ method: "POST" })
 
 export const listChannelIdentities = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    WorkspaceScoped.extend({ contactId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => WorkspaceScoped.extend({ contactId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("channel_identities")
@@ -284,9 +285,12 @@ export const findDuplicates = createServerFn({ method: "GET" })
       contacts: NonNullable<typeof contacts>;
     };
     const groups: Group[] = [];
-    for (const [k, v] of byPhone) if (v && v.length > 1) groups.push({ key: k, kind: "phone", confidence: 1.0, contacts: v });
-    for (const [k, v] of byEmail) if (v && v.length > 1) groups.push({ key: k, kind: "email", confidence: 0.98, contacts: v });
-    for (const [k, v] of byName) if (v && v.length > 1) groups.push({ key: k, kind: "name", confidence: 0.6, contacts: v });
+    for (const [k, v] of byPhone)
+      if (v && v.length > 1) groups.push({ key: k, kind: "phone", confidence: 1.0, contacts: v });
+    for (const [k, v] of byEmail)
+      if (v && v.length > 1) groups.push({ key: k, kind: "email", confidence: 0.98, contacts: v });
+    for (const [k, v] of byName)
+      if (v && v.length > 1) groups.push({ key: k, kind: "name", confidence: 0.6, contacts: v });
 
     // dedupe: if a phone group already covers all IDs of a name group, drop the name group
     const seenSignatures = new Set<string>();
@@ -330,12 +334,18 @@ export const mergeContacts = createServerFn({ method: "POST" })
       .select("id");
 
     // move conversations (messages follow via conversation_id)
-    await sbAny(sb).from("conversations").update({ contact_id: data.primaryContactId }).in("contact_id", dupIds);
+    await sbAny(sb)
+      .from("conversations")
+      .update({ contact_id: data.primaryContactId })
+      .in("contact_id", dupIds);
 
     // soft-delete duplicates
     await sb
       .from("contacts")
-      .update({ deleted_at: new Date().toISOString(), notes: `Merged into ${data.primaryContactId}` })
+      .update({
+        deleted_at: new Date().toISOString(),
+        notes: `Merged into ${data.primaryContactId}`,
+      })
       .in("id", dupIds);
 
     // audit
@@ -453,9 +463,7 @@ export const setIdentityConfig = createServerFn({ method: "POST" })
 
 export const relationshipGraph = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    WorkspaceScoped.extend({ contactId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => WorkspaceScoped.extend({ contactId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
     const [{ data: contact }, { data: identities }, { data: convos }] = await Promise.all([

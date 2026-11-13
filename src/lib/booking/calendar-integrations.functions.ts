@@ -9,13 +9,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 
-
 export const listCalendarAccounts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await sbAny(context.supabase)
       .from("calendar_accounts")
-      .select("id,provider,account_email,display_name,calendar_id,color,enabled,is_primary,sync_direction,status,last_synced_at,last_sync_error,ics_url,scopes")
+      .select(
+        "id,provider,account_email,display_name,calendar_id,color,enabled,is_primary,sync_direction,status,last_synced_at,last_sync_error,ics_url,scopes",
+      )
       .eq("user_id", context.userId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -42,51 +43,80 @@ export const startCalendarOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: { provider: "google" | "microsoft"; targetOrigin: string }) => data)
   .handler(async ({ data, context }) => {
-      const origin = new URL(data.targetOrigin).origin;
-      const canonical = new URL(process.env.APP_ORIGIN || (await import("@tanstack/react-start/server")).getRequest().url).origin;
-      if (origin !== data.targetOrigin || origin !== canonical) throw new Error("Open the application at APP_ORIGIN before connecting a calendar");
-      const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-      const { data: member, error: memberError } = await sbAny(supabaseAdmin).from("workspace_members")
-        .select("workspace_id").eq("user_id", context.userId).limit(1).maybeSingle();
-      if (memberError || !member) throw new Error("No workspace found");
-      const { randomUUID } = await import("node:crypto");
-      const state = randomUUID();
-      const authorizationUrl = data.provider === "google"
-        ? await (await import("@/lib/integrations/google-oauth.server")).googleCalendarAuthorizationUrl(origin, state)
-        : (await import("@/lib/integrations/microsoft-calendar-oauth.server")).microsoftCalendarAuthorizationUrl(origin, state);
-      const { error } = await sbAny(supabaseAdmin).from("integration_oauth_states").insert({
-        state, provider_id: `${data.provider}-calendar`, workspace_id: member.workspace_id,
-        user_id: context.userId, return_origin: origin,
+    const origin = new URL(data.targetOrigin).origin;
+    const canonical = new URL(
+      process.env.APP_ORIGIN || (await import("@tanstack/react-start/server")).getRequest().url,
+    ).origin;
+    if (origin !== data.targetOrigin || origin !== canonical)
+      throw new Error("Open the application at APP_ORIGIN before connecting a calendar");
+    const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
+    const { data: member, error: memberError } = await sbAny(supabaseAdmin)
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("user_id", context.userId)
+      .limit(1)
+      .maybeSingle();
+    if (memberError || !member) throw new Error("No workspace found");
+    const { randomUUID } = await import("node:crypto");
+    const state = randomUUID();
+    const authorizationUrl =
+      data.provider === "google"
+        ? await (
+            await import("@/lib/integrations/google-oauth.server")
+          ).googleCalendarAuthorizationUrl(origin, state)
+        : (
+            await import("@/lib/integrations/microsoft-calendar-oauth.server")
+          ).microsoftCalendarAuthorizationUrl(origin, state);
+    const { error } = await sbAny(supabaseAdmin)
+      .from("integration_oauth_states")
+      .insert({
+        state,
+        provider_id: `${data.provider}-calendar`,
+        workspace_id: member.workspace_id,
+        user_id: context.userId,
+        return_origin: origin,
         expires_at: new Date(Date.now() + 10 * 60_000).toISOString(),
       });
-      if (error) throw new Error(error.message);
-      return { authorizationUrl };
+    if (error) throw new Error(error.message);
+    return { authorizationUrl };
   });
 
 /** Register an Apple / ICS feed URL — no OAuth involved. */
 export const connectIcsFeed = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((raw: unknown) => z.object({
-    account_email: z.string().min(1).max(200),
-    display_name: z.string().max(200).optional(),
-    ics_url: z.string().url(),
-  }).parse(raw))
+  .validator((raw: unknown) =>
+    z
+      .object({
+        account_email: z.string().min(1).max(200),
+        display_name: z.string().max(200).optional(),
+        ics_url: z.string().url(),
+      })
+      .parse(raw),
+  )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { data: ws } = await supabaseAdmin
-      .from("workspace_members").select("workspace_id").eq("user_id", context.userId).limit(1).maybeSingle();
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("user_id", context.userId)
+      .limit(1)
+      .maybeSingle();
     if (!ws) throw new Error("No workspace found");
-    const { data: row, error } = await sbAny(supabaseAdmin).from("calendar_accounts").insert({
-      workspace_id: (ws as { workspace_id: string }).workspace_id,
-      user_id: context.userId,
-      provider: "apple",
-      account_email: data.account_email,
-      display_name: data.display_name ?? "Apple Calendar",
-      ics_url: data.ics_url,
-      sync_direction: "inbound",
-      status: "connected",
-      enabled: true,
-    }).select("*").maybeSingle();
+    const { data: row, error } = await sbAny(supabaseAdmin)
+      .from("calendar_accounts")
+      .insert({
+        workspace_id: (ws as { workspace_id: string }).workspace_id,
+        user_id: context.userId,
+        provider: "apple",
+        account_email: data.account_email,
+        display_name: data.display_name ?? "Apple Calendar",
+        ics_url: data.ics_url,
+        sync_direction: "inbound",
+        status: "connected",
+        enabled: true,
+      })
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -106,7 +136,13 @@ export const setActiveCalendar = createServerFn({ method: "POST" })
 
 export const toggleCalendarAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: { accountId: string; enabled?: boolean; sync_direction?: "inbound" | "outbound" | "bidirectional" }) => data)
+  .validator(
+    (data: {
+      accountId: string;
+      enabled?: boolean;
+      sync_direction?: "inbound" | "outbound" | "bidirectional";
+    }) => data,
+  )
   .handler(async ({ data, context }) => {
     const update: { enabled?: boolean; sync_direction?: string } = {};
     if (data.enabled !== undefined) update.enabled = data.enabled;
@@ -150,17 +186,23 @@ export const disconnectCalendarAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!acc) return { ok: true };
     const row = acc as { id: string; provider: string; connection_key_ciphertext: string | null };
-    if (row.connection_key_ciphertext && (row.provider === "google" || row.provider === "microsoft")) {
+    if (
+      row.connection_key_ciphertext &&
+      (row.provider === "google" || row.provider === "microsoft")
+    ) {
       try {
         const { decryptConnectionKey } = await import("@/lib/booking/providers/crypto.server");
         const key = decryptConnectionKey(row.connection_key_ciphertext);
         if (row.provider === "google") {
           await fetch("https://oauth2.googleapis.com/revoke", {
-            method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({ token: key }),
           });
         }
-      } catch { /* best effort */ }
+      } catch {
+        /* best effort */
+      }
     }
     await sbAny(supabaseAdmin).from("calendar_accounts").delete().eq("id", row.id);
     return { ok: true };

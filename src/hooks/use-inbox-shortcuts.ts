@@ -49,20 +49,47 @@ export function useInboxKeyboardShortcuts(h: Handlers) {
       }
 
       switch (e.key) {
-        case "j": h.onNext?.(); break;
-        case "k": h.onPrev?.(); break;
-        case "r": h.onReply?.(); break;
-        case "n": h.onNote?.(); break;
-        case "e": h.onArchive?.(); break;
-        case "s": h.onStar?.(); break;
-        case "p": h.onPin?.(); break;
-        case "a": h.onAssign?.(); break;
-        case "R": h.onResolve?.(); break;
-        case "!": h.onSpam?.(); break;
-        case "#": h.onTrash?.(); break;
-        case "[": h.onToggleList?.(); break;
-        case "]": h.onTogglePanel?.(); break;
-        default: return;
+        case "j":
+          h.onNext?.();
+          break;
+        case "k":
+          h.onPrev?.();
+          break;
+        case "r":
+          h.onReply?.();
+          break;
+        case "n":
+          h.onNote?.();
+          break;
+        case "e":
+          h.onArchive?.();
+          break;
+        case "s":
+          h.onStar?.();
+          break;
+        case "p":
+          h.onPin?.();
+          break;
+        case "a":
+          h.onAssign?.();
+          break;
+        case "R":
+          h.onResolve?.();
+          break;
+        case "!":
+          h.onSpam?.();
+          break;
+        case "#":
+          h.onTrash?.();
+          break;
+        case "[":
+          h.onToggleList?.();
+          break;
+        case "]":
+          h.onTogglePanel?.();
+          break;
+        default:
+          return;
       }
     };
     window.addEventListener("keydown", onKey);

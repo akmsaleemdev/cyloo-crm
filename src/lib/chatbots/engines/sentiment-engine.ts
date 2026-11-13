@@ -7,12 +7,37 @@
 import type { SentimentResult } from "./types";
 
 const POSITIVE = [
-  "great","good","love","excellent","perfect","thanks","thank you","amazing",
-  "awesome","fantastic","happy","pleased","brilliant",
+  "great",
+  "good",
+  "love",
+  "excellent",
+  "perfect",
+  "thanks",
+  "thank you",
+  "amazing",
+  "awesome",
+  "fantastic",
+  "happy",
+  "pleased",
+  "brilliant",
 ];
 const NEGATIVE = [
-  "bad","terrible","awful","hate","angry","furious","broken","useless","scam",
-  "worst","refund","complaint","frustrated","annoyed","disappointed","stupid",
+  "bad",
+  "terrible",
+  "awful",
+  "hate",
+  "angry",
+  "furious",
+  "broken",
+  "useless",
+  "scam",
+  "worst",
+  "refund",
+  "complaint",
+  "frustrated",
+  "annoyed",
+  "disappointed",
+  "stupid",
 ];
 
 export const SentimentEngine = {

@@ -1,11 +1,16 @@
 // Sales CRM shared types. Keep in sync with supabase types.
-export type ProductKind = 'product' | 'service' | 'subscription' | 'bundle';
-export type QuoteStatus = 'draft' | 'sent' | 'viewed' | 'accepted' | 'rejected' | 'expired' | 'revised';
-export type InvoiceStatus = 'draft' | 'sent' | 'viewed' | 'partial' | 'paid' | 'overdue' | 'void' | 'refunded';
-export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partially_refunded' | 'cancelled';
-export type PaymentMethod = 'cash' | 'bank_transfer' | 'card' | 'stripe' | 'paypal' | 'crypto' | 'check' | 'other';
-export type GoalPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-export type GoalMetric = 'revenue' | 'deals_won' | 'deals_created' | 'activities' | 'calls' | 'meetings' | 'custom';
+export type ProductKind = "product" | "service" | "subscription" | "bundle";
+export type QuoteStatus =
+  "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired" | "revised";
+export type InvoiceStatus =
+  "draft" | "sent" | "viewed" | "partial" | "paid" | "overdue" | "void" | "refunded";
+export type PaymentStatus =
+  "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded" | "cancelled";
+export type PaymentMethod =
+  "cash" | "bank_transfer" | "card" | "stripe" | "paypal" | "crypto" | "check" | "other";
+export type GoalPeriod = "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+export type GoalMetric =
+  "revenue" | "deals_won" | "deals_created" | "activities" | "calls" | "meetings" | "custom";
 
 export interface LineItemInput {
   product_id?: string | null;

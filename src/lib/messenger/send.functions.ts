@@ -44,7 +44,9 @@ async function resolveTarget(opts: {
 
   // RLS ensures the caller belongs to this workspace.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: accRow, error: accErr } = await (sbAny(supabase).from("messenger_accounts" as any) as any)
+  const { data: accRow, error: accErr } = await (
+    sbAny(supabase).from("messenger_accounts" as any) as any
+  )
     .select("id, workspace_id, page_id, status")
     .eq("id", messengerAccountId)
     .eq("workspace_id", workspaceId)
@@ -84,7 +86,9 @@ async function resolveTarget(opts: {
     psid = resolved.psid;
   }
   if (!psid) {
-    throw new MessengerSendError("invalid_recipient", "Recipient PSID could not be resolved", { local: true });
+    throw new MessengerSendError("invalid_recipient", "Recipient PSID could not be resolved", {
+      local: true,
+    });
   }
   assertSendablePsid(psid, pageId);
 
@@ -111,7 +115,9 @@ export const sendMessengerNow = createServerFn({ method: "POST" })
       messengerAccountId: data.messengerAccountId,
       recipientPsid: data.recipientPsid,
       conversationId: data.conversationId,
-    }).catch((err) => { throw toClientError(err); });
+    }).catch((err) => {
+      throw toClientError(err);
+    });
 
     // Fetch token via admin (never returned to the client).
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
@@ -143,7 +149,6 @@ export const sendMessengerNow = createServerFn({ method: "POST" })
       await handleMessengerSendError(data.messengerAccountId, err);
       throw toClientError(err);
     }
-
 
     // Record an outbound message row for the inbox (best-effort).
     if (target.conversationId) {
@@ -198,7 +203,9 @@ export const scheduleMessengerSend = createServerFn({ method: "POST" })
       messengerAccountId: data.messengerAccountId,
       recipientPsid: data.recipientPsid,
       conversationId: data.conversationId,
-    }).catch((err) => { throw toClientError(err); });
+    }).catch((err) => {
+      throw toClientError(err);
+    });
 
     if (!target.conversationId) {
       throw new Error(
@@ -210,7 +217,9 @@ export const scheduleMessengerSend = createServerFn({ method: "POST" })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: row, error } = await (sbAny(context.supabase).from("scheduled_messages" as any) as any)
+    const { data: row, error } = await (
+      sbAny(context.supabase).from("scheduled_messages" as any) as any
+    )
       .insert({
         workspace_id: data.workspaceId,
         conversation_id: target.conversationId,
@@ -239,12 +248,21 @@ export const scheduleMessengerSend = createServerFn({ method: "POST" })
 export const listMessengerScheduled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) =>
-    z.object({ workspaceId: z.string().uuid(), limit: z.number().int().min(1).max(200).optional() }).parse(input),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: rows, error } = await (sbAny(context.supabase).from("scheduled_messages" as any) as any)
-      .select("id, conversation_id, body, message_type, scheduled_for, status, sent_at, error, metadata, attachments, created_at")
+    const { data: rows, error } = await (
+      sbAny(context.supabase).from("scheduled_messages" as any) as any
+    )
+      .select(
+        "id, conversation_id, body, message_type, scheduled_for, status, sent_at, error, metadata, attachments, created_at",
+      )
       .eq("workspace_id", data.workspaceId)
       .contains("metadata", { channel: "messenger" })
       .order("scheduled_for", { ascending: true })
@@ -284,7 +302,9 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
   .handler(async ({ data, context }) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const q: any = (sbAny(context.supabase).from("conversations" as any) as any)
-      .select("id, contact_id, channel_account_id, last_message_at, last_message_preview, external_conversation_id, metadata")
+      .select(
+        "id, contact_id, channel_account_id, last_message_at, last_message_preview, external_conversation_id, metadata",
+      )
       .eq("workspace_id", data.workspaceId)
       .eq("channel", "messenger")
       .order("last_message_at", { ascending: false })
@@ -308,7 +328,9 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
         })
       : all;
     const list = scoped;
-    const contactIds = Array.from(new Set(list.map((c) => c.contact_id).filter(Boolean))) as string[];
+    const contactIds = Array.from(
+      new Set(list.map((c) => c.contact_id).filter(Boolean)),
+    ) as string[];
 
     let contacts: Record<string, { name: string | null; phone: string | null }> = {};
     if (contactIds.length) {
@@ -316,15 +338,26 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
       const { data: contactRows } = await (sbAny(context.supabase).from("contacts" as any) as any)
         .select("id, first_name, last_name, display_name, name, phone")
         .in("id", contactIds);
-      for (const r of (contactRows ?? []) as Array<{ id: string; first_name: string | null; last_name: string | null; display_name: string | null; name: string | null; phone: string | null }>) {
-        const name = r.display_name?.trim() || [r.first_name, r.last_name].filter(Boolean).join(" ").trim() || r.name?.trim() || null;
+      for (const r of (contactRows ?? []) as Array<{
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        display_name: string | null;
+        name: string | null;
+        phone: string | null;
+      }>) {
+        const name =
+          r.display_name?.trim() ||
+          [r.first_name, r.last_name].filter(Boolean).join(" ").trim() ||
+          r.name?.trim() ||
+          null;
         contacts[r.id] = { name, phone: r.phone };
       }
     }
     const filtered = list
       .map((c) => ({
         ...c,
-        contact: c.contact_id ? contacts[c.contact_id] ?? null : null,
+        contact: c.contact_id ? (contacts[c.contact_id] ?? null) : null,
       }))
       .filter((c) => {
         if (!data.search) return true;

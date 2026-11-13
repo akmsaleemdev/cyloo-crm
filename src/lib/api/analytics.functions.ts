@@ -46,10 +46,13 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
     if (data.pathContains) q = q.ilike("path", `%${sanitizeSearchTerm(data.pathContains)}%`);
     const { data: logs } = await q;
     let rows: LogRow[] = (logs ?? []) as LogRow[];
-    if (data.statusBucket) rows = rows.filter((r) => statusBucket(r.status_code) === data.statusBucket);
+    if (data.statusBucket)
+      rows = rows.filter((r) => statusBucket(r.status_code) === data.statusBucket);
 
     const latencies = rows.map((r) => r.latency_ms ?? 0).filter((n) => n > 0);
-    const successes = rows.filter((r) => (r.status_code ?? 0) > 0 && (r.status_code ?? 0) < 400).length;
+    const successes = rows.filter(
+      (r) => (r.status_code ?? 0) > 0 && (r.status_code ?? 0) < 400,
+    ).length;
     const failures = rows.filter((r) => (r.status_code ?? 0) >= 400).length;
     const totals = {
       requests: rows.length,
@@ -57,7 +60,9 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
       failures,
       success_rate: rows.length ? Math.round((successes / rows.length) * 1000) / 10 : 0,
       failure_rate: rows.length ? Math.round((failures / rows.length) * 1000) / 10 : 0,
-      avg_latency_ms: latencies.length ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0,
+      avg_latency_ms: latencies.length
+        ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+        : 0,
       p50_latency_ms: percentile(latencies, 0.5),
       p95_latency_ms: percentile(latencies, 0.95),
       p99_latency_ms: percentile(latencies, 0.99),
@@ -66,8 +71,9 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
 
     const byDay = bucketByDay(rows, data.days);
     const byHour = bucketByHour(rows.slice(0, 3000));
-    const byStatus = Object.entries(groupCount(rows, (r) => statusBucket(r.status_code)))
-      .map(([bucket, count]) => ({ bucket, count }));
+    const byStatus = Object.entries(groupCount(rows, (r) => statusBucket(r.status_code))).map(
+      ([bucket, count]) => ({ bucket, count }),
+    );
     const topPaths = Object.entries(groupCount(rows, (r) => r.path ?? "/"))
       .map(([path, count]) => ({ path, count }))
       .sort((a, b) => b.count - a.count)
@@ -77,16 +83,28 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
     const monthly = bucketByMonth(rows);
 
     // API Key usage
-    const keyCounts = groupCount(rows.filter((r) => r.api_key_id), (r) => r.api_key_id as string);
+    const keyCounts = groupCount(
+      rows.filter((r) => r.api_key_id),
+      (r) => r.api_key_id as string,
+    );
     const keyIds = Object.keys(keyCounts);
-    let apiKeyUsage: Array<{ id: string; name: string; prefix: string; count: number; last_used_at: string | null }> = [];
+    let apiKeyUsage: Array<{
+      id: string;
+      name: string;
+      prefix: string;
+      count: number;
+      last_used_at: string | null;
+    }> = [];
     if (keyIds.length) {
       const { data: keys } = await supabase
         .from("api_keys")
         .select("id, name, prefix, last_used_at")
         .in("id", keyIds);
       apiKeyUsage = (keys ?? [])
-        .map((k: { id: string; name: string; prefix: string; last_used_at: string | null }) => ({ ...k, count: keyCounts[k.id] ?? 0 }))
+        .map((k: { id: string; name: string; prefix: string; last_used_at: string | null }) => ({
+          ...k,
+          count: keyCounts[k.id] ?? 0,
+        }))
         .sort((a, b) => b.count - a.count);
     }
 
@@ -98,22 +116,22 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
       .gte("created_at", since);
     const oauth = {
       total_tokens: oauthTokens?.length ?? 0,
-      active_tokens:
-        (oauthTokens ?? []).filter(
-          (t: { revoked_at: string | null; expires_at: string | null }) =>
-            !t.revoked_at && (!t.expires_at || new Date(t.expires_at) > new Date()),
-        ).length,
-      recently_used:
-        (oauthTokens ?? []).filter(
-          (t: { last_used_at: string | null }) =>
-            t.last_used_at && new Date(t.last_used_at).getTime() > Date.now() - 86400_000,
-        ).length,
+      active_tokens: (oauthTokens ?? []).filter(
+        (t: { revoked_at: string | null; expires_at: string | null }) =>
+          !t.revoked_at && (!t.expires_at || new Date(t.expires_at) > new Date()),
+      ).length,
+      recently_used: (oauthTokens ?? []).filter(
+        (t: { last_used_at: string | null }) =>
+          t.last_used_at && new Date(t.last_used_at).getTime() > Date.now() - 86400_000,
+      ).length,
     };
 
     // Webhook deliveries
     const { data: webhooks } = await supabase
       .from("webhook_deliveries")
-      .select("status, duration_ms, response_status, created_at, attempt, succeeded_at, dead_letter_at")
+      .select(
+        "status, duration_ms, response_status, created_at, attempt, succeeded_at, dead_letter_at",
+      )
       .eq("organization_id", orgId)
       .gte("created_at", since)
       .limit(10000);
@@ -123,18 +141,25 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
       succeeded: wh.filter((w: { succeeded_at: string | null }) => w.succeeded_at).length,
       failed: wh.filter((w: { status: string }) => w.status === "failed").length,
       dead_letter: wh.filter((w: { dead_letter_at: string | null }) => w.dead_letter_at).length,
-      pending: wh.filter((w: { status: string }) => w.status === "pending" || w.status === "retrying").length,
-      avg_duration_ms:
-        wh.length
-          ? Math.round(
-              wh.reduce((a: number, b: { duration_ms: number | null }) => a + (b.duration_ms ?? 0), 0) / wh.length,
-            )
-          : 0,
+      pending: wh.filter(
+        (w: { status: string }) => w.status === "pending" || w.status === "retrying",
+      ).length,
+      avg_duration_ms: wh.length
+        ? Math.round(
+            wh.reduce(
+              (a: number, b: { duration_ms: number | null }) => a + (b.duration_ms ?? 0),
+              0,
+            ) / wh.length,
+          )
+        : 0,
     };
 
     // Rate limit hits (requests that hit 429)
     const rateLimitHits = rows.filter((r) => r.status_code === 429).length;
-    const rateLimitByDay = bucketByDay(rows.filter((r) => r.status_code === 429), data.days);
+    const rateLimitByDay = bucketByDay(
+      rows.filter((r) => r.status_code === 429),
+      data.days,
+    );
 
     return {
       totals,
@@ -154,7 +179,9 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
 
 export const listApiLogs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => FiltersSchema.extend({ limit: z.number().int().min(1).max(500).default(100) }).parse(v))
+  .validator((v: unknown) =>
+    FiltersSchema.extend({ limit: z.number().int().min(1).max(500).default(100) }).parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const orgId = await getOrgId(supabase, userId);
@@ -173,7 +200,8 @@ export const listApiLogs = createServerFn({ method: "POST" })
     if (data.pathContains) q = q.ilike("path", `%${sanitizeSearchTerm(data.pathContains)}%`);
     const { data: rows } = await q;
     let out = (rows ?? []) as Array<LogRow & { ip: unknown }>;
-    if (data.statusBucket) out = out.filter((r) => statusBucket(r.status_code) === data.statusBucket);
+    if (data.statusBucket)
+      out = out.filter((r) => statusBucket(r.status_code) === data.statusBucket);
     return out.map((r) => ({ ...r, ip: r.ip == null ? null : String(r.ip) }));
   });
 
@@ -198,8 +226,18 @@ export const exportApiLogsCsv = createServerFn({ method: "POST" })
     if (data.pathContains) q = q.ilike("path", `%${sanitizeSearchTerm(data.pathContains)}%`);
     const { data: rows } = await q;
     let all = (rows ?? []) as Array<LogRow & { ip: unknown }>;
-    if (data.statusBucket) all = all.filter((r) => statusBucket(r.status_code) === data.statusBucket);
-    const header = ["timestamp", "method", "path", "status", "latency_ms", "ip", "api_key_id", "error"];
+    if (data.statusBucket)
+      all = all.filter((r) => statusBucket(r.status_code) === data.statusBucket);
+    const header = [
+      "timestamp",
+      "method",
+      "path",
+      "status",
+      "latency_ms",
+      "ip",
+      "api_key_id",
+      "error",
+    ];
     const csv = [header.join(",")]
       .concat(
         all.map((r) =>
@@ -232,7 +270,10 @@ type LogRow = {
   created_at?: string;
 };
 
-function groupCount<T>(rows: T[], key: (r: T) => string | null | undefined): Record<string, number> {
+function groupCount<T>(
+  rows: T[],
+  key: (r: T) => string | null | undefined,
+): Record<string, number> {
   const acc: Record<string, number> = {};
   for (const r of rows) {
     const k = key(r);
@@ -258,7 +299,10 @@ function percentile(values: number[], p: number): number {
 }
 
 function bucketByDay(rows: LogRow[], days: number) {
-  const map = new Map<string, { count: number; success: number; failure: number; latencySum: number; latencyN: number }>();
+  const map = new Map<
+    string,
+    { count: number; success: number; failure: number; latencySum: number; latencyN: number }
+  >();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
     map.set(d, { count: 0, success: 0, failure: 0, latencySum: 0, latencyN: 0 });
@@ -374,9 +418,22 @@ function emptyResult() {
     errorTrends: [] as ReturnType<typeof bucketErrorsByDay>,
     latencyBuckets: [] as ReturnType<typeof latencyHistogram>,
     monthly: [] as ReturnType<typeof bucketByMonth>,
-    apiKeyUsage: [] as Array<{ id: string; name: string; prefix: string; count: number; last_used_at: string | null }>,
+    apiKeyUsage: [] as Array<{
+      id: string;
+      name: string;
+      prefix: string;
+      count: number;
+      last_used_at: string | null;
+    }>,
     oauth: { total_tokens: 0, active_tokens: 0, recently_used: 0 },
-    webhookStats: { total: 0, succeeded: 0, failed: 0, dead_letter: 0, pending: 0, avg_duration_ms: 0 },
+    webhookStats: {
+      total: 0,
+      succeeded: 0,
+      failed: 0,
+      dead_letter: 0,
+      pending: 0,
+      avg_duration_ms: 0,
+    },
     rateLimit: { hits: 0, byDay: [] as ReturnType<typeof bucketByDay> },
   };
 }

@@ -121,11 +121,12 @@ export function toInsertRow(
 }
 
 export function ruleSetFilename(workspaceName?: string | null) {
-  const slug = (workspaceName ?? "workspace")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40) || "workspace";
+  const slug =
+    (workspaceName ?? "workspace")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 40) || "workspace";
   const date = new Date().toISOString().slice(0, 10);
   return `wa-chatbot-rules-${slug}-${date}.json`;
 }

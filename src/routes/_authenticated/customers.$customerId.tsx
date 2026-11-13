@@ -327,7 +327,11 @@ function CustomerDetailPage() {
                     label={`Related · ${related.length}`}
                     icon={<Users className="w-4 h-4" />}
                   />
-                  <Tab v="analytics" label="Analytics" icon={<LineChartIcon className="w-4 h-4" />} />
+                  <Tab
+                    v="analytics"
+                    label="Analytics"
+                    icon={<LineChartIcon className="w-4 h-4" />}
+                  />
                   <Tab v="history" label="History" icon={<Clock className="w-4 h-4" />} />
                 </TabsList>
               </ScrollArea>

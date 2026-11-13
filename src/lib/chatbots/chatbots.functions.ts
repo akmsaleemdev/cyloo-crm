@@ -42,7 +42,11 @@ async function assertChatbotRole(
       .select("workspace_id")
       .in("id", input.ids);
     if (error) throw new Error(error.message);
-    const ids = Array.from(new Set(((rows ?? []) as unknown as Array<{ workspace_id: string }>).map((r) => r.workspace_id)));
+    const ids = Array.from(
+      new Set(
+        ((rows ?? []) as unknown as Array<{ workspace_id: string }>).map((r) => r.workspace_id),
+      ),
+    );
     if (ids.length === 0) throw new Error("Chatbot not found");
     if (ids.length > 1) throw new Error("Chatbots must belong to the same workspace");
     workspaceId = ids[0];
@@ -64,12 +68,12 @@ async function assertChatbotRole(
   return workspaceId;
 }
 
-
 export type ChatbotStatus = "draft" | "active" | "paused" | "archived";
 export type ChatbotChannel =
-  | "whatsapp" | "instagram" | "messenger" | "telegram" | "livechat" | "web" | "sms" | "email";
+  "whatsapp" | "instagram" | "messenger" | "telegram" | "livechat" | "web" | "sms" | "email";
 
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 export interface Chatbot {
   id: string;
@@ -111,7 +115,6 @@ export interface Chatbot {
   updated_at: string;
 }
 
-
 export interface ChatbotDeployment {
   id: string;
   chatbot_id: string;
@@ -146,29 +149,32 @@ export interface ChatbotMessage {
   created_at: string;
 }
 
-
 // ==================== CRUD ====================
 
 export const listChatbots = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    trashed: z.boolean().optional(),
-    search: z.string().max(200).optional(),
-    status: z.enum(["draft", "active", "paused", "archived"]).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        trashed: z.boolean().optional(),
+        search: z.string().max(200).optional(),
+        status: z.enum(["draft", "active", "paused", "archived"]).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     let q = sbAny(context.supabase)
       .from("chatbots" as never)
       .select("*")
       .eq("workspace_id", data.workspaceId);
-    q = (data.trashed
-      ? q.not("deleted_at", "is", null)
-      : q.is("deleted_at", null)) as typeof q;
+    q = (data.trashed ? q.not("deleted_at", "is", null) : q.is("deleted_at", null)) as typeof q;
     if (data.status) q = q.eq("status", data.status) as typeof q;
     if (data.search?.trim()) {
       const s = data.search.trim().replace(/[%,]/g, " ");
-      q = q.or(`name.ilike.%${sanitizeSearchTerm(s)}%,description.ilike.%${sanitizeSearchTerm(s)}%`) as typeof q;
+      q = q.or(
+        `name.ilike.%${sanitizeSearchTerm(s)}%,description.ilike.%${sanitizeSearchTerm(s)}%`,
+      ) as typeof q;
     }
     const { data: rows, error } = await q.order("updated_at", { ascending: false }).limit(500);
     if (error) throw new Error(error.message);
@@ -180,7 +186,10 @@ export const getChatbot = createServerFn({ method: "POST" })
   .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await sbAny(context.supabase)
-      .from("chatbots" as never).select("*").eq("id", data.id).maybeSingle();
+      .from("chatbots" as never)
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return (row ?? null) as unknown as Chatbot | null;
   });
@@ -219,25 +228,39 @@ export const upsertChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => upsertInput.parse(v))
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { workspaceId: data.workspaceId }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { workspaceId: data.workspaceId },
+      ["owner", "admin", "manager"],
+    );
     const { id, workspaceId, ...rest } = data;
     const payload = { ...rest, workspace_id: workspaceId, created_by: context.userId };
     if (id) {
       const { data: row, error } = await sbAny(context.supabase)
-        .from("chatbots" as never).update(payload as never).eq("id", id).select("*").maybeSingle();
+        .from("chatbots" as never)
+        .update(payload as never)
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
       if (error) throw new Error(error.message);
       const bot = row as unknown as Chatbot;
       await emit(sbAny(context.supabase), workspaceId, "chatbot.updated", context.userId, bot.id, {
-        name: bot.name, status: bot.status,
+        name: bot.name,
+        status: bot.status,
       });
       return bot;
     }
     const { data: row, error } = await sbAny(context.supabase)
-      .from("chatbots" as never).insert(payload as never).select("*").maybeSingle();
+      .from("chatbots" as never)
+      .insert(payload as never)
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     const bot = row as unknown as Chatbot;
     await emit(sbAny(context.supabase), workspaceId, "chatbot.created", context.userId, bot.id, {
-      name: bot.name, status: bot.status,
+      name: bot.name,
+      status: bot.status,
     });
     return bot;
   });
@@ -245,18 +268,29 @@ export const upsertChatbot = createServerFn({ method: "POST" })
 /** Soft-delete: move chatbot(s) to trash by stamping deleted_at. */
 export const deleteChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    ids: z.array(z.string().uuid()).min(1),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    const workspaceId = await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: data.ids }, ["owner", "admin", "manager"]);
+    const workspaceId = await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { ids: data.ids },
+      ["owner", "admin", "manager"],
+    );
     const { error } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .update({ deleted_at: new Date().toISOString() } as never)
       .in("id", data.ids);
     if (error) throw new Error(error.message);
     for (const id of data.ids) {
-      await emit(sbAny(context.supabase), workspaceId, "chatbot.deleted", context.userId, id, { ids: data.ids });
+      await emit(sbAny(context.supabase), workspaceId, "chatbot.deleted", context.userId, id, {
+        ids: data.ids,
+      });
     }
     return { ok: true, count: data.ids.length };
   });
@@ -264,18 +298,29 @@ export const deleteChatbot = createServerFn({ method: "POST" })
 /** Restore soft-deleted chatbot(s) from trash. */
 export const restoreChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    ids: z.array(z.string().uuid()).min(1),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    const workspaceId = await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: data.ids }, ["owner", "admin", "manager"]);
+    const workspaceId = await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { ids: data.ids },
+      ["owner", "admin", "manager"],
+    );
     const { error } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .update({ deleted_at: null } as never)
       .in("id", data.ids);
     if (error) throw new Error(error.message);
     for (const id of data.ids) {
-      await emit(sbAny(context.supabase), workspaceId, "chatbot.restored", context.userId, id, { ids: data.ids });
+      await emit(sbAny(context.supabase), workspaceId, "chatbot.restored", context.userId, id, {
+        ids: data.ids,
+      });
     }
     return { ok: true, count: data.ids.length };
   });
@@ -283,11 +328,20 @@ export const restoreChatbot = createServerFn({ method: "POST" })
 /** Permanently delete chatbot(s). Only trashed bots may be hard-deleted. */
 export const purgeChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    ids: z.array(z.string().uuid()).min(1),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    const workspaceId = await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: data.ids }, ["owner", "admin"]);
+    const workspaceId = await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { ids: data.ids },
+      ["owner", "admin"],
+    );
     const { error } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .delete()
@@ -295,7 +349,9 @@ export const purgeChatbot = createServerFn({ method: "POST" })
       .not("deleted_at", "is", null);
     if (error) throw new Error(error.message);
     for (const id of data.ids) {
-      await emit(sbAny(context.supabase), workspaceId, "chatbot.purged", context.userId, id, { ids: data.ids });
+      await emit(sbAny(context.supabase), workspaceId, "chatbot.purged", context.userId, id, {
+        ids: data.ids,
+      });
     }
     return { ok: true, count: data.ids.length };
   });
@@ -303,12 +359,21 @@ export const purgeChatbot = createServerFn({ method: "POST" })
 /** Bulk status change (activate / pause / archive / mark draft). */
 export const bulkUpdateChatbotStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    ids: z.array(z.string().uuid()).min(1),
-    status: z.enum(["draft", "active", "paused", "archived"]),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        ids: z.array(z.string().uuid()).min(1),
+        status: z.enum(["draft", "active", "paused", "archived"]),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    const workspaceId = await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: data.ids }, ["owner", "admin", "manager"]);
+    const workspaceId = await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { ids: data.ids },
+      ["owner", "admin", "manager"],
+    );
     const { error } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .update({ status: data.status } as never)
@@ -316,11 +381,15 @@ export const bulkUpdateChatbotStatus = createServerFn({ method: "POST" })
       .is("deleted_at", null);
     if (error) throw new Error(error.message);
     const evt: ChatbotWebhookEvent =
-      data.status === "paused" ? "chatbot.paused" :
-      data.status === "active" ? "chatbot.activated" :
-      "chatbot.updated";
+      data.status === "paused"
+        ? "chatbot.paused"
+        : data.status === "active"
+          ? "chatbot.activated"
+          : "chatbot.updated";
     for (const id of data.ids) {
-      await emit(sbAny(context.supabase), workspaceId, evt, context.userId, id, { status: data.status });
+      await emit(sbAny(context.supabase), workspaceId, evt, context.userId, id, {
+        status: data.status,
+      });
     }
     return { ok: true, count: data.ids.length };
   });
@@ -330,15 +399,27 @@ export const duplicateChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, [
+      "owner",
+      "admin",
+      "manager",
+    ]);
     const { data: src, error: e1 } = await sbAny(context.supabase)
-      .from("chatbots" as never).select("*").eq("id", data.id).maybeSingle();
+      .from("chatbots" as never)
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     if (e1) throw new Error(e1.message);
     if (!src) throw new Error("Chatbot not found");
     const s = src as unknown as Chatbot & Record<string, unknown>;
     const {
-      id: _id, created_at: _c, updated_at: _u, deleted_at: _d,
-      total_sessions: _ts, total_messages: _tm, ...rest
+      id: _id,
+      created_at: _c,
+      updated_at: _u,
+      deleted_at: _d,
+      total_sessions: _ts,
+      total_messages: _tm,
+      ...rest
     } = s;
     const insertRow = {
       ...rest,
@@ -360,39 +441,62 @@ export const duplicateChatbot = createServerFn({ method: "POST" })
       .select("workspace_id, category_id, article_id")
       .eq("chatbot_id", data.id);
     const rows = (sources ?? []) as unknown as Array<{
-      workspace_id: string; category_id: string | null; article_id: string | null;
+      workspace_id: string;
+      category_id: string | null;
+      article_id: string | null;
     }>;
     if (rows.length) {
-      await sbAny(context.supabase).from("chatbot_kb_sources" as never).insert(
-        rows.map((r) => ({ ...r, chatbot_id: created.id })) as never,
-      );
+      await sbAny(context.supabase)
+        .from("chatbot_kb_sources" as never)
+        .insert(rows.map((r) => ({ ...r, chatbot_id: created.id })) as never);
     }
-    await emit(sbAny(context.supabase), created.workspace_id, "chatbot.duplicated", context.userId, created.id, {
-      source_id: data.id, name: created.name,
-    });
+    await emit(
+      sbAny(context.supabase),
+      created.workspace_id,
+      "chatbot.duplicated",
+      context.userId,
+      created.id,
+      {
+        source_id: data.id,
+        name: created.name,
+      },
+    );
     return created;
   });
 
 /** Disable an installed template bot: pause + stamp disabled_at/reason + audit log. */
 export const disableInstalledChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(),
-    reason: z.string().max(500).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, [
+      "owner",
+      "admin",
+      "manager",
+    ]);
     const { data: existing, error: e1 } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .select("id, workspace_id, name, status, installed_from_template_id")
-      .eq("id", data.id).maybeSingle();
+      .eq("id", data.id)
+      .maybeSingle();
     if (e1) throw new Error(e1.message);
     if (!existing) throw new Error("Chatbot not found");
     const row = existing as unknown as {
-      id: string; workspace_id: string; name: string;
-      status: string; installed_from_template_id: string | null;
+      id: string;
+      workspace_id: string;
+      name: string;
+      status: string;
+      installed_from_template_id: string | null;
     };
-    if (!row.installed_from_template_id) throw new Error("This chatbot was not installed from a template");
+    if (!row.installed_from_template_id)
+      throw new Error("This chatbot was not installed from a template");
 
     const nowIso = new Date().toISOString();
     const { error } = await sbAny(context.supabase)
@@ -405,48 +509,78 @@ export const disableInstalledChatbot = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
-    await sbAny(context.supabase).from("audit_logs" as never).insert({
-      workspace_id: row.workspace_id,
-      actor_id: context.userId,
-      action: "update",
-      resource_type: "chatbot",
-      resource_id: row.id,
-      changes: { status: { from: row.status, to: "paused" }, disabled_at: nowIso },
-      metadata: {
-        event: "chatbot.installed.disabled",
+    await sbAny(context.supabase)
+      .from("audit_logs" as never)
+      .insert({
+        workspace_id: row.workspace_id,
+        actor_id: context.userId,
+        action: "update",
+        resource_type: "chatbot",
+        resource_id: row.id,
+        changes: { status: { from: row.status, to: "paused" }, disabled_at: nowIso },
+        metadata: {
+          event: "chatbot.installed.disabled",
+          template_id: row.installed_from_template_id,
+          name: row.name,
+          reason: data.reason?.trim() || null,
+        },
+      } as never);
+
+    await emit(
+      sbAny(context.supabase),
+      row.workspace_id,
+      "chatbot.installed.disabled",
+      context.userId,
+      row.id,
+      {
         template_id: row.installed_from_template_id,
-        name: row.name,
         reason: data.reason?.trim() || null,
       },
-    } as never);
-
-    await emit(sbAny(context.supabase), row.workspace_id, "chatbot.installed.disabled", context.userId, row.id, {
-      template_id: row.installed_from_template_id, reason: data.reason?.trim() || null,
-    });
+    );
     return { ok: true };
   });
 
 /** Re-enable a previously disabled installed template bot: clear disabled_at + activate + audit log. */
 export const reEnableInstalledChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, [
+      "owner",
+      "admin",
+      "manager",
+    ]);
     const { data: existing, error: e1 } = await sbAny(context.supabase)
       .from("chatbots" as never)
-      .select("id, workspace_id, name, status, installed_from_template_id, disabled_at, disabled_reason, deleted_at")
-      .eq("id", data.id).maybeSingle();
+      .select(
+        "id, workspace_id, name, status, installed_from_template_id, disabled_at, disabled_reason, deleted_at",
+      )
+      .eq("id", data.id)
+      .maybeSingle();
     if (e1) throw new Error(e1.message);
     if (!existing) throw new Error("Chatbot not found");
     const row = existing as unknown as {
-      id: string; workspace_id: string; name: string; status: string;
-      installed_from_template_id: string | null; disabled_at: string | null;
-      disabled_reason: string | null; deleted_at: string | null;
+      id: string;
+      workspace_id: string;
+      name: string;
+      status: string;
+      installed_from_template_id: string | null;
+      disabled_at: string | null;
+      disabled_reason: string | null;
+      deleted_at: string | null;
     };
-    if (!row.installed_from_template_id) throw new Error("This chatbot was not installed from a template");
-    if (row.deleted_at) throw new Error("Uninstalled bots cannot be re-enabled. Reinstall from the marketplace instead.");
+    if (!row.installed_from_template_id)
+      throw new Error("This chatbot was not installed from a template");
+    if (row.deleted_at)
+      throw new Error(
+        "Uninstalled bots cannot be re-enabled. Reinstall from the marketplace instead.",
+      );
     if (!row.disabled_at) throw new Error("Chatbot is not disabled");
 
     const { error } = await sbAny(context.supabase)
@@ -459,46 +593,71 @@ export const reEnableInstalledChatbot = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
-    await sbAny(context.supabase).from("audit_logs" as never).insert({
-      workspace_id: row.workspace_id,
-      actor_id: context.userId,
-      action: "update",
-      resource_type: "chatbot",
-      resource_id: row.id,
-      changes: { status: { from: row.status, to: "active" }, disabled_at: { from: row.disabled_at, to: null } },
-      metadata: {
-        event: "chatbot.installed.reenabled",
+    await sbAny(context.supabase)
+      .from("audit_logs" as never)
+      .insert({
+        workspace_id: row.workspace_id,
+        actor_id: context.userId,
+        action: "update",
+        resource_type: "chatbot",
+        resource_id: row.id,
+        changes: {
+          status: { from: row.status, to: "active" },
+          disabled_at: { from: row.disabled_at, to: null },
+        },
+        metadata: {
+          event: "chatbot.installed.reenabled",
+          template_id: row.installed_from_template_id,
+          name: row.name,
+          previous_reason: row.disabled_reason,
+        },
+      } as never);
+
+    await emit(
+      sbAny(context.supabase),
+      row.workspace_id,
+      "chatbot.installed.reenabled",
+      context.userId,
+      row.id,
+      {
         template_id: row.installed_from_template_id,
-        name: row.name,
         previous_reason: row.disabled_reason,
       },
-    } as never);
-
-    await emit(sbAny(context.supabase), row.workspace_id, "chatbot.installed.reenabled", context.userId, row.id, {
-      template_id: row.installed_from_template_id, previous_reason: row.disabled_reason,
-    });
+    );
     return { ok: true };
   });
 
 /** Uninstall an installed template bot: soft-delete + audit log with reason. */
 export const uninstallInstalledChatbot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid(),
-    reason: z.string().max(500).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        reason: z.string().max(500).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, ["owner", "admin"]);
+    await assertChatbotRole(sbAny(context.supabase), context.userId, { ids: [data.id] }, [
+      "owner",
+      "admin",
+    ]);
     const { data: existing, error: e1 } = await sbAny(context.supabase)
       .from("chatbots" as never)
       .select("id, workspace_id, name, installed_from_template_id")
-      .eq("id", data.id).maybeSingle();
+      .eq("id", data.id)
+      .maybeSingle();
     if (e1) throw new Error(e1.message);
     if (!existing) throw new Error("Chatbot not found");
     const row = existing as unknown as {
-      id: string; workspace_id: string; name: string; installed_from_template_id: string | null;
+      id: string;
+      workspace_id: string;
+      name: string;
+      installed_from_template_id: string | null;
     };
-    if (!row.installed_from_template_id) throw new Error("This chatbot was not installed from a template");
+    if (!row.installed_from_template_id)
+      throw new Error("This chatbot was not installed from a template");
 
     const nowIso = new Date().toISOString();
     const { error } = await sbAny(context.supabase)
@@ -511,27 +670,35 @@ export const uninstallInstalledChatbot = createServerFn({ method: "POST" })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
-    await sbAny(context.supabase).from("audit_logs" as never).insert({
-      workspace_id: row.workspace_id,
-      actor_id: context.userId,
-      action: "delete",
-      resource_type: "chatbot",
-      resource_id: row.id,
-      metadata: {
-        event: "chatbot.installed.uninstalled",
+    await sbAny(context.supabase)
+      .from("audit_logs" as never)
+      .insert({
+        workspace_id: row.workspace_id,
+        actor_id: context.userId,
+        action: "delete",
+        resource_type: "chatbot",
+        resource_id: row.id,
+        metadata: {
+          event: "chatbot.installed.uninstalled",
+          template_id: row.installed_from_template_id,
+          name: row.name,
+          reason: data.reason?.trim() || null,
+        },
+      } as never);
+
+    await emit(
+      sbAny(context.supabase),
+      row.workspace_id,
+      "chatbot.installed.uninstalled",
+      context.userId,
+      row.id,
+      {
         template_id: row.installed_from_template_id,
-        name: row.name,
         reason: data.reason?.trim() || null,
       },
-    } as never);
-
-    await emit(sbAny(context.supabase), row.workspace_id, "chatbot.installed.uninstalled", context.userId, row.id, {
-      template_id: row.installed_from_template_id, reason: data.reason?.trim() || null,
-    });
+    );
     return { ok: true };
   });
-
-
 
 // ==================== Deployments ====================
 
@@ -541,7 +708,8 @@ export const listDeployments = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("chatbot_deployments" as never)
-      .select("*").eq("chatbot_id", data.chatbotId)
+      .select("*")
+      .eq("chatbot_id", data.chatbotId)
       .order("channel");
     if (error) throw new Error(error.message);
     return (rows ?? []) as unknown as ChatbotDeployment[];
@@ -549,19 +717,39 @@ export const listDeployments = createServerFn({ method: "POST" })
 
 export const upsertDeployment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    chatbotId: z.string().uuid(),
-    channel: z.enum(["whatsapp","instagram","messenger","telegram","livechat","web","sms","email"]),
-    channel_account_id: z.string().nullable().optional(),
-    enabled: z.boolean().optional(),
-    business_hours_only: z.boolean().optional(),
-    config: z.record(z.unknown()).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        chatbotId: z.string().uuid(),
+        channel: z.enum([
+          "whatsapp",
+          "instagram",
+          "messenger",
+          "telegram",
+          "livechat",
+          "web",
+          "sms",
+          "email",
+        ]),
+        channel_account_id: z.string().nullable().optional(),
+        enabled: z.boolean().optional(),
+        business_hours_only: z.boolean().optional(),
+        config: z.record(z.unknown()).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { workspaceId: data.workspaceId }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { workspaceId: data.workspaceId },
+      ["owner", "admin", "manager"],
+    );
     const values = {
-      workspace_id: data.workspaceId, chatbot_id: data.chatbotId, channel: data.channel,
+      workspace_id: data.workspaceId,
+      chatbot_id: data.chatbotId,
+      channel: data.channel,
       channel_account_id: data.channel_account_id ?? null,
       enabled: data.enabled ?? true,
       business_hours_only: data.business_hours_only ?? false,
@@ -587,7 +775,8 @@ export const upsertDeployment = createServerFn({ method: "POST" })
           .from("chatbot_deployments" as never)
           .update(values as never)
           .eq("id", existingId)
-          .select("*").maybeSingle();
+          .select("*")
+          .maybeSingle();
         if (error) throw new Error(error.message);
         return row as unknown as ChatbotDeployment;
       }
@@ -596,7 +785,8 @@ export const upsertDeployment = createServerFn({ method: "POST" })
     const { data: row, error } = await sbAny(context.supabase)
       .from("chatbot_deployments" as never)
       .upsert(values as never, { onConflict: "chatbot_id,channel,channel_account_id" })
-      .select("*").maybeSingle();
+      .select("*")
+      .maybeSingle();
     if (error) throw new Error(error.message);
     return row as unknown as ChatbotDeployment;
   });
@@ -613,21 +803,32 @@ export const removeDeployment = createServerFn({ method: "POST" })
     if (dErr) throw new Error(dErr.message);
     const depRow = dep as unknown as { workspace_id: string } | null;
     if (!depRow) throw new Error("Deployment not found");
-    await assertChatbotRole(sbAny(context.supabase), context.userId, { workspaceId: depRow.workspace_id }, ["owner", "admin", "manager"]);
+    await assertChatbotRole(
+      sbAny(context.supabase),
+      context.userId,
+      { workspaceId: depRow.workspace_id },
+      ["owner", "admin", "manager"],
+    );
     // Remove every row for this bot+channel so earlier duplicates can't keep it "Live".
     const { data: target } = await sbAny(context.supabase)
       .from("chatbot_deployments" as never)
       .select("chatbot_id, channel, channel_account_id")
       .eq("id", data.id)
       .maybeSingle();
-    const t = target as unknown as
-      { chatbot_id: string; channel: string; channel_account_id: string | null } | null;
-    let q = sbAny(context.supabase).from("chatbot_deployments" as never).delete();
+    const t = target as unknown as {
+      chatbot_id: string;
+      channel: string;
+      channel_account_id: string | null;
+    } | null;
+    let q = sbAny(context.supabase)
+      .from("chatbot_deployments" as never)
+      .delete();
     if (t) {
       q = q.eq("chatbot_id", t.chatbot_id).eq("channel", t.channel);
-      q = t.channel_account_id === null
-        ? q.is("channel_account_id", null)
-        : q.eq("channel_account_id", t.channel_account_id);
+      q =
+        t.channel_account_id === null
+          ? q.is("channel_account_id", null)
+          : q.eq("channel_account_id", t.channel_account_id);
     } else {
       q = q.eq("id", data.id);
     }
@@ -640,14 +841,19 @@ export const removeDeployment = createServerFn({ method: "POST" })
 
 export const listChatbotSessions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    chatbotId: z.string().uuid(),
-    limit: z.number().int().min(1).max(200).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        chatbotId: z.string().uuid(),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("chatbot_sessions" as never)
-      .select("*").eq("chatbot_id", data.chatbotId)
+      .select("*")
+      .eq("chatbot_id", data.chatbotId)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 50);
     if (error) throw new Error(error.message);
@@ -660,7 +866,8 @@ export const listSessionMessages = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("chatbot_messages" as never)
-      .select("*").eq("session_id", data.sessionId)
+      .select("*")
+      .eq("session_id", data.sessionId)
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
     return (rows ?? []) as unknown as ChatbotMessage[];
@@ -697,11 +904,17 @@ export const chatbotChat = createServerFn({ method: "POST" })
       const { enforceAIRateLimit } = await import("@/lib/ai/rate-limiter.server");
       // Load bot workspace up front for the bucket key.
       const { data: wsRow } = await sbAny(context.supabase)
-        .from("chatbots" as never).select("workspace_id").eq("id", data.chatbotId).maybeSingle();
+        .from("chatbots" as never)
+        .select("workspace_id")
+        .eq("id", data.chatbotId)
+        .maybeSingle();
       const workspaceId = (wsRow as { workspace_id?: string } | null)?.workspace_id;
       if (workspaceId) {
         await enforceAIRateLimit({
-          workspaceId, userId: context.userId, feature: `chatbot:${data.chatbotId}`, limit: 60,
+          workspaceId,
+          userId: context.userId,
+          feature: `chatbot:${data.chatbotId}`,
+          limit: 60,
         });
       }
     } catch (e) {
@@ -711,7 +924,10 @@ export const chatbotChat = createServerFn({ method: "POST" })
 
     // Load bot
     const { data: botRow, error: botErr } = await sbAny(context.supabase)
-      .from("chatbots" as never).select("*").eq("id", data.chatbotId).maybeSingle();
+      .from("chatbots" as never)
+      .select("*")
+      .eq("id", data.chatbotId)
+      .maybeSingle();
     if (botErr) throw new Error(botErr.message);
     if (!botRow) throw new Error("Chatbot not found");
     const bot = botRow as unknown as Chatbot;
@@ -733,16 +949,22 @@ export const chatbotChat = createServerFn({ method: "POST" })
           external_id: data.externalId ?? null,
           status: "active",
           flow_state: null,
-        } as never).select("id, flow_state").maybeSingle();
+        } as never)
+        .select("id, flow_state")
+        .maybeSingle();
       if (error) throw new Error(error.message);
       sessionId = (sess as unknown as { id: string }).id;
     }
 
     // Persist user message
-    await sbAny(context.supabase).from("chatbot_messages" as never).insert({
-      workspace_id: bot.workspace_id, session_id: sessionId,
-      role: "user", content: cleaned,
-    } as never);
+    await sbAny(context.supabase)
+      .from("chatbot_messages" as never)
+      .insert({
+        workspace_id: bot.workspace_id,
+        session_id: sessionId,
+        role: "user",
+        content: cleaned,
+      } as never);
 
     // ================= Deterministic flow (Visual Builder) =================
     // If the bot has a flow authored in the builder, execute one step. Only
@@ -756,40 +978,83 @@ export const chatbotChat = createServerFn({ method: "POST" })
         // Load or seed the flow state on the session row.
         const { data: sessRow } = await sbAny(context.supabase)
           .from("chatbot_sessions" as never)
-          .select("flow_state").eq("id", sessionId).maybeSingle();
-        const prev = (sessRow as { flow_state?: { currentNodeId?: string | null; variables?: Record<string, string>; awaitingInputFor?: string | null } | null } | null)?.flow_state ?? null;
+          .select("flow_state")
+          .eq("id", sessionId)
+          .maybeSingle();
+        const prev =
+          (
+            sessRow as {
+              flow_state?: {
+                currentNodeId?: string | null;
+                variables?: Record<string, string>;
+                awaitingInputFor?: string | null;
+              } | null;
+            } | null
+          )?.flow_state ?? null;
         const state = {
           currentNodeId: prev?.currentNodeId ?? null,
           variables: prev?.variables ?? {},
           awaitingInputFor: prev?.awaitingInputFor ?? null,
         };
         const step = FlowEngine.step(graph, state, cleaned, "unknown");
-        const hitAiExit = step.state.currentNodeId ? aiExitIds.has(step.state.currentNodeId) : false;
+        const hitAiExit = step.state.currentNodeId
+          ? aiExitIds.has(step.state.currentNodeId)
+          : false;
 
         if (step.handoff) {
-          await sbAny(context.supabase).from("chatbot_sessions" as never)
-            .update({ status: "handed_off", handoff_reason: step.handoff.reason, handed_off_at: new Date().toISOString(), flow_state: step.state } as never)
+          await sbAny(context.supabase)
+            .from("chatbot_sessions" as never)
+            .update({
+              status: "handed_off",
+              handoff_reason: step.handoff.reason,
+              handed_off_at: new Date().toISOString(),
+              flow_state: step.state,
+            } as never)
             .eq("id", sessionId);
           const reply = "Connecting you with a human agent";
-          await sbAny(context.supabase).from("chatbot_messages" as never).insert({
-            workspace_id: bot.workspace_id, session_id: sessionId,
-            role: "assistant", content: reply, latency_ms: Date.now() - start,
-          } as never);
-          return { sessionId, reply, citations: [], handoff: true, handoffReason: step.handoff.reason, latencyMs: Date.now() - start, model: "" };
+          await sbAny(context.supabase)
+            .from("chatbot_messages" as never)
+            .insert({
+              workspace_id: bot.workspace_id,
+              session_id: sessionId,
+              role: "assistant",
+              content: reply,
+              latency_ms: Date.now() - start,
+            } as never);
+          return {
+            sessionId,
+            reply,
+            citations: [],
+            handoff: true,
+            handoffReason: step.handoff.reason,
+            latencyMs: Date.now() - start,
+            model: "",
+          };
         }
 
         // Persist flow progress.
-        await sbAny(context.supabase).from("chatbot_sessions" as never)
-          .update({ flow_state: step.state } as never).eq("id", sessionId);
+        await sbAny(context.supabase)
+          .from("chatbot_sessions" as never)
+          .update({ flow_state: step.state } as never)
+          .eq("id", sessionId);
 
         if (step.reply && !hitAiExit) {
-          await sbAny(context.supabase).from("chatbot_messages" as never).insert({
-            workspace_id: bot.workspace_id, session_id: sessionId,
-            role: "assistant", content: step.reply, latency_ms: Date.now() - start,
-          } as never);
+          await sbAny(context.supabase)
+            .from("chatbot_messages" as never)
+            .insert({
+              workspace_id: bot.workspace_id,
+              session_id: sessionId,
+              role: "assistant",
+              content: step.reply,
+              latency_ms: Date.now() - start,
+            } as never);
           return {
-            sessionId, reply: step.reply, citations: [], handoff: false,
-            latencyMs: Date.now() - start, model: "flow",
+            sessionId,
+            reply: step.reply,
+            citations: [],
+            handoff: false,
+            latencyMs: Date.now() - start,
+            model: "flow",
           };
         }
         // Otherwise the flow either finished, matched no branch, or hit an AI node —
@@ -801,23 +1066,38 @@ export const chatbotChat = createServerFn({ method: "POST" })
 
     // Handoff keyword detection (safety net after the flow)
     const lower = cleaned.toLowerCase();
-    const hasHandoff = bot.handoff_enabled &&
+    const hasHandoff =
+      bot.handoff_enabled &&
       (bot.handoff_keywords ?? []).some((k) => k && lower.includes(k.toLowerCase()));
     if (hasHandoff) {
-      await sbAny(context.supabase).from("chatbot_sessions" as never)
-        .update({ status: "handed_off", handoff_reason: "keyword", handed_off_at: new Date().toISOString() } as never)
+      await sbAny(context.supabase)
+        .from("chatbot_sessions" as never)
+        .update({
+          status: "handed_off",
+          handoff_reason: "keyword",
+          handed_off_at: new Date().toISOString(),
+        } as never)
         .eq("id", sessionId);
       const reply = "Connecting you with a human agent";
-      await sbAny(context.supabase).from("chatbot_messages" as never).insert({
-        workspace_id: bot.workspace_id, session_id: sessionId,
-        role: "assistant", content: reply, latency_ms: Date.now() - start,
-      } as never);
+      await sbAny(context.supabase)
+        .from("chatbot_messages" as never)
+        .insert({
+          workspace_id: bot.workspace_id,
+          session_id: sessionId,
+          role: "assistant",
+          content: reply,
+          latency_ms: Date.now() - start,
+        } as never);
       return {
-        sessionId, reply, citations: [], handoff: true, handoffReason: "keyword",
-        latencyMs: Date.now() - start, model: "",
+        sessionId,
+        reply,
+        citations: [],
+        handoff: true,
+        handoffReason: "keyword",
+        latencyMs: Date.now() - start,
+        model: "",
       };
     }
-
 
     // RAG retrieval
     let citations: ChatbotReply["citations"] = [];
@@ -826,7 +1106,8 @@ export const chatbotChat = createServerFn({ method: "POST" })
       try {
         const { retrieveKbContext } = await import("@/lib/kb/kb.functions");
         const hits = await retrieveKbContext({
-          supabaseRpc: (fn, args) => sbAny(context.supabase).rpc(fn as never, args as never) as never,
+          supabaseRpc: (fn, args) =>
+            sbAny(context.supabase).rpc(fn as never, args as never) as never,
           workspaceId: bot.workspace_id,
           query: cleaned,
           matchCount: bot.rag_match_count ?? 5,
@@ -839,7 +1120,10 @@ export const chatbotChat = createServerFn({ method: "POST" })
         }));
         ragContext = hits
           .slice(0, 5)
-          .map((h, i) => `[${i + 1}] ${(h as { title?: string }).title ?? ""}\n${(h as { content?: string }).content ?? ""}`)
+          .map(
+            (h, i) =>
+              `[${i + 1}] ${(h as { title?: string }).title ?? ""}\n${(h as { content?: string }).content ?? ""}`,
+          )
           .join("\n\n");
       } catch (kbErr) {
         // Log RAG failure so systemic outages surface in monitoring instead of silently degrading answer quality.
@@ -847,12 +1131,13 @@ export const chatbotChat = createServerFn({ method: "POST" })
       }
     }
 
-
     // Load recent history (last 10 msgs)
     const { data: histRows } = await sbAny(context.supabase)
       .from("chatbot_messages" as never)
-      .select("role,content").eq("session_id", sessionId)
-      .order("created_at", { ascending: false }).limit(10);
+      .select("role,content")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: false })
+      .limit(10);
     const history = ((histRows ?? []) as { role: string; content: string }[]).reverse();
 
     // Layered system prompt: system > organization > department > personality > tone > language > RAG
@@ -862,14 +1147,23 @@ export const chatbotChat = createServerFn({ method: "POST" })
       bot.department_prompt ? `Department context:\n${bot.department_prompt}` : "",
       bot.personality ? `Personality:\n${bot.personality}` : "",
       bot.tone ? `Communication tone: ${bot.tone}.` : "",
-      bot.language ? `Reply in language code "${bot.language}" unless the user explicitly writes in another language.` : "",
+      bot.language
+        ? `Reply in language code "${bot.language}" unless the user explicitly writes in another language.`
+        : "",
       bot.escalation_prompt ? `Escalation guidance:\n${bot.escalation_prompt}` : "",
-      ragContext ? `Knowledge base context:\n${ragContext}\n\nCite sources as [1], [2] where relevant.` : "",
-    ].filter(Boolean).join("\n\n");
+      ragContext
+        ? `Knowledge base context:\n${ragContext}\n\nCite sources as [1], [2] where relevant.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
       { role: "system", content: sys },
-      ...history.map((m) => ({ role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant", content: m.content })),
+      ...history.map((m) => ({
+        role: (m.role === "assistant" ? "assistant" : "user") as "user" | "assistant",
+        content: m.content,
+      })),
     ];
 
     // Call AI
@@ -898,21 +1192,35 @@ export const chatbotChat = createServerFn({ method: "POST" })
     }
 
     // Persist assistant message
-    await sbAny(context.supabase).from("chatbot_messages" as never).insert({
-      workspace_id: bot.workspace_id, session_id: sessionId,
-      role: "assistant", content: reply,
-      citations, latency_ms: Date.now() - start,
-      model, provider_kind: providerKind,
-    } as never);
+    await sbAny(context.supabase)
+      .from("chatbot_messages" as never)
+      .insert({
+        workspace_id: bot.workspace_id,
+        session_id: sessionId,
+        role: "assistant",
+        content: reply,
+        citations,
+        latency_ms: Date.now() - start,
+        model,
+        provider_kind: providerKind,
+      } as never);
 
     // Update session/bot counters
-    await sbAny(context.supabase).from("chatbot_sessions" as never)
-      .update({ last_message_at: new Date().toISOString(), message_count: (history.length + 2) } as never)
+    await sbAny(context.supabase)
+      .from("chatbot_sessions" as never)
+      .update({
+        last_message_at: new Date().toISOString(),
+        message_count: history.length + 2,
+      } as never)
       .eq("id", sessionId);
 
     return {
-      sessionId, reply, citations, handoff: false,
-      latencyMs: Date.now() - start, model,
+      sessionId,
+      reply,
+      citations,
+      handoff: false,
+      latencyMs: Date.now() - start,
+      model,
     };
   });
 
@@ -920,10 +1228,14 @@ export const chatbotChat = createServerFn({ method: "POST" })
 
 export const chatbotAnalytics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    chatbotId: z.string().uuid(),
-    days: z.number().int().min(1).max(90).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        chatbotId: z.string().uuid(),
+        days: z.number().int().min(1).max(90).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const days = data.days ?? 14;
     const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
@@ -936,13 +1248,25 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
       .gte("created_at", since)
       .order("created_at", { ascending: true });
     const sessions = (sessRes.data ?? []) as Array<{
-      id: string; created_at: string; status: string; message_count: number;
-      metadata: Record<string, JsonValue> | null; handed_off_at: string | null; handoff_reason: string | null;
+      id: string;
+      created_at: string;
+      status: string;
+      message_count: number;
+      metadata: Record<string, JsonValue> | null;
+      handed_off_at: string | null;
+      handoff_reason: string | null;
     }>;
     const sessionIds = sessions.map((s) => s.id);
 
     // 2) Messages for those sessions
-    type Msg = { role: string; content: string; latency_ms: number | null; citations: JsonValue; created_at: string; session_id: string };
+    type Msg = {
+      role: string;
+      content: string;
+      latency_ms: number | null;
+      citations: JsonValue;
+      created_at: string;
+      session_id: string;
+    };
     let messages: Msg[] = [];
     if (sessionIds.length) {
       // Chunk to avoid IN clause overflow
@@ -963,7 +1287,11 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
       .select("fallback_message")
       .eq("id", data.chatbotId)
       .maybeSingle();
-    const fallbackText = ((botRes.data as { fallback_message?: string } | null)?.fallback_message ?? "").trim().toLowerCase();
+    const fallbackText = (
+      (botRes.data as { fallback_message?: string } | null)?.fallback_message ?? ""
+    )
+      .trim()
+      .toLowerCase();
 
     const totalSessions = sessions.length;
     const handoffs = sessions.filter((s) => s.status === "handed_off").length;
@@ -972,14 +1300,23 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
 
     const assistantMsgs = messages.filter((m) => m.role === "assistant");
     const userMsgs = messages.filter((m) => m.role === "user");
-    const latencies = assistantMsgs.map((m) => m.latency_ms ?? 0).filter((n) => n > 0).sort((a, b) => a - b);
-    const avgLatency = latencies.length ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length) : 0;
-    const p95Latency = latencies.length ? latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))] : 0;
+    const latencies = assistantMsgs
+      .map((m) => m.latency_ms ?? 0)
+      .filter((n) => n > 0)
+      .sort((a, b) => a - b);
+    const avgLatency = latencies.length
+      ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
+      : 0;
+    const p95Latency = latencies.length
+      ? latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))]
+      : 0;
 
     const fallbackMsgs = fallbackText
       ? assistantMsgs.filter((m) => m.content.trim().toLowerCase() === fallbackText).length
       : 0;
-    const kbMsgs = assistantMsgs.filter((m) => Array.isArray(m.citations) && (m.citations as unknown[]).length > 0).length;
+    const kbMsgs = assistantMsgs.filter(
+      (m) => Array.isArray(m.citations) && (m.citations as unknown[]).length > 0,
+    ).length;
 
     // Confidence / CSAT / intents pulled from session.metadata (populated by runtime hooks when available)
     const confidences: number[] = [];
@@ -992,8 +1329,12 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
       const intent = typeof md.intent === "string" ? md.intent : null;
       if (intent) intentCounts.set(intent, (intentCounts.get(intent) ?? 0) + 1);
     }
-    const avgConfidence = confidences.length ? Math.round((confidences.reduce((a, b) => a + b, 0) / confidences.length) * 100) : null;
-    const avgCsat = csats.length ? Math.round((csats.reduce((a, b) => a + b, 0) / csats.length) * 100) / 100 : null;
+    const avgConfidence = confidences.length
+      ? Math.round((confidences.reduce((a, b) => a + b, 0) / confidences.length) * 100)
+      : null;
+    const avgCsat = csats.length
+      ? Math.round((csats.reduce((a, b) => a + b, 0) / csats.length) * 100) / 100
+      : null;
     const topIntents = Array.from(intentCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
@@ -1001,21 +1342,26 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
 
     // Time series (per day): sessions, messages, handoffs
     const dayKey = (iso: string) => iso.slice(0, 10);
-    const dayMap = new Map<string, { date: string; sessions: number; messages: number; handoffs: number; resolved: number }>();
+    const dayMap = new Map<
+      string,
+      { date: string; sessions: number; messages: number; handoffs: number; resolved: number }
+    >();
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(Date.now() - i * 24 * 3600 * 1000).toISOString().slice(0, 10);
       dayMap.set(d, { date: d, sessions: 0, messages: 0, handoffs: 0, resolved: 0 });
     }
     for (const s of sessions) {
       const k = dayKey(s.created_at);
-      const row = dayMap.get(k); if (!row) continue;
+      const row = dayMap.get(k);
+      if (!row) continue;
       row.sessions += 1;
       if (s.status === "handed_off") row.handoffs += 1;
       if (s.status === "closed") row.resolved += 1;
     }
     for (const m of messages) {
       const k = dayKey(m.created_at);
-      const row = dayMap.get(k); if (row) row.messages += 1;
+      const row = dayMap.get(k);
+      if (row) row.messages += 1;
     }
     const series = Array.from(dayMap.values());
 
@@ -1035,14 +1381,16 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
     const bySession = new Map<string, Msg[]>();
     for (const m of messages) {
       const arr = bySession.get(m.session_id) ?? [];
-      arr.push(m); bySession.set(m.session_id, arr);
+      arr.push(m);
+      bySession.set(m.session_id, arr);
     }
     const firstResponses: number[] = [];
     for (const arr of bySession.values()) {
       arr.sort((a, b) => a.created_at.localeCompare(b.created_at));
       const u = arr.find((x) => x.role === "user");
       const a = arr.find((x) => x.role === "assistant" && (!u || x.created_at > u.created_at));
-      if (u && a) firstResponses.push(new Date(a.created_at).getTime() - new Date(u.created_at).getTime());
+      if (u && a)
+        firstResponses.push(new Date(a.created_at).getTime() - new Date(u.created_at).getTime());
     }
     const avgFirstResponseMs = firstResponses.length
       ? Math.round(firstResponses.reduce((a, b) => a + b, 0) / firstResponses.length)
@@ -1089,7 +1437,6 @@ export const chatbotAnalytics = createServerFn({ method: "POST" })
     };
   });
 
-
 // ==================== Knowledge Sources ====================
 
 export interface ChatbotKbSource {
@@ -1116,12 +1463,14 @@ export const listChatbotKbSources = createServerFn({ method: "GET" })
 export const setChatbotKbSources = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      chatbotId: z.string().uuid(),
-      workspaceId: z.string().uuid(),
-      articleIds: z.array(z.string().uuid()).optional().default([]),
-      categoryIds: z.array(z.string().uuid()).optional().default([]),
-    }).parse(v),
+    z
+      .object({
+        chatbotId: z.string().uuid(),
+        workspaceId: z.string().uuid(),
+        articleIds: z.array(z.string().uuid()).optional().default([]),
+        categoryIds: z.array(z.string().uuid()).optional().default([]),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const supabase = sbAny(context.supabase);
@@ -1146,9 +1495,7 @@ export const setChatbotKbSources = createServerFn({ method: "POST" })
       })),
     ];
     if (rows.length === 0) return { count: 0 };
-    const { error } = await supabase
-      .from("chatbot_kb_sources" as never)
-      .insert(rows as never);
+    const { error } = await supabase.from("chatbot_kb_sources" as never).insert(rows as never);
     if (error) throw new Error(error.message);
     return { count: rows.length };
   });
@@ -1157,17 +1504,22 @@ export const setChatbotKbSources = createServerFn({ method: "POST" })
 export const ingestInlineKbDocs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      workspaceId: z.string().uuid(),
-      docs: z.array(
-        z.object({
-          title: z.string().min(1).max(300),
-          filename: z.string().optional(),
-          content: z.string().min(1),
-          sourceType: z.enum(["markdown", "txt", "csv"]).default("txt"),
-        }),
-      ).min(1).max(20),
-    }).parse(v),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        docs: z
+          .array(
+            z.object({
+              title: z.string().min(1).max(300),
+              filename: z.string().optional(),
+              content: z.string().min(1),
+              sourceType: z.enum(["markdown", "txt", "csv"]).default("txt"),
+            }),
+          )
+          .min(1)
+          .max(20),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }): Promise<{ id: string; title: string }[]> => {
     const supabase = sbAny(context.supabase);
@@ -1175,8 +1527,12 @@ export const ingestInlineKbDocs = createServerFn({ method: "POST" })
     const payload = data.docs.map((d) => ({
       workspace_id: data.workspaceId,
       category_id: null,
-      slug: (d.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 60) ||
-        crypto.randomUUID().slice(0, 8)),
+      slug:
+        d.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "")
+          .slice(0, 60) || crypto.randomUUID().slice(0, 8),
       title: d.title.slice(0, 300),
       summary: null,
       content_md: d.content,

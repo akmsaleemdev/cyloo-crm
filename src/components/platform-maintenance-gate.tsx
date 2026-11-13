@@ -41,7 +41,9 @@ export function PlatformMaintenanceGate({ children }: { children: ReactNode }) {
   const pathname = useLocation({ select: (l) => l.pathname });
 
   const staff = role === "superadmin" || role === "support";
-  const bypass = BYPASS_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+  const bypass = BYPASS_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p),
+  );
   const blocked = !loading && !roleLoading && config.maintenance.enabled && !staff && !bypass;
 
   if (blocked) {

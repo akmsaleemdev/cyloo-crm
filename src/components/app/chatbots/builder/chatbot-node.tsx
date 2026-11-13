@@ -32,7 +32,9 @@ function preview(type: ChatbotNodeType, config: Record<string, unknown>): string
   }
 }
 
-export const ChatbotFlowNode = React.memo(function ChatbotFlowNode(props: NodeProps<ChatbotNodeData>) {
+export const ChatbotFlowNode = React.memo(function ChatbotFlowNode(
+  props: NodeProps<ChatbotNodeData>,
+) {
   const { data, selected } = props;
   const def = NODE_DEF_BY_TYPE[data.type];
   if (!def) return null;
@@ -57,34 +59,64 @@ export const ChatbotFlowNode = React.memo(function ChatbotFlowNode(props: NodePr
           className="!w-2.5 !h-2.5 !bg-muted-foreground/70 !border-2 !border-background"
         />
       )}
-      <div className={cn("flex items-center gap-2 px-3 py-2 border-b border-border rounded-t-xl", def.color)}>
+      <div
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 border-b border-border rounded-t-xl",
+          def.color,
+        )}
+      >
         <Icon className="w-3.5 h-3.5" />
         <div className="text-xs font-semibold flex-1 truncate">{data.label ?? def.label}</div>
         {data.hasError && <AlertCircle className="w-3.5 h-3.5 text-destructive" />}
       </div>
       {p && (
-        <div className="px-3 py-2 text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">{p}</div>
+        <div className="px-3 py-2 text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">
+          {p}
+        </div>
       )}
       {data.type === "button" && Array.isArray(data.config.buttons) && (
         <div className="px-3 pb-2 flex flex-wrap gap-1">
           {(data.config.buttons as string[]).slice(0, 4).map((b, i) => (
-            <span key={i} className="text-[11px] px-1.5 py-0.5 rounded border border-border bg-background">{b}</span>
+            <span
+              key={i}
+              className="text-[11px] px-1.5 py-0.5 rounded border border-border bg-background"
+            >
+              {b}
+            </span>
           ))}
         </div>
       )}
       {data.type === "quick_reply" && Array.isArray(data.config.replies) && (
         <div className="px-3 pb-2 flex flex-wrap gap-1">
           {(data.config.replies as string[]).slice(0, 4).map((b, i) => (
-            <span key={i} className="text-[11px] px-1.5 py-0.5 rounded-control border border-border bg-background">{b}</span>
+            <span
+              key={i}
+              className="text-[11px] px-1.5 py-0.5 rounded-control border border-border bg-background"
+            >
+              {b}
+            </span>
           ))}
         </div>
       )}
       {data.type === "condition" && (
         <>
-          <Handle id="true" type="source" position={Position.Right} style={{ top: "40%" }} className="!w-2.5 !h-2.5 !bg-emerald-500 !border-2 !border-background" />
-          <Handle id="false" type="source" position={Position.Right} style={{ top: "70%" }} className="!w-2.5 !h-2.5 !bg-rose-500 !border-2 !border-background" />
+          <Handle
+            id="true"
+            type="source"
+            position={Position.Right}
+            style={{ top: "40%" }}
+            className="!w-2.5 !h-2.5 !bg-emerald-500 !border-2 !border-background"
+          />
+          <Handle
+            id="false"
+            type="source"
+            position={Position.Right}
+            style={{ top: "70%" }}
+            className="!w-2.5 !h-2.5 !bg-rose-500 !border-2 !border-background"
+          />
           <div className="px-3 pb-2 flex justify-between text-[11px] text-muted-foreground">
-            <span>true ↑</span><span>false ↓</span>
+            <span>true ↑</span>
+            <span>false ↓</span>
           </div>
         </>
       )}

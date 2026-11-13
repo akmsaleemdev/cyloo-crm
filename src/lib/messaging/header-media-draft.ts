@@ -29,7 +29,11 @@ const MAX_PREVIEW_BYTES = 400_000;
 /** Drop stale create-drafts so abandoned uploads don't resurface weeks later. */
 const MAX_AGE_MS = 1000 * 60 * 60 * 24 * 14;
 
-export function headerMediaDraftKey(workspaceId: string, templateId: string | undefined, accountId: string) {
+export function headerMediaDraftKey(
+  workspaceId: string,
+  templateId: string | undefined,
+  accountId: string,
+) {
   return `${PREFIX}${workspaceId}:${templateId ?? `new:${accountId}`}`;
 }
 
@@ -58,7 +62,9 @@ export function loadHeaderMediaDraft(key: string): HeaderMediaDraft | null {
       fileName: typeof parsed.fileName === "string" ? parsed.fileName : "Uploaded file",
       mimeType: typeof parsed.mimeType === "string" ? parsed.mimeType : "",
       format: parsed.format === "VIDEO" || parsed.format === "DOCUMENT" ? parsed.format : "IMAGE",
-      ...(typeof parsed.previewDataUrl === "string" ? { previewDataUrl: parsed.previewDataUrl } : {}),
+      ...(typeof parsed.previewDataUrl === "string"
+        ? { previewDataUrl: parsed.previewDataUrl }
+        : {}),
       savedAt: parsed.savedAt,
     };
   } catch {

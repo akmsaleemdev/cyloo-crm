@@ -1,7 +1,7 @@
-import { QueryClient } from '@tanstack/react-query';
-import { persistQueryClient } from '@tanstack/react-query-persist-client';
-import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { kv } from '@/lib/storage';
+import { QueryClient } from "@tanstack/react-query";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { kv } from "@/lib/storage";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -9,9 +9,9 @@ export const queryClient = new QueryClient({
       staleTime: 30_000,
       gcTime: 24 * 60 * 60 * 1000, // 1 day — offline cache
       retry: 2,
-      networkMode: 'offlineFirst',
+      networkMode: "offlineFirst",
     },
-    mutations: { networkMode: 'offlineFirst', retry: 1 },
+    mutations: { networkMode: "offlineFirst", retry: 1 },
   },
 });
 
@@ -22,7 +22,7 @@ const persister = createAsyncStoragePersister({
     setItem: async (k, v) => kv.set(k, v),
     removeItem: async (k) => kv.delete(k),
   },
-  key: 'cyloo-query-cache',
+  key: "cyloo-query-cache",
   throttleTime: 1_000,
 });
 
@@ -30,5 +30,5 @@ persistQueryClient({
   queryClient,
   persister,
   maxAge: 24 * 60 * 60 * 1000,
-  buster: 'v1',
+  buster: "v1",
 });

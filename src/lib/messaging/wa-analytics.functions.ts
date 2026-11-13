@@ -211,8 +211,7 @@ export const getWaChatbotAnalytics = createServerFn({ method: "POST" })
         }
         const waitingSince = pendingInbound.get(m.conversation_id);
         if (waitingSince) {
-          const delta =
-            new Date(m.created_at).getTime() - new Date(waitingSince).getTime();
+          const delta = new Date(m.created_at).getTime() - new Date(waitingSince).getTime();
           if (delta >= 0 && delta < 24 * 3600_000) {
             if (bot) {
               botLatencies.push(delta);
@@ -257,9 +256,7 @@ export const getWaChatbotAnalytics = createServerFn({ method: "POST" })
     const rules = filteredRules
       .map((r) => {
         const inRange =
-          r.last_triggered_at && new Date(r.last_triggered_at) >= since
-            ? (r.hit_count ?? 0)
-            : 0;
+          r.last_triggered_at && new Date(r.last_triggered_at) >= since ? (r.hit_count ?? 0) : 0;
         return {
           id: r.id as string,
           name: (r.name as string) ?? "Untitled rule",

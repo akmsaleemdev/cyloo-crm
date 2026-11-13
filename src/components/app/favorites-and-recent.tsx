@@ -115,7 +115,10 @@ export function RecentList({ collapsed = false }: { collapsed?: boolean }) {
                 active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
               )}
             >
-              <Icon className="h-3.5 w-3.5 shrink-0 opacity-60 text-muted-foreground" aria-hidden="true" />
+              <Icon
+                className="h-3.5 w-3.5 shrink-0 opacity-60 text-muted-foreground"
+                aria-hidden="true"
+              />
               <span className="flex-1 min-w-0 truncate text-xs">{label}</span>
             </Link>
           </li>

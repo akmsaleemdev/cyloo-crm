@@ -1985,7 +1985,7 @@ export function TemplateEditorDialog({
                   <p className="font-medium">Convert named variables to numbered</p>
                   <p className="text-muted-foreground">
                     Imported templates often use names. WhatsApp only accepts {"{{1}}"}, {"{{2}}"},
-                     — these will be renumbered in order of appearance.
+                    — these will be renumbered in order of appearance.
                   </p>
                   <p className="[overflow-wrap:anywhere] text-muted-foreground">
                     {describeConversion(conversionPlan)}

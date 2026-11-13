@@ -5,12 +5,24 @@
  */
 import { useState } from "react";
 import {
-  Bot, Hand, ArrowRightLeft, Loader2, PlayCircle, Users, ChevronDown,
-  UserPlus, CheckCircle2, Clock,
+  Bot,
+  Hand,
+  ArrowRightLeft,
+  Loader2,
+  PlayCircle,
+  Users,
+  ChevronDown,
+  UserPlus,
+  CheckCircle2,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { HandoffDialog } from "./handoff-dialog";
 import { useTakeOver, useResumeAi } from "@/hooks/use-handoff";
@@ -35,7 +47,13 @@ const STATE_LABEL: Record<HandoffState, { text: string; Icon: typeof Bot }> = {
 };
 
 export function HandoffToolbar({
-  conversationId, handoffState, aiEnabled, className, onAssign, onResolve, isResolved,
+  conversationId,
+  handoffState,
+  aiEnabled,
+  className,
+  onAssign,
+  onResolve,
+  isResolved,
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const takeOver = useTakeOver(conversationId);
@@ -47,8 +65,17 @@ export function HandoffToolbar({
     <div className={cn("flex items-center", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2 text-xs" aria-label="Handoff options">
-            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Icon className="h-3.5 w-3.5" />}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 px-2 text-xs"
+            aria-label="Handoff options"
+          >
+            {busy ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Icon className="h-3.5 w-3.5" />
+            )}
             {text}
             <ChevronDown className="h-3 w-3 opacity-60" />
           </Button>
@@ -82,7 +109,11 @@ export function HandoffToolbar({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onResolve}>
-                {isResolved ? <Clock className="h-4 w-4 mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                {isResolved ? (
+                  <Clock className="h-4 w-4 mr-2" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                )}
                 {isResolved ? "Reopen" : "Resolve"}
               </DropdownMenuItem>
             </>

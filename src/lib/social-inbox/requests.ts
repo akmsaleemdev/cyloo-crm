@@ -23,25 +23,42 @@ const linkedInHeaders = (token: string) => ({
 /* ------------------------------ reads ----------------------------------- */
 
 export function facebookRecentPostsRequest(pageId: string, token: string, limit = 10): HttpRequest {
-  const q = new URLSearchParams({ fields: "id,message,permalink_url,created_time", limit: String(limit) });
-  return { url: `${FB_GRAPH}/${encodeURIComponent(pageId)}/posts?${q}`, init: { headers: bearer(token) } };
+  const q = new URLSearchParams({
+    fields: "id,message,permalink_url,created_time",
+    limit: String(limit),
+  });
+  return {
+    url: `${FB_GRAPH}/${encodeURIComponent(pageId)}/posts?${q}`,
+    init: { headers: bearer(token) },
+  };
 }
 
-export function facebookPostCommentsRequest(postId: string, token: string, limit = 50): HttpRequest {
+export function facebookPostCommentsRequest(
+  postId: string,
+  token: string,
+  limit = 50,
+): HttpRequest {
   const q = new URLSearchParams({
     filter: "stream",
     order: "reverse_chronological",
     limit: String(limit),
     fields: "id,message,from{id,name,picture},created_time,parent{id},permalink_url",
   });
-  return { url: `${FB_GRAPH}/${encodeURIComponent(postId)}/comments?${q}`, init: { headers: bearer(token) } };
+  return {
+    url: `${FB_GRAPH}/${encodeURIComponent(postId)}/comments?${q}`,
+    init: { headers: bearer(token) },
+  };
 }
 
 export function youtubeMyChannelRequest(token: string): HttpRequest {
   return { url: `${YT_API}/channels?part=id&mine=true`, init: { headers: bearer(token) } };
 }
 
-export function youtubeCommentThreadsRequest(channelId: string, token: string, max = 50): HttpRequest {
+export function youtubeCommentThreadsRequest(
+  channelId: string,
+  token: string,
+  max = 50,
+): HttpRequest {
   const q = new URLSearchParams({
     part: "snippet,replies",
     allThreadsRelatedToChannelId: channelId,
@@ -64,12 +81,22 @@ export function tiktokVideoListRequest(businessId: string, token: string): HttpR
     business_id: businessId,
     fields: JSON.stringify(["item_id", "create_time", "share_url", "caption"]),
   });
-  return { url: `${TT_BUSINESS_API}/business/video/list/?${q}`, init: { headers: { "Access-Token": token } } };
+  return {
+    url: `${TT_BUSINESS_API}/business/video/list/?${q}`,
+    init: { headers: { "Access-Token": token } },
+  };
 }
 
-export function tiktokCommentListRequest(businessId: string, videoId: string, token: string): HttpRequest {
+export function tiktokCommentListRequest(
+  businessId: string,
+  videoId: string,
+  token: string,
+): HttpRequest {
   const q = new URLSearchParams({ business_id: businessId, video_id: videoId });
-  return { url: `${TT_BUSINESS_API}/business/comment/list/?${q}`, init: { headers: { "Access-Token": token } } };
+  return {
+    url: `${TT_BUSINESS_API}/business/comment/list/?${q}`,
+    init: { headers: { "Access-Token": token } },
+  };
 }
 
 /* ------------------------------ replies --------------------------------- */
@@ -106,7 +133,8 @@ export function buildReplyRequest(a: ReplyArgs): HttpRequest {
         },
       };
     case "linkedin":
-      if (!a.ownerId) throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
+      if (!a.ownerId)
+        throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
       return {
         url: `${LI_API}/socialActions/${encodeURIComponent(a.postId)}/comments`,
         init: {
@@ -121,7 +149,10 @@ export function buildReplyRequest(a: ReplyArgs): HttpRequest {
         },
       };
     case "tiktok":
-      if (!a.ownerId) throw new Error("TikTok channel is missing the business account id. Reconnect the channel.");
+      if (!a.ownerId)
+        throw new Error(
+          "TikTok channel is missing the business account id. Reconnect the channel.",
+        );
       return {
         url: `${TT_BUSINESS_API}/business/comment/reply/create/`,
         init: {
@@ -158,7 +189,11 @@ export function replyIdFromResponse(
 }
 
 /** Map a platform error body onto one actionable sentence. */
-export function explainPlatformError(platform: SocialInboxPlatform, status: number, body: string): string {
+export function explainPlatformError(
+  platform: SocialInboxPlatform,
+  status: number,
+  body: string,
+): string {
   const lower = body.toLowerCase();
   if (status === 401 || lower.includes("invalid_token") || lower.includes("expired")) {
     return `${PLATFORM_LABEL[platform]} access token is invalid or expired. Reconnect the channel.`;
@@ -166,7 +201,8 @@ export function explainPlatformError(platform: SocialInboxPlatform, status: numb
   if (status === 403 || lower.includes("permission") || lower.includes("insufficient")) {
     return PERMISSION_HINT[platform];
   }
-  if (status === 429) return `${PLATFORM_LABEL[platform]} rate limit reached. The next sync will retry.`;
+  if (status === 429)
+    return `${PLATFORM_LABEL[platform]} rate limit reached. The next sync will retry.`;
   return `${PLATFORM_LABEL[platform]} error ${status}: ${body.slice(0, 200)}`;
 }
 

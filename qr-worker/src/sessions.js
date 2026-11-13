@@ -5,17 +5,17 @@
  * persisted per session under config.authDir so a worker restart reconnects
  * without a new QR scan.
  */
-import { mkdir, rm } from 'node:fs/promises';
-import path from 'node:path';
-import { Boom } from '@hapi/boom';
+import { mkdir, rm } from "node:fs/promises";
+import path from "node:path";
+import { Boom } from "@hapi/boom";
 import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
-} from '@whiskeysockets/baileys';
-import { config } from './config.js';
-import { logger } from './logger.js';
-import { emit } from './webhook.js';
+} from "@whiskeysockets/baileys";
+import { config } from "./config.js";
+import { logger } from "./logger.js";
+import { emit } from "./webhook.js";
 
 /** sessionId -> { sock, status, qr, qrExpiresAt, workspaceId, meta, sends } */
 const sessions = new Map();
@@ -41,13 +41,13 @@ function authPath(sessionId) {
 }
 
 function toJid(phone) {
-  const digits = String(phone).replace(/[^\d]/g, '');
+  const digits = String(phone).replace(/[^\d]/g, "");
   return `${digits}@s.whatsapp.net`;
 }
 
 export async function startSession(sessionId, workspaceId) {
   const existing = sessions.get(sessionId);
-  if (existing && existing.status !== 'disconnected' && existing.status !== 'error') {
+  if (existing && existing.status !== "disconnected" && existing.status !== "error") {
     return { worker_session_id: sessionId };
   }
 
@@ -59,7 +59,7 @@ export async function startSession(sessionId, workspaceId) {
 
   const entry = {
     sock: null,
-    status: 'pending',
+    status: "pending",
     qr: null,
     qrExpiresAt: null,
     workspaceId,
@@ -73,51 +73,51 @@ export async function startSession(sessionId, workspaceId) {
     version,
     auth: state,
     printQRInTerminal: false,
-    browser: ['CYLOO', 'Chrome', '1.0.0'],
+    browser: ["CYLOO", "Chrome", "1.0.0"],
     markOnlineOnConnect: false,
     syncFullHistory: false,
   });
   entry.sock = sock;
 
-  sock.ev.on('creds.update', saveCreds);
+  sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on('connection.update', (update) => {
+  sock.ev.on("connection.update", (update) => {
     const { connection, lastDisconnect, qr } = update;
 
     if (qr) {
       entry.qr = qr;
-      entry.status = 'awaiting_scan';
+      entry.status = "awaiting_scan";
       entry.qrExpiresAt = new Date(Date.now() + QR_TTL_MS).toISOString();
-      emit(sessionId, workspaceId, 'session.qr_updated', { qr_expires_at: entry.qrExpiresAt });
+      emit(sessionId, workspaceId, "session.qr_updated", { qr_expires_at: entry.qrExpiresAt });
     }
 
-    if (connection === 'connecting' && entry.status === 'awaiting_scan' && !qr) {
-      entry.status = 'scanned';
+    if (connection === "connecting" && entry.status === "awaiting_scan" && !qr) {
+      entry.status = "scanned";
       entry.qr = null;
-      emit(sessionId, workspaceId, 'session.scanned', {});
+      emit(sessionId, workspaceId, "session.scanned", {});
     }
 
-    if (connection === 'open') {
-      entry.status = 'connected';
+    if (connection === "open") {
+      entry.status = "connected";
       entry.qr = null;
       entry.qrExpiresAt = null;
       entry.meta = {
-        phone_number: sock.user?.id ? `+${sock.user.id.split(':')[0]}` : null,
+        phone_number: sock.user?.id ? `+${sock.user.id.split(":")[0]}` : null,
         display_name: sock.user?.name ?? null,
-        device_platform: 'whatsapp-web',
+        device_platform: "whatsapp-web",
       };
-      emit(sessionId, workspaceId, 'session.connected', entry.meta);
-      logger.info({ sessionId }, 'session connected');
+      emit(sessionId, workspaceId, "session.connected", entry.meta);
+      logger.info({ sessionId }, "session connected");
     }
 
-    if (connection === 'close') {
+    if (connection === "close") {
       const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
       const loggedOut = code === DisconnectReason.loggedOut;
 
       if (entry.closing || loggedOut) {
-        entry.status = 'disconnected';
-        emit(sessionId, workspaceId, 'session.disconnected', {
-          reason: loggedOut ? 'logged_out' : 'revoked',
+        entry.status = "disconnected";
+        emit(sessionId, workspaceId, "session.disconnected", {
+          reason: loggedOut ? "logged_out" : "revoked",
         });
         sessions.delete(sessionId);
         if (loggedOut) rm(dir, { recursive: true, force: true }).catch(() => {});
@@ -125,19 +125,19 @@ export async function startSession(sessionId, workspaceId) {
       }
 
       // Transient drop — Baileys needs a fresh socket, reconnect with backoff.
-      entry.status = 'connecting';
-      logger.warn({ sessionId, code }, 'connection closed, reconnecting');
+      entry.status = "connecting";
+      logger.warn({ sessionId, code }, "connection closed, reconnecting");
       setTimeout(() => {
         startSession(sessionId, workspaceId).catch((err) => {
-          entry.status = 'error';
-          emit(sessionId, workspaceId, 'session.error', { error: String(err) });
+          entry.status = "error";
+          emit(sessionId, workspaceId, "session.error", { error: String(err) });
         });
       }, 3_000).unref?.();
     }
   });
 
-  sock.ev.on('messages.upsert', ({ messages, type }) => {
-    if (type !== 'notify') return;
+  sock.ev.on("messages.upsert", ({ messages, type }) => {
+    if (type !== "notify") return;
     for (const msg of messages) {
       if (msg.key.fromMe) continue;
       const m = msg.message ?? {};
@@ -147,19 +147,20 @@ export async function startSession(sessionId, workspaceId) {
         m.imageMessage?.caption ??
         m.videoMessage?.caption ??
         null;
-      let msgType = 'text';
-      if (m.imageMessage) msgType = 'image';
-      else if (m.videoMessage) msgType = 'video';
-      else if (m.audioMessage) msgType = 'audio';
-      else if (m.documentMessage) msgType = 'document';
-      const contextInfo = m.extendedTextMessage?.contextInfo
-        ?? m.imageMessage?.contextInfo
-        ?? m.videoMessage?.contextInfo
-        ?? m.audioMessage?.contextInfo
-        ?? m.documentMessage?.contextInfo;
+      let msgType = "text";
+      if (m.imageMessage) msgType = "image";
+      else if (m.videoMessage) msgType = "video";
+      else if (m.audioMessage) msgType = "audio";
+      else if (m.documentMessage) msgType = "document";
+      const contextInfo =
+        m.extendedTextMessage?.contextInfo ??
+        m.imageMessage?.contextInfo ??
+        m.videoMessage?.contextInfo ??
+        m.audioMessage?.contextInfo ??
+        m.documentMessage?.contextInfo;
 
-      emit(sessionId, workspaceId, 'message.received', {
-        from: `+${(msg.key.remoteJid || '').split('@')[0]}`,
+      emit(sessionId, workspaceId, "message.received", {
+        from: `+${(msg.key.remoteJid || "").split("@")[0]}`,
         type: msgType,
         text,
         media_url: null,
@@ -171,12 +172,12 @@ export async function startSession(sessionId, workspaceId) {
     }
   });
 
-  sock.ev.on('messages.update', (updates) => {
-    const map = { 1: 'sent', 2: 'sent', 3: 'delivered', 4: 'read', 5: 'read', 0: 'failed' };
+  sock.ev.on("messages.update", (updates) => {
+    const map = { 1: "sent", 2: "sent", 3: "delivered", 4: "read", 5: "read", 0: "failed" };
     for (const u of updates) {
       const status = map[u.update?.status];
       if (!status) continue;
-      emit(sessionId, workspaceId, 'message.status', {
+      emit(sessionId, workspaceId, "message.status", {
         waba_message_id: u.key?.id,
         message_id: u.key?.id,
         status,
@@ -224,8 +225,8 @@ export async function revokeSession(sessionId) {
 /** Idempotent send — repeats of the same client_message_id never resend. */
 export async function sendMessage(sessionId, payload) {
   const entry = sessions.get(sessionId);
-  if (!entry || entry.status !== 'connected') {
-    const err = new Error('Session not connected');
+  if (!entry || entry.status !== "connected") {
+    const err = new Error("Session not connected");
     err.status = 409;
     throw err;
   }
@@ -237,27 +238,27 @@ export async function sendMessage(sessionId, payload) {
   const jid = toJid(payload.to);
   let content;
   switch (payload.type) {
-    case 'image':
+    case "image":
       content = { image: { url: payload.media_url }, caption: payload.caption ?? undefined };
       break;
-    case 'video':
+    case "video":
       content = { video: { url: payload.media_url }, caption: payload.caption ?? undefined };
       break;
-    case 'audio':
-      content = { audio: { url: payload.media_url }, mimetype: 'audio/mp4' };
+    case "audio":
+      content = { audio: { url: payload.media_url }, mimetype: "audio/mp4" };
       break;
-    case 'document':
+    case "document":
       content = {
         document: { url: payload.media_url },
-        fileName: payload.caption || 'document',
+        fileName: payload.caption || "document",
       };
       break;
     default:
-      content = { text: payload.text ?? '' };
+      content = { text: payload.text ?? "" };
   }
 
   const sent = await entry.sock.sendMessage(jid, content);
-  const result = { message_id: sent?.key?.id ?? key, status: 'queued', at: Date.now() };
+  const result = { message_id: sent?.key?.id ?? key, status: "queued", at: Date.now() };
   entry.sends.set(key, result);
 
   // Prune the dedupe map beyond the retention window.

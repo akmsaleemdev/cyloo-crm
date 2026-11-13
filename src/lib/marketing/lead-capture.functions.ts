@@ -29,18 +29,20 @@ export const submitMarketingLead = createServerFn({ method: "POST" })
 
     if ((count ?? 0) > 0) return { ok: true as const, duplicate: true };
 
-    const { error } = await sbAny(supabaseAdmin).from("marketing_leads").insert({
-      full_name: data.fullName,
-      work_email: data.workEmail,
-      company_size: data.companySize,
-      contact_method: data.contactMethod,
-      whatsapp_number:
-        data.contactMethod === "whatsapp" ? normalizeWhatsappNumber(data.whatsappNumber) : null,
-      message: data.message || null,
-      source_page: data.sourcePage || null,
-      referrer: data.referrer || null,
-      utm: data.utm ?? {},
-    });
+    const { error } = await sbAny(supabaseAdmin)
+      .from("marketing_leads")
+      .insert({
+        full_name: data.fullName,
+        work_email: data.workEmail,
+        company_size: data.companySize,
+        contact_method: data.contactMethod,
+        whatsapp_number:
+          data.contactMethod === "whatsapp" ? normalizeWhatsappNumber(data.whatsappNumber) : null,
+        message: data.message || null,
+        source_page: data.sourcePage || null,
+        referrer: data.referrer || null,
+        utm: data.utm ?? {},
+      });
 
     if (error) throw new Error("We could not save your request. Please try again.");
 

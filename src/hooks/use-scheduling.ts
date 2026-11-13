@@ -7,12 +7,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export type DripPreset =
-  | "welcome"
-  | "followup"
-  | "abandoned"
-  | "promotional"
-  | "birthday"
-  | "anniversary";
+  "welcome" | "followup" | "abandoned" | "promotional" | "birthday" | "anniversary";
 
 export const DRIP_PRESETS: Array<{
   id: DripPreset;
@@ -27,8 +22,16 @@ export const DRIP_PRESETS: Array<{
     description: "Greet new contacts across 3 touch points during their first week.",
     triggerType: "contact_created",
     steps: [
-      { delayHours: 0, name: "Welcome", message: "👋 Welcome {{first_name}}! Thanks for joining us." },
-      { delayHours: 24, name: "Get Started", message: "Here's how to get the most out of your account." },
+      {
+        delayHours: 0,
+        name: "Welcome",
+        message: "👋 Welcome {{first_name}}! Thanks for joining us.",
+      },
+      {
+        delayHours: 24,
+        name: "Get Started",
+        message: "Here's how to get the most out of your account.",
+      },
       { delayHours: 96, name: "Check-in", message: "How is it going? Reply if you need any help." },
     ],
   },
@@ -38,9 +41,21 @@ export const DRIP_PRESETS: Array<{
     description: "Automated nudges after a conversation goes quiet.",
     triggerType: "no_reply",
     steps: [
-      { delayHours: 24, name: "First follow-up", message: "Hi {{first_name}}, just checking in on our last chat." },
-      { delayHours: 72, name: "Second follow-up", message: "Wanted to make sure this didn't get lost — let me know if you have questions." },
-      { delayHours: 168, name: "Last touch", message: "Closing this out for now — reach out anytime." },
+      {
+        delayHours: 24,
+        name: "First follow-up",
+        message: "Hi {{first_name}}, just checking in on our last chat.",
+      },
+      {
+        delayHours: 72,
+        name: "Second follow-up",
+        message: "Wanted to make sure this didn't get lost — let me know if you have questions.",
+      },
+      {
+        delayHours: 168,
+        name: "Last touch",
+        message: "Closing this out for now — reach out anytime.",
+      },
     ],
   },
   {
@@ -49,8 +64,16 @@ export const DRIP_PRESETS: Array<{
     description: "Re-engage leads that never converted.",
     triggerType: "lead_stalled",
     steps: [
-      { delayHours: 48, name: "Reminder", message: "Still interested? Happy to answer any questions." },
-      { delayHours: 168, name: "Offer", message: "Here's 10% off if you'd like to pick things back up." },
+      {
+        delayHours: 48,
+        name: "Reminder",
+        message: "Still interested? Happy to answer any questions.",
+      },
+      {
+        delayHours: 168,
+        name: "Offer",
+        message: "Here's 10% off if you'd like to pick things back up.",
+      },
       { delayHours: 336, name: "Final", message: "Last chance — the offer expires soon." },
     ],
   },
@@ -71,7 +94,11 @@ export const DRIP_PRESETS: Array<{
     description: "Automatically wish contacts on their birthday.",
     triggerType: "birthday",
     steps: [
-      { delayHours: 0, name: "Birthday wish", message: "🎂 Happy birthday {{first_name}}! Enjoy your day." },
+      {
+        delayHours: 0,
+        name: "Birthday wish",
+        message: "🎂 Happy birthday {{first_name}}! Enjoy your day.",
+      },
     ],
   },
   {
@@ -80,7 +107,11 @@ export const DRIP_PRESETS: Array<{
     description: "Celebrate customer anniversaries every year.",
     triggerType: "anniversary",
     steps: [
-      { delayHours: 0, name: "Anniversary wish", message: "🎊 It's been another great year with you, {{first_name}}!" },
+      {
+        delayHours: 0,
+        name: "Anniversary wish",
+        message: "🎊 It's been another great year with you, {{first_name}}!",
+      },
     ],
   },
 ];
@@ -172,7 +203,12 @@ export function useSchedulingRealtime() {
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "campaign_dispatch_queue", filter: `workspace_id=eq.${ws.id}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "campaign_dispatch_queue",
+          filter: `workspace_id=eq.${ws.id}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["queue-health", ws.id] }),
       )
       .subscribe();

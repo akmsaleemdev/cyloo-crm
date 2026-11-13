@@ -205,9 +205,9 @@ export function ChannelSetupDialog({
             ? "Continue with LinkedIn"
             : draft.platform === "youtube"
               ? "Continue with Google"
-            : draft.platform === "instagram"
-              ? "Connect Instagram"
-              : "Continue with Facebook";
+              : draft.platform === "instagram"
+                ? "Connect Instagram"
+                : "Continue with Facebook";
 
   const connectWithMeta = async () => {
     if (!workspace?.id) return;

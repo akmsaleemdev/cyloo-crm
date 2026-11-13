@@ -41,6 +41,7 @@ export default defineConfig({
     ["junit", { outputFile: "./test-results/junit.xml" }],
   ],
   use: {
+    channel: process.env.PLAYWRIGHT_CHANNEL,
     baseURL: BASE_URL,
     /**
      * `retain-on-failure` (not `on-first-retry`) so the very first failing
@@ -49,22 +50,41 @@ export default defineConfig({
      */
     trace: "retain-on-failure",
     screenshot: { mode: "only-on-failure", fullPage: false },
-    video: "retain-on-failure",
+    video: process.env.PLAYWRIGHT_VIDEO === "off" ? "off" : "retain-on-failure",
     testIdAttribute: "data-testid",
   },
 
   projects: [
-    { name: "smoke", testMatch: /.*\.smoke\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-    { name: "chromium", testMatch: /.*\.spec\.ts/, testIgnore: /.*\.(smoke|mobile)\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", testMatch: /.*\.spec\.ts/, testIgnore: /.*\.(smoke|mobile|a11y)\.spec\.ts/, use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", testMatch: /.*\.spec\.ts/, testIgnore: /.*\.(smoke|mobile|a11y)\.spec\.ts/, use: { ...devices["Desktop Safari"] } },
+    {
+      name: "smoke",
+      testMatch: /(?:^|[\\/])smoke\.spec\.ts$|.*\.smoke\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "chromium",
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /.*\.(smoke|mobile)\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "firefox",
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /.*\.(smoke|mobile|a11y)\.spec\.ts/,
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit",
+      testMatch: /.*\.spec\.ts/,
+      testIgnore: /.*\.(smoke|mobile|a11y)\.spec\.ts/,
+      use: { ...devices["Desktop Safari"] },
+    },
     { name: "mobile", testMatch: /.*\.mobile\.spec\.ts/, use: { ...devices["iPhone 14"] } },
     { name: "a11y", testMatch: /.*\.a11y\.spec\.ts/, use: { ...devices["Desktop Chrome"] } },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: "npm run dev",
+        command: `npm run dev -- --host 127.0.0.1 --port ${PORT} --strictPort`,
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

@@ -17,10 +17,10 @@ export const Route = createFileRoute("/api/public/health")({
             service: "web",
             // Application release version (source of truth: src/lib/app-version.ts).
             // APP_VERSION env var wins when a build stamps a different value.
-            version: process.env['APP_VERSION'] ?? APP_VERSION,
+            version: process.env["APP_VERSION"] ?? APP_VERSION,
             app_version: APP_VERSION,
             release_channel: APP_RELEASE_CHANNEL,
-            commit: process.env['APP_COMMIT'] ?? "unknown",
+            commit: process.env["APP_COMMIT"] ?? "unknown",
             timestamp: new Date().toISOString(),
             uptime_s: Math.round(process.uptime?.() ?? 0),
           }),

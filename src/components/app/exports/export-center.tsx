@@ -168,9 +168,7 @@ export function ExportCenter({ workspaceId, canManage }: Props) {
               <SelectContent>
                 {Object.entries(datasetGroups).map(([cat, items]) => (
                   <div key={cat}>
-                    <div className="px-2 py-1 text-xs uppercase text-muted-foreground">
-                      {cat}
-                    </div>
+                    <div className="px-2 py-1 text-xs uppercase text-muted-foreground">{cat}</div>
                     {items.map((d) => (
                       <SelectItem key={d.id} value={d.id}>
                         <div className="flex flex-col">

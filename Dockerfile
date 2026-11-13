@@ -1,18 +1,14 @@
 # syntax=docker/dockerfile:1.7
 # CYLOO — multi-stage production image.
-# TanStack Start SSR bundled with Vite; runs on Node 20 (works fine on 22 too).
+# TanStack Start SSR bundled with Vite; standalone Node 22 runtime for AWS.
 
 # ---------- 1. Dependencies ----------
 FROM node:22-alpine AS deps
 WORKDIR /app
-RUN corepack enable && apk add --no-cache libc6-compat
-COPY package.json .npmrc bun.lock* package-lock.json* pnpm-lock.yaml* yarn.lock* ./
-COPY scripts ./scripts
+RUN apk add --no-cache libc6-compat
+COPY package.json .npmrc package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    if [ -f bun.lock ]; then npm i -g bun && bun install --ignore-scripts; \
-    elif [ -f pnpm-lock.yaml ]; then corepack prepare pnpm@latest --activate && pnpm i --ignore-scripts; \
-    elif [ -f yarn.lock ]; then corepack prepare yarn@stable --activate && yarn install --ignore-scripts; \
-    else npm ci --ignore-scripts; fi
+    npm ci --ignore-scripts
 
 # ---------- 2. Build ----------
 FROM node:22-alpine AS build
@@ -32,10 +28,9 @@ ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
     VITE_APP_MODE=$VITE_APP_MODE \
     APP_VERSION=$APP_VERSION \
     APP_MODE=$VITE_APP_MODE
-# Without a preset the build targets Cloudflare Workers and `node .output/server/index.mjs`
-# below would not start a server. node-server emits a standalone HTTP server.
+# node-server emits the standalone HTTP server used by ECS, EC2 and Docker.
 ENV NITRO_PRESET=node-server
-RUN npm run build:server && npm run postbuild
+RUN npm run prebuild && npm run build:server && npm run postbuild
 
 # ---------- 3. Runtime ----------
 FROM node:22-alpine AS runtime
@@ -48,10 +43,13 @@ WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0 \
-    APP_VERSION=$APP_VERSION
+    APP_VERSION=$APP_VERSION \
+    APP_MODE=production
 RUN addgroup -S cyloo && adduser -S cyloo -G cyloo
 COPY --from=build --chown=cyloo:cyloo /app/.output ./.output
 COPY --from=build --chown=cyloo:cyloo /app/package.json ./package.json
+COPY --from=build --chown=cyloo:cyloo /app/scripts/start.mjs ./scripts/start.mjs
+COPY --from=build --chown=cyloo:cyloo /app/scripts/lib/environment.mjs ./scripts/lib/environment.mjs
 
 USER cyloo
 EXPOSE 3000
@@ -59,4 +57,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget -qO- http://127.0.0.1:${PORT}/api/public/health || exit 1
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["node", "scripts/start.mjs"]

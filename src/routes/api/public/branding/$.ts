@@ -25,7 +25,10 @@ export const Route = createFileRoute("/api/public/branding/$")({
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
         const { data, error } = await supabaseAdmin.storage.from("branding").download(path);
         if (error || !data) {
-          return new Response("Not found", { status: 404, headers: { "cache-control": "no-store" } });
+          return new Response("Not found", {
+            status: 404,
+            headers: { "cache-control": "no-store" },
+          });
         }
 
         return new Response(await data.arrayBuffer(), {

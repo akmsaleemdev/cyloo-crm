@@ -1,11 +1,24 @@
-import { FileText, X, Loader2, AlertCircle, RotateCw, Image as ImageIcon, Film, Music } from "lucide-react";
+import {
+  FileText,
+  X,
+  Loader2,
+  AlertCircle,
+  RotateCw,
+  Image as ImageIcon,
+  Film,
+  Music,
+} from "lucide-react";
 import type { StagedAttachment } from "@/hooks/use-portal-attachments";
 import { cn } from "@/lib/utils";
 
 function fmtBytes(b: number): string {
   const u = ["B", "KB", "MB", "GB"];
-  let i = 0; let n = b;
-  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  let i = 0;
+  let n = b;
+  while (n >= 1024 && i < u.length - 1) {
+    n /= 1024;
+    i++;
+  }
   return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${u[i]}`;
 }
 
@@ -17,7 +30,10 @@ function KindIcon({ mime }: { mime: string }) {
 }
 
 export function AttachmentPreviews({
-  items, onRemove, onRetry, compact = false,
+  items,
+  onRemove,
+  onRetry,
+  compact = false,
 }: {
   items: StagedAttachment[];
   onRemove: (tempId: string) => void;
@@ -124,7 +140,11 @@ export function BubbleAttachments({
         if (mime.startsWith("image/")) {
           return (
             <a key={key} href={src || "#"} target="_blank" rel="noreferrer" className="block">
-              <img src={a.thumb ?? src} alt={a.file_name ?? ""} className="rounded-control max-h-64 object-cover" />
+              <img
+                src={a.thumb ?? src}
+                alt={a.file_name ?? ""}
+                className="rounded-control max-h-64 object-cover"
+              />
             </a>
           );
         }
@@ -142,7 +162,9 @@ export function BubbleAttachments({
             rel="noreferrer"
             className={cn(
               "flex items-center gap-2 text-xs px-2 py-1.5 rounded-control",
-              onOwnBubble ? "bg-primary-foreground/15 hover:bg-primary-foreground/25" : "bg-black/5 hover:bg-black/10",
+              onOwnBubble
+                ? "bg-primary-foreground/15 hover:bg-primary-foreground/25"
+                : "bg-black/5 hover:bg-black/10",
             )}
           >
             <FileText className="w-3.5 h-3.5" />

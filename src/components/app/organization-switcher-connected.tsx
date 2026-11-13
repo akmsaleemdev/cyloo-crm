@@ -376,7 +376,7 @@ export function OrganizationSwitcherConnected({ collapsed = false }: { collapsed
             durationMs: Date.now() - startedAt,
             userAgent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
           },
-        }).catch(() => { });
+        }).catch(() => {});
       } catch (e) {
         if (committed && previousId && readActiveId() === id) {
           setActiveTenantSelection(previousId, previousWorkspaceId);
@@ -412,7 +412,7 @@ export function OrganizationSwitcherConnected({ collapsed = false }: { collapsed
             reason: msg.slice(0, 500),
             userAgent: typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 500) : null,
           },
-        }).catch(() => { });
+        }).catch(() => {});
       } finally {
         window.clearTimeout(timeoutHandle);
         setSwitchingId(null);

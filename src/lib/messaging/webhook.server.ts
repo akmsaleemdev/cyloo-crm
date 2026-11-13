@@ -864,7 +864,8 @@ export async function processStatusEvent(
       messagePatch.delivered_at = earliest(raw.delivered_at, ev.timestamp);
     }
     if (ev.status === "failed" && advance) {
-      messagePatch.failed_reason = [ev.errorCode, ev.errorMessage].filter(Boolean).join(": ") || "Delivery failed";
+      messagePatch.failed_reason =
+        [ev.errorCode, ev.errorMessage].filter(Boolean).join(": ") || "Delivery failed";
     }
     await supabaseAdmin
       .from("messages" as never)

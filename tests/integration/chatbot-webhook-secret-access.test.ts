@@ -37,10 +37,7 @@ describe("Chatbot Webhook Secret Access", () => {
   });
 
   it("should use HMAC verification in webhook handlers", () => {
-    const webhookDispatch = resolve(
-      SRC_DIR,
-      "lib/webhooks/dispatch.server.ts",
-    );
+    const webhookDispatch = resolve(SRC_DIR, "lib/webhooks/dispatch.server.ts");
     if (existsSync(webhookDispatch)) {
       const content = readFileSync(webhookDispatch, "utf-8");
       // Should use crypto for webhook signature verification
@@ -54,4 +51,3 @@ describe("Chatbot Webhook Secret Access", () => {
     }
   });
 });
-

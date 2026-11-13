@@ -51,7 +51,9 @@ async function writeState(
     updated_at: new Date().toISOString(),
   };
   if (patch.ok) row.last_success_at = patch.startedAt;
-  await admin.from("social_inbox_sync_state").upsert(row, { onConflict: "account_source,account_id" });
+  await admin
+    .from("social_inbox_sync_state")
+    .upsert(row, { onConflict: "account_source,account_id" });
 }
 
 export async function syncSocialAccount(

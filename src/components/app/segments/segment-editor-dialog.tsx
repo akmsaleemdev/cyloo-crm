@@ -25,10 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
-import {
-  useUpsertSegment,
-  type SegmentRow,
-} from "@/hooks/use-marketing";
+import { useUpsertSegment, type SegmentRow } from "@/hooks/use-marketing";
 import {
   type SegmentCondition,
   type SegmentFilterDefinition,
@@ -66,9 +63,7 @@ const DEFAULT_CONDITION: Record<SegmentCondition["field"], SegmentCondition> = {
 function normalizeDefinition(def: unknown): SegmentFilterDefinition {
   if (!def || typeof def !== "object") return { ...EMPTY_DEFINITION };
   const raw = def as { logic?: string; conditions?: unknown };
-  const conditions = Array.isArray(raw.conditions)
-    ? (raw.conditions as SegmentCondition[])
-    : [];
+  const conditions = Array.isArray(raw.conditions) ? (raw.conditions as SegmentCondition[]) : [];
   const logic = raw.logic === "OR" ? "OR" : "AND";
   return { logic, conditions };
 }
@@ -117,7 +112,9 @@ export function SegmentEditorDialog({ open, onOpenChange, segment }: Props) {
   function replaceCondition(index: number, field: SegmentCondition["field"]) {
     setDefinition((prev) => ({
       ...prev,
-      conditions: prev.conditions.map((c, i) => (i === index ? { ...DEFAULT_CONDITION[field] } : c)),
+      conditions: prev.conditions.map((c, i) =>
+        i === index ? { ...DEFAULT_CONDITION[field] } : c,
+      ),
     }));
   }
 
@@ -184,7 +181,9 @@ export function SegmentEditorDialog({ open, onOpenChange, segment }: Props) {
           <div className="space-y-2">
             <Label>Type</Label>
             <div className="flex items-center justify-between rounded-control border p-2  ">
-              <span className="text-sm">{isDynamic ? "Dynamic (re-evaluated on use)" : "Static snapshot"}</span>
+              <span className="text-sm">
+                {isDynamic ? "Dynamic (re-evaluated on use)" : "Static snapshot"}
+              </span>
               <Switch checked={isDynamic} onCheckedChange={setIsDynamic} />
             </div>
           </div>
@@ -298,8 +297,13 @@ function ConditionRow({
   onRemove: () => void;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-2 rounded-control border bg-background p-2")}>
-      <Select value={condition.field} onValueChange={(v) => onFieldChange(v as SegmentCondition["field"])}>
+    <div
+      className={cn("flex flex-wrap items-center gap-2 rounded-control border bg-background p-2")}
+    >
+      <Select
+        value={condition.field}
+        onValueChange={(v) => onFieldChange(v as SegmentCondition["field"])}
+      >
         <SelectTrigger className="h-8 w-[170px]">
           <SelectValue />
         </SelectTrigger>
@@ -314,7 +318,13 @@ function ConditionRow({
 
       <ConditionInputs condition={condition} onChange={onChange} />
 
-      <Button variant="ghost" size="icon" className="ml-auto h-8 w-8" onClick={onRemove} type="button">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-auto h-8 w-8"
+        onClick={onRemove}
+        type="button"
+      >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>
     </div>
@@ -349,7 +359,10 @@ function ConditionInputs({
             value={condition.values.join(", ")}
             onChange={(e) =>
               onChange({
-                values: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                values: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
               })
             }
           />
@@ -409,7 +422,10 @@ function ConditionInputs({
       return (
         <div className="flex items-center gap-2">
           <span className="text-sm">is</span>
-          <Select value={condition.value ? "true" : "false"} onValueChange={(v) => onChange({ value: v === "true" })}>
+          <Select
+            value={condition.value ? "true" : "false"}
+            onValueChange={(v) => onChange({ value: v === "true" })}
+          >
             <SelectTrigger className="h-8 w-[100px]">
               <SelectValue />
             </SelectTrigger>

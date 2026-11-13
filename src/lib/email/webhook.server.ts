@@ -261,8 +261,12 @@ export async function resolveResendInboundPayload(
     const downloadUrl = str(item.download_url);
     const url = new URL(downloadUrl);
     if (
-      url.protocol !== "https:" || url.username || url.password ||
-      isIP(url.hostname) !== 0 || url.hostname === "localhost" || url.hostname.endsWith(".localhost")
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      isIP(url.hostname) !== 0 ||
+      url.hostname === "localhost" ||
+      url.hostname.endsWith(".localhost")
     ) {
       throw new Error("Invalid Resend attachment download URL");
     }
@@ -291,9 +295,13 @@ export async function resolveResendInboundPayload(
       contentId: str(item.content_id) || null,
     });
   }
-  const headers = mail.headers && typeof mail.headers === "object" && !Array.isArray(mail.headers)
-    ? Object.entries(mail.headers as Record<string, unknown>).map(([Name, Value]) => ({ Name, Value: str(Value) }))
-    : [];
+  const headers =
+    mail.headers && typeof mail.headers === "object" && !Array.isArray(mail.headers)
+      ? Object.entries(mail.headers as Record<string, unknown>).map(([Name, Value]) => ({
+          Name,
+          Value: str(Value),
+        }))
+      : [];
   return {
     From: str(mail.from),
     To: Array.isArray(mail.to) ? str(mail.to[0]) : "",
@@ -342,15 +350,17 @@ export async function handleEmailWebhook(
   if (!payload) return new Response("unsupported payload", { status: 400 });
 
   try {
-    const inbound = account.provider === "resend" && payload.type === "email.received"
-      ? await resolveResendInboundPayload(payload, account.api_key_ciphertext ?? "")
-      : payload;
+    const inbound =
+      account.provider === "resend" && payload.type === "email.received"
+        ? await resolveResendInboundPayload(payload, account.api_key_ciphertext ?? "")
+        : payload;
     if (inbound) await processInboundEmail(admin, account, inbound);
   } catch (err) {
     // Resend retries non-2xx deliveries; preserve the event if its body could
     // not be fetched or persisted. Other webhook formats keep legacy handling.
     console.error("[email-webhook] processing error:", (err as Error).message);
-    if (account.provider === "resend") return new Response("inbound processing failed", { status: 503 });
+    if (account.provider === "resend")
+      return new Response("inbound processing failed", { status: 503 });
   }
   return Response.json({ ok: true });
 }
@@ -429,7 +439,9 @@ export async function processInboundEmail(
   for (const [i, att] of mail.attachments.entries()) {
     try {
       const attachmentMessageId = mail.messageId
-        ? body || i > 0 ? `${mail.messageId}#att${i}` : mail.messageId
+        ? body || i > 0
+          ? `${mail.messageId}#att${i}`
+          : mail.messageId
         : null;
       if (existingMessage && attachmentMessageId) {
         const { data: existingAttachment, error: lookupError } = await admin

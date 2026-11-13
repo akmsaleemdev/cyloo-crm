@@ -1,62 +1,57 @@
-import { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Pressable,
-  Linking,
-  Alert,
-  Modal,
-  TextInput,
-} from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
-import { Screen } from '@/components/Screen';
-import { Button } from '@/components/Button';
-import { Input } from '@/components/Input';
-import { useTheme } from '@/theme/ThemeProvider';
-import { useRealtimeTable } from '@/realtime/useRealtimeTable';
-import {
-  fetchCustomer360,
-  updateContact,
-  addNote,
-  createTask,
-  logActivity,
-} from '@/api/crm';
+import { useState } from "react";
+import { View, Text, ScrollView, Pressable, Linking, Alert, Modal, TextInput } from "react-native";
+import { useLocalSearchParams, router } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
+import { Screen } from "@/components/Screen";
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useRealtimeTable } from "@/realtime/useRealtimeTable";
+import { fetchCustomer360, updateContact, addNote, createTask, logActivity } from "@/api/crm";
 
 export default function ContactDetail() {
   const t = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const contactId = String(id);
   const qc = useQueryClient();
-  const [tab, setTab] = useState<'timeline' | 'notes' | 'tasks' | 'deals'>('timeline');
+  const [tab, setTab] = useState<"timeline" | "notes" | "tasks" | "deals">("timeline");
   const [editOpen, setEditOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [taskOpen, setTaskOpen] = useState(false);
 
-  const query = useQuery({ queryKey: ['crm', 'customer360', contactId], queryFn: () => fetchCustomer360(contactId) });
-  useRealtimeTable('activities', ['crm', 'customer360', contactId], `contact_id=eq.${contactId}`);
-  useRealtimeTable('notes', ['crm', 'customer360', contactId], `contact_id=eq.${contactId}`);
-  useRealtimeTable('tasks', ['crm', 'customer360', contactId], `contact_id=eq.${contactId}`);
+  const query = useQuery({
+    queryKey: ["crm", "customer360", contactId],
+    queryFn: () => fetchCustomer360(contactId),
+  });
+  useRealtimeTable("activities", ["crm", "customer360", contactId], `contact_id=eq.${contactId}`);
+  useRealtimeTable("notes", ["crm", "customer360", contactId], `contact_id=eq.${contactId}`);
+  useRealtimeTable("tasks", ["crm", "customer360", contactId], `contact_id=eq.${contactId}`);
 
   const data = query.data;
   const c = data?.contact;
-  const name = c?.display_name ?? [c?.first_name, c?.last_name].filter(Boolean).join(' ') ?? c?.email ?? 'Contact';
+  const name =
+    c?.display_name ??
+    [c?.first_name, c?.last_name].filter(Boolean).join(" ") ??
+    c?.email ??
+    "Contact";
 
-  const refresh = () => qc.invalidateQueries({ queryKey: ['crm', 'customer360', contactId] });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["crm", "customer360", contactId] });
 
   return (
     <Screen>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Text style={{ fontSize: 22, color: t.colors.foreground }}>‹</Text>
         </Pressable>
-        <Text style={[t.typography.h2, { color: t.colors.foreground, marginLeft: 8, flex: 1 }]} numberOfLines={1}>
+        <Text
+          style={[t.typography.h2, { color: t.colors.foreground, marginLeft: 8, flex: 1 }]}
+          numberOfLines={1}
+        >
           {name}
         </Text>
         <Pressable onPress={() => setEditOpen(true)} hitSlop={12}>
-          <Text style={{ color: t.colors.primary, fontWeight: '600' }}>Edit</Text>
+          <Text style={{ color: t.colors.primary, fontWeight: "600" }}>Edit</Text>
         </Pressable>
       </View>
 
@@ -70,13 +65,15 @@ export default function ContactDetail() {
             backgroundColor: t.colors.muted,
           }}
         >
-          <Text style={{ color: t.colors.foreground, fontSize: 18, fontWeight: '700' }}>{name}</Text>
+          <Text style={{ color: t.colors.foreground, fontSize: 18, fontWeight: "700" }}>
+            {name}
+          </Text>
           <Text style={{ color: t.colors.mutedFg, marginTop: 2 }}>
-            {[c?.email, c?.phone, c?.company?.name].filter(Boolean).join(' · ') || '—'}
+            {[c?.email, c?.phone, c?.company?.name].filter(Boolean).join(" · ") || "—"}
           </Text>
 
           {/* Quick actions */}
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: t.spacing.md }}>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: t.spacing.md }}>
             <QuickAction
               label="Call"
               disabled={!c?.phone}
@@ -84,7 +81,12 @@ export default function ContactDetail() {
                 if (!c?.phone) return;
                 Haptics.selectionAsync();
                 Linking.openURL(`tel:${c.phone}`);
-                await logActivity({ contact_id: contactId, type: 'call', subject: 'Called customer', body: c.phone });
+                await logActivity({
+                  contact_id: contactId,
+                  type: "call",
+                  subject: "Called customer",
+                  body: c.phone,
+                });
                 refresh();
               }}
             />
@@ -102,8 +104,8 @@ export default function ContactDetail() {
               label="Chat"
               onPress={async () => {
                 const conv = data?.conversations?.[0];
-                if (conv) router.push({ pathname: '/conversation/[id]', params: { id: conv.id } });
-                else Alert.alert('No conversation', 'Start a new conversation from the inbox.');
+                if (conv) router.push({ pathname: "/conversation/[id]", params: { id: conv.id } });
+                else Alert.alert("No conversation", "Start a new conversation from the inbox.");
               }}
             />
           </View>
@@ -111,8 +113,8 @@ export default function ContactDetail() {
 
         {/* Tabs */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row', gap: 6 }}>
-            {(['timeline', 'notes', 'tasks', 'deals'] as const).map((tk) => (
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            {(["timeline", "notes", "tasks", "deals"] as const).map((tk) => (
               <Pressable
                 key={tk}
                 onPress={() => setTab(tk)}
@@ -127,7 +129,7 @@ export default function ContactDetail() {
                   style={{
                     color: tab === tk ? t.colors.background : t.colors.mutedFg,
                     fontSize: 12,
-                    fontWeight: '600',
+                    fontWeight: "600",
                   }}
                 >
                   {tk}
@@ -137,10 +139,14 @@ export default function ContactDetail() {
           </View>
         </ScrollView>
 
-        {tab === 'timeline' ? <Timeline data={data} /> : null}
-        {tab === 'notes' ? <NotesList notes={data?.notes ?? []} onAdd={() => setNoteOpen(true)} /> : null}
-        {tab === 'tasks' ? <TasksList tasks={data?.tasks ?? []} onAdd={() => setTaskOpen(true)} /> : null}
-        {tab === 'deals' ? <DealsList deals={data?.deals ?? []} /> : null}
+        {tab === "timeline" ? <Timeline data={data} /> : null}
+        {tab === "notes" ? (
+          <NotesList notes={data?.notes ?? []} onAdd={() => setNoteOpen(true)} />
+        ) : null}
+        {tab === "tasks" ? (
+          <TasksList tasks={data?.tasks ?? []} onAdd={() => setTaskOpen(true)} />
+        ) : null}
+        {tab === "deals" ? <DealsList deals={data?.deals ?? []} /> : null}
       </ScrollView>
 
       <EditContactModal
@@ -161,7 +167,7 @@ export default function ContactDetail() {
           const res = await addNote({ contact_id: contactId, body });
           setNoteOpen(false);
           refresh();
-          if (res.queued) Alert.alert('Saved offline', 'Note will sync when you reconnect.');
+          if (res.queued) Alert.alert("Saved offline", "Note will sync when you reconnect.");
         }}
       />
       <ComposeModal
@@ -170,17 +176,25 @@ export default function ContactDetail() {
         placeholder="Task title"
         onClose={() => setTaskOpen(false)}
         onSubmit={async (title) => {
-          const res = await createTask({ contact_id: contactId, title, status: 'open' });
+          const res = await createTask({ contact_id: contactId, title, status: "open" });
           setTaskOpen(false);
           refresh();
-          if (res.queued) Alert.alert('Saved offline', 'Task will sync when you reconnect.');
+          if (res.queued) Alert.alert("Saved offline", "Task will sync when you reconnect.");
         }}
       />
     </Screen>
   );
 }
 
-function QuickAction({ label, onPress, disabled }: { label: string; onPress: () => void; disabled?: boolean }) {
+function QuickAction({
+  label,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   const t = useTheme();
   return (
     <Pressable
@@ -190,12 +204,12 @@ function QuickAction({ label, onPress, disabled }: { label: string; onPress: () 
         flex: 1,
         paddingVertical: 10,
         borderRadius: t.radius.md,
-        alignItems: 'center',
+        alignItems: "center",
         backgroundColor: disabled ? t.colors.border : t.colors.background,
         opacity: disabled ? 0.5 : 1,
       }}
     >
-      <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{label}</Text>
     </Pressable>
   );
 }
@@ -203,13 +217,21 @@ function QuickAction({ label, onPress, disabled }: { label: string; onPress: () 
 function Timeline({ data }: { data: any }) {
   const t = useTheme();
   const merged = [
-    ...(data?.activities ?? []).map((a: any) => ({ ...a, _kind: 'activity' })),
-    ...(data?.notes ?? []).map((n: any) => ({ ...n, _kind: 'note' })),
-    ...(data?.conversations ?? []).map((c: any) => ({ ...c, _kind: 'conversation', created_at: c.last_message_at })),
+    ...(data?.activities ?? []).map((a: any) => ({ ...a, _kind: "activity" })),
+    ...(data?.notes ?? []).map((n: any) => ({ ...n, _kind: "note" })),
+    ...(data?.conversations ?? []).map((c: any) => ({
+      ...c,
+      _kind: "conversation",
+      created_at: c.last_message_at,
+    })),
   ].sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime());
 
   if (!merged.length)
-    return <Text style={{ color: t.colors.mutedFg, textAlign: 'center', marginTop: 20 }}>No activity yet</Text>;
+    return (
+      <Text style={{ color: t.colors.mutedFg, textAlign: "center", marginTop: 20 }}>
+        No activity yet
+      </Text>
+    );
 
   return (
     <View style={{ gap: t.spacing.sm }}>
@@ -224,17 +246,24 @@ function Timeline({ data }: { data: any }) {
             borderColor: t.colors.border,
           }}
         >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: t.colors.mutedFg, textTransform: 'uppercase' }}>
-              {e._kind === 'activity' ? e.type ?? 'activity' : e._kind}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text
+              style={{
+                fontSize: 11,
+                fontWeight: "700",
+                color: t.colors.mutedFg,
+                textTransform: "uppercase",
+              }}
+            >
+              {e._kind === "activity" ? (e.type ?? "activity") : e._kind}
             </Text>
             <Text style={{ fontSize: 11, color: t.colors.mutedFg }}>·</Text>
             <Text style={{ fontSize: 11, color: t.colors.mutedFg }}>
-              {e.created_at ? new Date(e.created_at).toLocaleString() : ''}
+              {e.created_at ? new Date(e.created_at).toLocaleString() : ""}
             </Text>
           </View>
           <Text style={{ color: t.colors.foreground, marginTop: 4 }} numberOfLines={4}>
-            {e.subject ?? e.body ?? e.name ?? e.channel ?? ''}
+            {e.subject ?? e.body ?? e.name ?? e.channel ?? ""}
           </Text>
         </View>
       ))}
@@ -248,9 +277,12 @@ function NotesList({ notes, onAdd }: { notes: any[]; onAdd: () => void }) {
     <View style={{ gap: t.spacing.sm }}>
       <Button title="Add note" onPress={onAdd} variant="secondary" />
       {notes.map((n) => (
-        <View key={n.id} style={{ padding: 10, backgroundColor: '#FEF3C7', borderRadius: t.radius.md }}>
-          <Text style={{ color: '#78350F' }}>{n.body}</Text>
-          <Text style={{ color: '#78350F', opacity: 0.6, fontSize: 10, marginTop: 4 }}>
+        <View
+          key={n.id}
+          style={{ padding: 10, backgroundColor: "#FEF3C7", borderRadius: t.radius.md }}
+        >
+          <Text style={{ color: "#78350F" }}>{n.body}</Text>
+          <Text style={{ color: "#78350F", opacity: 0.6, fontSize: 10, marginTop: 4 }}>
             {new Date(n.created_at).toLocaleString()}
           </Text>
         </View>
@@ -274,9 +306,9 @@ function TasksList({ tasks, onAdd }: { tasks: any[]; onAdd: () => void }) {
             borderColor: t.colors.border,
           }}
         >
-          <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{tk.title}</Text>
+          <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{tk.title}</Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
-            {tk.status} {tk.due_date ? ` · due ${new Date(tk.due_date).toLocaleDateString()}` : ''}
+            {tk.status} {tk.due_date ? ` · due ${new Date(tk.due_date).toLocaleDateString()}` : ""}
           </Text>
         </View>
       ))}
@@ -298,11 +330,14 @@ function DealsList({ deals }: { deals: any[] }) {
             borderColor: t.colors.border,
           }}
         >
-          <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{d.name}</Text>
+          <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{d.name}</Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
             {d.amount != null
-              ? new Intl.NumberFormat(undefined, { style: 'currency', currency: d.currency ?? 'USD' }).format(d.amount)
-              : '—'}
+              ? new Intl.NumberFormat(undefined, {
+                  style: "currency",
+                  currency: d.currency ?? "USD",
+                }).format(d.amount)
+              : "—"}
           </Text>
         </View>
       ))}
@@ -329,10 +364,10 @@ function EditContactModal({
 
   // Seed once when opened
   const init = () => ({
-    first_name: contact?.first_name ?? '',
-    last_name: contact?.last_name ?? '',
-    email: contact?.email ?? '',
-    phone: contact?.phone ?? '',
+    first_name: contact?.first_name ?? "",
+    last_name: contact?.last_name ?? "",
+    email: contact?.email ?? "",
+    phone: contact?.phone ?? "",
   });
 
   return (
@@ -344,17 +379,34 @@ function EditContactModal({
       presentationStyle="pageSheet"
     >
       <Screen>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={[t.typography.h2, { color: t.colors.foreground, flex: 1 }]}>Edit contact</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text style={[t.typography.h2, { color: t.colors.foreground, flex: 1 }]}>
+            Edit contact
+          </Text>
           <Pressable onPress={onClose} hitSlop={12}>
-            <Text style={{ color: t.colors.primary, fontWeight: '600' }}>Cancel</Text>
+            <Text style={{ color: t.colors.primary, fontWeight: "600" }}>Cancel</Text>
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={{ gap: t.spacing.md, paddingTop: t.spacing.md }}>
-          <Input label="First name" value={values.first_name ?? ''} onChangeText={set('first_name')} />
-          <Input label="Last name" value={values.last_name ?? ''} onChangeText={set('last_name')} />
-          <Input label="Email" value={values.email ?? ''} onChangeText={set('email')} keyboardType="email-address" autoCapitalize="none" />
-          <Input label="Phone" value={values.phone ?? ''} onChangeText={set('phone')} keyboardType="phone-pad" />
+          <Input
+            label="First name"
+            value={values.first_name ?? ""}
+            onChangeText={set("first_name")}
+          />
+          <Input label="Last name" value={values.last_name ?? ""} onChangeText={set("last_name")} />
+          <Input
+            label="Email"
+            value={values.email ?? ""}
+            onChangeText={set("email")}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+          <Input
+            label="Phone"
+            value={values.phone ?? ""}
+            onChangeText={set("phone")}
+            keyboardType="phone-pad"
+          />
           <Button
             title="Save"
             loading={saving}
@@ -366,12 +418,14 @@ function EditContactModal({
                   last_name: values.last_name || null,
                   email: values.email || null,
                   phone: values.phone || null,
-                  display_name: `${values.first_name ?? ''} ${values.last_name ?? ''}`.trim() || null,
+                  display_name:
+                    `${values.first_name ?? ""} ${values.last_name ?? ""}`.trim() || null,
                 });
-                if (res.queued) Alert.alert('Saved offline', 'Changes will sync when you reconnect.');
+                if (res.queued)
+                  Alert.alert("Saved offline", "Changes will sync when you reconnect.");
                 onSaved();
               } catch (e: any) {
-                Alert.alert('Save failed', e?.message ?? 'Unknown error');
+                Alert.alert("Save failed", e?.message ?? "Unknown error");
               } finally {
                 setSaving(false);
               }
@@ -397,15 +451,21 @@ function ComposeModal({
   onSubmit: (value: string) => Promise<void> | void;
 }) {
   const t = useTheme();
-  const [v, setV] = useState('');
+  const [v, setV] = useState("");
   const [saving, setSaving] = useState(false);
   return (
-    <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose} onDismiss={() => setV('')}>
+    <Modal
+      visible={open}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={onClose}
+      onDismiss={() => setV("")}
+    >
       <Screen>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={[t.typography.h2, { color: t.colors.foreground, flex: 1 }]}>{title}</Text>
           <Pressable onPress={onClose} hitSlop={12}>
-            <Text style={{ color: t.colors.primary, fontWeight: '600' }}>Cancel</Text>
+            <Text style={{ color: t.colors.primary, fontWeight: "600" }}>Cancel</Text>
           </Pressable>
         </View>
         <TextInput
@@ -422,7 +482,7 @@ function ComposeModal({
             backgroundColor: t.colors.muted,
             color: t.colors.foreground,
             fontSize: 15,
-            textAlignVertical: 'top',
+            textAlignVertical: "top",
           }}
         />
         <View style={{ marginTop: t.spacing.md }}>
@@ -434,7 +494,7 @@ function ComposeModal({
               setSaving(true);
               try {
                 await onSubmit(v.trim());
-                setV('');
+                setV("");
               } finally {
                 setSaving(false);
               }

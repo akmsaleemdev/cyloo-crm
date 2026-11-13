@@ -12,7 +12,9 @@ export const appleCalendarProvider: CalendarProvider = {
   kind: "apple",
 
   async listCalendars(ctx) {
-    return [{ id: "ics", name: ctx.icsUrl ? "ICS Feed" : "No feed", primary: true, read_only: true }] as CalendarListItem[];
+    return [
+      { id: "ics", name: ctx.icsUrl ? "ICS Feed" : "No feed", primary: true, read_only: true },
+    ] as CalendarListItem[];
   },
 
   async listBusy(ctx, fromISO, toISO) {
@@ -74,8 +76,12 @@ function parseICS(text: string): BusyBlock[] {
 function parseIcsDate(v: string): string {
   // Basic ICS date parsing: 20260719T140000Z or 20260719 (all-day)
   if (/^\d{8}T\d{6}Z?$/.test(v)) {
-    const y = v.slice(0, 4), m = v.slice(4, 6), d = v.slice(6, 8);
-    const hh = v.slice(9, 11), mm = v.slice(11, 13), ss = v.slice(13, 15);
+    const y = v.slice(0, 4),
+      m = v.slice(4, 6),
+      d = v.slice(6, 8);
+    const hh = v.slice(9, 11),
+      mm = v.slice(11, 13),
+      ss = v.slice(13, 15);
     return `${y}-${m}-${d}T${hh}:${mm}:${ss}${v.endsWith("Z") ? "Z" : ""}`;
   }
   if (/^\d{8}$/.test(v)) {

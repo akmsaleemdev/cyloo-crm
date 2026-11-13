@@ -8,11 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  useKbArticles, useKbCollections, useUpsertKbCollection, useDeleteKbCollection,
-  useKbCollectionArticles, useSetKbCollectionArticles,
+  useKbArticles,
+  useKbCollections,
+  useUpsertKbCollection,
+  useDeleteKbCollection,
+  useKbCollectionArticles,
+  useSetKbCollectionArticles,
 } from "@/hooks/use-kb";
 
 export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
@@ -28,8 +37,14 @@ export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
 
   const create = async () => {
     if (!name.trim()) return;
-    await upsert.mutateAsync({ workspaceId, name: name.trim(), description: description.trim() || null });
-    setName(""); setDescription(""); setCreating(false);
+    await upsert.mutateAsync({
+      workspaceId,
+      name: name.trim(),
+      description: description.trim() || null,
+    });
+    setName("");
+    setDescription("");
+    setCreating(false);
   };
 
   return (
@@ -37,7 +52,9 @@ export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Boxes className="h-4 w-4" />
-          <span>Group articles across categories — e.g. "Onboarding pack", "Product catalog 2026".</span>
+          <span>
+            Group articles across categories — e.g. "Onboarding pack", "Product catalog 2026".
+          </span>
         </div>
         <Button size="sm" onClick={() => setCreating(true)}>
           <Plus className="h-4 w-4" /> New collection
@@ -46,12 +63,36 @@ export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
 
       {creating && (
         <Card className="p-3 space-y-2">
-          <Input placeholder="Collection name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
-          <Textarea placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+          <Input
+            placeholder="Collection name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            autoFocus
+          />
+          <Textarea
+            placeholder="Description (optional)"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+          />
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => { setCreating(false); setName(""); setDescription(""); }}>Cancel</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCreating(false);
+                setName("");
+                setDescription("");
+              }}
+            >
+              Cancel
+            </Button>
             <Button size="sm" onClick={create} disabled={!name.trim() || upsert.isPending}>
-              {upsert.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              {upsert.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
               Create
             </Button>
           </div>
@@ -66,14 +107,21 @@ export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
                 <div>
                   <div className="font-medium">{c.name}</div>
                   {c.description && (
-                    <div className="text-xs text-muted-foreground line-clamp-2">{c.description}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-2">
+                      {c.description}
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Manage</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>
+                    Manage
+                  </Button>
                   <Button
-                    variant="ghost" size="sm"
-                    onClick={() => { if (confirm(`Delete "${c.name}"?`)) del.mutate(c.id); }}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm(`Delete "${c.name}"?`)) del.mutate(c.id);
+                    }}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -105,7 +153,9 @@ export function CollectionsPanel({ workspaceId }: { workspaceId: string }) {
 }
 
 function ManageCollectionDialog({
-  workspaceId, collectionId, onClose,
+  workspaceId,
+  collectionId,
+  onClose,
 }: {
   workspaceId: string;
   collectionId: string;
@@ -123,7 +173,8 @@ function ManageCollectionDialog({
 
   const toggle = (id: string) => {
     const next = new Set(currentSet);
-    if (next.has(id)) next.delete(id); else next.add(id);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
     setSelected(next);
   };
 
@@ -137,7 +188,12 @@ function ManageCollectionDialog({
   };
 
   return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage articles</DialogTitle>
@@ -165,9 +221,15 @@ function ManageCollectionDialog({
           </div>
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
           <Button onClick={save} disabled={setArticles.isPending}>
-            {setArticles.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {setArticles.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
             Save
           </Button>
         </DialogFooter>

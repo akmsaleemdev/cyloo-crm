@@ -15,9 +15,8 @@ export const Route = createFileRoute("/api/public/booking/reminders-tick")({
         const denied = guardCronRequest(request);
         if (denied) return denied;
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-        const { dispatchQueuedReminder } = await import(
-          "@/lib/booking/notifications-engine.server"
-        );
+        const { dispatchQueuedReminder } =
+          await import("@/lib/booking/notifications-engine.server");
         const nowIso = new Date().toISOString();
 
         const { data: due, error: dueErr } = await supabaseAdmin
@@ -30,18 +29,12 @@ export const Route = createFileRoute("/api/public/booking/reminders-tick")({
           .limit(200);
 
         if (dueErr) {
-          return Response.json(
-            { error: "claim_failed", detail: dueErr.message },
-            { status: 500 },
-          );
+          return Response.json({ error: "claim_failed", detail: dueErr.message }, { status: 500 });
         }
         if (!due?.length) return Response.json({ processed: 0 });
 
         const ids = (due as Array<{ id: string }>).map((r) => r.id);
-        await supabaseAdmin
-          .from("booking_reminders")
-          .update({ status: "sending" })
-          .in("id", ids);
+        await supabaseAdmin.from("booking_reminders").update({ status: "sending" }).in("id", ids);
 
         let sent = 0;
         let failed = 0;

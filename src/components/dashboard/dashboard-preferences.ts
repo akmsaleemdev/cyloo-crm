@@ -32,7 +32,8 @@ export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetConfig[] = [
   {
     id: "widget-quick-actions",
     title: "Quick Action Launchpad",
-    description: "One-click shortcuts to capture leads, send WhatsApp broadcasts, and draft quotes.",
+    description:
+      "One-click shortcuts to capture leads, send WhatsApp broadcasts, and draft quotes.",
     category: "sales",
     defaultSize: "full",
     size: "full",
@@ -142,4 +143,3 @@ export function resetDashboardPreferences(workspaceId: string): DashboardWidgetC
   }
   return DEFAULT_DASHBOARD_WIDGETS;
 }
-

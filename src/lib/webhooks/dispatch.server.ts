@@ -10,7 +10,10 @@ export { WEBHOOK_EVENTS } from "./events";
 
 export function randomSecret(): { full: string; prefix: string; hash_p: Promise<string> } {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  const b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64 = btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
   const full = `whsec_${b64}`;
   return { full, prefix: full.slice(0, 12), hash_p: sha256Hex(full) };
 }
@@ -18,19 +21,30 @@ export function randomSecret(): { full: string; prefix: string; hash_p: Promise<
 export async function sha256Hex(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function hmacHex(secret: string, message: string): Promise<string> {
   const key = await crypto.subtle.importKey(
-    "raw", new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
   );
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
-  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-export async function buildSignatureHeader(secret: string, body: string, timestamp = Math.floor(Date.now() / 1000)) {
+export async function buildSignatureHeader(
+  secret: string,
+  body: string,
+  timestamp = Math.floor(Date.now() / 1000),
+) {
   const v1 = await hmacHex(secret, `${timestamp}.${body}`);
   return `t=${timestamp},v1=${v1}`;
 }
@@ -109,12 +123,17 @@ export async function sendOneDelivery(
     });
     clearTimeout(timer);
     response_status = res.status;
-    res.headers.forEach((v, k) => { response_headers[k] = v; });
+    res.headers.forEach((v, k) => {
+      response_headers[k] = v;
+    });
     // Cap body to avoid runaway storage.
     const raw = await res.text();
     response_body = raw.length > 8192 ? raw.slice(0, 8192) + "" : raw;
   } catch (e: any) {
-    error_message = e?.name === "AbortError" ? `timeout after ${endpoint.timeout_ms}ms` : (e?.message ?? "network error");
+    error_message =
+      e?.name === "AbortError"
+        ? `timeout after ${endpoint.timeout_ms}ms`
+        : (e?.message ?? "network error");
   }
   const duration_ms = Date.now() - start;
   const ok = response_status !== null && response_status >= 200 && response_status < 300;
@@ -212,10 +231,7 @@ export async function drainQueue(admin: any, limit = 25, workerId = crypto.rando
 
   // Fetch endpoints in one round trip.
   const epIds = Array.from(new Set((leased ?? []).map((d: any) => d.endpoint_id)));
-  const { data: eps } = await admin
-    .from("webhook_endpoints")
-    .select("*")
-    .in("id", epIds);
+  const { data: eps } = await admin.from("webhook_endpoints").select("*").in("id", epIds);
   const epsById: Record<string, any> = {};
   for (const e of eps ?? []) epsById[e.id] = e;
 
@@ -232,11 +248,15 @@ export async function drainQueue(admin: any, limit = 25, workerId = crypto.rando
     const ep = epsById[d.endpoint_id];
     const secret = secretByEp[d.endpoint_id];
     if (!ep || ep.status !== "active" || !secret) {
-      await sbAny(admin).from("webhook_deliveries").update({
-        status: "cancelled",
-        error_message: !secret ? "missing signing secret" : `endpoint ${ep?.status ?? "missing"}`,
-        locked_at: null, locked_by: null,
-      }).eq("id", d.id);
+      await sbAny(admin)
+        .from("webhook_deliveries")
+        .update({
+          status: "cancelled",
+          error_message: !secret ? "missing signing secret" : `endpoint ${ep?.status ?? "missing"}`,
+          locked_at: null,
+          locked_by: null,
+        })
+        .eq("id", d.id);
       continue;
     }
     const outcome = await sendOneDelivery(admin, d as DeliveryRow, ep as EndpointRow, secret);

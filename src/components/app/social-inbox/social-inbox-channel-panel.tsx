@@ -2,7 +2,15 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
-import { AlertCircle, CheckCircle2, Copy, ExternalLink, Loader2, Plus, RefreshCw } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -94,8 +102,10 @@ export function SocialInboxChannelPanel({ platform }: { platform: SocialInboxPla
     mutationFn: () => runSync({ data: { workspaceId: workspaceId!, force: true } }),
     onSuccess: (res) => {
       const here = res.accounts.filter((a) => a.platform === platform);
-      if (here.length === 0) toast.info(`No connected ${copy.title.replace(" Comments", "")} account to sync.`);
-      else if (here.some((a) => !a.ok)) toast.error(here.find((a) => !a.ok)?.error ?? "Sync failed");
+      if (here.length === 0)
+        toast.info(`No connected ${copy.title.replace(" Comments", "")} account to sync.`);
+      else if (here.some((a) => !a.ok))
+        toast.error(here.find((a) => !a.ok)?.error ?? "Sync failed");
       else toast.success(`Synced — ${here.reduce((n, a) => n + a.inserted, 0)} new comment(s).`);
       void qc.invalidateQueries({ queryKey: ["social-inbox-setup", workspaceId] });
       void qc.invalidateQueries({ queryKey: ["conversations", workspaceId] });
@@ -178,7 +188,9 @@ export function SocialInboxChannelPanel({ platform }: { platform: SocialInboxPla
               <li key={`${a.source}:${a.id}`} className="p-3 space-y-1">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="font-medium">{a.name}</span>
-                  {a.handle && <span className="text-xs text-muted-foreground font-mono">{a.handle}</span>}
+                  {a.handle && (
+                    <span className="text-xs text-muted-foreground font-mono">{a.handle}</span>
+                  )}
                   <Badge variant="outline" className="text-[11px] capitalize">
                     {a.status}
                   </Badge>
@@ -202,11 +214,13 @@ export function SocialInboxChannelPanel({ platform }: { platform: SocialInboxPla
         <section className="rounded-control border border-border p-4 space-y-2">
           <h3 className="text-sm font-semibold">Real-time webhook</h3>
           <p className="text-xs text-muted-foreground">
-            In your Meta app, subscribe the Page to the <b>feed</b> field on the same callback URL used
-            for Messenger:
+            In your Meta app, subscribe the Page to the <b>feed</b> field on the same callback URL
+            used for Messenger:
           </p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 min-w-0 truncate rounded bg-muted px-2 py-1 text-xs">{webhookUrl}</code>
+            <code className="flex-1 min-w-0 truncate rounded bg-muted px-2 py-1 text-xs">
+              {webhookUrl}
+            </code>
             <Button
               variant="ghost"
               size="icon"

@@ -182,8 +182,8 @@ export function FieldServicePage() {
               status: "completed",
               signatureStamp: `Verified Digital Signature (GPS: 25.2048° N, 55.2708° E at ${new Date().toLocaleTimeString()})`,
             }
-          : wo
-      )
+          : wo,
+      ),
     );
     toast.success("Proof-of-service captured: Customer signature & GPS location stored.");
   };
@@ -196,13 +196,19 @@ export function FieldServicePage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Field Service & Workforce Dispatch</h1>
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Field Service & Workforce Dispatch
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/10 text-primary border-primary/20"
+              >
                 Module 24 • Hub 5
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Smart technician dispatching, mobile work orders, GPS route tracking, and digital proof-of-service.
+              Smart technician dispatching, mobile work orders, GPS route tracking, and digital
+              proof-of-service.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -343,7 +349,9 @@ export function FieldServicePage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList>
               <TabsTrigger value="work_orders">Work Orders ({workOrders.length})</TabsTrigger>
-              <TabsTrigger value="technicians">Active Technicians & Fleet ({TECHNICIANS.length})</TabsTrigger>
+              <TabsTrigger value="technicians">
+                Active Technicians & Fleet ({TECHNICIANS.length})
+              </TabsTrigger>
               <TabsTrigger value="parts">Truck-Stock Parts</TabsTrigger>
             </TabsList>
             <div className="relative w-full sm:w-64">
@@ -410,7 +418,9 @@ export function FieldServicePage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">{wo.scheduledTime}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground">
+                        {wo.scheduledTime}
+                      </td>
                       <td className="px-4 py-3 text-right">
                         {wo.status !== "completed" ? (
                           <Button
@@ -458,7 +468,9 @@ export function FieldServicePage() {
                   </CardHeader>
                   <CardContent className="text-xs space-y-3">
                     <div>
-                      <div className="text-muted-foreground mb-1.5 font-medium">Certified Skills:</div>
+                      <div className="text-muted-foreground mb-1.5 font-medium">
+                        Certified Skills:
+                      </div>
                       <div className="flex flex-wrap gap-1">
                         {tech.skills.map((s) => (
                           <span
@@ -495,7 +507,9 @@ export function FieldServicePage() {
                       <Package className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-medium text-sm">IoT Gateway Hub v4</div>
-                        <div className="text-xs text-muted-foreground">SKU: IOT-GTW-04 • Universal 5G</div>
+                        <div className="text-xs text-muted-foreground">
+                          SKU: IOT-GTW-04 • Universal 5G
+                        </div>
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs">
@@ -507,7 +521,9 @@ export function FieldServicePage() {
                       <Package className="w-5 h-5 text-primary" />
                       <div>
                         <div className="font-medium text-sm">Diagnostic Sensor Pack</div>
-                        <div className="text-xs text-muted-foreground">SKU: SEN-DSP-09 • Calibrated</div>
+                        <div className="text-xs text-muted-foreground">
+                          SKU: SEN-DSP-09 • Calibrated
+                        </div>
                       </div>
                     </div>
                     <Badge variant="outline" className="text-xs">
@@ -523,4 +539,3 @@ export function FieldServicePage() {
     </div>
   );
 }
-

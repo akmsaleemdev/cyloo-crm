@@ -24,7 +24,10 @@ function num(v: unknown): number {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
 }
 
-async function getJson(url: string, headers?: Record<string, string>): Promise<Record<string, unknown>> {
+async function getJson(
+  url: string,
+  headers?: Record<string, string>,
+): Promise<Record<string, unknown>> {
   const res = await fetch(url, { headers });
   const text = await res.text();
   const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
@@ -39,13 +42,17 @@ async function getJson(url: string, headers?: Record<string, string>): Promise<R
 }
 
 /** X API v2 public metrics (impression/like/retweet/reply counts). */
-export async function fetchXMetrics(accessTokenCipher: string, tweetId: string): Promise<PostMetrics> {
+export async function fetchXMetrics(
+  accessTokenCipher: string,
+  tweetId: string,
+): Promise<PostMetrics> {
   const token = resolveToken(accessTokenCipher);
   const json = await getJson(
     `https://api.twitter.com/2/tweets/${encodeURIComponent(tweetId)}?tweet.fields=public_metrics`,
     { Authorization: `Bearer ${token}` },
   );
-  const m = ((json["data"] as Record<string, unknown> | undefined)?.["public_metrics"] ?? {}) as Record<string, unknown>;
+  const m = ((json["data"] as Record<string, unknown> | undefined)?.["public_metrics"] ??
+    {}) as Record<string, unknown>;
   return {
     ...EMPTY,
     impressions: num(m["impression_count"]),
@@ -57,13 +64,17 @@ export async function fetchXMetrics(accessTokenCipher: string, tweetId: string):
 }
 
 /** Threads insights: views, likes, replies, reposts, shares. */
-export async function fetchThreadsMetrics(accessTokenCipher: string, mediaId: string): Promise<PostMetrics> {
+export async function fetchThreadsMetrics(
+  accessTokenCipher: string,
+  mediaId: string,
+): Promise<PostMetrics> {
   const token = resolveToken(accessTokenCipher);
   const json = await getJson(
     `https://graph.threads.net/v1.0/${encodeURIComponent(mediaId)}/insights?metric=views,likes,replies,reposts,shares&access_token=${encodeURIComponent(token)}`,
   );
   const values: Record<string, number> = {};
-  for (const entry of (json["data"] as { name?: string; values?: { value?: number }[] }[] | undefined) ?? []) {
+  for (const entry of (json["data"] as
+    { name?: string; values?: { value?: number }[] }[] | undefined) ?? []) {
     if (entry.name) values[entry.name] = num(entry.values?.[0]?.value);
   }
   return {
@@ -77,13 +88,17 @@ export async function fetchThreadsMetrics(accessTokenCipher: string, mediaId: st
 }
 
 /** Instagram Graph insights for a published media object. */
-export async function fetchInstagramMetrics(accessTokenCipher: string, mediaId: string): Promise<PostMetrics> {
+export async function fetchInstagramMetrics(
+  accessTokenCipher: string,
+  mediaId: string,
+): Promise<PostMetrics> {
   const token = resolveToken(accessTokenCipher);
   const json = await getJson(
     `https://graph.facebook.com/v21.0/${encodeURIComponent(mediaId)}/insights?metric=impressions,reach,likes,comments,shares,saved,total_interactions&access_token=${encodeURIComponent(token)}`,
   );
   const values: Record<string, number> = {};
-  for (const entry of (json["data"] as { name?: string; values?: { value?: number }[] }[] | undefined) ?? []) {
+  for (const entry of (json["data"] as
+    { name?: string; values?: { value?: number }[] }[] | undefined) ?? []) {
     if (entry.name) values[entry.name] = num(entry.values?.[0]?.value);
   }
   return {

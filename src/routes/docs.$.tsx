@@ -18,7 +18,11 @@ const PAGE_MAP: Record<string, DocsPage> = {
 };
 
 function targetFor(rest: string): string {
-  const slug = rest.replace(/^\/+|\/+$/g, "").split("/")[0]?.replace(/\.(md|html)$/, "") ?? "";
+  const slug =
+    rest
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")[0]
+      ?.replace(/\.(md|html)$/, "") ?? "";
   if (!slug) return docsUrl();
   const mapped = PAGE_MAP[slug];
   if (mapped) return docsUrl(mapped);

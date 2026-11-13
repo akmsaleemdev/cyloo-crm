@@ -115,9 +115,7 @@ export const runWhatsAppHealthChecks = createServerFn({ method: "POST" })
 
     let query = context.supabase
       .from("channel_accounts" as never)
-      .select(
-        "id, display_name, phone_number, phone_number_id, waba_id, status",
-      )
+      .select("id, display_name, phone_number, phone_number_id, waba_id, status")
       .eq("workspace_id", data.workspaceId)
       .eq("provider", "whatsapp_cloud");
     if (data.channelAccountId) query = query.eq("id", data.channelAccountId);
@@ -125,17 +123,22 @@ export const runWhatsAppHealthChecks = createServerFn({ method: "POST" })
     const { data: rows, error } = await query;
     if (error) throw new Error(error.message);
     // Secret references are admin-only; merged in via the permission-checked RPC.
-    const { data: secrets } = await sbAny(context.supabase).rpc("channel_account_secrets" as never, {
-      _workspace_id: data.workspaceId,
-      _account_id: data.channelAccountId ?? null,
-    } as never);
+    const { data: secrets } = await sbAny(context.supabase).rpc(
+      "channel_account_secrets" as never,
+      {
+        _workspace_id: data.workspaceId,
+        _account_id: data.channelAccountId ?? null,
+      } as never,
+    );
     const secretById = new Map(
-      ((secrets ?? []) as Array<{
-        id: string;
-        verify_token: string | null;
-        access_token_secret_name: string | null;
-        app_secret_name: string | null;
-      }>).map((s) => [s.id, s]),
+      (
+        (secrets ?? []) as Array<{
+          id: string;
+          verify_token: string | null;
+          access_token_secret_name: string | null;
+          app_secret_name: string | null;
+        }>
+      ).map((s) => [s.id, s]),
     );
     const accounts = ((rows ?? []) as Array<{ id: string }>).map((r) => ({
       ...r,
@@ -171,7 +174,12 @@ export const runWhatsAppHealthChecks = createServerFn({ method: "POST" })
       const token = process.env[secretName];
       checks.push(
         token
-          ? { id: "token_secret", label: "Access token secret", status: "ok", detail: `${secretName} is configured.` }
+          ? {
+              id: "token_secret",
+              label: "Access token secret",
+              status: "ok",
+              detail: `${secretName} is configured.`,
+            }
           : {
               id: "token_secret",
               label: "Access token secret",
@@ -187,7 +195,8 @@ export const runWhatsAppHealthChecks = createServerFn({ method: "POST" })
           label: "App secret",
           status: "warn",
           detail: "No app secret configured — inbound payload signatures cannot be verified.",
-          remedy: "Save your Meta app secret and reference it on this account so X-Hub-Signature-256 is validated.",
+          remedy:
+            "Save your Meta app secret and reference it on this account so X-Hub-Signature-256 is validated.",
         });
       }
 
@@ -241,7 +250,9 @@ export const runWhatsAppHealthChecks = createServerFn({ method: "POST" })
               id: "token_valid",
               label: "Token validity",
               status: "ok",
-              detail: expiresAt ? `Valid until ${expiresAt.toLocaleString()}.` : "Valid, no expiry reported.",
+              detail: expiresAt
+                ? `Valid until ${expiresAt.toLocaleString()}.`
+                : "Valid, no expiry reported.",
             });
           }
 

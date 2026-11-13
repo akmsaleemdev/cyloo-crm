@@ -91,34 +91,96 @@ export const getExecutiveOverview = createServerFn({ method: "POST" })
         .not("resolved_at", "is", null)
         .gte("resolved_at", since30)
         .limit(5000),
-      sbAny(supabaseAdmin).from("contacts").select("id", { count: "exact", head: true }).eq("workspace_id", wsId),
-      sbAny(supabaseAdmin).from("contacts").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).gte("created_at", since30),
-      sbAny(supabaseAdmin).from("deals").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).eq("status", "won").gte("closed_at", since30),
-      sbAny(supabaseAdmin).from("deals").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).eq("status", "lost").gte("closed_at", since30),
+      sbAny(supabaseAdmin)
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId),
+      sbAny(supabaseAdmin)
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .gte("created_at", since30),
+      sbAny(supabaseAdmin)
+        .from("deals")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .eq("status", "won")
+        .gte("closed_at", since30),
+      sbAny(supabaseAdmin)
+        .from("deals")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .eq("status", "lost")
+        .gte("closed_at", since30),
       sbAny(supabaseAdmin).from("files").select("size_bytes").eq("workspace_id", wsId).limit(50000),
-      sbAny(supabaseAdmin).from("ai_request_logs").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).gte("created_at", since24h),
-      sbAny(supabaseAdmin).from("ai_request_logs").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).gte("created_at", since30),
-      sbAny(supabaseAdmin).from("ai_request_logs").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).eq("status", "error").gte("created_at", since24h),
+      sbAny(supabaseAdmin)
+        .from("ai_request_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .gte("created_at", since24h),
+      sbAny(supabaseAdmin)
+        .from("ai_request_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .gte("created_at", since30),
+      sbAny(supabaseAdmin)
+        .from("ai_request_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .eq("status", "error")
+        .gte("created_at", since24h),
       orgId
-        ? sbAny(supabaseAdmin).from("subscriptions").select("status, seats, current_period_end, trial_ends_at, plans(name)").eq("organization_id", orgId).maybeSingle()
+        ? sbAny(supabaseAdmin)
+            .from("subscriptions")
+            .select("status, seats, current_period_end, trial_ends_at, plans(name)")
+            .eq("organization_id", orgId)
+            .maybeSingle()
         : Promise.resolve({ data: null } as { data: null }),
-      sbAny(supabaseAdmin).from("workflow_queue").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).in("status", ["queued", "running"]),
-      sbAny(supabaseAdmin).from("workflow_runs").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).eq("status", "failed").gte("created_at", since24h),
-      sbAny(supabaseAdmin).from("messages").select("id", { count: "exact", head: true }).eq("workspace_id", wsId).eq("status", "failed").gte("created_at", since24h),
-      sbAny(supabaseAdmin).from("ai_provider_health").select("id", { count: "exact", head: true }).eq("status", "degraded"),
+      sbAny(supabaseAdmin)
+        .from("workflow_queue")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .in("status", ["queued", "running"]),
+      sbAny(supabaseAdmin)
+        .from("workflow_runs")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .eq("status", "failed")
+        .gte("created_at", since24h),
+      sbAny(supabaseAdmin)
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("workspace_id", wsId)
+        .eq("status", "failed")
+        .gte("created_at", since24h),
+      sbAny(supabaseAdmin)
+        .from("ai_provider_health")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "degraded"),
     ]);
 
     // avg first response
-    let frSum = 0, frN = 0, breaches = 0;
-    for (const r of (slaRows.data ?? []) as Array<{ started_at: string; first_response_at: string | null; first_response_breached_at: string | null; resolution_breached_at: string | null }>) {
+    let frSum = 0,
+      frN = 0,
+      breaches = 0;
+    for (const r of (slaRows.data ?? []) as Array<{
+      started_at: string;
+      first_response_at: string | null;
+      first_response_breached_at: string | null;
+      resolution_breached_at: string | null;
+    }>) {
       if (r.first_response_at) {
         frSum += new Date(r.first_response_at).getTime() - new Date(r.started_at).getTime();
         frN++;
       }
       if (r.first_response_breached_at || r.resolution_breached_at) breaches++;
     }
-    let resSum = 0, resN = 0;
-    for (const r of (convResolved.data ?? []) as Array<{ created_at: string; resolved_at: string }>) {
+    let resSum = 0,
+      resN = 0;
+    for (const r of (convResolved.data ?? []) as Array<{
+      created_at: string;
+      resolved_at: string;
+    }>) {
       resSum += new Date(r.resolved_at).getTime() - new Date(r.created_at).getTime();
       resN++;
     }
@@ -135,12 +197,24 @@ export const getExecutiveOverview = createServerFn({ method: "POST" })
     const providerIssues = providerHealth.count ?? 0;
 
     const dbStatus: ExecutiveOverview["systemHealth"]["dbStatus"] =
-      queueBacklog > 500 || failedMsgs > 100 || wfFailed > 50
-        ? "degraded"
-        : "healthy";
+      queueBacklog > 500 || failedMsgs > 100 || wfFailed > 50 ? "degraded" : "healthy";
 
-    const sub = (subRow as { data: { status: string | null; seats: number | null; current_period_end: string | null; trial_ends_at: string | null; plans: { name: string } | { name: string }[] | null } | null }).data;
-    const planFromSub = sub?.plans ? (Array.isArray(sub.plans) ? sub.plans[0]?.name : sub.plans.name) : null;
+    const sub = (
+      subRow as {
+        data: {
+          status: string | null;
+          seats: number | null;
+          current_period_end: string | null;
+          trial_ends_at: string | null;
+          plans: { name: string } | { name: string }[] | null;
+        } | null;
+      }
+    ).data;
+    const planFromSub = sub?.plans
+      ? Array.isArray(sub.plans)
+        ? sub.plans[0]?.name
+        : sub.plans.name
+      : null;
 
     return {
       responseTime: {
@@ -185,36 +259,123 @@ export const getActivityFeed = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }): Promise<ActivityFeedItem[]> => {
     const { data: member } = await context.supabase
-      .from("workspace_members").select("workspace_id").eq("workspace_id", data.workspaceId).maybeSingle();
+      .from("workspace_members")
+      .select("workspace_id")
+      .eq("workspace_id", data.workspaceId)
+      .maybeSingle();
     if (!member) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const wsId = data.workspaceId;
     const lim = data.limit ?? 20;
 
     const [msgs, deals, leads, contacts, runs] = await Promise.all([
-      sbAny(supabaseAdmin).from("messages").select("id, created_at, direction, status, body").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(lim),
-      sbAny(supabaseAdmin).from("deals").select("id, created_at, title, status, amount, currency").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(lim),
-      sbAny(supabaseAdmin).from("leads").select("id, created_at, full_name, status").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(lim),
-      sbAny(supabaseAdmin).from("contacts").select("id, created_at, first_name, last_name").eq("workspace_id", wsId).order("created_at", { ascending: false }).limit(lim),
-      sbAny(supabaseAdmin).from("workflow_runs").select("id, started_at, status, automation_id").eq("workspace_id", wsId).order("started_at", { ascending: false }).limit(lim),
+      sbAny(supabaseAdmin)
+        .from("messages")
+        .select("id, created_at, direction, status, body")
+        .eq("workspace_id", wsId)
+        .order("created_at", { ascending: false })
+        .limit(lim),
+      sbAny(supabaseAdmin)
+        .from("deals")
+        .select("id, created_at, title, status, amount, currency")
+        .eq("workspace_id", wsId)
+        .order("created_at", { ascending: false })
+        .limit(lim),
+      sbAny(supabaseAdmin)
+        .from("leads")
+        .select("id, created_at, full_name, status")
+        .eq("workspace_id", wsId)
+        .order("created_at", { ascending: false })
+        .limit(lim),
+      sbAny(supabaseAdmin)
+        .from("contacts")
+        .select("id, created_at, first_name, last_name")
+        .eq("workspace_id", wsId)
+        .order("created_at", { ascending: false })
+        .limit(lim),
+      sbAny(supabaseAdmin)
+        .from("workflow_runs")
+        .select("id, started_at, status, automation_id")
+        .eq("workspace_id", wsId)
+        .order("started_at", { ascending: false })
+        .limit(lim),
     ]);
 
     const items: ActivityFeedItem[] = [];
-    for (const m of (msgs.data ?? []) as Array<{ id: string; created_at: string; direction: string; status: string; body: string | null }>) {
-      items.push({ id: `msg-${m.id}`, type: "message", title: m.direction === "outbound" ? "Outgoing message" : "Incoming message", subtitle: (m.body ?? "").slice(0, 80), status: m.status, createdAt: m.created_at });
+    for (const m of (msgs.data ?? []) as Array<{
+      id: string;
+      created_at: string;
+      direction: string;
+      status: string;
+      body: string | null;
+    }>) {
+      items.push({
+        id: `msg-${m.id}`,
+        type: "message",
+        title: m.direction === "outbound" ? "Outgoing message" : "Incoming message",
+        subtitle: (m.body ?? "").slice(0, 80),
+        status: m.status,
+        createdAt: m.created_at,
+      });
     }
-    for (const d of (deals.data ?? []) as Array<{ id: string; created_at: string; title: string; status: string; amount: number | null; currency: string | null }>) {
+    for (const d of (deals.data ?? []) as Array<{
+      id: string;
+      created_at: string;
+      title: string;
+      status: string;
+      amount: number | null;
+      currency: string | null;
+    }>) {
       // The deal's own currency, not a hardcoded dollar sign.
-      items.push({ id: `deal-${d.id}`, type: "deal", title: d.title, subtitle: d.amount ? formatMoney(Number(d.amount), d.currency) : undefined, status: d.status, createdAt: d.created_at });
+      items.push({
+        id: `deal-${d.id}`,
+        type: "deal",
+        title: d.title,
+        subtitle: d.amount ? formatMoney(Number(d.amount), d.currency) : undefined,
+        status: d.status,
+        createdAt: d.created_at,
+      });
     }
-    for (const l of (leads.data ?? []) as Array<{ id: string; created_at: string; full_name: string | null; status: string }>) {
-      items.push({ id: `lead-${l.id}`, type: "lead", title: l.full_name ?? "New lead", status: l.status, createdAt: l.created_at });
+    for (const l of (leads.data ?? []) as Array<{
+      id: string;
+      created_at: string;
+      full_name: string | null;
+      status: string;
+    }>) {
+      items.push({
+        id: `lead-${l.id}`,
+        type: "lead",
+        title: l.full_name ?? "New lead",
+        status: l.status,
+        createdAt: l.created_at,
+      });
     }
-    for (const c of (contacts.data ?? []) as Array<{ id: string; created_at: string; first_name: string | null; last_name: string | null }>) {
-      items.push({ id: `contact-${c.id}`, type: "contact", title: [c.first_name, c.last_name].filter(Boolean).join(" ") || "New contact", createdAt: c.created_at });
+    for (const c of (contacts.data ?? []) as Array<{
+      id: string;
+      created_at: string;
+      first_name: string | null;
+      last_name: string | null;
+    }>) {
+      items.push({
+        id: `contact-${c.id}`,
+        type: "contact",
+        title: [c.first_name, c.last_name].filter(Boolean).join(" ") || "New contact",
+        createdAt: c.created_at,
+      });
     }
-    for (const r of (runs.data ?? []) as Array<{ id: string; started_at: string; status: string; automation_id: string }>) {
-      items.push({ id: `run-${r.id}`, type: "workflow", title: "Workflow run", status: r.status, createdAt: r.started_at });
+    for (const r of (runs.data ?? []) as Array<{
+      id: string;
+      started_at: string;
+      status: string;
+      automation_id: string;
+    }>) {
+      items.push({
+        id: `run-${r.id}`,
+        type: "workflow",
+        title: "Workflow run",
+        status: r.status,
+        createdAt: r.started_at,
+      });
     }
     return items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, lim);
   });

@@ -12,8 +12,7 @@
  * "new row violates row-level security policy".
  */
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Chars we allow in the filename segment. */
 const FILENAME_RE = /^[A-Za-z0-9._-]+$/;
@@ -49,13 +48,9 @@ export function buildAttachmentKey(params: {
     throw new AttachmentKeyError("Invalid workspace id for attachment upload");
   }
   if (!conversationId || !UUID_RE.test(conversationId)) {
-    throw new AttachmentKeyError(
-      "Invalid conversation id for attachment upload"
-    );
+    throw new AttachmentKeyError("Invalid conversation id for attachment upload");
   }
-  const rawExt = filename?.includes(".")
-    ? filename.split(".").pop()
-    : undefined;
+  const rawExt = filename?.includes(".") ? filename.split(".").pop() : undefined;
   const ext = sanitizeExt(rawExt);
   const name = `${crypto.randomUUID()}.${ext}`;
   const key = `${workspaceId}/${conversationId}/${name}`;
@@ -81,7 +76,7 @@ export function assertAttachmentKey(key: string): {
   const parts = key.split("/");
   if (parts.length !== 3) {
     throw new AttachmentKeyError(
-      "Attachment key must be `<workspaceId>/<conversationId>/<filename>`"
+      "Attachment key must be `<workspaceId>/<conversationId>/<filename>`",
     );
   }
   const [workspaceId, conversationId, filename] = parts;
@@ -89,15 +84,9 @@ export function assertAttachmentKey(key: string): {
     throw new AttachmentKeyError("Attachment key: workspace segment is not a UUID");
   }
   if (!UUID_RE.test(conversationId)) {
-    throw new AttachmentKeyError(
-      "Attachment key: conversation segment is not a UUID"
-    );
+    throw new AttachmentKeyError("Attachment key: conversation segment is not a UUID");
   }
-  if (
-    !filename ||
-    filename.length > MAX_FILENAME_LEN ||
-    !FILENAME_RE.test(filename)
-  ) {
+  if (!filename || filename.length > MAX_FILENAME_LEN || !FILENAME_RE.test(filename)) {
     throw new AttachmentKeyError("Attachment key: filename segment is invalid");
   }
   return { workspaceId, conversationId, filename };

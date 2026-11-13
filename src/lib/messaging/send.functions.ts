@@ -12,29 +12,46 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const OutboundPayloadSchema = z.object({
   to: z.string().min(1),
   type: z.enum([
-    "text", "image", "video", "audio", "document", "sticker",
-    "location", "contacts", "template", "interactive", "reaction",
+    "text",
+    "image",
+    "video",
+    "audio",
+    "document",
+    "sticker",
+    "location",
+    "contacts",
+    "template",
+    "interactive",
+    "reaction",
   ]),
   text: z.object({ body: z.string(), preview_url: z.boolean().optional() }).optional(),
-  media: z.object({
-    kind: z.enum(["image", "video", "audio", "document", "sticker"]),
-    url: z.string().url().optional(),
-    mediaId: z.string().optional(),
-    storagePath: z.string().optional(),
-    filename: z.string().optional(),
-    caption: z.string().optional(),
-    mimeType: z.string().optional(),
-  }).optional(),
-  template: z.object({
-    name: z.string(),
-    language: z.string(),
-    components: z.array(z.record(z.string(), z.unknown())).optional(),
-  }).optional(),
+  media: z
+    .object({
+      kind: z.enum(["image", "video", "audio", "document", "sticker"]),
+      url: z.string().url().optional(),
+      mediaId: z.string().optional(),
+      storagePath: z.string().optional(),
+      filename: z.string().optional(),
+      caption: z.string().optional(),
+      mimeType: z.string().optional(),
+    })
+    .optional(),
+  template: z
+    .object({
+      name: z.string(),
+      language: z.string(),
+      components: z.array(z.record(z.string(), z.unknown())).optional(),
+    })
+    .optional(),
   interactive: z.record(z.string(), z.unknown()).optional(),
-  location: z.object({
-    latitude: z.number(), longitude: z.number(),
-    name: z.string().optional(), address: z.string().optional(),
-  }).optional(),
+  location: z
+    .object({
+      latitude: z.number(),
+      longitude: z.number(),
+      name: z.string().optional(),
+      address: z.string().optional(),
+    })
+    .optional(),
   reaction: z.object({ messageId: z.string(), emoji: z.string() }).optional(),
   contacts: z.array(z.record(z.string(), z.unknown())).optional(),
   contextMessageId: z.string().optional(),
@@ -61,8 +78,14 @@ export const enqueueOutboundMessage = createServerFn({ method: "POST" })
       .eq("id", data.channelAccountId)
       .maybeSingle();
     if (aErr || !acc) throw new Error("Channel account not found");
-    const account = acc as unknown as { id: string; workspace_id: string; provider: string; status: string };
-    if (account.status !== "connected") throw new Error(`Channel account not connected (status=${account.status})`);
+    const account = acc as unknown as {
+      id: string;
+      workspace_id: string;
+      provider: string;
+      status: string;
+    };
+    if (account.status !== "connected")
+      throw new Error(`Channel account not connected (status=${account.status})`);
 
     const { data: row, error } = await context.supabase
       .from("message_outbox" as never)
@@ -86,7 +109,9 @@ export const enqueueOutboundMessage = createServerFn({ method: "POST" })
 /** Force-drain the outbox (used by cron + manual runs). Admin-only. */
 export const drainOutboxNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => z.object({ batch: z.number().int().min(1).max(200).optional() }).parse(input))
+  .validator((input: unknown) =>
+    z.object({ batch: z.number().int().min(1).max(200).optional() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     // Only workspace owners/admins in ANY workspace may trigger this; we
     // gate by superadmin OR any admin membership.
@@ -149,7 +174,12 @@ export const retryOutboundMessage = createServerFn({ method: "POST" })
       .eq("id", data.outboxId)
       .maybeSingle();
     if (error || !row) throw new Error("Outbox row not found");
-    const r = row as { id: string; workspace_id: string; status: string; message_id: string | null };
+    const r = row as {
+      id: string;
+      workspace_id: string;
+      status: string;
+      message_id: string | null;
+    };
     if (r.status !== "failed" && r.status !== "dead_letter") {
       throw new Error(`Cannot retry status=${r.status}`);
     }
@@ -251,7 +281,9 @@ export const scheduleOutboundMessage = createServerFn({ method: "POST" })
 /** Force-run the scheduled-messages processor. Admin-only. */
 export const processScheduledNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => z.object({ batch: z.number().int().min(1).max(200).optional() }).parse(input))
+  .validator((input: unknown) =>
+    z.object({ batch: z.number().int().min(1).max(200).optional() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { data: admin } = await context.supabase
       .from("workspace_members" as never)

@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/public/rls-test-harness/tables")({
         try {
           const { listScopedTables } = await import("./server/tables.server");
           const rows = await listScopedTables();
-          
+
           if (rows) {
             return json({ tables: rows });
           }

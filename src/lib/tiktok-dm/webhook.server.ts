@@ -38,8 +38,7 @@ async function messageExists(admin: Admin, workspaceId: string, providerId: stri
 }
 
 export type IngestOutcome =
-  | { status: "skipped" }
-  | { status: "inserted"; conversationId: string; contactId: string };
+  { status: "skipped" } | { status: "inserted"; conversationId: string; contactId: string };
 
 export async function ingestTikTokDm(
   admin: Admin,
@@ -103,7 +102,12 @@ export async function ingestTikTokDm(
       },
     });
   if (error) {
-    if (String(error.message ?? "").toLowerCase().includes("duplicate")) return skipped;
+    if (
+      String(error.message ?? "")
+        .toLowerCase()
+        .includes("duplicate")
+    )
+      return skipped;
     throw new Error(error.message);
   }
   return { status: "inserted", conversationId, contactId };

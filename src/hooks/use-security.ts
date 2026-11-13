@@ -6,8 +6,14 @@ import { useBrandName } from "@/hooks/use-brand-name";
 const anyClient = supabase as any;
 
 export type LoginEvent =
-  | "success" | "failed" | "logout" | "locked"
-  | "password_reset" | "mfa_challenge" | "mfa_success" | "mfa_failed";
+  | "success"
+  | "failed"
+  | "logout"
+  | "locked"
+  | "password_reset"
+  | "mfa_challenge"
+  | "mfa_success"
+  | "mfa_failed";
 
 export type LoginHistoryRow = {
   id: string;
@@ -123,7 +129,9 @@ async function sha256Hex(input: string): Promise<string> {
 function randomToken(bytes = 32): string {
   const arr = new Uint8Array(bytes);
   crypto.getRandomValues(arr);
-  return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(arr)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export function useCreatePAT() {
@@ -209,7 +217,9 @@ function base32Secret(length = 32): string {
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
   const arr = new Uint8Array(length);
   crypto.getRandomValues(arr);
-  return Array.from(arr).map((b) => alphabet[b % 32]).join("");
+  return Array.from(arr)
+    .map((b) => alphabet[b % 32])
+    .join("");
 }
 
 export function useEnable2FA() {
@@ -329,7 +339,8 @@ export function useSavePasswordPolicy() {
       const { error } = await anyClient.from("password_policy").upsert(input);
       if (error) throw error;
     },
-    onSuccess: (_d, v) => qc.invalidateQueries({ queryKey: ["password_policy", v.organization_id] }),
+    onSuccess: (_d, v) =>
+      qc.invalidateQueries({ queryKey: ["password_policy", v.organization_id] }),
   });
 }
 
@@ -349,10 +360,13 @@ export function useRevokeOtherSessions() {
 }
 
 /* ---------- Record login event (best effort, called after sign-in) ---------- */
-export async function recordLoginEvent(event: LoginEvent, extra?: {
-  failure_reason?: string;
-  device?: string;
-}) {
+export async function recordLoginEvent(
+  event: LoginEvent,
+  extra?: {
+    failure_reason?: string;
+    device?: string;
+  },
+) {
   try {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) return;

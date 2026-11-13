@@ -1,6 +1,9 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useTheme, type Theme } from "@/shared/providers/theme-provider";
 import { cn } from "@/lib/utils";

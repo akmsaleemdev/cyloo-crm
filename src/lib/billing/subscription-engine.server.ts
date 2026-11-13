@@ -30,7 +30,11 @@ export async function upsertSubscriptionFromSnapshot(
   organization_id: string,
   snap: SubscriptionSnapshot,
 ): Promise<{ id: string; created: boolean }> {
-  const plan = await sbAny(supabase).from("plans").select("id").eq("code", snap.plan_code).maybeSingle();
+  const plan = await sbAny(supabase)
+    .from("plans")
+    .select("id")
+    .eq("code", snap.plan_code)
+    .maybeSingle();
   if (!plan.data) throw new Error(`Unknown plan_code: ${snap.plan_code}`);
 
   const existing = await supabase
@@ -55,19 +59,38 @@ export async function upsertSubscriptionFromSnapshot(
   };
 
   if (existing.data) {
-    const { error } = await sbAny(supabase).from("subscriptions").update(patch).eq("id", existing.data.id);
+    const { error } = await sbAny(supabase)
+      .from("subscriptions")
+      .update(patch)
+      .eq("id", existing.data.id);
     if (error) throw error;
-    const evt = existing.data.status !== snap.status
-      ? (snap.status === "canceled" ? "subscription.canceled" as const : "subscription.updated" as const)
-      : "subscription.updated" as const;
+    const evt =
+      existing.data.status !== snap.status
+        ? snap.status === "canceled"
+          ? ("subscription.canceled" as const)
+          : ("subscription.updated" as const)
+        : ("subscription.updated" as const);
     await emit({ type: evt, organization_id, data: snap });
-    await persistEvent(supabase, { type: evt, organization_id, occurred_at: new Date().toISOString(), data: snap }, { subscription_id: existing.data.id, provider: snap.provider });
+    await persistEvent(
+      supabase,
+      { type: evt, organization_id, occurred_at: new Date().toISOString(), data: snap },
+      { subscription_id: existing.data.id, provider: snap.provider },
+    );
     return { id: existing.data.id, created: false };
   }
   const inserted = await sbAny(supabase).from("subscriptions").insert(patch).select("id").single();
   if (inserted.error) throw inserted.error;
   await emit({ type: "subscription.created", organization_id, data: snap });
-  await persistEvent(supabase, { type: "subscription.created", organization_id, occurred_at: new Date().toISOString(), data: snap }, { subscription_id: inserted.data.id, provider: snap.provider });
+  await persistEvent(
+    supabase,
+    {
+      type: "subscription.created",
+      organization_id,
+      occurred_at: new Date().toISOString(),
+      data: snap,
+    },
+    { subscription_id: inserted.data.id, provider: snap.provider },
+  );
   return { id: inserted.data.id, created: true };
 }
 
@@ -81,9 +104,13 @@ export async function cancelSubscription(
     .select("id, provider, provider_subscription_id")
     .eq("organization_id", organization_id)
     .maybeSingle();
-  if (!sub.data?.provider || !sub.data.provider_subscription_id) throw new Error("no_active_subscription");
+  if (!sub.data?.provider || !sub.data.provider_subscription_id)
+    throw new Error("no_active_subscription");
   const provider = getBillingProvider(sub.data.provider as BillingProviderId);
-  const snap = await provider.cancelSubscription(sub.data.provider_subscription_id, opts.at_period_end ?? true);
+  const snap = await provider.cancelSubscription(
+    sub.data.provider_subscription_id,
+    opts.at_period_end ?? true,
+  );
   await upsertSubscriptionFromSnapshot(supabase, organization_id, snap);
   return snap;
 }
@@ -98,15 +125,22 @@ export async function changePlanSeats(
     .select("id, provider, provider_subscription_id")
     .eq("organization_id", organization_id)
     .maybeSingle();
-  if (!sub.data?.provider || !sub.data.provider_subscription_id) throw new Error("no_active_subscription");
+  if (!sub.data?.provider || !sub.data.provider_subscription_id)
+    throw new Error("no_active_subscription");
   const provider = getBillingProvider(sub.data.provider as BillingProviderId);
-  const snap = await provider.updateSubscriptionQuantity(sub.data.provider_subscription_id, quantity);
+  const snap = await provider.updateSubscriptionQuantity(
+    sub.data.provider_subscription_id,
+    quantity,
+  );
   await upsertSubscriptionFromSnapshot(supabase, organization_id, snap);
   return snap;
 }
 
 /** Trials expiring within N days — used by the notifications worker. */
-export async function findTrialsEnding(supabase: SupabaseClient, days = 3): Promise<Array<{ id: string; organization_id: string; trial_ends_at: string }>> {
+export async function findTrialsEnding(
+  supabase: SupabaseClient,
+  days = 3,
+): Promise<Array<{ id: string; organization_id: string; trial_ends_at: string }>> {
   const now = new Date();
   const soon = new Date(now.getTime() + days * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await supabase

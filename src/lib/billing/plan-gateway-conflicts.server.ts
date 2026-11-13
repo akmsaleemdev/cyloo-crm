@@ -48,7 +48,8 @@ export class PlanGatewayConflictError extends Error {
 function modeOfIdentifier(provider_id: string, value: string): "sandbox" | "live" | null {
   const v = value.trim();
   if (provider_id === "stripe" || v.startsWith("price_") || v.startsWith("prod_")) {
-    if (/_test_/.test(v) || v.startsWith("sk_test") || v.startsWith("price_test_")) return "sandbox";
+    if (/_test_/.test(v) || v.startsWith("sk_test") || v.startsWith("price_test_"))
+      return "sandbox";
   }
   if (v.startsWith("pri_") || v.startsWith("pro_")) {
     // Paddle Billing ids are not mode-tagged; nothing to infer.

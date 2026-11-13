@@ -15,7 +15,6 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { parseProvider } from "@/lib/inbox/channel-capabilities";
 import { assertWritableProvider } from "@/lib/inbox/provider-validation";
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertPlatformStaff(supabase: any, userId: string, writeAccess = false) {
   const { data, error } = await supabase

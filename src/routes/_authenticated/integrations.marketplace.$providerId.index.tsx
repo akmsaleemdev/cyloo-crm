@@ -206,7 +206,10 @@ function ProviderDetailPage() {
                   </div>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {actions.map((c) => (
-                      <li key={c.id} className="text-sm border border-border rounded-control px-3 py-2">
+                      <li
+                        key={c.id}
+                        className="text-sm border border-border rounded-control px-3 py-2"
+                      >
                         {c.label}
                       </li>
                     ))}
@@ -220,7 +223,10 @@ function ProviderDetailPage() {
                   </div>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {triggers.map((c) => (
-                      <li key={c.id} className="text-sm border border-border rounded-control px-3 py-2">
+                      <li
+                        key={c.id}
+                        className="text-sm border border-border rounded-control px-3 py-2"
+                      >
                         {c.label}
                       </li>
                     ))}

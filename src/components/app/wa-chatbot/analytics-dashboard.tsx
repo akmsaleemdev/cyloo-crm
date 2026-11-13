@@ -34,13 +34,7 @@ import { WA_TRIGGER_LABEL, type WaTriggerType } from "@/lib/messaging/wa-trigger
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Select,
@@ -279,9 +273,7 @@ export function WaChatbotAnalytics({
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Engagement over time</CardTitle>
-          <CardDescription>
-            Inbound customer messages versus bot and agent replies.
-          </CardDescription>
+          <CardDescription>Inbound customer messages versus bot and agent replies.</CardDescription>
         </CardHeader>
         <CardContent className="h-72">
           <ResponsiveContainer width="100%" height="100%">
@@ -414,7 +406,12 @@ export function WaChatbotAnalytics({
                 <XAxis dataKey="bucket" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" name="Replies" fill={SERIES_COLORS.bot} radius={[4, 4, 0, 0]} />
+                <Bar
+                  dataKey="count"
+                  name="Replies"
+                  fill={SERIES_COLORS.bot}
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

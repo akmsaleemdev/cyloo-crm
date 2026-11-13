@@ -50,11 +50,7 @@ function ButtonsVisualFixture() {
                 (onHero ? "bg-neutral-900" : "bg-transparent border border-border")
               }
             >
-              <Button
-                data-testid={`btn-${label}`}
-                variant={variant}
-                size={size}
-              >
+              <Button data-testid={`btn-${label}`} variant={variant} size={size}>
                 {label}
               </Button>
             </div>
@@ -67,10 +63,7 @@ function ButtonsVisualFixture() {
 
 export const Route = createFileRoute("/dev/buttons")({
   head: () => ({
-    meta: [
-      { title: "Button visual fixture" },
-      { name: "robots", content: "noindex,nofollow" },
-    ],
+    meta: [{ title: "Button visual fixture" }, { name: "robots", content: "noindex,nofollow" }],
   }),
   component: ButtonsVisualFixture,
 });

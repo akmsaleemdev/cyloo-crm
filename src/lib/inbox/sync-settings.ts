@@ -38,8 +38,7 @@ export const DEFAULT_SYNC_SETTINGS: InboxSyncSettings = {
 };
 
 const EVENT = "cyloo:inbox-sync-settings";
-const keyFor = (workspaceId?: string | null) =>
-  `cyloo.inbox.sync.v1:${workspaceId ?? "none"}`;
+const keyFor = (workspaceId?: string | null) => `cyloo.inbox.sync.v1:${workspaceId ?? "none"}`;
 
 function parse(raw: string | null): InboxSyncSettings {
   if (!raw) return DEFAULT_SYNC_SETTINGS;

@@ -56,7 +56,6 @@ function componentKinds(components: unknown): ComponentKind[] {
   });
 }
 
-
 const COMPONENT_RE = /^components\[(\d+)\]/;
 const BUTTON_RE = /\['buttons'\]\[(\d+)\](?:\['([a-z_]+)'\])?/;
 const TRAILING_FIELD_RE = /\['([a-z_]+)'\]$/;
@@ -98,11 +97,7 @@ export function fieldForMetaPath(path: string, kinds: ComponentKind[]): string {
   }
 }
 
-function pushUnique(
-  out: TemplateFieldError[],
-  seen: Set<string>,
-  error: TemplateFieldError,
-): void {
+function pushUnique(out: TemplateFieldError[], seen: Set<string>, error: TemplateFieldError): void {
   const key = `${error.field}|${error.message}`;
   if (seen.has(key)) return;
   seen.add(key);
@@ -163,7 +158,9 @@ export function collectTemplateFieldErrors(
   for (const kind of ["HEADER", "BODY", "FOOTER"] as const) {
     const index = kinds.indexOf(kind as ComponentKind);
     if (index < 0) continue;
-    const list = Array.isArray(draft.components) ? (draft.components as Array<{ text?: string }>) : [];
+    const list = Array.isArray(draft.components)
+      ? (draft.components as Array<{ text?: string }>)
+      : [];
     const text = list[index]?.text;
     if (!text) continue;
     for (const issue of findFormatIssues([text])) {
@@ -174,7 +171,6 @@ export function collectTemplateFieldErrors(
       });
     }
   }
-
 
   // 4. Media headers need an uploaded Meta handle before submit.
   const format = (draft.headerFormat ?? "NONE").toUpperCase();

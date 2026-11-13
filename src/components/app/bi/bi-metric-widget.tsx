@@ -4,7 +4,19 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { runMetricQuery } from "@/lib/bi/bi.functions";
 import type { MetricKey, MetricResult, DateRange } from "@/lib/bi/types";
-import { ResponsiveContainer, LineChart, Line, AreaChart, Area, BarChart, Bar, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 import { useCurrencyFormatter } from "@/hooks/use-currency";
 
 interface Props {
@@ -26,12 +38,23 @@ function formatValue(v: number, unit: Props["unit"], money: (value: number) => s
   return v.toLocaleString();
 }
 
-export function BiMetricWidget({ workspaceId, metric, title, chart = "kpi", range = { preset: "last_30d" }, unit = "count", className }: Props) {
+export function BiMetricWidget({
+  workspaceId,
+  metric,
+  title,
+  chart = "kpi",
+  range = { preset: "last_30d" },
+  unit = "count",
+  className,
+}: Props) {
   const money = useCurrencyFormatter({ maximumFractionDigits: 0 });
   const run = useServerFn(runMetricQuery);
   const { data, isLoading } = useQuery({
     queryKey: ["bi.metric", workspaceId, metric, chart, range.preset, range.from, range.to],
-    queryFn: () => run({ data: { workspaceId, query: { metric, range }, cacheTtlS: 60 } }) as Promise<MetricResult>,
+    queryFn: () =>
+      run({
+        data: { workspaceId, query: { metric, range }, cacheTtlS: 60 },
+      }) as Promise<MetricResult>,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
@@ -39,11 +62,13 @@ export function BiMetricWidget({ workspaceId, metric, title, chart = "kpi", rang
   const delta = data?.deltaPct ?? 0;
   const trendIcon = delta > 1 ? TrendingUp : delta < -1 ? TrendingDown : Minus;
   const TrendIcon = trendIcon;
-  const trendClass = delta > 1 ? "text-emerald-500" : delta < -1 ? "text-rose-500" : "text-muted-foreground";
+  const trendClass =
+    delta > 1 ? "text-emerald-500" : delta < -1 ? "text-rose-500" : "text-muted-foreground";
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
       className={`rounded-control border border-border bg-surface p-4 flex flex-col gap-2 ${className ?? ""}`}
     >
       <div className="flex items-center justify-between">
@@ -60,7 +85,9 @@ export function BiMetricWidget({ workspaceId, metric, title, chart = "kpi", rang
           {isLoading ? "" : formatValue(data?.total ?? 0, unit, money)}
         </span>
         {data?.previousTotal !== undefined && (
-          <span className="text-xs text-muted-foreground">vs {formatValue(data.previousTotal, unit, money)}</span>
+          <span className="text-xs text-muted-foreground">
+            vs {formatValue(data.previousTotal, unit, money)}
+          </span>
         )}
       </div>
       {chart !== "kpi" && chart !== "number" && data && data.series.length > 0 && (
@@ -69,12 +96,31 @@ export function BiMetricWidget({ workspaceId, metric, title, chart = "kpi", rang
             {chart === "bar" ? (
               <BarChart data={data.series}>
                 <Bar dataKey="y" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
-                <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                />
               </BarChart>
             ) : chart === "area" ? (
               <AreaChart data={data.series}>
-                <Area dataKey="y" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.2} />
-                <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 11 }} />
+                <Area
+                  dataKey="y"
+                  stroke="var(--color-primary)"
+                  fill="var(--color-primary)"
+                  fillOpacity={0.2}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                />
               </AreaChart>
             ) : (
               <LineChart data={data.series}>
@@ -82,7 +128,14 @@ export function BiMetricWidget({ workspaceId, metric, title, chart = "kpi", rang
                 <XAxis dataKey="t" hide />
                 <YAxis hide />
                 <Line dataKey="y" stroke="var(--color-primary)" strokeWidth={2} dot={false} />
-                <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 11,
+                  }}
+                />
               </LineChart>
             )}
           </ResponsiveContainer>

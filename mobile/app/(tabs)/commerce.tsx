@@ -1,6 +1,6 @@
-import { Text } from 'react-native';
-import { Screen } from '@/components/Screen';
-import { useTheme } from '@/theme/ThemeProvider';
+import { Text } from "react-native";
+import { Screen } from "@/components/Screen";
+import { useTheme } from "@/theme/ThemeProvider";
 
 export default function Commerce() {
   const t = useTheme();

@@ -40,9 +40,14 @@ export const listAgentPresence = createServerFn({ method: "POST" })
       .select("id, full_name, email, avatar_url")
       .in("id", ids);
     const map = new Map(
-      ((profiles ?? []) as { id: string; full_name: string | null; email: string | null; avatar_url: string | null }[]).map(
-        (p) => [p.id, p],
-      ),
+      (
+        (profiles ?? []) as {
+          id: string;
+          full_name: string | null;
+          email: string | null;
+          avatar_url: string | null;
+        }[]
+      ).map((p) => [p.id, p]),
     );
     return ((rows ?? []) as Array<Record<string, unknown>>).map((r) => {
       const p = map.get(r.user_id as string);
@@ -78,16 +83,14 @@ export const setMyPresence = createServerFn({ method: "POST" })
     if (data.departments !== undefined) patch.departments = data.departments;
     if (data.maxConcurrent !== undefined) patch.max_concurrent = data.maxConcurrent;
 
-    const { error } = await context.supabase
-      .from("agent_availability")
-      .upsert(
-        {
-          workspace_id: data.workspaceId,
-          user_id: context.userId,
-          ...patch,
-        } as never,
-        { onConflict: "workspace_id,user_id" },
-      );
+    const { error } = await context.supabase.from("agent_availability").upsert(
+      {
+        workspace_id: data.workspaceId,
+        user_id: context.userId,
+        ...patch,
+      } as never,
+      { onConflict: "workspace_id,user_id" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -138,14 +141,16 @@ export const claimFromQueue = createServerFn({ method: "POST" })
       .update({ is_current: false, unassigned_at: new Date().toISOString() } as never)
       .eq("conversation_id", row.conversation_id)
       .eq("is_current", true);
-    await sbAny(context.supabase).from("conversation_assignments").insert({
-      workspace_id: data.workspaceId,
-      conversation_id: row.conversation_id,
-      assigned_to: context.userId,
-      assigned_by: context.userId,
-      reason: "claimed_from_queue",
-      is_current: true,
-    } as never);
+    await sbAny(context.supabase)
+      .from("conversation_assignments")
+      .insert({
+        workspace_id: data.workspaceId,
+        conversation_id: row.conversation_id,
+        assigned_to: context.userId,
+        assigned_by: context.userId,
+        reason: "claimed_from_queue",
+        is_current: true,
+      } as never);
     return { conversationId: row.conversation_id };
   });
 
@@ -182,39 +187,45 @@ export const transferConversation = createServerFn({ method: "POST" })
       .eq("is_current", true);
 
     if (data.toUserId) {
-      const { error } = await sbAny(context.supabase).from("conversation_assignments").insert({
-        workspace_id: data.workspaceId,
-        conversation_id: data.conversationId,
-        assigned_to: data.toUserId,
-        assigned_by: context.userId,
-        assigned_team_id: data.toDepartmentId ?? null,
-        reason: data.reason ?? "transfer",
-        is_current: true,
-      } as never);
+      const { error } = await sbAny(context.supabase)
+        .from("conversation_assignments")
+        .insert({
+          workspace_id: data.workspaceId,
+          conversation_id: data.conversationId,
+          assigned_to: data.toUserId,
+          assigned_by: context.userId,
+          assigned_team_id: data.toDepartmentId ?? null,
+          reason: data.reason ?? "transfer",
+          is_current: true,
+        } as never);
       if (error) throw new Error(error.message);
     } else if (data.toDepartmentId) {
       // Department transfer without a specific agent → back into the queue.
-      await sbAny(context.supabase).from("handoff_queue").insert({
-        workspace_id: data.workspaceId,
-        conversation_id: data.conversationId,
-        target_department_id: data.toDepartmentId,
-        requested_by: context.userId,
-        reason: data.reason ?? "department_transfer",
-        status: "waiting",
-      } as never);
+      await sbAny(context.supabase)
+        .from("handoff_queue")
+        .insert({
+          workspace_id: data.workspaceId,
+          conversation_id: data.conversationId,
+          target_department_id: data.toDepartmentId,
+          requested_by: context.userId,
+          reason: data.reason ?? "department_transfer",
+          status: "waiting",
+        } as never);
     }
 
-    const { error: tErr } = await sbAny(context.supabase).from("conversation_transfers").insert({
-      workspace_id: data.workspaceId,
-      conversation_id: data.conversationId,
-      from_user_id: fromUserId,
-      to_user_id: data.toUserId ?? null,
-      to_department_id: data.toDepartmentId ?? null,
-      transfer_type: "transfer",
-      reason: data.reason ?? null,
-      note: data.note ?? null,
-      performed_by: context.userId,
-    } as never);
+    const { error: tErr } = await sbAny(context.supabase)
+      .from("conversation_transfers")
+      .insert({
+        workspace_id: data.workspaceId,
+        conversation_id: data.conversationId,
+        from_user_id: fromUserId,
+        to_user_id: data.toUserId ?? null,
+        to_department_id: data.toDepartmentId ?? null,
+        transfer_type: "transfer",
+        reason: data.reason ?? null,
+        note: data.note ?? null,
+        performed_by: context.userId,
+      } as never);
     if (tErr) throw new Error(tErr.message);
 
     return { ok: true };
@@ -239,25 +250,29 @@ export const supervisorOverride = createServerFn({ method: "POST" })
       .eq("conversation_id", data.conversationId)
       .eq("is_current", true);
 
-    const { error } = await sbAny(context.supabase).from("conversation_assignments").insert({
-      workspace_id: data.workspaceId,
-      conversation_id: data.conversationId,
-      assigned_to: data.toUserId,
-      assigned_by: context.userId,
-      reason: data.reason ?? "supervisor_override",
-      is_current: true,
-    } as never);
+    const { error } = await sbAny(context.supabase)
+      .from("conversation_assignments")
+      .insert({
+        workspace_id: data.workspaceId,
+        conversation_id: data.conversationId,
+        assigned_to: data.toUserId,
+        assigned_by: context.userId,
+        reason: data.reason ?? "supervisor_override",
+        is_current: true,
+      } as never);
     if (error) throw new Error(error.message);
 
-    await sbAny(context.supabase).from("conversation_transfers").insert({
-      workspace_id: data.workspaceId,
-      conversation_id: data.conversationId,
-      to_user_id: data.toUserId,
-      transfer_type: "supervisor_override",
-      reason: data.reason ?? "supervisor_override",
-      note: data.note ?? null,
-      performed_by: context.userId,
-    } as never);
+    await sbAny(context.supabase)
+      .from("conversation_transfers")
+      .insert({
+        workspace_id: data.workspaceId,
+        conversation_id: data.conversationId,
+        to_user_id: data.toUserId,
+        transfer_type: "supervisor_override",
+        reason: data.reason ?? "supervisor_override",
+        note: data.note ?? null,
+        performed_by: context.userId,
+      } as never);
     return { ok: true };
   });
 

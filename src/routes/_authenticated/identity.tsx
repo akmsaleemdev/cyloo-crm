@@ -182,8 +182,8 @@ function DuplicateGroupCard({
             {group.kind === "phone"
               ? "Same phone number"
               : group.kind === "email"
-              ? "Same email address"
-              : "Same name"}
+                ? "Same email address"
+                : "Same name"}
           </CardTitle>
           <code className="text-xs text-muted-foreground truncate max-w-xs">{group.key}</code>
           <Badge
@@ -362,7 +362,9 @@ function ConfigPanel() {
             <Sparkles className="h-4 w-4 inline mr-1.5" />
             AI matching
           </CardTitle>
-          <CardDescription>Fuzzy identity resolution across names, spellings and handles.</CardDescription>
+          <CardDescription>
+            Fuzzy identity resolution across names, spellings and handles.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <SwitchRow
@@ -391,9 +393,7 @@ function ConfigPanel() {
             <Input
               type="number"
               value={cfg.duplicate_scan_window_days}
-              onChange={(e) =>
-                patch({ duplicate_scan_window_days: Number(e.target.value) || 90 })
-              }
+              onChange={(e) => patch({ duplicate_scan_window_days: Number(e.target.value) || 90 })}
               className="mt-2 h-9 w-32"
             />
           </div>

@@ -58,16 +58,42 @@ export type LeadFilters = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const anyFrom = (t: string) => sbAny(supabase).from(t as any) as any;
 
-export const LEAD_STATUSES = ["new", "contacted", "working", "qualified", "unqualified", "disqualified", "nurturing", "converted"] as const;
+export const LEAD_STATUSES = [
+  "new",
+  "contacted",
+  "working",
+  "qualified",
+  "unqualified",
+  "disqualified",
+  "nurturing",
+  "converted",
+] as const;
 export const LEAD_RATINGS = ["hot", "warm", "cold"] as const;
-export const LEAD_SOURCES = ["website", "referral", "cold_outbound", "event", "advertising", "social", "partner", "import", "manual", "other"] as const;
+export const LEAD_SOURCES = [
+  "website",
+  "referral",
+  "cold_outbound",
+  "event",
+  "advertising",
+  "social",
+  "partner",
+  "import",
+  "manual",
+  "other",
+] as const;
 
 export function leadDisplayName(l: Partial<LeadRow>): string {
   return resolveDisplayName(l as never, "Unnamed lead");
 }
 
 export function leadInitials(l: Partial<LeadRow>): string {
-  return leadDisplayName(l).split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
+  return leadDisplayName(l)
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 }
 
 /* ------------------------------ Queries ------------------------------ */
@@ -92,17 +118,22 @@ export function useLeads(filters: LeadFilters = {}) {
       else if (filters.converted === false) q = q.is("converted_at", null);
       if (filters.search?.trim()) {
         const s = filters.search.trim().replace(/[%,]/g, " ");
-        q = q.or([
-          `full_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `first_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `last_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `email.ilike.%${sanitizeSearchTerm(s)}%`,
-          `phone.ilike.%${sanitizeSearchTerm(s)}%`,
-          `company_name.ilike.%${sanitizeSearchTerm(s)}%`,
-          `job_title.ilike.%${sanitizeSearchTerm(s)}%`,
-        ].join(","));
+        q = q.or(
+          [
+            `full_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `first_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `last_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `email.ilike.%${sanitizeSearchTerm(s)}%`,
+            `phone.ilike.%${sanitizeSearchTerm(s)}%`,
+            `company_name.ilike.%${sanitizeSearchTerm(s)}%`,
+            `job_title.ilike.%${sanitizeSearchTerm(s)}%`,
+          ].join(","),
+        );
       }
-      const { data, error } = await q.order("score", { ascending: false }).order("updated_at", { ascending: false }).limit(500);
+      const { data, error } = await q
+        .order("score", { ascending: false })
+        .order("updated_at", { ascending: false })
+        .limit(500);
       if (error) throw error;
       return (data ?? []) as LeadRow[];
     },
@@ -142,7 +173,9 @@ export function useLead(id: string | undefined) {
 
 /* ------------------------------ Mutations ------------------------------ */
 
-export type LeadInput = Partial<Omit<LeadRow, "id" | "workspace_id" | "created_at" | "updated_at" | "deleted_at">>;
+export type LeadInput = Partial<
+  Omit<LeadRow, "id" | "workspace_id" | "created_at" | "updated_at" | "deleted_at">
+>;
 
 export function useCreateLead() {
   const qc = useQueryClient();
@@ -152,7 +185,8 @@ export function useCreateLead() {
       if (!active?.id) throw new Error("No workspace selected");
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id ?? null;
-      const full = input.full_name ?? ([input.first_name, input.last_name].filter(Boolean).join(" ") || null);
+      const full =
+        input.full_name ?? ([input.first_name, input.last_name].filter(Boolean).join(" ") || null);
       const payload = {
         workspace_id: active.id,
         organization_id: active.organization_id ?? null,
@@ -189,7 +223,9 @@ export function useUpdateLead() {
     mutationFn: async ({ id, patch }: { id: string; patch: LeadInput }) => {
       const p = { ...patch } as Record<string, unknown>;
       if (patch.first_name !== undefined || patch.last_name !== undefined) {
-        p.full_name = patch.full_name ?? ([patch.first_name, patch.last_name].filter(Boolean).join(" ") || null);
+        p.full_name =
+          patch.full_name ??
+          ([patch.first_name, patch.last_name].filter(Boolean).join(" ") || null);
       }
       const { error } = await anyFrom("leads").update(p).eq("id", id);
       if (error) throw error;
@@ -209,7 +245,9 @@ export function useDeleteLead() {
         const { error } = await anyFrom("leads").delete().eq("id", id);
         if (error) throw error;
       } else {
-        const { error } = await anyFrom("leads").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+        const { error } = await anyFrom("leads")
+          .update({ deleted_at: new Date().toISOString() })
+          .eq("id", id);
         if (error) throw error;
       }
     },
@@ -239,7 +277,8 @@ export function useBulkDeleteLeads() {
         if (error) throw error;
       } else {
         const { error } = await anyFrom("leads")
-          .update({ deleted_at: new Date().toISOString() }).in("id", ids);
+          .update({ deleted_at: new Date().toISOString() })
+          .in("id", ids);
         if (error) throw error;
       }
     },
@@ -256,7 +295,13 @@ export type ConvertLeadInput = {
   createDeal?: boolean;
   contactOverrides?: Record<string, unknown>;
   companyOverrides?: Record<string, unknown>;
-  deal?: { title: string; amount?: number | null; currency?: string; stage_id?: string | null; probability?: number | null };
+  deal?: {
+    title: string;
+    amount?: number | null;
+    currency?: string;
+    stage_id?: string | null;
+    probability?: number | null;
+  };
 };
 
 export function useConvertLead() {
@@ -266,7 +311,10 @@ export function useConvertLead() {
   return useMutation({
     mutationFn: async (input: ConvertLeadInput) => {
       if (!active?.id) throw new Error("No workspace selected");
-      const { data: leadData, error: lErr } = await anyFrom("leads").select("*").eq("id", input.leadId).maybeSingle();
+      const { data: leadData, error: lErr } = await anyFrom("leads")
+        .select("*")
+        .eq("id", input.leadId)
+        .maybeSingle();
       if (lErr) throw lErr;
       const lead = leadData as LeadRow | null;
       if (!lead) throw new Error("Lead not found");
@@ -285,14 +333,18 @@ export function useConvertLead() {
           created_by: uid,
           ...(input.companyOverrides ?? {}),
         };
-        const { data: comp, error: cErr } = await anyFrom("companies").insert(companyPayload).select("id").single();
+        const { data: comp, error: cErr } = await anyFrom("companies")
+          .insert(companyPayload)
+          .select("id")
+          .single();
         if (cErr) throw cErr;
         companyId = comp.id as string;
       }
 
       let contactId: string | null = lead.converted_contact_id;
       if (input.createContact !== false && !contactId) {
-        const full = lead.full_name ?? ([lead.first_name, lead.last_name].filter(Boolean).join(" ") || null);
+        const full =
+          lead.full_name ?? ([lead.first_name, lead.last_name].filter(Boolean).join(" ") || null);
         const contactPayload = {
           workspace_id: active.id,
           organization_id: active.organization_id ?? null,
@@ -316,7 +368,10 @@ export function useConvertLead() {
           custom_fields: lead.custom_fields ?? {},
           ...(input.contactOverrides ?? {}),
         };
-        const { data: c, error: cErr } = await anyFrom("contacts").insert(contactPayload).select("id").single();
+        const { data: c, error: cErr } = await anyFrom("contacts")
+          .insert(contactPayload)
+          .select("id")
+          .single();
         if (cErr) throw cErr;
         contactId = c.id as string;
       }
@@ -338,18 +393,23 @@ export function useConvertLead() {
           source: lead.source ?? "lead",
           created_by: uid,
         };
-        const { data: d, error: dErr } = await anyFrom("deals").insert(dealPayload).select("id").single();
+        const { data: d, error: dErr } = await anyFrom("deals")
+          .insert(dealPayload)
+          .select("id")
+          .single();
         if (dErr) throw dErr;
         dealId = d.id as string;
       }
 
-      const { error: uErr } = await anyFrom("leads").update({
-        status: "converted",
-        converted_at: new Date().toISOString(),
-        converted_contact_id: contactId,
-        converted_company_id: companyId,
-        converted_deal_id: dealId,
-      }).eq("id", lead.id);
+      const { error: uErr } = await anyFrom("leads")
+        .update({
+          status: "converted",
+          converted_at: new Date().toISOString(),
+          converted_contact_id: contactId,
+          converted_company_id: companyId,
+          converted_deal_id: dealId,
+        })
+        .eq("id", lead.id);
       if (uErr) throw uErr;
 
       return { contactId, companyId, dealId };
@@ -372,28 +432,62 @@ export function useLeadsRealtime() {
     if (!workspaceId || typeof window === "undefined") return;
     const channel = supabase
       .channel(`leads:${workspaceId}`)
-      .on("postgres_changes",
+      .on(
+        "postgres_changes",
         { event: "*", schema: "public", table: "leads", filter: `workspace_id=eq.${workspaceId}` },
         () => {
           qc.invalidateQueries({ queryKey: ["leads"] });
           qc.invalidateQueries({ queryKey: ["lead"] });
-        })
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [workspaceId, qc]);
 }
 
 /* ------------------------------ CSV ------------------------------ */
 
 export function leadsToCsv(rows: LeadRow[]): string {
-  const headers = ["first_name","last_name","email","phone","company_name","job_title","source","status","score","rating","tags","notes"];
+  const headers = [
+    "first_name",
+    "last_name",
+    "email",
+    "phone",
+    "company_name",
+    "job_title",
+    "source",
+    "status",
+    "score",
+    "rating",
+    "tags",
+    "notes",
+  ];
   const esc = (v: unknown) => {
     const s = v == null ? "" : String(v);
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const lines = [headers.join(",")];
   for (const r of rows) {
-    lines.push([r.first_name, r.last_name, r.email, r.phone, r.company_name, r.job_title, r.source, r.status, r.score, r.rating, (r.tags ?? []).join("|"), r.notes].map(esc).join(","));
+    lines.push(
+      [
+        r.first_name,
+        r.last_name,
+        r.email,
+        r.phone,
+        r.company_name,
+        r.job_title,
+        r.source,
+        r.status,
+        r.score,
+        r.rating,
+        (r.tags ?? []).join("|"),
+        r.notes,
+      ]
+        .map(esc)
+        .join(","),
+    );
   }
   return lines.join("\n");
 }

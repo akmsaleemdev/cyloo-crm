@@ -1,16 +1,32 @@
 import { TEMPLATES, type ChatbotFlowTemplate } from "@/lib/chatbots/flow-types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Sparkles } from "lucide-react";
 
 export function ChatbotTemplatesDialog({
-  open, onOpenChange, onPick,
-}: { open: boolean; onOpenChange: (v: boolean) => void; onPick: (t: ChatbotFlowTemplate) => void }) {
+  open,
+  onOpenChange,
+  onPick,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onPick: (t: ChatbotFlowTemplate) => void;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Templates</DialogTitle>
-          <DialogDescription>Start from a pre-built flow. You can customize everything after.</DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" /> Templates
+          </DialogTitle>
+          <DialogDescription>
+            Start from a pre-built flow. You can customize everything after.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
           {TEMPLATES.map((t) => (

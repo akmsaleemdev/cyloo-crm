@@ -22,7 +22,13 @@ export type NestedNavNode = {
   permission?: string;
 };
 
-export function NestedNavGroup({ children, pathPrefix }: { children: React.ReactNode; pathPrefix?: string }) {
+export function NestedNavGroup({
+  children,
+  pathPrefix,
+}: {
+  children: React.ReactNode;
+  pathPrefix?: string;
+}) {
   const parentStore = React.useContext(NavOpenStoreContext);
   const parentPath = React.useContext(NavPathContext);
   // The outermost group owns the persisted store; nested groups reuse it.
@@ -59,7 +65,9 @@ export function NestedNavItem({
   const location = useLocation();
   const paths = collectPaths(node);
   const hasChildren = !!node.children?.length;
-  const activeDescendant = paths.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
+  const activeDescendant = paths.some(
+    (p) => location.pathname === p || location.pathname.startsWith(p + "/"),
+  );
   const currentHash = typeof location.hash === "string" ? location.hash.replace(/^#/, "") : "";
   const pathMatches = node.to
     ? node.exact
@@ -103,9 +111,6 @@ export function NestedNavItem({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDescendant, location.pathname, store?.hydrated]);
 
-
-
-
   const Icon = node.icon;
   const showIcon = depth === 0 && !!Icon;
   const isChild = depth > 0;
@@ -144,12 +149,17 @@ export function NestedNavItem({
           aria-hidden="true"
           className={cn(
             "h-1 w-1 shrink-0 rounded-full transition-colors",
-            activeSelf ? "bg-accent" : "bg-sidebar-foreground/25 group-hover:bg-sidebar-foreground/60",
+            activeSelf
+              ? "bg-accent"
+              : "bg-sidebar-foreground/25 group-hover:bg-sidebar-foreground/60",
           )}
         />
       )}
       {showIcon && Icon ? (
-        <Icon className={cn("shrink-0 opacity-80", touch ? "h-[18px] w-[18px]" : "h-4 w-4")} aria-hidden="true" />
+        <Icon
+          className={cn("shrink-0 opacity-80", touch ? "h-[18px] w-[18px]" : "h-4 w-4")}
+          aria-hidden="true"
+        />
       ) : null}
       {!collapsed && (
         <>

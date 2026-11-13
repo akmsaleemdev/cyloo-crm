@@ -12,10 +12,27 @@ export const whatsappQrChannel: ChannelProvider = {
   label: "WhatsApp (QR)",
   implemented: false, // flip to true once a bridge is deployed
   capabilities: new Set([
-    "text", "emoji", "image", "video", "audio", "voice_note", "document",
-    "location", "contact_card", "reaction", "reply_quote", "forward",
-    "delete", "typing_indicator", "read_receipt", "delivery_receipt",
+    "text",
+    "emoji",
+    "image",
+    "video",
+    "audio",
+    "voice_note",
+    "document",
+    "location",
+    "contact_card",
+    "reaction",
+    "reply_quote",
+    "forward",
+    "delete",
+    "typing_indicator",
+    "read_receipt",
+    "delivery_receipt",
   ]),
-  async parseWebhook() { return []; },
-  async send() { throw new Error("whatsapp_qr: bridge not configured"); },
+  async parseWebhook() {
+    return [];
+  },
+  async send() {
+    throw new Error("whatsapp_qr: bridge not configured");
+  },
 };

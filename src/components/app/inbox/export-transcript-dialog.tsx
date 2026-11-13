@@ -2,13 +2,22 @@ import { useState } from "react";
 import { Download, FileText, Table2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  buildTranscriptCsv, buildTranscriptPdf, downloadBlob, fetchTranscript, transcriptFileName,
+  buildTranscriptCsv,
+  buildTranscriptPdf,
+  downloadBlob,
+  fetchTranscript,
+  transcriptFileName,
   type TranscriptMeta,
 } from "@/lib/inbox/transcript-export";
 
@@ -32,7 +41,10 @@ export function ExportTranscriptDialog({ open, onOpenChange, meta }: Props) {
       }
       if (format === "csv") {
         const csv = buildTranscriptCsv(messages, meta);
-        downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8" }), transcriptFileName(meta, "csv"));
+        downloadBlob(
+          new Blob([csv], { type: "text/csv;charset=utf-8" }),
+          transcriptFileName(meta, "csv"),
+        );
       } else {
         const blob = await buildTranscriptPdf(messages, meta);
         downloadBlob(blob, transcriptFileName(meta, "pdf"));
@@ -98,7 +110,11 @@ export function ExportTranscriptDialog({ open, onOpenChange, meta }: Props) {
             Cancel
           </Button>
           <Button onClick={handleExport} disabled={busy}>
-            {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Download className="h-4 w-4 mr-2" />}
+            {busy ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             {busy ? "Preparing" : "Download"}
           </Button>
         </DialogFooter>

@@ -48,12 +48,7 @@ const AUTH_DENIAL_PATTERNS = [
 /** True when a server-function failure means "you are not authenticated". */
 export function isAuthDenial(error: unknown): boolean {
   if (error instanceof Response) return error.status === 401;
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : "";
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
   const normalized = message.toLowerCase();
   return AUTH_DENIAL_PATTERNS.some((p) => normalized.includes(p));
 }
@@ -83,7 +78,7 @@ export const attachSupabaseAuthFresh = createMiddleware({ type: "function" }).cl
     try {
       const orgId = readActiveOrgId();
       const wsId = readActiveWorkspaceId();
-      
+
       const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
       if (orgId) headers["x-cyloo-org-id"] = orgId;
       if (wsId) headers["x-cyloo-workspace-id"] = wsId;
@@ -108,7 +103,7 @@ export const attachSupabaseAuthFresh = createMiddleware({ type: "function" }).cl
           const retryHeaders: Record<string, string> = { Authorization: `Bearer ${retryToken}` };
           if (orgId) retryHeaders["x-cyloo-org-id"] = orgId;
           if (wsId) retryHeaders["x-cyloo-workspace-id"] = wsId;
-          
+
           return await next({ headers: retryHeaders });
         }
         redirectToSignIn();

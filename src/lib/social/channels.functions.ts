@@ -38,10 +38,13 @@ export const saveSocialChannel = createServerFn({ method: "POST" })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let client: any = context.supabase;
     if (access_token) {
-      const { data: isAdmin } = await sbAny(context.supabase).rpc("is_workspace_admin" as never, {
-        _workspace_id: workspaceId,
-        _user_id: context.userId,
-      } as never);
+      const { data: isAdmin } = await sbAny(context.supabase).rpc(
+        "is_workspace_admin" as never,
+        {
+          _workspace_id: workspaceId,
+          _user_id: context.userId,
+        } as never,
+      );
       if (!isAdmin)
         throw new Error("Only workspace owners and admins can set channel access tokens");
       const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");

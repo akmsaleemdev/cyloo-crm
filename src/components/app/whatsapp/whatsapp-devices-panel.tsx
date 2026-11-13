@@ -82,13 +82,15 @@ export function WhatsAppDevicesPanel() {
 
   const create = useMutation({
     mutationFn: async (input: z.infer<typeof schema>) => {
-      const { error } = await sbAny(supabase).from("whatsapp_devices").insert({
-        workspace_id: ws!.id,
-        name: input.name,
-        phone_number: input.phone_number || null,
-        device_type: input.device_type,
-        status: "connecting",
-      });
+      const { error } = await sbAny(supabase)
+        .from("whatsapp_devices")
+        .insert({
+          workspace_id: ws!.id,
+          name: input.name,
+          phone_number: input.phone_number || null,
+          device_type: input.device_type,
+          status: "connecting",
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -195,13 +197,19 @@ export function WhatsAppDevicesPanel() {
                     {d.phone_number ?? "No number linked"} ·{" "}
                     {DEVICE_TYPES.find((t) => t.value === d.device_type)?.label}
                     {d.last_seen_at && (
-                      <> · seen {formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: true })}</>
+                      <>
+                        {" "}
+                        · seen {formatDistanceToNow(new Date(d.last_seen_at), { addSuffix: true })}
+                      </>
                     )}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className={`text-xs capitalize ${STATUS_STYLES[d.status]}`}>
+                <Badge
+                  variant="outline"
+                  className={`text-xs capitalize ${STATUS_STYLES[d.status]}`}
+                >
                   {d.status}
                 </Badge>
                 <Button
@@ -266,7 +274,9 @@ export function WhatsAppDevicesPanel() {
               <Label>Connection type</Label>
               <Select
                 value={form.device_type}
-                onValueChange={(v) => setForm({ ...form, device_type: v as typeof form.device_type })}
+                onValueChange={(v) =>
+                  setForm({ ...form, device_type: v as typeof form.device_type })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />

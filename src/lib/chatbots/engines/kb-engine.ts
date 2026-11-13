@@ -19,7 +19,10 @@ export interface KbRetrieveOpts {
   query: string;
   matchCount?: number;
   minSimilarity?: number;
-  supabaseRpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }>;
+  supabaseRpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
 }
 
 export const KbEngine = {

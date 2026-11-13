@@ -1,35 +1,57 @@
-import { useMemo, useState } from 'react';
-import { View, Text, Pressable, ScrollView, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { Screen } from '@/components/Screen';
-import { useTheme } from '@/theme/ThemeProvider';
-import { useRealtimeTable } from '@/realtime/useRealtimeTable';
-import { queryClient } from '@/api/queryClient';
-import { listPipelines, listStages, listDealsByPipeline, moveDealToStage, formatCurrency, type Deal, type Stage } from '@/api/sales';
+import { useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { Screen } from "@/components/Screen";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useRealtimeTable } from "@/realtime/useRealtimeTable";
+import { queryClient } from "@/api/queryClient";
+import {
+  listPipelines,
+  listStages,
+  listDealsByPipeline,
+  moveDealToStage,
+  formatCurrency,
+  type Deal,
+  type Stage,
+} from "@/api/sales";
 
 export default function KanbanScreen() {
   const t = useTheme();
   const [pipelineId, setPipelineId] = useState<string | null>(null);
   const [moveMode, setMoveMode] = useState<{ deal: Deal } | null>(null);
 
-  const pipelines = useQuery({ queryKey: ['sales', 'pipelines'], queryFn: listPipelines });
-  const activePipeline = pipelineId ?? pipelines.data?.find((p) => p.is_default)?.id ?? pipelines.data?.[0]?.id ?? null;
+  const pipelines = useQuery({ queryKey: ["sales", "pipelines"], queryFn: listPipelines });
+  const activePipeline =
+    pipelineId ?? pipelines.data?.find((p) => p.is_default)?.id ?? pipelines.data?.[0]?.id ?? null;
 
   const stages = useQuery({
-    queryKey: ['sales', 'stages', activePipeline],
+    queryKey: ["sales", "stages", activePipeline],
     queryFn: () => (activePipeline ? listStages(activePipeline) : Promise.resolve([] as Stage[])),
     enabled: !!activePipeline,
   });
   const deals = useQuery({
-    queryKey: ['sales', 'deals', activePipeline],
-    queryFn: () => (activePipeline ? listDealsByPipeline(activePipeline) : Promise.resolve([] as Deal[])),
+    queryKey: ["sales", "deals", activePipeline],
+    queryFn: () =>
+      activePipeline ? listDealsByPipeline(activePipeline) : Promise.resolve([] as Deal[]),
     enabled: !!activePipeline,
   });
 
-  useRealtimeTable('deals', ['sales', 'deals', activePipeline], activePipeline ? `pipeline_id=eq.${activePipeline}` : undefined);
-  useRealtimeTable('deal_stages', ['sales', 'stages', activePipeline]);
+  useRealtimeTable(
+    "deals",
+    ["sales", "deals", activePipeline],
+    activePipeline ? `pipeline_id=eq.${activePipeline}` : undefined,
+  );
+  useRealtimeTable("deal_stages", ["sales", "stages", activePipeline]);
 
   const byStage = useMemo(() => {
     const map: Record<string, Deal[]> = {};
@@ -44,20 +66,24 @@ export default function KanbanScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setMoveMode(null);
     // Optimistic
-    queryClient.setQueryData<Deal[]>(['sales', 'deals', activePipeline], (prev) =>
+    queryClient.setQueryData<Deal[]>(["sales", "deals", activePipeline], (prev) =>
       (prev ?? []).map((d) => (d.id === deal.id ? { ...d, stage_id: stageId } : d)),
     );
     try {
       await moveDealToStage(deal.id, stageId);
     } finally {
-      queryClient.invalidateQueries({ queryKey: ['sales', 'deals', activePipeline] });
+      queryClient.invalidateQueries({ queryKey: ["sales", "deals", activePipeline] });
     }
   };
 
   return (
     <Screen style={{ padding: 0 }}>
       {/* Pipeline chips */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 8 }}
+      >
         {(pipelines.data ?? []).map((p) => {
           const active = p.id === activePipeline;
           return (
@@ -73,7 +99,9 @@ export default function KanbanScreen() {
                 borderColor: active ? t.colors.primary : t.colors.border,
               }}
             >
-              <Text style={{ color: active ? '#fff' : t.colors.foreground, fontWeight: '600' }}>{p.name}</Text>
+              <Text style={{ color: active ? "#fff" : t.colors.foreground, fontWeight: "600" }}>
+                {p.name}
+              </Text>
             </Pressable>
           );
         })}
@@ -86,7 +114,12 @@ export default function KanbanScreen() {
           horizontal
           pagingEnabled={false}
           contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: 20 }}
-          refreshControl={<RefreshControl refreshing={deals.isFetching} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['sales'] })} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={deals.isFetching}
+              onRefresh={() => queryClient.invalidateQueries({ queryKey: ["sales"] })}
+            />
+          }
         >
           {(stages.data ?? []).map((s) => {
             const items = byStage[s.id] ?? [];
@@ -104,19 +137,44 @@ export default function KanbanScreen() {
                   padding: 10,
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: s.color ?? (s.is_won ? '#22c55e' : s.is_lost ? '#ef4444' : t.colors.primary), marginRight: 8 }} />
-                  <Text style={{ color: t.colors.foreground, fontWeight: '700', flex: 1 }}>{s.name}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                  <View
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor:
+                        s.color ??
+                        (s.is_won ? "#22c55e" : s.is_lost ? "#ef4444" : t.colors.primary),
+                      marginRight: 8,
+                    }}
+                  />
+                  <Text style={{ color: t.colors.foreground, fontWeight: "700", flex: 1 }}>
+                    {s.name}
+                  </Text>
                   <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>{items.length}</Text>
                 </View>
-                <Text style={{ color: t.colors.mutedFg, fontSize: 12, marginBottom: 8 }}>{formatCurrency(total, items[0]?.currency ?? 'USD')}</Text>
+                <Text style={{ color: t.colors.mutedFg, fontSize: 12, marginBottom: 8 }}>
+                  {formatCurrency(total, items[0]?.currency ?? "USD")}
+                </Text>
 
                 <FlatList
                   data={items}
                   keyExtractor={(d) => d.id}
                   scrollEnabled={false}
                   ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                  ListEmptyComponent={<Text style={{ color: t.colors.mutedFg, fontSize: 12, textAlign: 'center', paddingVertical: 20 }}>No deals</Text>}
+                  ListEmptyComponent={
+                    <Text
+                      style={{
+                        color: t.colors.mutedFg,
+                        fontSize: 12,
+                        textAlign: "center",
+                        paddingVertical: 20,
+                      }}
+                    >
+                      No deals
+                    </Text>
+                  }
                   renderItem={({ item }) => (
                     <Pressable
                       onPress={() => router.push(`/sales/deal/${item.id}`)}
@@ -126,20 +184,34 @@ export default function KanbanScreen() {
                       }}
                       style={({ pressed }) => ({
                         backgroundColor: t.colors.background,
-                        borderColor: moveMode?.deal.id === item.id ? t.colors.primary : t.colors.border,
+                        borderColor:
+                          moveMode?.deal.id === item.id ? t.colors.primary : t.colors.border,
                         borderWidth: 1,
                         borderRadius: t.radius.sm,
                         padding: 10,
                         opacity: pressed ? 0.7 : 1,
                       })}
                     >
-                      <Text style={{ color: t.colors.foreground, fontWeight: '600' }} numberOfLines={1}>{item.name}</Text>
-                      <View style={{ flexDirection: 'row', marginTop: 4 }}>
-                        <Text style={{ color: t.colors.foreground, fontSize: 12, flex: 1 }}>{formatCurrency(item.amount, item.currency)}</Text>
-                        {item.probability != null ? <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>{Number(item.probability)}%</Text> : null}
+                      <Text
+                        style={{ color: t.colors.foreground, fontWeight: "600" }}
+                        numberOfLines={1}
+                      >
+                        {item.name}
+                      </Text>
+                      <View style={{ flexDirection: "row", marginTop: 4 }}>
+                        <Text style={{ color: t.colors.foreground, fontSize: 12, flex: 1 }}>
+                          {formatCurrency(item.amount, item.currency)}
+                        </Text>
+                        {item.probability != null ? (
+                          <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
+                            {Number(item.probability)}%
+                          </Text>
+                        ) : null}
                       </View>
                       {item.expected_close_date ? (
-                        <Text style={{ color: t.colors.mutedFg, fontSize: 11, marginTop: 2 }}>Close {new Date(item.expected_close_date).toLocaleDateString()}</Text>
+                        <Text style={{ color: t.colors.mutedFg, fontSize: 11, marginTop: 2 }}>
+                          Close {new Date(item.expected_close_date).toLocaleDateString()}
+                        </Text>
                       ) : null}
                     </Pressable>
                   )}
@@ -152,10 +224,30 @@ export default function KanbanScreen() {
 
       {/* Move sheet */}
       {moveMode ? (
-        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: t.colors.card, borderTopWidth: 1, borderColor: t.colors.border, padding: 16 }}>
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: t.colors.card,
+            borderTopWidth: 1,
+            borderColor: t.colors.border,
+            padding: 16,
+          }}
+        >
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>Move deal</Text>
-          <Text style={{ color: t.colors.foreground, fontWeight: '700', marginBottom: 8 }} numberOfLines={1}>{moveMode.deal.name}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          <Text
+            style={{ color: t.colors.foreground, fontWeight: "700", marginBottom: 8 }}
+            numberOfLines={1}
+          >
+            {moveMode.deal.name}
+          </Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8 }}
+          >
             {(stages.data ?? []).map((s) => (
               <Pressable
                 key={s.id}
@@ -169,11 +261,14 @@ export default function KanbanScreen() {
                   borderColor: moveMode.deal.stage_id === s.id ? t.colors.primary : t.colors.border,
                 }}
               >
-                <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{s.name}</Text>
+                <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{s.name}</Text>
               </Pressable>
             ))}
           </ScrollView>
-          <Pressable onPress={() => setMoveMode(null)} style={{ marginTop: 12, alignSelf: 'center' }}>
+          <Pressable
+            onPress={() => setMoveMode(null)}
+            style={{ marginTop: 12, alignSelf: "center" }}
+          >
             <Text style={{ color: t.colors.mutedFg }}>Cancel</Text>
           </Pressable>
         </View>

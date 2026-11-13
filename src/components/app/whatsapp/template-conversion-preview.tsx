@@ -10,18 +10,13 @@ import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import {
   buildConversionSections,
   type ConvertibleDraft,
   type TemplateConversionPlan,
 } from "@/lib/messaging/template-import-convert";
-
 
 type Props = {
   draft: ConvertibleDraft;
@@ -77,8 +72,8 @@ export function TemplateConversionPreview({ draft, plan }: Props) {
 
       <CollapsibleContent className="space-y-3 pt-3">
         <p className="text-muted-foreground">
-          WhatsApp numbers variables separately for each location, so Header, Body, Footer and every URL button each
-          restart at {"{{1}}"}.
+          WhatsApp numbers variables separately for each location, so Header, Body, Footer and every
+          URL button each restart at {"{{1}}"}.
         </p>
 
         {sections.map((section) => (
@@ -126,4 +121,3 @@ export function TemplateConversionPreview({ draft, plan }: Props) {
     </Collapsible>
   );
 }
-

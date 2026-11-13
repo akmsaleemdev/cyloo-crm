@@ -78,7 +78,8 @@ async function resolveContact(
     last_seen_at: new Date().toISOString(),
     metadata: {},
   };
-  if (existing) await sbAny(admin).from("channel_identities").update(identity).eq("id", existing.id);
+  if (existing)
+    await sbAny(admin).from("channel_identities").update(identity).eq("id", existing.id);
   else await sbAny(admin).from("channel_identities").insert(identity);
   return contactId;
 }
@@ -87,9 +88,7 @@ async function resolveContact(
  * Mirror one verified inbound SMS into the unified inbox.
  * `params` is the raw Twilio form payload.
  */
-export async function ingestInboundSms(
-  params: Record<string, string>,
-): Promise<SmsIngestResult> {
+export async function ingestInboundSms(params: Record<string, string>): Promise<SmsIngestResult> {
   const from = params["From"] ?? "";
   const to = params["To"] ?? "";
   const body = params["Body"] ?? "";
@@ -102,7 +101,9 @@ export async function ingestInboundSms(
   const wanted = normalizePhone(to);
   const { data: accountRaw } = await admin
     .from("sms_accounts")
-    .select("id, workspace_id, phone_number, display_name, status, provider, account_sid, auth_token_ciphertext")
+    .select(
+      "id, workspace_id, phone_number, display_name, status, provider, account_sid, auth_token_ciphertext",
+    )
     .eq("phone_digits", wanted)
     .maybeSingle();
   const account = accountRaw as SmsAccountRow | null;
@@ -127,20 +128,27 @@ export async function ingestInboundSms(
   });
 
   const numMedia = Number(params["NumMedia"] ?? "0");
-  const { error: msgErr } = await sbAny(admin).from("messages").insert({
-    workspace_id: account.workspace_id,
-    conversation_id: conversationId,
-    direction: "inbound",
-    status: "delivered",
-    body,
-    message_type: numMedia > 0 ? "media" : "text",
-    media_url: numMedia > 0 ? params["MediaUrl0"] ?? null : null,
-    provider_message_id: sid,
-    from_address: from,
-    to_address: to,
-    metadata: { source: "sms_webhook", account_id: account.id, num_media: numMedia },
-  });
-  if (msgErr && !String(msgErr.message ?? "").toLowerCase().includes("duplicate")) {
+  const { error: msgErr } = await sbAny(admin)
+    .from("messages")
+    .insert({
+      workspace_id: account.workspace_id,
+      conversation_id: conversationId,
+      direction: "inbound",
+      status: "delivered",
+      body,
+      message_type: numMedia > 0 ? "media" : "text",
+      media_url: numMedia > 0 ? (params["MediaUrl0"] ?? null) : null,
+      provider_message_id: sid,
+      from_address: from,
+      to_address: to,
+      metadata: { source: "sms_webhook", account_id: account.id, num_media: numMedia },
+    });
+  if (
+    msgErr &&
+    !String(msgErr.message ?? "")
+      .toLowerCase()
+      .includes("duplicate")
+  ) {
     throw new Error(msgErr.message);
   }
 
@@ -188,16 +196,18 @@ async function runSmsChatbot(
     body: result.reply,
   });
 
-  await sbAny(admin).from("messages").insert({
-    workspace_id: account.workspace_id,
-    conversation_id: msg.conversationId,
-    direction: "outbound",
-    status: "sent",
-    body: result.reply,
-    message_type: "text",
-    provider_message_id: sent.messageId,
-    from_address: msg.to,
-    to_address: msg.from,
-    metadata: { source: "chatbot", chatbot_id: result.botId, account_id: account.id },
-  });
+  await sbAny(admin)
+    .from("messages")
+    .insert({
+      workspace_id: account.workspace_id,
+      conversation_id: msg.conversationId,
+      direction: "outbound",
+      status: "sent",
+      body: result.reply,
+      message_type: "text",
+      provider_message_id: sent.messageId,
+      from_address: msg.to,
+      to_address: msg.from,
+      metadata: { source: "chatbot", chatbot_id: result.botId, account_id: account.id },
+    });
 }

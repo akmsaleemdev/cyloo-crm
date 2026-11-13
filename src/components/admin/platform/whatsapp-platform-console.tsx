@@ -9,7 +9,15 @@ import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  AlertTriangle, CheckCircle2, KeyRound, MessageSquare, RefreshCw, Search, Send, Smartphone, ShieldAlert,
+  AlertTriangle,
+  CheckCircle2,
+  KeyRound,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  Send,
+  Smartphone,
+  ShieldAlert,
 } from "lucide-react";
 
 import { getWhatsAppPlatform } from "@/lib/admin/platform-modules.functions";
@@ -84,9 +92,25 @@ export function WhatsAppPlatformConsole() {
   return (
     <div className="space-y-5">
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Kpi label="Business accounts" value={isLoading ? null : String(k?.accounts ?? 0)} icon={MessageSquare} hint={`${k?.connected ?? 0} connected`} />
-        <Kpi label="Degraded connections" value={isLoading ? null : String(k?.degraded ?? 0)} icon={AlertTriangle} tone="text-amber-600" hint={`${k?.pending ?? 0} awaiting setup`} />
-        <Kpi label="Live QR devices" value={isLoading ? null : String(k?.liveSessions ?? 0)} icon={Smartphone} tone="text-sky-600" />
+        <Kpi
+          label="Business accounts"
+          value={isLoading ? null : String(k?.accounts ?? 0)}
+          icon={MessageSquare}
+          hint={`${k?.connected ?? 0} connected`}
+        />
+        <Kpi
+          label="Degraded connections"
+          value={isLoading ? null : String(k?.degraded ?? 0)}
+          icon={AlertTriangle}
+          tone="text-amber-600"
+          hint={`${k?.pending ?? 0} awaiting setup`}
+        />
+        <Kpi
+          label="Live QR devices"
+          value={isLoading ? null : String(k?.liveSessions ?? 0)}
+          icon={Smartphone}
+          tone="text-sky-600"
+        />
         <Kpi
           label="24h delivery rate"
           value={isLoading ? null : deliveryRate === null ? "—" : `${deliveryRate}%`}
@@ -102,11 +126,12 @@ export function WhatsAppPlatformConsole() {
             <ShieldAlert className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
             <div>
               <div className="font-medium">
-                {k?.misconfigured} account{k?.misconfigured === 1 ? "" : "s"} missing webhook credentials
+                {k?.misconfigured} account{k?.misconfigured === 1 ? "" : "s"} missing webhook
+                credentials
               </div>
               <p className="text-muted-foreground mt-0.5">
-                Accounts without an access token or verify token cannot receive webhooks. Inbound messages and
-                delivery receipts for those tenants will be silently dropped.
+                Accounts without an access token or verify token cannot receive webhooks. Inbound
+                messages and delivery receipts for those tenants will be silently dropped.
               </p>
             </div>
           </CardContent>
@@ -129,20 +154,29 @@ export function WhatsAppPlatformConsole() {
               className="pl-8"
             />
           </div>
-          <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isFetching} aria-label="Refresh">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            aria-label="Refresh"
+          >
             <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
         </div>
 
         <TabsContent value="accounts" className="mt-4 space-y-3">
-          {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
+          {isLoading &&
+            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
 
           {!isLoading && accounts.length === 0 && (
-            <EmptyRow message={
-              data?.accounts.length
-                ? "No accounts match your search."
-                : "No WhatsApp Business accounts have been connected by any tenant yet."
-            } />
+            <EmptyRow
+              message={
+                data?.accounts.length
+                  ? "No accounts match your search."
+                  : "No WhatsApp Business accounts have been connected by any tenant yet."
+              }
+            />
           )}
 
           {accounts.map((a) => (
@@ -151,11 +185,15 @@ export function WhatsAppPlatformConsole() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium truncate">{a.display_name ?? a.phone_number ?? "Unnamed account"}</span>
+                      <span className="font-medium truncate">
+                        {a.display_name ?? a.phone_number ?? "Unnamed account"}
+                      </span>
                       <Badge variant="outline" className={STATUS_TONE[a.status] ?? ""}>
                         {a.status}
                       </Badge>
-                      <Badge variant="secondary" className="text-[11px]">{a.provider}</Badge>
+                      <Badge variant="secondary" className="text-[11px]">
+                        {a.provider}
+                      </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground mt-1 space-x-2">
                       <span>{a.workspace_name}</span>
@@ -198,34 +236,58 @@ export function WhatsAppPlatformConsole() {
                 <>
                   <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 text-sm">
                     <Stat label="Total" value={k?.templates.total ?? 0} />
-                    <Stat label="Approved" value={k?.templates.approved ?? 0} tone="text-emerald-600" />
-                    <Stat label="Pending review" value={k?.templates.pending ?? 0} tone="text-amber-600" />
-                    <Stat label="Rejected" value={k?.templates.rejected ?? 0} tone="text-rose-600" />
+                    <Stat
+                      label="Approved"
+                      value={k?.templates.approved ?? 0}
+                      tone="text-emerald-600"
+                    />
+                    <Stat
+                      label="Pending review"
+                      value={k?.templates.pending ?? 0}
+                      tone="text-amber-600"
+                    />
+                    <Stat
+                      label="Rejected"
+                      value={k?.templates.rejected ?? 0}
+                      tone="text-rose-600"
+                    />
                   </div>
                   {(k?.templates.total ?? 0) > 0 && (
                     <div>
                       <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
                         <span>Approval rate</span>
                         <span>
-                          {Math.round(((k?.templates.approved ?? 0) / (k?.templates.total || 1)) * 100)}%
+                          {Math.round(
+                            ((k?.templates.approved ?? 0) / (k?.templates.total || 1)) * 100,
+                          )}
+                          %
                         </span>
                       </div>
-                      <Progress value={((k?.templates.approved ?? 0) / (k?.templates.total || 1)) * 100} />
+                      <Progress
+                        value={((k?.templates.approved ?? 0) / (k?.templates.total || 1)) * 100}
+                      />
                     </div>
                   )}
                   <div className="space-y-1.5">
                     {accounts
                       .filter((a) => a.templates.total > 0)
                       .map((a) => (
-                        <div key={a.id} className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0">
-                          <span className="truncate">{a.display_name ?? a.phone_number} · {a.workspace_name}</span>
+                        <div
+                          key={a.id}
+                          className="flex items-center justify-between text-sm py-1.5 border-b border-border last:border-0"
+                        >
+                          <span className="truncate">
+                            {a.display_name ?? a.phone_number} · {a.workspace_name}
+                          </span>
                           <span className="text-xs text-muted-foreground shrink-0 ml-3">
                             {a.templates.approved}/{a.templates.total} approved
                           </span>
                         </div>
                       ))}
                     {accounts.every((a) => a.templates.total === 0) && (
-                      <p className="text-sm text-muted-foreground">No message templates have been registered yet.</p>
+                      <p className="text-sm text-muted-foreground">
+                        No message templates have been registered yet.
+                      </p>
                     )}
                   </div>
                 </>
@@ -248,15 +310,22 @@ export function WhatsAppPlatformConsole() {
                     <span className="font-medium truncate">
                       {s.display_name ?? s.phone_number ?? "Unpaired device"}
                     </span>
-                    <Badge variant="outline" className={STATUS_TONE[s.status] ?? ""}>{s.status}</Badge>
+                    <Badge variant="outline" className={STATUS_TONE[s.status] ?? ""}>
+                      {s.status}
+                    </Badge>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {s.workspace_name} · {s.device_platform ?? "unknown platform"} · last seen {when(s.last_seen_at)}
+                    {s.workspace_name} · {s.device_platform ?? "unknown platform"} · last seen{" "}
+                    {when(s.last_seen_at)}
                   </div>
-                  {s.error_message && <div className="text-xs text-rose-600 mt-1">{s.error_message}</div>}
+                  {s.error_message && (
+                    <div className="text-xs text-rose-600 mt-1">{s.error_message}</div>
+                  )}
                 </div>
                 <div className="text-xs text-muted-foreground text-right">
-                  {s.connected_at ? `Connected ${when(s.connected_at)}` : `Created ${when(s.created_at)}`}
+                  {s.connected_at
+                    ? `Connected ${when(s.connected_at)}`
+                    : `Created ${when(s.created_at)}`}
                 </div>
               </CardContent>
             </Card>
@@ -269,7 +338,9 @@ export function WhatsAppPlatformConsole() {
 
 function CredentialPill({ ok, label }: { ok: boolean; label: string }) {
   return (
-    <span className={`inline-flex items-center gap-1 ${ok ? "text-emerald-600" : "text-muted-foreground"}`}>
+    <span
+      className={`inline-flex items-center gap-1 ${ok ? "text-emerald-600" : "text-muted-foreground"}`}
+    >
       {ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <KeyRound className="w-3.5 h-3.5" />}
       {label}
     </span>
@@ -288,13 +359,19 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: str
 function EmptyRow({ message }: { message: string }) {
   return (
     <Card>
-      <CardContent className="p-10 text-center text-sm text-muted-foreground">{message}</CardContent>
+      <CardContent className="p-10 text-center text-sm text-muted-foreground">
+        {message}
+      </CardContent>
     </Card>
   );
 }
 
 function Kpi({
-  label, value, icon: Icon, tone, hint,
+  label,
+  value,
+  icon: Icon,
+  tone,
+  hint,
 }: {
   label: string;
   value: string | null;

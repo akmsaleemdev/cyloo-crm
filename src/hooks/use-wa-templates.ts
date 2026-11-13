@@ -34,9 +34,13 @@ export function useTemplate(id: string | undefined) {
 }
 
 type CreateInput = {
-  workspaceId: string; channelAccountId: string; name: string; language: string;
+  workspaceId: string;
+  channelAccountId: string;
+  name: string;
+  language: string;
   category: "MARKETING" | "UTILITY" | "AUTHENTICATION";
-  components: Array<Record<string, unknown>>; submit?: boolean;
+  components: Array<Record<string, unknown>>;
+  submit?: boolean;
 };
 
 /**
@@ -189,7 +193,12 @@ export function useUploadHeaderSample() {
         bin += String.fromCharCode(...buf.subarray(i, i + CHUNK));
         // Encoding is the first third of the visible progress bar.
         const ratio = buf.length ? Math.min(1, (i + CHUNK) / buf.length) : 1;
-        onProgress?.({ phase: "encoding", percent: Math.round(ratio * 30), attempt: 1, maxAttempts });
+        onProgress?.({
+          phase: "encoding",
+          percent: Math.round(ratio * 30),
+          attempt: 1,
+          maxAttempts,
+        });
         // Yield so the progress bar can paint on large files.
         if (i % (CHUNK * 16) === 0) await new Promise((r) => setTimeout(r, 0));
       }
@@ -237,11 +246,9 @@ export function useUploadHeaderSample() {
       throw new Error("Upload failed");
     },
 
-
     onError: (e: Error) => {
       if (e instanceof UploadCanceledError || e.name === "AbortError") return;
       toastServerError(e);
     },
   });
 }
-

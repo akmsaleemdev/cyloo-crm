@@ -5,8 +5,14 @@
 export type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
 export type Role = "system" | "user" | "assistant" | "tool";
 export type Tone =
-  | "professional" | "friendly" | "casual" | "empathetic"
-  | "concise" | "enthusiastic" | "formal" | "playful";
+  | "professional"
+  | "friendly"
+  | "casual"
+  | "empathetic"
+  | "concise"
+  | "enthusiastic"
+  | "formal"
+  | "playful";
 export type Length = "short" | "medium" | "long";
 export type ConversationStatus = "active" | "archived" | "reset";
 

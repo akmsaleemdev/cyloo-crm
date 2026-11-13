@@ -214,8 +214,6 @@ export function AttachmentItem({
             <Download className="h-4 w-4" />
           </button>
         ) : (
-
-
           <span className="shrink-0 text-[11px] text-muted-foreground">
             {loading ? "Loading" : "Unavailable"}
           </span>

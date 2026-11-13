@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="720" viewBox="0 0 600 720" role="img" aria-labelledby="title desc">
+  <title id="title">CYLOO campaign planning</title>
+  <desc id="desc">An illustrative campaign checklist covering consent, audience selection, message review and scheduling.</desc>
+  <rect width="600" height="720" rx="28" fill="#f8fafc"/>
+  <g font-family="Inter,Arial,sans-serif" fill="#0f172a">
+    <text x="44" y="84" font-size="13" font-weight="700" fill="#4338ca">CYLOO / CAMPAIGN WORKSPACE</text>
+    <text x="44" y="128" font-size="28" font-weight="700">Plan the conversation ahead.</text>
+    <text x="44" y="160" font-size="14" fill="#475569">Bring the audience, message and follow-up together.</text>
+    <rect x="32" y="202" width="536" height="438" rx="20" fill="#fff" stroke="#cbd5e1"/>
+    <text x="60" y="246" font-size="20" font-weight="700">Product update · draft campaign</text>
+    <g fill="#eef2ff"><rect x="60" y="280" width="480" height="64" rx="12"/><rect x="60" y="364" width="480" height="64" rx="12"/><rect x="60" y="448" width="480" height="64" rx="12"/><rect x="60" y="532" width="480" height="64" rx="12"/></g>
+    <g font-size="16"><text x="82" y="319">01   Confirm opt-in and audience</text><text x="82" y="403">02   Review the approved template</text><text x="82" y="487">03   Choose the sending schedule</text><text x="82" y="571">04   Route replies to your team</text></g>
+    <text x="44" y="683" font-size="11" fill="#64748b">Illustrative workflow · provider policies and charges apply</text>
+  </g>
+</svg>

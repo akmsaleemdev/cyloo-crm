@@ -12,17 +12,30 @@ export const Route = createFileRoute("/_authenticated/satisfaction/templates")({
   component: TemplatesPage,
 });
 
-type Tpl = { id: string; name: string; description: string | null; survey_type: string; category: string | null; icon: string | null; is_system: boolean; usage_count: number };
+type Tpl = {
+  id: string;
+  name: string;
+  description: string | null;
+  survey_type: string;
+  category: string | null;
+  icon: string | null;
+  is_system: boolean;
+  usage_count: number;
+};
 
 function TemplatesPage() {
   const listFn = useServerFn(listTemplates);
-  const useFn = useServerFn(useTemplate);
+  const applyTemplate = useServerFn(useTemplate);
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { data = [] } = useQuery({ queryKey: ["satisfaction-templates"], queryFn: () => listFn() });
   const use = useMutation({
-    mutationFn: (id: string) => useFn({ data: { template_id: id } }),
-    onSuccess: () => { toast.success("Survey created from template"); qc.invalidateQueries({ queryKey: ["satisfaction-surveys"] }); navigate({ to: "/satisfaction" }); },
+    mutationFn: (id: string) => applyTemplate({ data: { template_id: id } }),
+    onSuccess: () => {
+      toast.success("Survey created from template");
+      qc.invalidateQueries({ queryKey: ["satisfaction-surveys"] });
+      navigate({ to: "/satisfaction" });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
   const list = data as unknown as Tpl[];
@@ -31,23 +44,39 @@ function TemplatesPage() {
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold">Survey templates</h2>
-        <p className="text-sm text-muted-foreground">Start from a battle-tested preset or save your own.</p>
+        <p className="text-sm text-muted-foreground">
+          Start from a battle-tested preset or save your own.
+        </p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {list.map((t) => (
           <Card key={t.id}>
-            <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2">
-              {t.name}
-              <Badge variant="outline" className="uppercase text-xs">{t.survey_type}</Badge>
-              {t.is_system && <Badge variant="secondary" className="text-xs">System</Badge>}
-            </CardTitle></CardHeader>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base flex items-center gap-2">
+                {t.name}
+                <Badge variant="outline" className="uppercase text-xs">
+                  {t.survey_type}
+                </Badge>
+                {t.is_system && (
+                  <Badge variant="secondary" className="text-xs">
+                    System
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">{t.description}</p>
               <div className="flex items-center justify-between">
-                {t.category && <Badge variant="outline" className="text-xs">{t.category}</Badge>}
+                {t.category && (
+                  <Badge variant="outline" className="text-xs">
+                    {t.category}
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">Used {t.usage_count} ×</span>
               </div>
-              <Button size="sm" className="h-9 w-full" onClick={() => use.mutate(t.id)}>Use template</Button>
+              <Button size="sm" className="h-9 w-full" onClick={() => use.mutate(t.id)}>
+                Use template
+              </Button>
             </CardContent>
           </Card>
         ))}

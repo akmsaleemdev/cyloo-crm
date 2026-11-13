@@ -15,8 +15,18 @@ export type FlowNode =
   | { id: string; type: "message"; text: string; next?: string }
   | { id: string; type: "ask"; prompt: string; save_as: string; next?: string }
   | { id: string; type: "condition"; expression: string; if_true?: string; if_false?: string }
-  | { id: string; type: "intent"; branches: Array<{ intent: string; next: string }>; default?: string }
-  | { id: string; type: "quick_replies"; text: string; options: Array<{ label: string; next: string }> }
+  | {
+      id: string;
+      type: "intent";
+      branches: Array<{ intent: string; next: string }>;
+      default?: string;
+    }
+  | {
+      id: string;
+      type: "quick_replies";
+      text: string;
+      options: Array<{ label: string; next: string }>;
+    }
   | { id: string; type: "handoff"; team_id?: string; reason?: string }
   | { id: string; type: "end" };
 
@@ -82,8 +92,12 @@ export const FlowEngine = {
       switch (current.type) {
         case "start": {
           const next = FlowEngine.node(flow, current.next);
-          if (!next) { out.done = true; return out; }
-          current = next; break;
+          if (!next) {
+            out.done = true;
+            return out;
+          }
+          current = next;
+          break;
         }
         case "message": {
           out.reply = FlowEngine.render(current.text, state.variables);
@@ -101,14 +115,23 @@ export const FlowEngine = {
         case "condition": {
           const truthy = FlowEngine.evaluate(current.expression, state.variables);
           const next = FlowEngine.node(flow, truthy ? current.if_true : current.if_false);
-          if (!next) { out.done = true; return out; }
-          current = next; break;
+          if (!next) {
+            out.done = true;
+            return out;
+          }
+          current = next;
+          break;
         }
         case "intent": {
           const branch = current.branches.find((b) => b.intent === intentName);
           const next = FlowEngine.node(flow, branch?.next ?? current.default);
-          if (!next) { out.done = true; out.ranAiFallback = true; return out; }
-          current = next; break;
+          if (!next) {
+            out.done = true;
+            out.ranAiFallback = true;
+            return out;
+          }
+          current = next;
+          break;
         }
         case "quick_replies": {
           out.reply = FlowEngine.render(current.text, state.variables);
@@ -147,16 +170,25 @@ export const FlowEngine = {
     const left = vars[m[1]] ?? "";
     const op = m[2];
     const right = m[3].replace(/^['"]|['"]$/g, "");
-    const a = left; const b = right;
+    const a = left;
+    const b = right;
     switch (op) {
-      case "==": return a === b;
-      case "!=": return a !== b;
-      case ">": return Number(a) > Number(b);
-      case "<": return Number(a) < Number(b);
-      case ">=": return Number(a) >= Number(b);
-      case "<=": return Number(a) <= Number(b);
-      case "contains": return a.toLowerCase().includes(b.toLowerCase());
-      default: return false;
+      case "==":
+        return a === b;
+      case "!=":
+        return a !== b;
+      case ">":
+        return Number(a) > Number(b);
+      case "<":
+        return Number(a) < Number(b);
+      case ">=":
+        return Number(a) >= Number(b);
+      case "<=":
+        return Number(a) <= Number(b);
+      case "contains":
+        return a.toLowerCase().includes(b.toLowerCase());
+      default:
+        return false;
     }
   },
 };

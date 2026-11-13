@@ -27,15 +27,37 @@ export const googleWorkspace: IntegrationProvider = {
   recommended: true,
   docsUrl: "https://docs.cyloo.ai/integrations/google-workspace",
   capabilities: [
-    { id: "list_files", label: "List Drive files", kind: "action", inputs: [{ key: "pageToken", label: "Page token", type: "string" }] },
-    { id: "send_email", label: "Send email via Gmail", kind: "action", inputs: [
-      { key: "to", label: "Recipient email", type: "string", required: true },
-      { key: "subject", label: "Subject", type: "string", required: true },
-      { key: "body", label: "Message", type: "string", required: true }] },
-    { id: "create_event", label: "Create calendar event", kind: "action", inputs: [
-      { key: "summary", label: "Event name", type: "string", required: true },
-      { key: "start", label: "Start (ISO date/time with offset)", type: "string", required: true },
-      { key: "end", label: "End (ISO date/time with offset)", type: "string", required: true }] },
+    {
+      id: "list_files",
+      label: "List Drive files",
+      kind: "action",
+      inputs: [{ key: "pageToken", label: "Page token", type: "string" }],
+    },
+    {
+      id: "send_email",
+      label: "Send email via Gmail",
+      kind: "action",
+      inputs: [
+        { key: "to", label: "Recipient email", type: "string", required: true },
+        { key: "subject", label: "Subject", type: "string", required: true },
+        { key: "body", label: "Message", type: "string", required: true },
+      ],
+    },
+    {
+      id: "create_event",
+      label: "Create calendar event",
+      kind: "action",
+      inputs: [
+        { key: "summary", label: "Event name", type: "string", required: true },
+        {
+          key: "start",
+          label: "Start (ISO date/time with offset)",
+          type: "string",
+          required: true,
+        },
+        { key: "end", label: "End (ISO date/time with offset)", type: "string", required: true },
+      ],
+    },
   ],
   hasServerRuntime: true,
   oauthImplemented: true,
@@ -49,7 +71,15 @@ export const microsoft365: IntegrationProvider = {
   tagline: "Outlook mail, OneDrive files, Teams messages, and Calendar in one integration.",
   version: "1.0.0",
   authType: "oauth2",
-  scopes: ["openid", "profile", "email", "offline_access", "Mail.Read", "Files.Read.All", "Calendars.ReadWrite"],
+  scopes: [
+    "openid",
+    "profile",
+    "email",
+    "offline_access",
+    "Mail.Read",
+    "Files.Read.All",
+    "Calendars.ReadWrite",
+  ],
   configSchema: [],
   featured: true,
   docsUrl: "https://docs.cyloo.ai/integrations/microsoft-365",
@@ -70,16 +100,27 @@ export const googleCalendar: IntegrationProvider = {
   authType: "oauth2",
   scopes: ["https://www.googleapis.com/auth/calendar"],
   configSchema: [
-    { key: "default_calendar", label: "Default calendar", type: "text", required: true, defaultValue: "primary" },
+    {
+      key: "default_calendar",
+      label: "Default calendar",
+      type: "text",
+      required: true,
+      defaultValue: "primary",
+    },
   ],
   recommended: true,
   capabilities: [
     { id: "list_events", label: "List events", kind: "action" },
-    { id: "create_event", label: "Create event", kind: "action", inputs: [
-      { key: "summary", label: "Title", type: "string", required: true },
-      { key: "start", label: "Start (ISO)", type: "string", required: true },
-      { key: "end", label: "End (ISO)", type: "string", required: true },
-    ] },
+    {
+      id: "create_event",
+      label: "Create event",
+      kind: "action",
+      inputs: [
+        { key: "summary", label: "Title", type: "string", required: true },
+        { key: "start", label: "Start (ISO)", type: "string", required: true },
+        { key: "end", label: "End (ISO)", type: "string", required: true },
+      ],
+    },
   ],
   hasServerRuntime: true,
 };
@@ -93,9 +134,7 @@ export const googleDrive: IntegrationProvider = {
   version: "1.6.0",
   authType: "oauth2",
   scopes: ["https://www.googleapis.com/auth/drive.file"],
-  configSchema: [
-    { key: "root_folder", label: "Root folder ID", type: "text", required: false },
-  ],
+  configSchema: [{ key: "root_folder", label: "Root folder ID", type: "text", required: false }],
   recommended: true,
   capabilities: [
     { id: "list_files", label: "List files", kind: "action" },
@@ -176,7 +215,14 @@ export const googleContacts: IntegrationProvider = {
   authType: "oauth2",
   scopes: ["https://www.googleapis.com/auth/contacts"],
   configSchema: [
-    { key: "sync_direction", label: "Sync direction", type: "select", options: ["one-way", "two-way"], defaultValue: "two-way", required: true },
+    {
+      key: "sync_direction",
+      label: "Sync direction",
+      type: "select",
+      options: ["one-way", "two-way"],
+      defaultValue: "two-way",
+      required: true,
+    },
   ],
   capabilities: [
     { id: "list_contacts", label: "List contacts", kind: "action" },
@@ -195,15 +241,26 @@ export const slack: IntegrationProvider = {
   authType: "oauth2",
   scopes: ["chat:write", "channels:read", "channels:history"],
   configSchema: [
-    { key: "default_channel", label: "Default channel", type: "text", required: true, placeholder: "#sales" },
+    {
+      key: "default_channel",
+      label: "Default channel",
+      type: "text",
+      required: true,
+      placeholder: "#sales",
+    },
   ],
   featured: true,
   recommended: true,
   capabilities: [
-    { id: "post_message", label: "Post message", kind: "action", inputs: [
-      { key: "channel", label: "Channel", type: "string", required: true },
-      { key: "text", label: "Message", type: "string", required: true },
-    ] },
+    {
+      id: "post_message",
+      label: "Post message",
+      kind: "action",
+      inputs: [
+        { key: "channel", label: "Channel", type: "string", required: true },
+        { key: "text", label: "Message", type: "string", required: true },
+      ],
+    },
     { id: "slash_command", label: "Receive /cyloo command", kind: "trigger" },
   ],
   hasServerRuntime: true,
@@ -218,14 +275,23 @@ export const discord: IntegrationProvider = {
   version: "1.0.0",
   authType: "webhook_url",
   configSchema: [
-    { key: "webhook_url", label: "Channel webhook URL", type: "url", required: true, secret: true,
-      helpText: "Server settings → Integrations → Webhooks → Copy webhook URL." },
+    {
+      key: "webhook_url",
+      label: "Channel webhook URL",
+      type: "url",
+      required: true,
+      secret: true,
+      helpText: "Server settings → Integrations → Webhooks → Copy webhook URL.",
+    },
     { key: "username", label: "Bot display name", type: "text", defaultValue: BRAND_NAME },
   ],
   capabilities: [
-    { id: "post_message", label: "Post message", kind: "action", inputs: [
-      { key: "text", label: "Message", type: "string", required: true },
-    ] },
+    {
+      id: "post_message",
+      label: "Post message",
+      kind: "action",
+      inputs: [{ key: "text", label: "Message", type: "string", required: true }],
+    },
   ],
   hasServerRuntime: true,
 };
@@ -256,12 +322,8 @@ export const microsoftTeams: IntegrationProvider = {
   version: "1.4.0",
   authType: "oauth2",
   scopes: ["ChannelMessage.Send", "Chat.ReadWrite", "Team.ReadBasic.All"],
-  configSchema: [
-    { key: "tenant_id", label: "Tenant ID", type: "text", required: true },
-  ],
-  capabilities: [
-    { id: "post_message", label: "Post channel message", kind: "action" },
-  ],
+  configSchema: [{ key: "tenant_id", label: "Tenant ID", type: "text", required: true }],
+  capabilities: [{ id: "post_message", label: "Post channel message", kind: "action" }],
   hasServerRuntime: true,
 };
 
@@ -274,15 +336,33 @@ export const resend: IntegrationProvider = {
   version: "1.0.0",
   authType: "api_key",
   configSchema: [
-    { key: "api_key", label: "API key", type: "password", required: true, secret: true, placeholder: "re_xxxxx" },
-    { key: "from_email", label: "Default from address", type: "text", required: true, placeholder: "hello@example.com" },
+    {
+      key: "api_key",
+      label: "API key",
+      type: "password",
+      required: true,
+      secret: true,
+      placeholder: "re_xxxxx",
+    },
+    {
+      key: "from_email",
+      label: "Default from address",
+      type: "text",
+      required: true,
+      placeholder: "hello@example.com",
+    },
   ],
   capabilities: [
-    { id: "send_email", label: "Send transactional email", kind: "action", inputs: [
-      { key: "to", label: "To", type: "string", required: true },
-      { key: "subject", label: "Subject", type: "string", required: true },
-      { key: "html", label: "HTML body", type: "string", required: true },
-    ] },
+    {
+      id: "send_email",
+      label: "Send transactional email",
+      kind: "action",
+      inputs: [
+        { key: "to", label: "To", type: "string", required: true },
+        { key: "subject", label: "Subject", type: "string", required: true },
+        { key: "html", label: "HTML body", type: "string", required: true },
+      ],
+    },
   ],
   hasServerRuntime: true,
 };
@@ -296,13 +376,17 @@ export const mailgun: IntegrationProvider = {
   version: "1.0.0",
   authType: "api_key",
   configSchema: [
-    { key: "domain", label: "Mailgun domain", type: "text", required: true, placeholder: "mg.example.com" },
+    {
+      key: "domain",
+      label: "Mailgun domain",
+      type: "text",
+      required: true,
+      placeholder: "mg.example.com",
+    },
     { key: "api_key", label: "Private API key", type: "password", required: true, secret: true },
     { key: "region", label: "Region", type: "select", options: ["US", "EU"], defaultValue: "US" },
   ],
-  capabilities: [
-    { id: "send_email", label: "Send email", kind: "action" },
-  ],
+  capabilities: [{ id: "send_email", label: "Send email", kind: "action" }],
   hasServerRuntime: true,
 };
 
@@ -317,8 +401,20 @@ export const awsS3: IntegrationProvider = {
   configSchema: [
     { key: "bucket", label: "Bucket name", type: "text", required: true },
     { key: "region", label: "AWS region", type: "text", required: true, placeholder: "us-east-1" },
-    { key: "access_key_id", label: "Access key ID", type: "password", required: true, secret: true },
-    { key: "secret_access_key", label: "Secret access key", type: "password", required: true, secret: true },
+    {
+      key: "access_key_id",
+      label: "Access key ID",
+      type: "password",
+      required: true,
+      secret: true,
+    },
+    {
+      key: "secret_access_key",
+      label: "Secret access key",
+      type: "password",
+      required: true,
+      secret: true,
+    },
   ],
   capabilities: [
     { id: "upload_object", label: "Upload object", kind: "action" },
@@ -339,8 +435,20 @@ export const cloudflareR2: IntegrationProvider = {
   configSchema: [
     { key: "account_id", label: "Account ID", type: "text", required: true },
     { key: "bucket", label: "Bucket name", type: "text", required: true },
-    { key: "access_key_id", label: "R2 access key ID", type: "password", required: true, secret: true },
-    { key: "secret_access_key", label: "R2 secret access key", type: "password", required: true, secret: true },
+    {
+      key: "access_key_id",
+      label: "R2 access key ID",
+      type: "password",
+      required: true,
+      secret: true,
+    },
+    {
+      key: "secret_access_key",
+      label: "R2 secret access key",
+      type: "password",
+      required: true,
+      secret: true,
+    },
   ],
   capabilities: [
     { id: "upload_object", label: "Upload object", kind: "action" },
@@ -378,11 +486,15 @@ export const make: IntegrationProvider = {
   version: "1.0.1",
   authType: "webhook_url",
   configSchema: [
-    { key: "webhook_url", label: "Scenario webhook URL", type: "url", required: true, secret: true },
+    {
+      key: "webhook_url",
+      label: "Scenario webhook URL",
+      type: "url",
+      required: true,
+      secret: true,
+    },
   ],
-  capabilities: [
-    { id: "trigger_scenario", label: "Trigger scenario", kind: "action" },
-  ],
+  capabilities: [{ id: "trigger_scenario", label: "Trigger scenario", kind: "action" }],
   hasServerRuntime: true,
 };
 
@@ -399,9 +511,7 @@ export const n8n: IntegrationProvider = {
     { key: "auth_header", label: "Optional auth header", type: "password", secret: true },
   ],
   recommended: true,
-  capabilities: [
-    { id: "trigger_workflow", label: "Trigger workflow", kind: "action" },
-  ],
+  capabilities: [{ id: "trigger_workflow", label: "Trigger workflow", kind: "action" }],
   hasServerRuntime: true,
 };
 
@@ -414,13 +524,21 @@ export const webhookTrigger: IntegrationProvider = {
   version: "1.0.0",
   authType: "signed_request",
   configSchema: [
-    { key: "signature_header", label: "Signature header name", type: "text", defaultValue: "X-Signature" },
-    { key: "signing_secret", label: "Signing secret (optional)", type: "password", secret: true,
-      helpText: "If set, we verify HMAC-SHA256(body) matches this header." },
+    {
+      key: "signature_header",
+      label: "Signature header name",
+      type: "text",
+      defaultValue: "X-Signature",
+    },
+    {
+      key: "signing_secret",
+      label: "Signing secret (optional)",
+      type: "password",
+      secret: true,
+      helpText: "If set, we verify HMAC-SHA256(body) matches this header.",
+    },
   ],
-  capabilities: [
-    { id: "webhook_received", label: "Webhook received", kind: "trigger" },
-  ],
+  capabilities: [{ id: "webhook_received", label: "Webhook received", kind: "trigger" }],
   hasServerRuntime: true,
 };
 
@@ -433,28 +551,68 @@ export const httpConnector: IntegrationProvider = {
   version: "1.0.0",
   authType: "api_key",
   configSchema: [
-    { key: "base_url", label: "Base URL", type: "url", required: true, placeholder: "https://api.example.com" },
-    { key: "auth_scheme", label: "Auth scheme", type: "select", options: ["none", "bearer", "basic", "custom_header"], defaultValue: "bearer" },
-    { key: "credential", label: "Credential value", type: "password", secret: true,
-      helpText: "For Bearer: token. For Basic: 'user:pass'. For Custom header: raw header value." },
-    { key: "custom_header_name", label: "Custom header name", type: "text", placeholder: "X-Api-Key" },
+    {
+      key: "base_url",
+      label: "Base URL",
+      type: "url",
+      required: true,
+      placeholder: "https://api.example.com",
+    },
+    {
+      key: "auth_scheme",
+      label: "Auth scheme",
+      type: "select",
+      options: ["none", "bearer", "basic", "custom_header"],
+      defaultValue: "bearer",
+    },
+    {
+      key: "credential",
+      label: "Credential value",
+      type: "password",
+      secret: true,
+      helpText: "For Bearer: token. For Basic: 'user:pass'. For Custom header: raw header value.",
+    },
+    {
+      key: "custom_header_name",
+      label: "Custom header name",
+      type: "text",
+      placeholder: "X-Api-Key",
+    },
     { key: "timeout_ms", label: "Timeout (ms)", type: "text", defaultValue: "10000" },
   ],
   capabilities: [
-    { id: "http_request", label: "HTTP request", kind: "action", inputs: [
-      { key: "method", label: "Method", type: "string", required: true },
-      { key: "path", label: "Path", type: "string", required: true },
-      { key: "body", label: "JSON body", type: "json" },
-    ] },
+    {
+      id: "http_request",
+      label: "HTTP request",
+      kind: "action",
+      inputs: [
+        { key: "method", label: "Method", type: "string", required: true },
+        { key: "path", label: "Path", type: "string", required: true },
+        { key: "body", label: "JSON body", type: "json" },
+      ],
+    },
   ],
   hasServerRuntime: true,
 };
 
 export const ALL_PROVIDERS = [
-  googleWorkspace, microsoft365, googleCalendar, googleDrive, googleSheets, googleContacts,
-  slack, discord, zoom, microsoftTeams,
-  resend, mailgun,
-  awsS3, cloudflareR2,
-  zapier, make, n8n,
-  webhookTrigger, httpConnector,
+  googleWorkspace,
+  microsoft365,
+  googleCalendar,
+  googleDrive,
+  googleSheets,
+  googleContacts,
+  slack,
+  discord,
+  zoom,
+  microsoftTeams,
+  resend,
+  mailgun,
+  awsS3,
+  cloudflareR2,
+  zapier,
+  make,
+  n8n,
+  webhookTrigger,
+  httpConnector,
 ] as const;

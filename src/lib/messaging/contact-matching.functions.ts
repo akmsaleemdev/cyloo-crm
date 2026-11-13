@@ -55,7 +55,12 @@ export const upsertMatchingRule = createServerFn({ method: "POST" })
       ...rest,
     };
     const q = id
-      ? sbAny(context.supabase).from("contact_matching_rules").update(payload).eq("id", id).select("*").single()
+      ? sbAny(context.supabase)
+          .from("contact_matching_rules")
+          .update(payload)
+          .eq("id", id)
+          .select("*")
+          .single()
       : sbAny(context.supabase).from("contact_matching_rules").insert(payload).select("*").single();
     const { data: row, error } = await q;
     if (error) throw error;
@@ -97,7 +102,8 @@ export const previewMatching = createServerFn({ method: "POST" })
       let normalized: string | null = null;
       if (r.strategy === "exact") normalized = data.rawPhone;
       else if (r.strategy === "e164") normalized = toE164(data.rawPhone, r.default_country_code);
-      else if (r.strategy === "national") normalized = toNational(data.rawPhone, r.default_country_code);
+      else if (r.strategy === "national")
+        normalized = toNational(data.rawPhone, r.default_country_code);
       else if (r.strategy === "last_n_digits")
         normalized = lastNDigits(data.rawPhone, r.digits_to_match ?? 8);
       return { rule: r, normalized };

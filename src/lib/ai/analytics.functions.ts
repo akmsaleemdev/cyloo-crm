@@ -220,8 +220,7 @@ function linearForecast(
   // trend judged by projected value vs current mean
   const projected = forecast[forecast.length - 1]?.value ?? meanY;
   const changePct = meanY === 0 ? 0 : ((projected - meanY) / meanY) * 100;
-  const trend: "up" | "down" | "flat" =
-    changePct > 5 ? "up" : changePct < -5 ? "down" : "flat";
+  const trend: "up" | "down" | "flat" = changePct > 5 ? "up" : changePct < -5 ? "down" : "flat";
   return { forecast, trend, changePct: Math.round(changePct * 10) / 10 };
 }
 
@@ -273,7 +272,9 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
     ] = await Promise.all([
       db
         .from("ai_usage_daily")
-        .select("day, provider_id, model, requests, prompt_tokens, completion_tokens, total_tokens, cost_usd, errors")
+        .select(
+          "day, provider_id, model, requests, prompt_tokens, completion_tokens, total_tokens, cost_usd, errors",
+        )
         .eq("workspace_id", data.workspaceId)
         .gte("day", fromIso)
         .lte("day", toIso),
@@ -332,7 +333,9 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
         .limit(20000),
       db
         .from("ai_automation_suggestions")
-        .select("id, automation_type, title, summary, confidence, entity_type, entity_id, created_at")
+        .select(
+          "id, automation_type, title, summary, confidence, entity_type, entity_id, created_at",
+        )
         .eq("workspace_id", data.workspaceId)
         .eq("status", "pending")
         .order("confidence", { ascending: false })
@@ -346,8 +349,9 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
     for (const p of (providersRows.data ?? []) as any[]) {
       providerMap.set(p.id, p.kind);
     }
-    const activeProviders = ((providersRows.data ?? []) as { enabled: boolean }[])
-      .filter((p) => p.enabled).length;
+    const activeProviders = ((providersRows.data ?? []) as { enabled: boolean }[]).filter(
+      (p) => p.enabled,
+    ).length;
 
     // -------------------- Daily usage series --------------------
     const days_ = eachDay(from, to);
@@ -355,12 +359,18 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
     for (const day of days_) {
       usageByDay.set(day, {
         date: day,
-        requests: 0, errors: 0,
-        promptTokens: 0, completionTokens: 0, totalTokens: 0,
+        requests: 0,
+        errors: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        totalTokens: 0,
         costUsd: 0,
       });
     }
-    const providerAgg = new Map<string, { requests: number; tokens: number; cost: number; errors: number }>();
+    const providerAgg = new Map<
+      string,
+      { requests: number; tokens: number; cost: number; errors: number }
+    >();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const r of (usageRows.data ?? []) as any[]) {
       const key = String(r.day).slice(0, 10);
@@ -397,7 +407,10 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
         totalLatency += r.latency_ms;
         latencyCount += 1;
         if (r.provider_kind) {
-          (providerLatency.get(r.provider_kind) ?? providerLatency.set(r.provider_kind, []).get(r.provider_kind)!).push(r.latency_ms);
+          (
+            providerLatency.get(r.provider_kind) ??
+            providerLatency.set(r.provider_kind, []).get(r.provider_kind)!
+          ).push(r.latency_ms);
         }
       }
       const op = r.operation || "chat";
@@ -411,7 +424,7 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
     const latency: LatencyPoint[] = days_.map((day) => {
       const arr = (latencyByDay.get(day) ?? []).slice().sort((a, b) => a - b);
       const avg = arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-      const p95 = arr.length ? arr[Math.floor(arr.length * 0.95)] ?? arr[arr.length - 1] : 0;
+      const p95 = arr.length ? (arr[Math.floor(arr.length * 0.95)] ?? arr[arr.length - 1]) : 0;
       return {
         date: day,
         avgLatencyMs: Math.round(avg),
@@ -529,7 +542,10 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
       .slice(0, 12);
 
     // -------------------- Lead quality --------------------
-    const lqByDay = new Map<string, { sum: number; count: number; hot: number; warm: number; cold: number }>();
+    const lqByDay = new Map<
+      string,
+      { sum: number; count: number; hot: number; warm: number; cold: number }
+    >();
     for (const day of days_) lqByDay.set(day, { sum: 0, count: 0, hot: 0, warm: 0, cold: 0 });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     for (const l of (leadQualRows.data ?? []) as any[]) {
@@ -550,7 +566,9 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
       return {
         date: d,
         avgScore: b.count ? Math.round((b.sum / b.count) * 10) / 10 : 0,
-        hot: b.hot, warm: b.warm, cold: b.cold,
+        hot: b.hot,
+        warm: b.warm,
+        cold: b.cold,
       };
     });
 
@@ -572,9 +590,8 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
       ((convIntelRows.data ?? []) as any[]).map(() => 1),
     );
     // Rough AI-assist ratio based on presence of intel in window
-    const aiAssistRatio = totalResolved > 0
-      ? Math.min(1, analyzedConvIds.size / Math.max(1, totalResolved))
-      : 0;
+    const aiAssistRatio =
+      totalResolved > 0 ? Math.min(1, analyzedConvIds.size / Math.max(1, totalResolved)) : 0;
     const resolutions = days_.map((d) => {
       const b = resByDay.get(d)!;
       return { ...b, aiAssisted: Math.round(b.resolved * aiAssistRatio) };
@@ -587,8 +604,7 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
     const totalErrors = usage.reduce((s, p) => s + p.errors, 0);
     const errorRate = pct(totalErrors, totalRequests);
     const savedMinutes =
-      totalApplied * MIN_PER_APPLIED_SUGGESTION +
-      (totalRequests - totalErrors) * MIN_PER_REQUEST;
+      totalApplied * MIN_PER_APPLIED_SUGGESTION + (totalRequests - totalErrors) * MIN_PER_REQUEST;
 
     // prev window KPIs
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -602,15 +618,20 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
       ? Math.round(prevLat.reduce((s, x) => s + x.latency_ms, 0) / prevLat.length)
       : 0;
 
-    const requestsDelta = prevReq === 0
-      ? (totalRequests > 0 ? 100 : 0)
-      : Math.round(((totalRequests - prevReq) / prevReq) * 1000) / 10;
-    const costDelta = prevCost === 0
-      ? (totalCostUsd > 0 ? 100 : 0)
-      : Math.round(((totalCostUsd - prevCost) / prevCost) * 1000) / 10;
-    const latencyDelta = prevAvgLat === 0
-      ? 0
-      : Math.round(((avgLatencyMs - prevAvgLat) / prevAvgLat) * 1000) / 10;
+    const requestsDelta =
+      prevReq === 0
+        ? totalRequests > 0
+          ? 100
+          : 0
+        : Math.round(((totalRequests - prevReq) / prevReq) * 1000) / 10;
+    const costDelta =
+      prevCost === 0
+        ? totalCostUsd > 0
+          ? 100
+          : 0
+        : Math.round(((totalCostUsd - prevCost) / prevCost) * 1000) / 10;
+    const latencyDelta =
+      prevAvgLat === 0 ? 0 : Math.round(((avgLatencyMs - prevAvgLat) / prevAvgLat) * 1000) / 10;
     // no prev-window acceptance calc — use 0 delta baseline
     const acceptanceDelta = 0;
 
@@ -639,7 +660,8 @@ export const getAiAnalytics = createServerFn({ method: "POST" })
         type: s.automation_type,
         title: s.title,
         summary: s.summary,
-        confidence: s.confidence !== null && s.confidence !== undefined ? Number(s.confidence) : null,
+        confidence:
+          s.confidence !== null && s.confidence !== undefined ? Number(s.confidence) : null,
         entityType: s.entity_type,
         entityId: s.entity_id,
         createdAt: s.created_at,

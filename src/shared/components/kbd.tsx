@@ -5,11 +5,7 @@ import type { HTMLAttributes } from "react";
  * Keyboard shortcut chip. Renders semantic <kbd>. Compose multiple with
  * `<Kbd>⌘</Kbd><Kbd>K</Kbd>` to indicate combos. Fully theme-aware.
  */
-export function Kbd({
-  className,
-  children,
-  ...props
-}: HTMLAttributes<HTMLElement>) {
+export function Kbd({ className, children, ...props }: HTMLAttributes<HTMLElement>) {
   return (
     <kbd
       className={cn(

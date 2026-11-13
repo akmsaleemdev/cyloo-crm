@@ -4,7 +4,13 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const BI_TABLES = ["bi_kpi_snapshots", "bi_report_runs", "bi_calc_queue", "bi_widgets", "bi_dashboards"] as const;
+const BI_TABLES = [
+  "bi_kpi_snapshots",
+  "bi_report_runs",
+  "bi_calc_queue",
+  "bi_widgets",
+  "bi_dashboards",
+] as const;
 
 export function useBiRealtime(workspaceId: string | undefined) {
   const qc = useQueryClient();
@@ -24,6 +30,8 @@ export function useBiRealtime(workspaceId: string | undefined) {
       );
     }
     channel.subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [workspaceId, qc]);
 }

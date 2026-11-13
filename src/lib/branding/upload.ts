@@ -28,7 +28,11 @@ export type BrandingScope =
   | { kind: "workspace"; workspaceId: string };
 
 function safeName(name: string): string {
-  const cleaned = name.trim().replace(/[^\w.-]+/g, "-").replace(/-+/g, "-").slice(-80);
+  const cleaned = name
+    .trim()
+    .replace(/[^\w.-]+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(-80);
   return cleaned.replace(/^[-.]+/, "") || "asset";
 }
 
@@ -51,11 +55,12 @@ export async function uploadBrandingAsset(
   const invalid = validateBrandingFile(file);
   if (invalid) throw new Error(invalid);
 
-  const prefix = scope.kind === "platform"
-    ? "platform"
-    : scope.kind === "workspace"
-      ? `workspace/${scope.workspaceId}`
-      : `org/${scope.orgId}`;
+  const prefix =
+    scope.kind === "platform"
+      ? "platform"
+      : scope.kind === "workspace"
+        ? `workspace/${scope.workspaceId}`
+        : `org/${scope.orgId}`;
   const id =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()

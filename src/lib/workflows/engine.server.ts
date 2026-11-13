@@ -1,10 +1,22 @@
 import { createHmac } from "node:crypto";
 import type { WorkflowGraph, WorkflowRunStatus, StepStatus } from "./types";
 import {
-  evalIf, evalSwitch, evalBoolean, evalNot, evalAnd, evalOr,
-  evalCompareText, evalCompareNumber, evalCompareDate,
-  evalContains, evalStartsWith, evalEndsWith, evalRegex,
-  evalDecisionTree, evalExpression, coerceReturn,
+  evalIf,
+  evalSwitch,
+  evalBoolean,
+  evalNot,
+  evalAnd,
+  evalOr,
+  evalCompareText,
+  evalCompareNumber,
+  evalCompareDate,
+  evalContains,
+  evalStartsWith,
+  evalEndsWith,
+  evalRegex,
+  evalDecisionTree,
+  evalExpression,
+  coerceReturn,
 } from "./logic-eval";
 import { AI_NODE_HANDLERS } from "./ai-eval.server";
 import { interpolate as sharedInterpolate } from "./variables";
@@ -77,7 +89,12 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
     .eq("workspace_id", automation.workspace_id)
     .or(`automation_id.is.null,automation_id.eq.${automation.id}`);
   const { composeBag } = await import("./variables");
-  const scopedVars = ((varRows ?? []) as Array<{ scope: never; key: string; value: unknown; is_secret: boolean }>);
+  const scopedVars = (varRows ?? []) as Array<{
+    scope: never;
+    key: string;
+    value: unknown;
+    is_secret: boolean;
+  }>;
   const baseBag = composeBag(scopedVars, {});
 
   const variables: Record<string, unknown> = {
@@ -177,7 +194,6 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
     }
   }
 
-
   const durationMs = Date.now() - startedAt;
 
   await supabase
@@ -234,12 +250,16 @@ export function isValidEmailAddress(value: string): boolean {
 
 /** Accepts an object, or a JSON string holding one; anything else yields {}. */
 function parseJsonObject(value: unknown): Record<string, unknown> {
-  if (value && typeof value === "object" && !Array.isArray(value)) return value as Record<string, unknown>;
+  if (value && typeof value === "object" && !Array.isArray(value))
+    return value as Record<string, unknown>;
   if (typeof value === "string" && value.trim()) {
     try {
       const parsed = JSON.parse(value);
-      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed as Record<string, unknown>;
-    } catch { /* ignore */ }
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed))
+        return parsed as Record<string, unknown>;
+    } catch {
+      /* ignore */
+    }
   }
   return {};
 }
@@ -247,14 +267,28 @@ function parseJsonObject(value: unknown): Record<string, unknown> {
 /** Literal-host SSRF guard (no DNS lookup): http(s) only, no loopback / private ranges. */
 function assertSafeWebhookUrl(raw: string): void {
   let u: URL;
-  try { u = new URL(raw); } catch { throw new Error("Invalid webhook URL"); }
-  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("Only http(s) webhook URLs are allowed");
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error("Invalid webhook URL");
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:")
+    throw new Error("Only http(s) webhook URLs are allowed");
   const h = u.hostname.toLowerCase();
   const blocked =
-    h === "localhost" || h === "0.0.0.0" || h.endsWith(".local") ||
-    h === "::1" || h.startsWith("fe80:") || h.startsWith("fc") || h.startsWith("fd") ||
-    /^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h) || /^169\.254\./.test(h) ||
-    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h) || /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./.test(h);
+    h === "localhost" ||
+    h === "0.0.0.0" ||
+    h.endsWith(".local") ||
+    h === "::1" ||
+    h.startsWith("fe80:") ||
+    h.startsWith("fc") ||
+    h.startsWith("fd") ||
+    /^127\./.test(h) ||
+    /^10\./.test(h) ||
+    /^192\.168\./.test(h) ||
+    /^169\.254\./.test(h) ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h) ||
+    /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./.test(h);
   if (blocked) throw new Error("Private / loopback webhook hosts are not allowed");
 }
 
@@ -272,7 +306,6 @@ async function withTimeout<T>(p: Promise<T>, ms: number, message: string): Promi
   }
 }
 
-
 /**
  * Target conversation for inbox nodes: the node's configured `conversation_id`
  * first, otherwise the conversation carried by the run context (trigger payload).
@@ -281,7 +314,10 @@ export function resolveConversationId(
   input: Record<string, unknown>,
   vars: Record<string, unknown>,
 ): string {
-  const trigger = (vars.trigger ?? {}) as { conversation_id?: unknown; conversation?: { id?: unknown } | null };
+  const trigger = (vars.trigger ?? {}) as {
+    conversation_id?: unknown;
+    conversation?: { id?: unknown } | null;
+  };
   const fromTrigger = trigger.conversation_id ?? trigger.conversation?.id ?? "";
   return String(input.conversation_id || fromTrigger || "").trim();
 }
@@ -314,7 +350,14 @@ export async function executeNode(
   switch (node.type) {
     case "logic.delay": {
       const unit = String(input.unit ?? "seconds");
-      const factor = unit === "minutes" ? 60_000 : unit === "hours" ? 3_600_000 : unit === "days" ? 86_400_000 : 1_000;
+      const factor =
+        unit === "minutes"
+          ? 60_000
+          : unit === "hours"
+            ? 3_600_000
+            : unit === "days"
+              ? 86_400_000
+              : 1_000;
       const ms = Math.min(Number(input.duration ?? 0) * factor, 5_000);
       await new Promise((r) => setTimeout(r, ms));
       return { delayed_ms: ms };
@@ -405,7 +448,10 @@ export async function executeNode(
         .eq("id", contactId)
         .single();
       const nextTags = Array.from(new Set([...(contact?.tags ?? []), tag]));
-      const { error } = await sbAny(ctx.supabase).from("contacts").update({ tags: nextTags }).eq("id", contactId);
+      const { error } = await sbAny(ctx.supabase)
+        .from("contacts")
+        .update({ tags: nextTags })
+        .eq("id", contactId);
       if (error) throw new Error(error.message);
       return { tags: nextTags };
     }
@@ -436,21 +482,32 @@ export async function executeNode(
       const campaignId = String(input.campaign_id ?? "").trim();
       if (!campaignId) throw new Error("Choose a campaign for this step.");
       if (String(input.contact_id ?? "").trim()) {
-        throw new Error("Starting a campaign for a single contact is not supported. Remove the contact to start the campaign.");
+        throw new Error(
+          "Starting a campaign for a single contact is not supported. Remove the contact to start the campaign.",
+        );
       }
       if (ctx.dryRun) return { simulated: true, input };
       // Resuming a paused campaign sends real messages, so the author must opt in per node.
       if (input.confirm_send !== true) {
-        throw new Error("Tick 'I understand this sends real messages' on this step before it can start a campaign.");
+        throw new Error(
+          "Tick 'I understand this sends real messages' on this step before it can start a campaign.",
+        );
       }
-      return startCampaignForWorkflow({ supabase: ctx.supabase, workspaceId: ctx.workspaceId }, campaignId);
+      return startCampaignForWorkflow(
+        { supabase: ctx.supabase, workspaceId: ctx.workspaceId },
+        campaignId,
+      );
     }
     case "action.marketing.stop_campaign": {
       const campaignId = String(input.campaign_id ?? "").trim();
       if (!campaignId) throw new Error("Choose a campaign for this step.");
       if (ctx.dryRun) return { simulated: true, input };
       const contactId = String(input.contact_id ?? "").trim() || null;
-      const result = await stopCampaignForWorkflow({ supabase: ctx.supabase, workspaceId: ctx.workspaceId }, campaignId, contactId);
+      const result = await stopCampaignForWorkflow(
+        { supabase: ctx.supabase, workspaceId: ctx.workspaceId },
+        campaignId,
+        contactId,
+      );
       return { ...result, reason: input.reason ?? null };
     }
     case "action.whatsapp.assign_conversation": {
@@ -470,7 +527,8 @@ export async function executeNode(
           .eq("user_id", assigneeId)
           .eq("status", "active")
           .maybeSingle();
-        if (!member) throw new Error("The chosen assignee is not an active member of this workspace.");
+        if (!member)
+          throw new Error("The chosen assignee is not an active member of this workspace.");
       }
       // Scope by workspace so a conversation id from another tenant matches nothing.
       const { data, error } = await sbAny(ctx.supabase)
@@ -486,14 +544,19 @@ export async function executeNode(
         .maybeSingle();
       if (error) throw new Error(error.message);
       if (!data) throw new Error("Conversation not found in this workspace.");
-      return { conversation_id: conversationId, assigned_to: assigneeId || null, assigned_team_id: teamId || null };
+      return {
+        conversation_id: conversationId,
+        assigned_to: assigneeId || null,
+        assigned_team_id: teamId || null,
+      };
     }
     case "action.instagram.send_message": {
       const body = String(input.body ?? "").trim();
       if (!body) throw new Error("Message body is required for this step.");
       const contactId = String(input.contact_id ?? "").trim();
       const conversationId = resolveConversationId(input, vars);
-      if (!contactId && !conversationId) throw new Error("Choose a contact or a conversation for this step.");
+      if (!contactId && !conversationId)
+        throw new Error("Choose a contact or a conversation for this step.");
       if (ctx.dryRun) return { simulated: true, input };
 
       const db = sbAny(ctx.supabase);
@@ -524,23 +587,40 @@ export async function executeNode(
         .eq("channel", "instagram")
         .maybeSingle();
       if (identErr) throw new Error(identErr.message);
-      const recipientId = String((ident as { external_id?: string } | null)?.external_id ?? "").trim();
+      const recipientId = String(
+        (ident as { external_id?: string } | null)?.external_id ?? "",
+      ).trim();
       if (!recipientId) throw new Error("This contact has no Instagram account linked.");
 
       // Sending account: the thread's account, else the workspace's connected account.
       // The access token is encrypted, so this lookup runs on the admin client, still workspace-scoped.
       const { supabaseAdmin: igAdmin } = await import("@/lib/demo/admin-write-guard.server");
-      const accountSelect = "id, page_id, ig_user_id, access_token_ciphertext, status, workspace_id";
+      const accountSelect =
+        "id, page_id, ig_user_id, access_token_ciphertext, status, workspace_id";
       const accountQuery = accountId
-        ? sbAny(igAdmin).from("instagram_accounts").select(accountSelect).eq("id", accountId).eq("workspace_id", ctx.workspaceId)
-        : sbAny(igAdmin).from("instagram_accounts").select(accountSelect).eq("workspace_id", ctx.workspaceId).eq("status", "connected").order("connected_at", { ascending: true }).limit(1);
+        ? sbAny(igAdmin)
+            .from("instagram_accounts")
+            .select(accountSelect)
+            .eq("id", accountId)
+            .eq("workspace_id", ctx.workspaceId)
+        : sbAny(igAdmin)
+            .from("instagram_accounts")
+            .select(accountSelect)
+            .eq("workspace_id", ctx.workspaceId)
+            .eq("status", "connected")
+            .order("connected_at", { ascending: true })
+            .limit(1);
       const { data: acc, error: accErr } = await accountQuery.maybeSingle();
       if (accErr) throw new Error(accErr.message);
       const account = acc as {
-        page_id?: string | null; ig_user_id?: string | null; access_token_ciphertext?: string | null; status?: string | null;
+        page_id?: string | null;
+        ig_user_id?: string | null;
+        access_token_ciphertext?: string | null;
+        status?: string | null;
       } | null;
       if (!account) throw new Error("No Instagram account is connected to this workspace.");
-      if (account.status && account.status !== "connected") throw new Error(`Instagram account is ${account.status}.`);
+      if (account.status && account.status !== "connected")
+        throw new Error(`Instagram account is ${account.status}.`);
       if (!account.access_token_ciphertext || !(account.page_id || account.ig_user_id)) {
         throw new Error("Instagram access token is missing. Reconnect the account.");
       }
@@ -612,7 +692,11 @@ export async function executeNode(
         });
         const bodyText = await res.text();
         let parsed: unknown = bodyText;
-        try { parsed = JSON.parse(bodyText); } catch { /* keep text */ }
+        try {
+          parsed = JSON.parse(bodyText);
+        } catch {
+          /* keep text */
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${bodyText.slice(0, 200)}`);
         return { status: res.status, body: parsed };
       } finally {
@@ -640,14 +724,22 @@ export async function executeNode(
       if (secret) {
         const ts = Math.floor(Date.now() / 1000).toString();
         headers["x-webhook-timestamp"] = ts;
-        headers["x-webhook-signature"] = createHmac("sha256", secret).update(`${ts}.${body}`).digest("hex");
+        headers["x-webhook-signature"] = createHmac("sha256", secret)
+          .update(`${ts}.${body}`)
+          .digest("hex");
       }
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15_000);
       try {
         // redirect: "error" so a public URL cannot bounce the request to an internal host.
-        const res = await fetch(url, { method: "POST", headers, body, signal: controller.signal, redirect: "error" });
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body,
+          signal: controller.signal,
+          redirect: "error",
+        });
         const text = await res.text();
         if (!res.ok) throw new Error(`Webhook HTTP ${res.status}: ${text.slice(0, 200)}`);
         return { status: res.status, delivered: true };
@@ -702,7 +794,10 @@ export async function executeNode(
       }
       // Chat id: stored in conversation metadata by the inbound webhook, else
       // parsed from external_conversation_id ("tg:<bot_id>:<chat_id>").
-      const extChat = String(convRow.external_conversation_id ?? "").split(":").pop() ?? "";
+      const extChat =
+        String(convRow.external_conversation_id ?? "")
+          .split(":")
+          .pop() ?? "";
       const chatId = String(convRow.metadata?.chat_id ?? extChat ?? "").trim();
       if (!chatId) throw new Error("Could not determine the Telegram chat for this conversation.");
 
@@ -727,7 +822,9 @@ export async function executeNode(
       if (!account) throw new Error("No Telegram bot is connected to this workspace.");
       if (!account.bot_token_ciphertext) throw new Error("Telegram bot token is missing.");
       if (account.status && account.status !== "connected") {
-        throw new Error(`Telegram bot is ${account.status}${account.status_reason ? ` — ${account.status_reason}` : ""}.`);
+        throw new Error(
+          `Telegram bot is ${account.status}${account.status_reason ? ` — ${account.status_reason}` : ""}.`,
+        );
       }
 
       const { sendTelegramMessage } = await import("@/lib/telegram/send.server");
@@ -756,8 +853,13 @@ export async function executeNode(
         .eq("workspace_id", ctx.workspaceId)
         .maybeSingle();
       if (contactErr) throw new Error(contactErr.message);
-      if (!contact) throw new Error("The contact for this step no longer exists in this workspace.");
-      const phone = String((contact as { whatsapp?: string | null }).whatsapp || (contact as { phone?: string | null }).phone || "");
+      if (!contact)
+        throw new Error("The contact for this step no longer exists in this workspace.");
+      const phone = String(
+        (contact as { whatsapp?: string | null }).whatsapp ||
+          (contact as { phone?: string | null }).phone ||
+          "",
+      );
 
       const { deliverCampaignTemplate } = await import("@/lib/marketing/delivery.server");
       const delivery = await deliverCampaignTemplate(ctx.supabase as never, {
@@ -776,7 +878,9 @@ export async function executeNode(
       const name = String(input.name ?? "").trim();
       if (!name) throw new Error("Name is required to create a contact.");
       const phone = String(input.phone ?? "").trim() || null;
-      const extra = (input.fields && typeof input.fields === "object" ? input.fields : {}) as Record<string, unknown>;
+      const extra = (
+        input.fields && typeof input.fields === "object" ? input.fields : {}
+      ) as Record<string, unknown>;
       const { data, error } = await sbAny(ctx.supabase)
         .from("contacts")
         .insert({
@@ -796,10 +900,21 @@ export async function executeNode(
       if (ctx.dryRun) return { skipped: true, node: node.type };
       const contactId = String(input.contact_id ?? "");
       if (!contactId) throw new Error("Choose a contact to update.");
-      const changes = (input.fields && typeof input.fields === "object" ? input.fields : {}) as Record<string, unknown>;
+      const changes = (
+        input.fields && typeof input.fields === "object" ? input.fields : {}
+      ) as Record<string, unknown>;
       if (Object.keys(changes).length === 0) throw new Error("No fields to update.");
       // Known columns are written directly; anything else is merged into custom_fields.
-      const COLUMNS = new Set(["name", "first_name", "last_name", "phone", "whatsapp", "email", "lifecycle_stage", "status"]);
+      const COLUMNS = new Set([
+        "name",
+        "first_name",
+        "last_name",
+        "phone",
+        "whatsapp",
+        "email",
+        "lifecycle_stage",
+        "status",
+      ]);
       const direct: Record<string, unknown> = {};
       const extra: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(changes)) (COLUMNS.has(k) ? direct : extra)[k] = v;
@@ -811,7 +926,10 @@ export async function executeNode(
         .maybeSingle();
       if (readErr) throw new Error(readErr.message);
       if (!current) throw new Error("The contact to update no longer exists in this workspace.");
-      const merged = { ...((current as { custom_fields?: Record<string, unknown> }).custom_fields ?? {}), ...extra };
+      const merged = {
+        ...((current as { custom_fields?: Record<string, unknown> }).custom_fields ?? {}),
+        ...extra,
+      };
       const { error } = await sbAny(ctx.supabase)
         .from("contacts")
         .update({ ...direct, custom_fields: merged, updated_at: new Date().toISOString() })
@@ -826,11 +944,15 @@ export async function executeNode(
       const title = String(input.title ?? "").trim();
       if (!title) throw new Error("Title is required to create a task.");
       const PRIORITIES = ["low", "normal", "high", "urgent"];
-      const priority = PRIORITIES.includes(String(input.priority)) ? String(input.priority) : "normal";
+      const priority = PRIORITIES.includes(String(input.priority))
+        ? String(input.priority)
+        : "normal";
       const dueRaw = String(input.due_at ?? "").trim();
       const due = dueRaw ? new Date(dueRaw) : null;
-      if (due && Number.isNaN(due.getTime())) throw new Error(`"${dueRaw}" is not a valid date. Use an ISO datetime.`);
-      const relatedTo = input.related_to && typeof input.related_to === "object" ? input.related_to : {};
+      if (due && Number.isNaN(due.getTime()))
+        throw new Error(`"${dueRaw}" is not a valid date. Use an ISO datetime.`);
+      const relatedTo =
+        input.related_to && typeof input.related_to === "object" ? input.related_to : {};
       const { data, error } = await sbAny(ctx.supabase)
         .from("tasks")
         .insert({
@@ -838,7 +960,10 @@ export async function executeNode(
           title,
           priority,
           due_at: due ? due.toISOString() : null,
-          custom_fields: { ...(input.assignee_id ? { assignee_id: String(input.assignee_id) } : {}), related_to: relatedTo },
+          custom_fields: {
+            ...(input.assignee_id ? { assignee_id: String(input.assignee_id) } : {}),
+            related_to: relatedTo,
+          },
         })
         .select("id")
         .single();
@@ -853,15 +978,26 @@ export async function executeNode(
       const body = String(input.body ?? "").trim();
       if (!body) throw new Error("Note body is required to create a note.");
       const dealId = String(input.deal_id ?? "").trim();
-      const contactId = String(input.contact_id ?? "").trim()
-        || String((vars.trigger as { contact_id?: unknown } | undefined)?.contact_id ?? "").trim();
+      const contactId =
+        String(input.contact_id ?? "").trim() ||
+        String((vars.trigger as { contact_id?: unknown } | undefined)?.contact_id ?? "").trim();
       const conversationId = String(input.conversation_id ?? "").trim();
       let entityType: "deal" | "contact";
       let entityId: string;
-      if (dealId) { entityType = "deal"; entityId = dealId; }
-      else if (contactId) { entityType = "contact"; entityId = contactId; }
-      else if (conversationId) throw new Error("Notes can be attached to a contact or deal. Choose a contact or deal for this step.");
-      else throw new Error("Choose a contact or deal for this note, or run the workflow from a contact.");
+      if (dealId) {
+        entityType = "deal";
+        entityId = dealId;
+      } else if (contactId) {
+        entityType = "contact";
+        entityId = contactId;
+      } else if (conversationId)
+        throw new Error(
+          "Notes can be attached to a contact or deal. Choose a contact or deal for this step.",
+        );
+      else
+        throw new Error(
+          "Choose a contact or deal for this note, or run the workflow from a contact.",
+        );
       if (ctx.dryRun) return { simulated: true, input };
       const pinned = input.pinned === true || input.pinned === "true";
       const { data, error } = await sbAny(ctx.supabase)
@@ -888,7 +1024,10 @@ export async function executeNode(
       if (!pipelineId) throw new Error("Choose a pipeline to create a deal.");
       const stageId = String(input.stage_id ?? "").trim();
       if (!stageId) throw new Error("Choose a stage to create a deal.");
-      const amount = input.value === undefined || input.value === null || input.value === "" ? 0 : Number(input.value);
+      const amount =
+        input.value === undefined || input.value === null || input.value === ""
+          ? 0
+          : Number(input.value);
       if (!Number.isFinite(amount)) throw new Error("Deal value must be a number.");
       const { data, error } = await sbAny(ctx.supabase)
         .from("deals")
@@ -911,7 +1050,11 @@ export async function executeNode(
       const dealId = String(input.deal_id ?? "");
       if (!dealId) throw new Error("Choose a deal to update.");
       const changes: Record<string, unknown> = {};
-      if (input.stage_id !== undefined && input.stage_id !== null && String(input.stage_id).trim() !== "") {
+      if (
+        input.stage_id !== undefined &&
+        input.stage_id !== null &&
+        String(input.stage_id).trim() !== ""
+      ) {
         changes.stage_id = String(input.stage_id).trim();
       }
       if (input.value !== undefined && input.value !== null && input.value !== "") {
@@ -919,19 +1062,36 @@ export async function executeNode(
         if (!Number.isFinite(amount)) throw new Error("Deal value must be a number.");
         changes.amount = amount;
       }
-      const extraFields = (input.fields && typeof input.fields === "object" ? input.fields : {}) as Record<string, unknown>;
+      const extraFields = (
+        input.fields && typeof input.fields === "object" ? input.fields : {}
+      ) as Record<string, unknown>;
       // Known deal columns are written directly; anything else is merged into custom_fields.
       const DEAL_COLUMNS = new Set([
-        "title", "description", "amount", "currency", "pipeline_id", "stage_id", "contact_id", "company_id",
-        "owner_id", "status", "priority", "probability", "source", "tags", "loss_reason",
-        "expected_close_date", "actual_close_date",
+        "title",
+        "description",
+        "amount",
+        "currency",
+        "pipeline_id",
+        "stage_id",
+        "contact_id",
+        "company_id",
+        "owner_id",
+        "status",
+        "priority",
+        "probability",
+        "source",
+        "tags",
+        "loss_reason",
+        "expected_close_date",
+        "actual_close_date",
       ]);
       const extra: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(extraFields)) {
         if (DEAL_COLUMNS.has(k)) changes[k] = v;
         else extra[k] = v;
       }
-      if (Object.keys(changes).length === 0 && Object.keys(extra).length === 0) throw new Error("No fields to update.");
+      if (Object.keys(changes).length === 0 && Object.keys(extra).length === 0)
+        throw new Error("No fields to update.");
       const { data: current, error: readErr } = await ctx.supabase
         .from("deals")
         .select("custom_fields")
@@ -940,7 +1100,10 @@ export async function executeNode(
         .maybeSingle();
       if (readErr) throw new Error(readErr.message);
       if (!current) throw new Error("The deal to update no longer exists in this workspace.");
-      const merged = { ...((current as { custom_fields?: Record<string, unknown> }).custom_fields ?? {}), ...extra };
+      const merged = {
+        ...((current as { custom_fields?: Record<string, unknown> }).custom_fields ?? {}),
+        ...extra,
+      };
       const { error } = await sbAny(ctx.supabase)
         .from("deals")
         .update({ ...changes, custom_fields: merged, updated_at: new Date().toISOString() })
@@ -956,27 +1119,42 @@ export async function executeNode(
       if (!body) throw new Error("Message body is required for this Messenger step.");
       const conversationId = resolveConversationId(input, vars);
       const contactId = String(input.contact_id ?? "").trim();
-      if (!conversationId && !contactId) throw new Error("Choose a contact for this Messenger step.");
+      if (!conversationId && !contactId)
+        throw new Error("Choose a contact for this Messenger step.");
       if (ctx.dryRun) return { simulated: true, input };
 
       const db = sbAny(ctx.supabase);
-      const convSelect = "id, contact_id, workspace_id, channel, external_conversation_id, metadata, channel_account_id";
-      let convQuery = db.from("conversations").select(convSelect).eq("workspace_id", ctx.workspaceId);
+      const convSelect =
+        "id, contact_id, workspace_id, channel, external_conversation_id, metadata, channel_account_id";
+      let convQuery = db
+        .from("conversations")
+        .select(convSelect)
+        .eq("workspace_id", ctx.workspaceId);
       convQuery = conversationId
         ? convQuery.eq("id", conversationId)
-        : convQuery.eq("contact_id", contactId).eq("channel", "messenger").order("last_message_at", { ascending: false }).limit(1);
+        : convQuery
+            .eq("contact_id", contactId)
+            .eq("channel", "messenger")
+            .order("last_message_at", { ascending: false })
+            .limit(1);
       const { data: conv, error: convErr } = await convQuery.maybeSingle();
       if (convErr) throw new Error(convErr.message);
       if (!conv) throw new Error("No Messenger conversation was found for this step.");
       const convRow = conv as {
-        id: string; contact_id: string | null; channel: string; external_conversation_id: string | null;
-        metadata: Record<string, unknown> | null; channel_account_id: string | null;
+        id: string;
+        contact_id: string | null;
+        channel: string;
+        external_conversation_id: string | null;
+        metadata: Record<string, unknown> | null;
+        channel_account_id: string | null;
       };
-      if (convRow.channel !== "messenger") throw new Error("Conversation is not a Messenger thread.");
+      if (convRow.channel !== "messenger")
+        throw new Error("Conversation is not a Messenger thread.");
 
       const meta = (convRow.metadata ?? {}) as Record<string, unknown>;
       const accountId = String(meta.account_id ?? convRow.channel_account_id ?? "");
-      if (!accountId) throw new Error("This Messenger conversation has no connected Facebook Page.");
+      if (!accountId)
+        throw new Error("This Messenger conversation has no connected Facebook Page.");
       // The page token is encrypted and not readable through the user client, so the
       // lookup runs on the admin client, still scoped to this workspace and account.
       const { supabaseAdmin: adminDb } = await import("@/lib/demo/admin-write-guard.server");
@@ -988,13 +1166,20 @@ export async function executeNode(
         .maybeSingle();
       if (accErr) throw new Error(accErr.message);
       const account = acc as {
-        id: string; page_id: string | null; access_token_ciphertext: string | null;
-        status: string | null; status_reason: string | null;
+        id: string;
+        page_id: string | null;
+        access_token_ciphertext: string | null;
+        status: string | null;
+        status_reason: string | null;
       } | null;
-      if (!account) throw new Error("Facebook Page for this conversation was not found in this workspace.");
-      if (!account.page_id || !account.access_token_ciphertext) throw new Error("Facebook Page access token is missing.");
+      if (!account)
+        throw new Error("Facebook Page for this conversation was not found in this workspace.");
+      if (!account.page_id || !account.access_token_ciphertext)
+        throw new Error("Facebook Page access token is missing.");
       if (account.status && account.status !== "connected") {
-        throw new Error(`Facebook Page is ${account.status}${account.status_reason ? ` — ${account.status_reason}` : ""}.`);
+        throw new Error(
+          `Facebook Page is ${account.status}${account.status_reason ? ` — ${account.status_reason}` : ""}.`,
+        );
       }
 
       const { data: lastIn } = await db
@@ -1007,8 +1192,13 @@ export async function executeNode(
         .maybeSingle();
       const { resolveMessengerRecipient } = await import("@/lib/messenger/psid");
       const target = resolveMessengerRecipient(
-        { id: convRow.id, channel: convRow.channel, contact_id: convRow.contact_id,
-          external_conversation_id: convRow.external_conversation_id, metadata: convRow.metadata },
+        {
+          id: convRow.id,
+          channel: convRow.channel,
+          contact_id: convRow.contact_id,
+          external_conversation_id: convRow.external_conversation_id,
+          metadata: convRow.metadata,
+        },
         account.page_id,
         (lastIn as { from_address?: string | null } | null)?.from_address ?? null,
       );
@@ -1021,7 +1211,12 @@ export async function executeNode(
         recipientPsid: target.psid,
         text: body,
       });
-      return { message_id: sent.messageId, status: "sent", recipient_id: sent.recipientId, conversation_id: convRow.id };
+      return {
+        message_id: sent.messageId,
+        status: "sent",
+        recipient_id: sent.recipientId,
+        conversation_id: convRow.id,
+      };
     }
 
     case "action.livechat.open_widget":
@@ -1044,10 +1239,16 @@ export async function executeNode(
       if (ctx.dryRun) return { skipped: true, node: node.type };
       const apptId = String((input as { appointment_id?: string }).appointment_id ?? "");
       const kind = String((input as { kind?: string }).kind ?? "reminder") as
-        | "confirmation" | "reschedule" | "cancellation" | "reminder" | "follow_up" | "review_request";
+        | "confirmation"
+        | "reschedule"
+        | "cancellation"
+        | "reminder"
+        | "follow_up"
+        | "review_request";
       if (!apptId) throw new Error("appointment_id required");
       const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-      const { sendAppointmentNotification } = await import("@/lib/booking/notifications-engine.server");
+      const { sendAppointmentNotification } =
+        await import("@/lib/booking/notifications-engine.server");
       return sendAppointmentNotification(supabaseAdmin, apptId, kind);
     }
     case "action.booking.schedule_reminders": {
@@ -1055,7 +1256,8 @@ export async function executeNode(
       const apptId = String((input as { appointment_id?: string }).appointment_id ?? "");
       if (!apptId) throw new Error("appointment_id required");
       const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-      const { scheduleAppointmentReminders } = await import("@/lib/booking/notifications-engine.server");
+      const { scheduleAppointmentReminders } =
+        await import("@/lib/booking/notifications-engine.server");
       return scheduleAppointmentReminders(supabaseAdmin, apptId);
     }
 
@@ -1064,18 +1266,27 @@ export async function executeNode(
       // DB rows, so this step does not either. Recipient: configured `to`, else the
       // run's contact email. The registry's "HTML body" field is sent as plain text
       // (tags stripped), because the helper only supports text bodies.
-      const trigger = (vars.trigger ?? {}) as { contact?: { email?: unknown } | null; contact_email?: unknown };
-      const to = String(input.to ?? "").trim() || String(trigger.contact?.email ?? trigger.contact_email ?? "").trim();
+      const trigger = (vars.trigger ?? {}) as {
+        contact?: { email?: unknown } | null;
+        contact_email?: unknown;
+      };
+      const to =
+        String(input.to ?? "").trim() ||
+        String(trigger.contact?.email ?? trigger.contact_email ?? "").trim();
       const subject = String(input.subject ?? "").trim();
       const text = String(input.html ?? "")
         .replace(/<[^>]*>/g, " ")
         .replace(/\s+/g, " ")
         .trim();
-      if (!to) throw new Error("Choose a recipient for this email, or run the workflow from a contact with an email address.");
+      if (!to)
+        throw new Error(
+          "Choose a recipient for this email, or run the workflow from a contact with an email address.",
+        );
       if (!isValidEmailAddress(to)) throw new Error(`"${to}" is not a valid email address.`);
       if (!subject) throw new Error("Subject is required to send an email.");
       if (!text) throw new Error("The email body is empty.");
-      if (ctx.dryRun) return { simulated: true, input: { ...input, to, subject, html: input.html } };
+      if (ctx.dryRun)
+        return { simulated: true, input: { ...input, to, subject, html: input.html } };
 
       const { data: accRaw, error: accErr } = await sbAny(ctx.supabase)
         .from("email_accounts")
@@ -1092,7 +1303,9 @@ export async function executeNode(
         api_key_ciphertext?: string | null;
       } | null;
       if (!acc || !acc.api_key_ciphertext || !acc.from_email) {
-        throw new Error("No connected Resend email account in this workspace. Connect one before sending email.");
+        throw new Error(
+          "No connected Resend email account in this workspace. Connect one before sending email.",
+        );
       }
       const { sendResendEmail } = await import("@/lib/email/send.server");
       const sent = await sendResendEmail({
@@ -1116,7 +1329,8 @@ export async function executeNode(
       let rawTo = String(input.to ?? "").trim();
       if (!rawTo) {
         const contactId = String(input.contact_id ?? "").trim();
-        if (!contactId) throw new Error("Choose a contact or enter a phone number for this SMS step.");
+        if (!contactId)
+          throw new Error("Choose a contact or enter a phone number for this SMS step.");
         const { data: contact, error: contactErr } = await ctx.supabase
           .from("contacts")
           .select("id, phone")
@@ -1124,13 +1338,16 @@ export async function executeNode(
           .eq("workspace_id", ctx.workspaceId)
           .maybeSingle();
         if (contactErr) throw new Error(contactErr.message);
-        if (!contact) throw new Error("The contact for this step no longer exists in this workspace.");
+        if (!contact)
+          throw new Error("The contact for this step no longer exists in this workspace.");
         rawTo = String((contact as { phone?: string | null }).phone ?? "").trim();
         if (!rawTo) throw new Error("This contact has no phone number, so the SMS cannot be sent.");
       }
       const to = toE164(rawTo);
       if (!to) {
-        throw new Error(`"${rawTo}" is not a valid phone number. Use international format, for example +15551234567.`);
+        throw new Error(
+          `"${rawTo}" is not a valid phone number. Use international format, for example +15551234567.`,
+        );
       }
 
       if (ctx.dryRun) return { simulated: true, input: { to, body } };
@@ -1147,13 +1364,17 @@ export async function executeNode(
         .order("connected_at", { ascending: true })
         .limit(1);
       if (accErr) throw new Error(accErr.message);
-      const account = ((accounts ?? []) as Array<{
-        phone_number: string;
-        account_sid: string | null;
-        auth_token_ciphertext: string | null;
-      }>)[0];
+      const account = (
+        (accounts ?? []) as Array<{
+          phone_number: string;
+          account_sid: string | null;
+          auth_token_ciphertext: string | null;
+        }>
+      )[0];
       if (!account || !account.account_sid || !account.auth_token_ciphertext) {
-        throw new Error("No connected Twilio SMS account with credentials is set up for this workspace.");
+        throw new Error(
+          "No connected Twilio SMS account with credentials is set up for this workspace.",
+        );
       }
 
       const { sendTwilioSms } = await import("@/lib/sms/send.server");
@@ -1177,7 +1398,9 @@ export async function executeNode(
       if (!customerName) throw new Error("Customer name is required to book an appointment.");
       if (!startAt) throw new Error("Choose a start time for this appointment.");
       if (Number.isNaN(new Date(startAt).getTime())) {
-        throw new Error(`"${startAt}" is not a valid start time. Use ISO format, for example 2026-10-12T15:00:00Z.`);
+        throw new Error(
+          `"${startAt}" is not a valid start time. Use ISO format, for example 2026-10-12T15:00:00Z.`,
+        );
       }
       if (customerEmail && !isValidEmailAddress(customerEmail)) {
         throw new Error(`"${customerEmail}" is not a valid email address.`);
@@ -1199,7 +1422,12 @@ export async function executeNode(
       if (!appointmentId) throw new Error("Choose an appointment to cancel.");
       if (ctx.dryRun) return { simulated: true, input };
       const { cancelWorkflowAppointment } = await import("@/lib/booking/workflow-actions.server");
-      return cancelWorkflowAppointment(ctx.supabase as never, ctx.workspaceId, appointmentId, reason);
+      return cancelWorkflowAppointment(
+        ctx.supabase as never,
+        ctx.workspaceId,
+        appointmentId,
+        reason,
+      );
     }
     case "action.booking.send_link": {
       const eventTypeId = String(input.event_type_id ?? "").trim();
@@ -1214,7 +1442,10 @@ export async function executeNode(
         if (!isValidEmailAddress(to)) throw new Error(`"${to}" is not a valid email address.`);
       } else {
         const e164 = toE164(to);
-        if (!e164) throw new Error(`"${to}" is not a valid phone number. Use international format, for example +15551234567.`);
+        if (!e164)
+          throw new Error(
+            `"${to}" is not a valid phone number. Use international format, for example +15551234567.`,
+          );
       }
       if (ctx.dryRun) return { simulated: true, input };
       const { queueWorkflowBookingLink } = await import("@/lib/booking/workflow-actions.server");
@@ -1229,8 +1460,8 @@ export async function executeNode(
       // No implementation exists for this node yet. Failing loudly is better than
       // reporting success for a step that did nothing. This applies to dry runs too,
       // so the Test button surfaces the gap before a real run.
-      throw new Error(`"${node.type}" is not supported yet. Remove this step or replace it with a supported one.`);
+      throw new Error(
+        `"${node.type}" is not supported yet. Remove this step or replace it with a supported one.`,
+      );
   }
-
 }
-

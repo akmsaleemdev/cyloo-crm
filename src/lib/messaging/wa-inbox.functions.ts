@@ -64,8 +64,7 @@ export const sendWaAgentReply = createServerFn({ method: "POST" })
       to,
       body: data.body,
       messageType: "text",
-      providerMessageId:
-        (result.data as { message_id?: string } | null)?.message_id ?? null,
+      providerMessageId: (result.data as { message_id?: string } | null)?.message_id ?? null,
       sentBy: userId,
       status: failed ? "failed" : "sent",
       failedReason: failed ? result.error || `Worker status ${result.status}` : null,

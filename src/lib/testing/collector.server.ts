@@ -85,8 +85,7 @@ export async function collectTestingSnapshot(): Promise<TestingDashboardData> {
       passed: vitest.numPassedTests ?? 0,
       failed: vitest.numFailedTests ?? 0,
       skipped: vitest.numPendingTests ?? 0,
-      duration_ms:
-        vitest.testResults?.reduce((s, r) => s + (r.perfStats?.runtime ?? 0), 0) ?? 0,
+      duration_ms: vitest.testResults?.reduce((s, r) => s + (r.perfStats?.runtime ?? 0), 0) ?? 0,
       updated_at: vitest.startTime ? new Date(vitest.startTime).toISOString() : null,
     });
   }
@@ -133,15 +132,35 @@ export async function collectTestingSnapshot(): Promise<TestingDashboardData> {
     coverage,
     categories: [
       { key: "unit", label: "Unit Tests", enabled: true, hint: "npm run test:unit" },
-      { key: "integration", label: "Integration Tests", enabled: true, hint: "npm run test:integration" },
+      {
+        key: "integration",
+        label: "Integration Tests",
+        enabled: true,
+        hint: "npm run test:integration",
+      },
       { key: "api", label: "API Tests", enabled: true, hint: "npm run test:api" },
       { key: "e2e", label: "End-to-End Tests", enabled: true, hint: "npm run test:e2e" },
       { key: "ui", label: "UI Tests", enabled: true, hint: "Playwright chromium project" },
-      { key: "a11y", label: "Accessibility Tests", enabled: true, hint: "npm run test:a11y (axe-core)" },
+      {
+        key: "a11y",
+        label: "Accessibility Tests",
+        enabled: true,
+        hint: "npm run test:a11y (axe-core)",
+      },
       { key: "perf", label: "Performance Tests", enabled: true, hint: "npm run test:perf" },
       { key: "security", label: "Security Tests", enabled: true, hint: "npm run test:security" },
-      { key: "regression", label: "Regression Tests", enabled: true, hint: "npm run test:regression" },
-      { key: "smoke", label: "Smoke Tests", enabled: true, hint: "npm run test:smoke (post-deploy)" },
+      {
+        key: "regression",
+        label: "Regression Tests",
+        enabled: true,
+        hint: "npm run test:regression",
+      },
+      {
+        key: "smoke",
+        label: "Smoke Tests",
+        enabled: true,
+        hint: "npm run test:smoke (post-deploy)",
+      },
     ],
   };
 }

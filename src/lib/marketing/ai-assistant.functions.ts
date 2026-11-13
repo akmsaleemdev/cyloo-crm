@@ -1,7 +1,7 @@
 /**
  * AI marketing assistant server functions.
  *
- * Uses Lovable AI Gateway directly (mirrors the pattern in ab-testing.functions.ts)
+ * Uses the configured direct AI provider (mirrors ab-testing.functions.ts).
  * so it works without any workspace-level AI provider configuration.
  *
  * Features:

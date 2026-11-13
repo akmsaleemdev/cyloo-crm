@@ -21,13 +21,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -199,9 +193,7 @@ export function GatewayHealthWidget({ workspaceId }: { workspaceId: string }) {
 
               <div className="text-xs">
                 <div className="text-muted-foreground">Failures</div>
-                <div
-                  className={`font-medium ${g.failures > 0 ? "text-destructive" : ""}`}
-                >
+                <div className={`font-medium ${g.failures > 0 ? "text-destructive" : ""}`}>
                   {g.failures} / {g.deliveries}
                 </div>
               </div>

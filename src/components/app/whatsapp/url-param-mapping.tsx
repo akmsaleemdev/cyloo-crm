@@ -41,7 +41,9 @@ export function UrlParamMapping({ url }: { url: string | undefined | null }) {
             <Badge variant="outline" className="h-5 px-1.5 text-[11px] font-normal">
               {LOCATION_LABEL[param.location]}
             </Badge>
-            <code className="rounded bg-background px-1 py-0.5 font-mono text-[11px]">{param.key}</code>
+            <code className="rounded bg-background px-1 py-0.5 font-mono text-[11px]">
+              {param.key}
+            </code>
             <span className="text-muted-foreground">→</span>
             {param.variable ? (
               <span className="inline-flex items-center gap-1 font-mono text-[11px] text-primary">
@@ -62,12 +64,13 @@ export function UrlParamMapping({ url }: { url: string | undefined | null }) {
       {analysis.variable ? (
         <p className="text-[11px] text-muted-foreground">
           Meta fills <code className="font-mono">{`{{${analysis.variable}}}`}</code> into{" "}
-          <code className="font-mono">{analysis.variableKey}</code> at send time — everything else is sent as
-          written.
+          <code className="font-mono">{analysis.variableKey}</code> at send time — everything else
+          is sent as written.
         </p>
       ) : (
         <p className="text-[11px] text-muted-foreground">
-          Static link — no variable. Add one at the end, e.g. <code className="font-mono">?order_id={"{{1}}"}</code>.
+          Static link — no variable. Add one at the end, e.g.{" "}
+          <code className="font-mono">?order_id={"{{1}}"}</code>.
         </p>
       )}
     </div>

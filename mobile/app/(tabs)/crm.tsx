@@ -1,14 +1,22 @@
-import { useMemo, useState } from 'react';
-import { View, Text, TextInput, Pressable, FlatList, ScrollView, RefreshControl } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import * as Haptics from 'expo-haptics';
-import { Screen } from '@/components/Screen';
-import { useTheme } from '@/theme/ThemeProvider';
-import { useAuth } from '@/auth/AuthProvider';
-import { useRealtimeTable } from '@/realtime/useRealtimeTable';
-import { useAppStore } from '@/stores/appStore';
-import { pending as pendingOutbox } from '@/offline/outbox';
+import { useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { Screen } from "@/components/Screen";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useAuth } from "@/auth/AuthProvider";
+import { useRealtimeTable } from "@/realtime/useRealtimeTable";
+import { useAppStore } from "@/stores/appStore";
+import { pending as pendingOutbox } from "@/offline/outbox";
 import {
   listContacts,
   listCompanies,
@@ -21,43 +29,59 @@ import {
   type LeadRow,
   type DealRow,
   type TaskRow,
-} from '@/api/crm';
+} from "@/api/crm";
 
-type Tab = 'contacts' | 'companies' | 'leads' | 'deals' | 'tasks';
+type Tab = "contacts" | "companies" | "leads" | "deals" | "tasks";
 
 export default function CRM() {
   const t = useTheme();
   const { user } = useAuth();
   const online = useAppStore((s) => s.networkOnline);
-  const [tab, setTab] = useState<Tab>('contacts');
-  const [q, setQ] = useState('');
+  const [tab, setTab] = useState<Tab>("contacts");
+  const [q, setQ] = useState("");
   const [mineOnly, setMineOnly] = useState(false);
 
-  useRealtimeTable('contacts', ['crm', 'contacts']);
-  useRealtimeTable('deals', ['crm', 'deals']);
-  useRealtimeTable('tasks', ['crm', 'tasks']);
+  useRealtimeTable("contacts", ["crm", "contacts"]);
+  useRealtimeTable("deals", ["crm", "deals"]);
+  useRealtimeTable("tasks", ["crm", "tasks"]);
 
   const contacts = useQuery({
-    queryKey: ['crm', 'contacts', q, mineOnly],
-    queryFn: () => listContacts(q, mineOnly ? 'me' : null, user?.id),
-    enabled: tab === 'contacts',
+    queryKey: ["crm", "contacts", q, mineOnly],
+    queryFn: () => listContacts(q, mineOnly ? "me" : null, user?.id),
+    enabled: tab === "contacts",
   });
-  const companies = useQuery({ queryKey: ['crm', 'companies', q], queryFn: () => listCompanies(q), enabled: tab === 'companies' });
-  const leads = useQuery({ queryKey: ['crm', 'leads', q], queryFn: () => listLeads(q), enabled: tab === 'leads' });
-  const deals = useQuery({ queryKey: ['crm', 'deals', q], queryFn: () => listDeals(q), enabled: tab === 'deals' });
-  const tasks = useQuery({ queryKey: ['crm', 'tasks'], queryFn: () => listTasks(), enabled: tab === 'tasks' });
+  const companies = useQuery({
+    queryKey: ["crm", "companies", q],
+    queryFn: () => listCompanies(q),
+    enabled: tab === "companies",
+  });
+  const leads = useQuery({
+    queryKey: ["crm", "leads", q],
+    queryFn: () => listLeads(q),
+    enabled: tab === "leads",
+  });
+  const deals = useQuery({
+    queryKey: ["crm", "deals", q],
+    queryFn: () => listDeals(q),
+    enabled: tab === "deals",
+  });
+  const tasks = useQuery({
+    queryKey: ["crm", "tasks"],
+    queryFn: () => listTasks(),
+    enabled: tab === "tasks",
+  });
 
   const active = { contacts, companies, leads, deals, tasks }[tab];
   const pendingCount = useMemo(() => pendingOutbox().length, [online]);
 
   return (
     <Screen>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Text style={[t.typography.h1, { color: t.colors.foreground, flex: 1 }]}>CRM</Text>
         <Pressable
           onPress={() => {
             Haptics.selectionAsync();
-            router.push('/crm/new');
+            router.push("/crm/new");
           }}
           style={{
             paddingHorizontal: 14,
@@ -66,7 +90,7 @@ export default function CRM() {
             backgroundColor: t.colors.primary,
           }}
         >
-          <Text style={{ color: t.colors.primaryFg, fontWeight: '700' }}>＋ New</Text>
+          <Text style={{ color: t.colors.primaryFg, fontWeight: "700" }}>＋ New</Text>
         </Pressable>
       </View>
 
@@ -80,15 +104,17 @@ export default function CRM() {
           }}
         >
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
-            {online ? `${pendingCount} change(s) queued — syncing` : `Offline — ${pendingCount} pending change(s)`}
+            {online
+              ? `${pendingCount} change(s) queued — syncing`
+              : `Offline — ${pendingCount} pending change(s)`}
           </Text>
         </View>
       ) : null}
 
       <View
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
+          flexDirection: "row",
+          alignItems: "center",
           gap: 8,
           marginTop: t.spacing.md,
           padding: 10,
@@ -107,12 +133,16 @@ export default function CRM() {
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: t.spacing.sm }}>
-        <View style={{ flexDirection: 'row', gap: 6 }}>
-          {(['contacts', 'companies', 'leads', 'deals', 'tasks'] as Tab[]).map((tk) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginTop: t.spacing.sm }}
+      >
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          {(["contacts", "companies", "leads", "deals", "tasks"] as Tab[]).map((tk) => (
             <Chip key={tk} label={tk} active={tab === tk} onPress={() => setTab(tk)} />
           ))}
-          {tab === 'contacts' ? (
+          {tab === "contacts" ? (
             <>
               <View style={{ width: 8 }} />
               <Chip label="Mine" active={mineOnly} onPress={() => setMineOnly((v) => !v)} />
@@ -126,19 +156,27 @@ export default function CRM() {
         data={(active?.data ?? []) as any[]}
         keyExtractor={(i: any) => i.id}
         refreshControl={
-          <RefreshControl refreshing={!!active?.isRefetching} onRefresh={() => active?.refetch()} tintColor={t.colors.primary} />
+          <RefreshControl
+            refreshing={!!active?.isRefetching}
+            onRefresh={() => active?.refetch()}
+            tintColor={t.colors.primary}
+          />
         }
-        ItemSeparatorComponent={() => <View style={{ height: 1, backgroundColor: t.colors.border }} />}
+        ItemSeparatorComponent={() => (
+          <View style={{ height: 1, backgroundColor: t.colors.border }} />
+        )}
         renderItem={({ item }) => {
-          if (tab === 'contacts') return <ContactCard item={item as ContactRow} />;
-          if (tab === 'companies') return <CompanyCard item={item as CompanyRow} />;
-          if (tab === 'leads') return <LeadCard item={item as LeadRow} />;
-          if (tab === 'deals') return <DealCard item={item as DealRow} />;
+          if (tab === "contacts") return <ContactCard item={item as ContactRow} />;
+          if (tab === "companies") return <CompanyCard item={item as CompanyRow} />;
+          if (tab === "leads") return <LeadCard item={item as LeadRow} />;
+          if (tab === "deals") return <DealCard item={item as DealRow} />;
           return <TaskCard item={item as TaskRow} />;
         }}
         ListEmptyComponent={
           !active?.isLoading ? (
-            <Text style={{ color: t.colors.mutedFg, textAlign: 'center', marginTop: 40 }}>Nothing to show</Text>
+            <Text style={{ color: t.colors.mutedFg, textAlign: "center", marginTop: 40 }}>
+              Nothing to show
+            </Text>
           ) : null
         }
       />
@@ -158,7 +196,13 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
         backgroundColor: active ? t.colors.foreground : t.colors.muted,
       }}
     >
-      <Text style={{ color: active ? t.colors.background : t.colors.mutedFg, fontSize: 12, fontWeight: '600' }}>
+      <Text
+        style={{
+          color: active ? t.colors.background : t.colors.mutedFg,
+          fontSize: 12,
+          fontWeight: "600",
+        }}
+      >
         {label}
       </Text>
     </Pressable>
@@ -168,7 +212,10 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 function Row({ children, onPress }: { children: React.ReactNode; onPress?: () => void }) {
   const t = useTheme();
   return (
-    <Pressable onPress={onPress} style={{ paddingVertical: t.spacing.md, backgroundColor: t.colors.background }}>
+    <Pressable
+      onPress={onPress}
+      style={{ paddingVertical: t.spacing.md, backgroundColor: t.colors.background }}
+    >
       {children}
     </Pressable>
   );
@@ -176,22 +223,38 @@ function Row({ children, onPress }: { children: React.ReactNode; onPress?: () =>
 
 function ContactCard({ item }: { item: ContactRow }) {
   const t = useTheme();
-  const name = item.display_name ?? [item.first_name, item.last_name].filter(Boolean).join(' ') ?? item.email ?? '(no name)';
+  const name =
+    item.display_name ??
+    [item.first_name, item.last_name].filter(Boolean).join(" ") ??
+    item.email ??
+    "(no name)";
   return (
-    <Row onPress={() => router.push({ pathname: '/crm/contact/[id]', params: { id: item.id } })}>
-      <View style={{ flexDirection: 'row', gap: 10 }}>
+    <Row onPress={() => router.push({ pathname: "/crm/contact/[id]", params: { id: item.id } })}>
+      <View style={{ flexDirection: "row", gap: 10 }}>
         <Avatar name={name} />
         <View style={{ flex: 1 }}>
-          <Text style={{ color: t.colors.foreground, fontSize: 15, fontWeight: '600' }} numberOfLines={1}>
+          <Text
+            style={{ color: t.colors.foreground, fontSize: 15, fontWeight: "600" }}
+            numberOfLines={1}
+          >
             {name}
           </Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }} numberOfLines={1}>
-            {[item.company_name, item.email, item.phone].filter(Boolean).join(' · ')}
+            {[item.company_name, item.email, item.phone].filter(Boolean).join(" · ")}
           </Text>
         </View>
         {item.lifecycle_stage ? (
-          <View style={{ backgroundColor: t.colors.muted, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
-            <Text style={{ color: t.colors.mutedFg, fontSize: 10, fontWeight: '600' }}>{item.lifecycle_stage}</Text>
+          <View
+            style={{
+              backgroundColor: t.colors.muted,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              borderRadius: 999,
+            }}
+          >
+            <Text style={{ color: t.colors.mutedFg, fontSize: 10, fontWeight: "600" }}>
+              {item.lifecycle_stage}
+            </Text>
           </View>
         ) : null}
       </View>
@@ -203,9 +266,9 @@ function CompanyCard({ item }: { item: CompanyRow }) {
   const t = useTheme();
   return (
     <Row>
-      <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{item.name}</Text>
+      <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{item.name}</Text>
       <Text style={{ color: t.colors.mutedFg, fontSize: 12 }} numberOfLines={1}>
-        {[item.industry, item.city, item.country].filter(Boolean).join(' · ') || '—'}
+        {[item.industry, item.city, item.country].filter(Boolean).join(" · ") || "—"}
       </Text>
     </Row>
   );
@@ -215,16 +278,27 @@ function LeadCard({ item }: { item: LeadRow }) {
   const t = useTheme();
   return (
     <Row>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{item.name ?? item.email ?? 'Lead'}</Text>
+          <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>
+            {item.name ?? item.email ?? "Lead"}
+          </Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }} numberOfLines={1}>
-            {[item.source, item.status].filter(Boolean).join(' · ')}
+            {[item.source, item.status].filter(Boolean).join(" · ")}
           </Text>
         </View>
         {item.score != null ? (
-          <View style={{ backgroundColor: t.colors.primary, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 }}>
-            <Text style={{ color: t.colors.primaryFg, fontSize: 11, fontWeight: '700' }}>{item.score}</Text>
+          <View
+            style={{
+              backgroundColor: t.colors.primary,
+              paddingHorizontal: 8,
+              paddingVertical: 2,
+              borderRadius: 999,
+            }}
+          >
+            <Text style={{ color: t.colors.primaryFg, fontSize: 11, fontWeight: "700" }}>
+              {item.score}
+            </Text>
           </View>
         ) : null}
       </View>
@@ -234,17 +308,25 @@ function LeadCard({ item }: { item: LeadRow }) {
 
 function DealCard({ item }: { item: DealRow }) {
   const t = useTheme();
-  const amount = item.amount != null ? new Intl.NumberFormat(undefined, { style: 'currency', currency: item.currency ?? 'USD' }).format(item.amount) : '—';
+  const amount =
+    item.amount != null
+      ? new Intl.NumberFormat(undefined, {
+          style: "currency",
+          currency: item.currency ?? "USD",
+        }).format(item.amount)
+      : "—";
   return (
     <Row>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ color: t.colors.foreground, fontWeight: '600' }}>{item.name}</Text>
+          <Text style={{ color: t.colors.foreground, fontWeight: "600" }}>{item.name}</Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
-            {item.expected_close_date ? `Close ${new Date(item.expected_close_date).toLocaleDateString()}` : 'No close date'}
+            {item.expected_close_date
+              ? `Close ${new Date(item.expected_close_date).toLocaleDateString()}`
+              : "No close date"}
           </Text>
         </View>
-        <Text style={{ color: t.colors.foreground, fontWeight: '700' }}>{amount}</Text>
+        <Text style={{ color: t.colors.foreground, fontWeight: "700" }}>{amount}</Text>
       </View>
     </Row>
   );
@@ -252,10 +334,10 @@ function DealCard({ item }: { item: DealRow }) {
 
 function TaskCard({ item }: { item: TaskRow }) {
   const t = useTheme();
-  const done = item.status === 'completed';
+  const done = item.status === "completed";
   return (
     <Row>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Pressable
           onPress={() => {
             if (done) return;
@@ -268,19 +350,19 @@ function TaskCard({ item }: { item: TaskRow }) {
             borderRadius: 11,
             borderWidth: 2,
             borderColor: done ? t.colors.success : t.colors.border,
-            backgroundColor: done ? t.colors.success : 'transparent',
-            alignItems: 'center',
-            justifyContent: 'center',
+            backgroundColor: done ? t.colors.success : "transparent",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {done ? <Text style={{ color: '#fff', fontSize: 12 }}>✓</Text> : null}
+          {done ? <Text style={{ color: "#fff", fontSize: 12 }}>✓</Text> : null}
         </Pressable>
         <View style={{ flex: 1 }}>
           <Text
             style={{
               color: t.colors.foreground,
-              fontWeight: '600',
-              textDecorationLine: done ? 'line-through' : 'none',
+              fontWeight: "600",
+              textDecorationLine: done ? "line-through" : "none",
               opacity: done ? 0.6 : 1,
             }}
             numberOfLines={1}
@@ -288,8 +370,8 @@ function TaskCard({ item }: { item: TaskRow }) {
             {item.title}
           </Text>
           <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
-            {item.due_date ? `Due ${new Date(item.due_date).toLocaleDateString()}` : 'No due date'}
-            {item.priority ? ` · ${item.priority}` : ''}
+            {item.due_date ? `Due ${new Date(item.due_date).toLocaleDateString()}` : "No due date"}
+            {item.priority ? ` · ${item.priority}` : ""}
           </Text>
         </View>
       </View>
@@ -300,11 +382,11 @@ function TaskCard({ item }: { item: TaskRow }) {
 function Avatar({ name }: { name: string }) {
   const t = useTheme();
   const initials = name
-    .split(' ')
+    .split(" ")
     .map((p) => p[0])
     .filter(Boolean)
     .slice(0, 2)
-    .join('')
+    .join("")
     .toUpperCase();
   return (
     <View
@@ -313,11 +395,11 @@ function Avatar({ name }: { name: string }) {
         height: 40,
         borderRadius: 20,
         backgroundColor: t.colors.muted,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <Text style={{ color: t.colors.foreground, fontWeight: '700' }}>{initials || '?'}</Text>
+      <Text style={{ color: t.colors.foreground, fontWeight: "700" }}>{initials || "?"}</Text>
     </View>
   );
 }

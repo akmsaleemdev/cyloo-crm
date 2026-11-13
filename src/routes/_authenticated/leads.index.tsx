@@ -98,9 +98,7 @@ export function LeadsPage() {
       ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       : undefined,
   );
-  const [view, setView] = useState<"active" | "converted" | "all">(
-    recentSince ? "all" : "active",
-  );
+  const [view, setView] = useState<"active" | "converted" | "all">(recentSince ? "all" : "active");
   const [filters, setFilters] = useState<Omit<LeadFilters, "search" | "converted">>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openForm, setOpenForm] = useState(false);
@@ -172,8 +170,17 @@ export function LeadsPage() {
       <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
         {recentSince && (
           <div className="flex items-center justify-between gap-3 rounded-control border border-border bg-muted/30 px-4 py-2 text-sm">
-            <span>Created in the last 7 days · {recentCount.isLoading ? "Loading total…" : recentCount.isError ? "Total unavailable" : `${recentCount.data ?? 0} total`}</span>
-            <Button variant="ghost" size="sm" onClick={() => setRecentSince(undefined)}>Clear date filter</Button>
+            <span>
+              Created in the last 7 days ·{" "}
+              {recentCount.isLoading
+                ? "Loading total…"
+                : recentCount.isError
+                  ? "Total unavailable"
+                  : `${recentCount.data ?? 0} total`}
+            </span>
+            <Button variant="ghost" size="sm" onClick={() => setRecentSince(undefined)}>
+              Clear date filter
+            </Button>
           </div>
         )}
         {/* Stats */}
@@ -551,7 +558,9 @@ function RatingBadge({ rating }: { rating: string | null }) {
         ? "text-amber-500 bg-amber-500/10"
         : "text-blue-500 bg-blue-500/10";
   return (
-    <span className={`inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[11px] ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-control px-1.5 py-0.5 text-[11px] ${cls}`}
+    >
       {icon}
       {rating}
     </span>

@@ -12,7 +12,9 @@ const destination = resolve(publicOutput, "docs");
 
 const sourceStats = await stat(source).catch(() => null);
 if (!sourceStats?.isDirectory()) {
-  console.log(`[copy-docs-to-output] Documentation source directory not found: ${source}; skipping.`);
+  console.log(
+    `[copy-docs-to-output] Documentation source directory not found: ${source}; skipping.`,
+  );
   process.exit(0);
 }
 

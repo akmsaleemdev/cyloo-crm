@@ -68,18 +68,19 @@ async function assertWorkspaceAdmin(
   workspaceId: string,
   userId: string,
 ) {
-  const { data: isAdmin } = await sbAny(supabase).rpc("is_workspace_admin" as never, {
-    _workspace_id: workspaceId,
-    _user_id: userId,
-  } as never);
+  const { data: isAdmin } = await sbAny(supabase).rpc(
+    "is_workspace_admin" as never,
+    {
+      _workspace_id: workspaceId,
+      _user_id: userId,
+    } as never,
+  );
   if (!isAdmin) throw new Error("Only workspace owners and admins can manage webhooks");
 }
 
 export const listChatbotWebhooks = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("chatbot_webhooks" as never)
@@ -140,7 +141,6 @@ export const upsertChatbotWebhook = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return row as unknown as ChatbotWebhook;
   });
-
 
 export const deleteChatbotWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

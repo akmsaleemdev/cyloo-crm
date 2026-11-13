@@ -41,14 +41,22 @@ export function MediaViewer(props: MediaViewerProps) {
 
 // -------------------------------------------------------------- image
 
-export function ImagePreview({ attachmentId, filename, height = 320, className }: MediaViewerProps) {
+export function ImagePreview({
+  attachmentId,
+  filename,
+  height = 320,
+  className,
+}: MediaViewerProps) {
   const { url, loading, error } = useSignedMediaUrl(attachmentId, {
     width: Math.max(640, height * 2),
   });
   const lightbox = useMediaLightbox();
   if (error) return <ErrorBox message={error} />;
   return (
-    <div className={cn("relative overflow-hidden rounded-control bg-muted", className)} style={{ maxHeight: height }}>
+    <div
+      className={cn("relative overflow-hidden rounded-control bg-muted", className)}
+      style={{ maxHeight: height }}
+    >
       {loading || !url ? (
         <Skeleton className="h-full w-full" style={{ height }} />
       ) : (
@@ -74,7 +82,12 @@ export function ImagePreview({ attachmentId, filename, height = 320, className }
 
 // -------------------------------------------------------------- video
 
-export function VideoPreview({ attachmentId, filename, height = 360, className }: MediaViewerProps) {
+export function VideoPreview({
+  attachmentId,
+  filename,
+  height = 360,
+  className,
+}: MediaViewerProps) {
   const { url, loading, error } = useSignedMediaUrl(attachmentId);
   const lightbox = useMediaLightbox();
   if (error) return <ErrorBox message={error} />;
@@ -115,7 +128,13 @@ export function AudioPreview({ attachmentId, filename, sizeBytes, className }: M
       {loading || !url ? (
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       ) : (
-        <audio src={url} controls preload="metadata" className="w-full" aria-label={filename ?? "audio"} />
+        <audio
+          src={url}
+          controls
+          preload="metadata"
+          className="w-full"
+          aria-label={filename ?? "audio"}
+        />
       )}
       {filename && (
         <div className="min-w-0 shrink-0 text-xs text-muted-foreground">
@@ -150,7 +169,13 @@ export function PdfViewer({ attachmentId, filename, height = 640, className }: M
 
 // -------------------------------------------------------------- generic download card
 
-export function FileDownloadCard({ attachmentId, mimeType, filename, sizeBytes, className }: MediaViewerProps) {
+export function FileDownloadCard({
+  attachmentId,
+  mimeType,
+  filename,
+  sizeBytes,
+  className,
+}: MediaViewerProps) {
   const { url, loading } = useSignedMediaUrl(attachmentId, { download: true });
   return (
     <div className={cn("flex items-center gap-3 rounded-control border bg-card p-3", className)}>
@@ -173,7 +198,6 @@ export function FileDownloadCard({ attachmentId, mimeType, filename, sizeBytes, 
         <Download className="mr-1 h-4 w-4" />
         Download
       </Button>
-
     </div>
   );
 }

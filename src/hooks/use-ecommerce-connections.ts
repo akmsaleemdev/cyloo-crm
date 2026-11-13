@@ -99,11 +99,13 @@ export function validateConnection(input: ConnectionInput): Record<string, strin
     errors.access_token = "Admin API access token is required";
   if (input.platform === "woocommerce") {
     if (!input.credentials.consumer_key?.trim()) errors.consumer_key = "Consumer key is required";
-    if (!input.credentials.consumer_secret?.trim()) errors.consumer_secret = "Consumer secret is required";
+    if (!input.credentials.consumer_secret?.trim())
+      errors.consumer_secret = "Consumer secret is required";
   }
   if (input.platform === "wordpress") {
     if (!input.credentials.username?.trim()) errors.username = "WordPress username is required";
-    if (!input.credentials.app_password?.trim()) errors.app_password = "Application password is required";
+    if (!input.credentials.app_password?.trim())
+      errors.app_password = "Application password is required";
   }
   return errors;
 }
@@ -115,7 +117,9 @@ export function useSaveEcommerceConnection() {
     mutationFn: async (input: ConnectionInput) => {
       const workspaceId = await resolveWorkspaceId(active?.id);
       if (!workspaceId)
-        throw new Error("No workspace is available for your account yet. Create a workspace in Settings first.");
+        throw new Error(
+          "No workspace is available for your account yet. Create a workspace in Settings first.",
+        );
       const errors = validateConnection(input);
       const first = Object.values(errors)[0];
       if (first) throw new Error(first);
@@ -129,12 +133,17 @@ export function useSaveEcommerceConnection() {
       };
       if (input.id) {
         const { data, error } = await db("ecommerce_connections")
-          .update(payload).eq("id", input.id).select().single();
+          .update(payload)
+          .eq("id", input.id)
+          .select()
+          .single();
         if (error) throw error;
         return data;
       }
       const { data, error } = await db("ecommerce_connections")
-        .insert({ ...payload, status: "disconnected" }).select().single();
+        .insert({ ...payload, status: "disconnected" })
+        .select()
+        .single();
       if (error) throw error;
       return data;
     },

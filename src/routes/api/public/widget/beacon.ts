@@ -47,15 +47,17 @@ export const Route = createFileRoute("/api/public/widget/beacon")({
           .maybeSingle();
         const w = widget as { workspace_id: string; is_active: boolean } | null;
         if (!w || !w.is_active) return new Response("ok", { status: 204, headers: CORS });
-        await sbAny(supabaseAdmin).from("chat_widget_events").insert({
-          widget_id: widgetId,
-          workspace_id: w.workspace_id,
-          event_type: event,
-          session_id: typeof b.sessionId === "string" ? b.sessionId.slice(0, 200) : null,
-          url: typeof b.url === "string" ? b.url.slice(0, 2048) : null,
-          referrer: typeof b.referrer === "string" ? b.referrer.slice(0, 2048) : null,
-          user_agent: request.headers.get("user-agent")?.slice(0, 500) ?? null,
-        } as never);
+        await sbAny(supabaseAdmin)
+          .from("chat_widget_events")
+          .insert({
+            widget_id: widgetId,
+            workspace_id: w.workspace_id,
+            event_type: event,
+            session_id: typeof b.sessionId === "string" ? b.sessionId.slice(0, 200) : null,
+            url: typeof b.url === "string" ? b.url.slice(0, 2048) : null,
+            referrer: typeof b.referrer === "string" ? b.referrer.slice(0, 2048) : null,
+            user_agent: request.headers.get("user-agent")?.slice(0, 500) ?? null,
+          } as never);
         return new Response("ok", { status: 204, headers: CORS });
       },
     },

@@ -30,14 +30,16 @@ export function EngagementMetrics({ customerId }: { customerId: string }) {
     queryKey: ["engagement-metrics", customerId],
     enabled: !!customerId,
     queryFn: async () => {
-      const conv = await sbAny(db).from("conversations")
+      const conv = await sbAny(db)
+        .from("conversations")
         .select("id, status, last_message_at")
         .eq("contact_id", customerId);
       const conversations: Conv[] = conv.data ?? [];
       const ids = conversations.map((c) => c.id);
       let messages: Msg[] = [];
       if (ids.length) {
-        const { data } = await sbAny(db).from("messages")
+        const { data } = await sbAny(db)
+          .from("messages")
           .select("id, conversation_id, direction, created_at")
           .in("conversation_id", ids)
           .is("deleted_at", null)
@@ -55,8 +57,14 @@ export function EngagementMetrics({ customerId }: { customerId: string }) {
 
     // Last contact = latest message timestamp
     const lastMsg = messages.length ? messages[messages.length - 1].created_at : null;
-    const lastContact = lastMsg ??
-      conversations.map((c) => c.last_message_at).filter(Boolean).sort().slice(-1)[0] ?? null;
+    const lastContact =
+      lastMsg ??
+      conversations
+        .map((c) => c.last_message_at)
+        .filter(Boolean)
+        .sort()
+        .slice(-1)[0] ??
+      null;
 
     // Average first-response time: time from inbound → next outbound within same conversation
     const byConv = new Map<string, Msg[]>();
@@ -68,7 +76,9 @@ export function EngagementMetrics({ customerId }: { customerId: string }) {
     for (const arr of byConv.values()) {
       for (let i = 0; i < arr.length - 1; i++) {
         if (arr[i].direction === "inbound" && arr[i + 1].direction === "outbound") {
-          gaps.push(new Date(arr[i + 1].created_at).getTime() - new Date(arr[i].created_at).getTime());
+          gaps.push(
+            new Date(arr[i + 1].created_at).getTime() - new Date(arr[i].created_at).getTime(),
+          );
         }
       }
     }
@@ -141,10 +151,22 @@ export function EngagementMetrics({ customerId }: { customerId: string }) {
   );
 }
 
-function Stat({ icon, label, value, hint }: { icon: React.ReactNode; label: string; value: string; hint?: string }) {
+function Stat({
+  icon,
+  label,
+  value,
+  hint,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  hint?: string;
+}) {
   return (
     <div className="rounded-control border border-border p-3">
-      <div className="text-xs text-muted-foreground flex items-center gap-1.5">{icon} {label}</div>
+      <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+        {icon} {label}
+      </div>
       <div className="text-lg font-display font-semibold mt-1  truncate">{value}</div>
       {hint && <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{hint}</div>}
     </div>

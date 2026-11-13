@@ -35,8 +35,15 @@ export const manualProvider: BillingProvider = {
   id: "manual",
   displayName: "Manual Invoicing",
   supports: {
-    checkout: false, customer_portal: false, usage_reporting: true, tax: true, coupons: true,
-    payments: true, refunds: true, partial_refunds: true, webhooks: false,
+    checkout: false,
+    customer_portal: false,
+    usage_reporting: true,
+    tax: true,
+    coupons: true,
+    payments: true,
+    refunds: true,
+    partial_refunds: true,
+    webhooks: false,
   },
 
   async createCustomer(input: CustomerInput): Promise<CustomerRef> {
@@ -62,7 +69,9 @@ export const manualProvider: BillingProvider = {
   },
 
   async cancelSubscription(id: string): Promise<SubscriptionSnapshot> {
-    throw new Error(`Manual provider cancel must be performed by an admin update on subscriptions.${id}`);
+    throw new Error(
+      `Manual provider cancel must be performed by an admin update on subscriptions.${id}`,
+    );
   },
 
   async updateSubscriptionQuantity(id: string): Promise<SubscriptionSnapshot> {

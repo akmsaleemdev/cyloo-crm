@@ -19,11 +19,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 import { resolveWorkspaceCurrency } from "@/lib/currency/resolve.server";
 
 /** Wrap an executor with audit logging + uniform error handling. */
-function auditable<Args, Out>(
-  ctx: ToolContext,
-  name: string,
-  fn: (args: Args) => Promise<Out>,
-) {
+function auditable<Args, Out>(ctx: ToolContext, name: string, fn: (args: Args) => Promise<Out>) {
   return async (args: Args) => {
     const started = Date.now();
     let output: unknown = null;
@@ -40,17 +36,19 @@ function auditable<Args, Out>(
       return { error } as Out;
     } finally {
       try {
-        await sbAny(ctx.supabase).from("ai_tool_executions" as never).insert({
-          workspace_id: ctx.workspaceId,
-          conversation_id: ctx.conversationId,
-          user_id: ctx.userId,
-          tool_name: name,
-          input: args as never,
-          output: output as never,
-          success,
-          error,
-          duration_ms: Date.now() - started,
-        } as never);
+        await sbAny(ctx.supabase)
+          .from("ai_tool_executions" as never)
+          .insert({
+            workspace_id: ctx.workspaceId,
+            conversation_id: ctx.conversationId,
+            user_id: ctx.userId,
+            tool_name: name,
+            input: args as never,
+            output: output as never,
+            success,
+            error,
+            duration_ms: Date.now() - started,
+          } as never);
       } catch {
         /* never fail the tool because auditing failed */
       }
@@ -248,7 +246,8 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
     }),
 
     book_appointment: tool({
-      description: "Book an appointment / meeting. Stored as a scheduled task with priority=meeting.",
+      description:
+        "Book an appointment / meeting. Stored as a scheduled task with priority=meeting.",
       inputSchema: z.object({
         title: z.string(),
         start_at: z.string(),
@@ -299,7 +298,9 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
       execute: auditable(ctx, "list_meeting_slots", async (a) => {
         const { data: et } = await ctx.supabase
           .from("booking_event_types" as never)
-          .select("id, duration_minutes, min_notice_minutes, buffer_before_minutes, buffer_after_minutes, is_active")
+          .select(
+            "id, duration_minutes, min_notice_minutes, buffer_before_minutes, buffer_after_minutes, is_active",
+          )
           .eq("slug", a.event_type_slug)
           .maybeSingle();
         const et2 = et as { id: string; duration_minutes: number; is_active: boolean } | null;
@@ -343,16 +344,26 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
           .from("booking_event_type_hosts" as never)
           .select("host_id, priority, strategy, created_at")
           .eq("event_type_id", a.event_type_id);
-        const rows = (hostRows ?? []) as Array<{ host_id: string; priority: number | null; strategy: string; created_at: string }>;
+        const rows = (hostRows ?? []) as Array<{
+          host_id: string;
+          priority: number | null;
+          strategy: string;
+          created_at: string;
+        }>;
         if (!rows.length) throw new Error("no_host_configured");
         const { data: conflicts } = await ctx.supabase
           .from("booking_appointments" as never)
           .select("host_id")
-          .in("host_id", rows.map((h) => h.host_id))
+          .in(
+            "host_id",
+            rows.map((h) => h.host_id),
+          )
           .lt("start_at", a.end_at)
           .gt("end_at", a.start_at)
           .in("status", ["pending", "confirmed"]);
-        const busy = new Set(((conflicts ?? []) as Array<{ host_id: string }>).map((c) => c.host_id));
+        const busy = new Set(
+          ((conflicts ?? []) as Array<{ host_id: string }>).map((c) => c.host_id),
+        );
         const free = rows.filter((h) => !busy.has(h.host_id));
         if (!free.length) throw new Error("slot_taken");
         const host = free[0];
@@ -495,7 +506,8 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
     }),
 
     check_order: tool({
-      description: "Look up an order / invoice by invoice number or id and return its status and balance.",
+      description:
+        "Look up an order / invoice by invoice number or id and return its status and balance.",
       inputSchema: z.object({
         reference: z.string(),
       }),
@@ -524,12 +536,14 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
         fields: z.record(z.string(), z.unknown()),
       }),
       execute: auditable(ctx, "update_crm", async (a) => {
-        const table = ({
-          contact: "contacts",
-          lead: "leads",
-          deal: "deals",
-          task: "tasks",
-        } as const)[a.entity];
+        const table = (
+          {
+            contact: "contacts",
+            lead: "leads",
+            deal: "deals",
+            task: "tasks",
+          } as const
+        )[a.entity];
         const { data, error } = await ctx.supabase
           .from(table as never)
           .update(a.fields as never)
@@ -625,17 +639,23 @@ function isPrivateHost(host: string): boolean {
   // IPv6 loopback / link-local / unique local
   if (h === "::1" || h.startsWith("fe80:") || h.startsWith("fc") || h.startsWith("fd")) return true;
   // IPv4 loopback + RFC1918 + link-local + CGNAT
-  return /^127\./.test(h) ||
+  return (
+    /^127\./.test(h) ||
     /^10\./.test(h) ||
     /^192\.168\./.test(h) ||
     /^169\.254\./.test(h) ||
     /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h) ||
-    /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./.test(h);
+    /^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\./.test(h)
+  );
 }
 
 async function assertPublicUrl(raw: string) {
   let u: URL;
-  try { u = new URL(raw); } catch { throw new Error("Invalid URL"); }
+  try {
+    u = new URL(raw);
+  } catch {
+    throw new Error("Invalid URL");
+  }
   if (u.protocol !== "http:" && u.protocol !== "https:") {
     throw new Error("Only http(s) URLs are allowed");
   }
@@ -661,24 +681,88 @@ async function assertPublicUrl(raw: string) {
   }
 }
 
-
 /** Client-safe metadata for the tool picker / settings UI. */
 export const ACTION_TOOL_CATALOG = [
-  { name: "create_contact",    label: "Create Contact",    group: "CRM",        description: "Add a contact to the CRM." },
-  { name: "update_contact",    label: "Update Contact",    group: "CRM",        description: "Patch an existing contact." },
-  { name: "create_lead",       label: "Create Lead",       group: "Sales",      description: "Create a lead." },
-  { name: "create_deal",       label: "Create Deal",       group: "Sales",      description: "Open a deal in the pipeline." },
-  { name: "create_task",       label: "Create Task",       group: "Productivity", description: "Create a follow-up task." },
-  { name: "create_note",       label: "Create Note",       group: "Productivity", description: "Attach an internal note to a record." },
-  { name: "book_appointment",  label: "Book Appointment",  group: "Productivity", description: "Schedule a meeting." },
-  { name: "send_whatsapp",     label: "Send WhatsApp",     group: "Messaging",  description: "Queue an outbound WhatsApp message." },
-  { name: "send_email",        label: "Send Email",        group: "Messaging",  description: "Queue an outbound email." },
-  { name: "generate_invoice",  label: "Generate Invoice",  group: "Commerce",   description: "Create a draft invoice." },
-  { name: "check_order",       label: "Check Order",       group: "Commerce",   description: "Look up an order / invoice." },
-  { name: "update_crm",        label: "Update CRM",        group: "CRM",        description: "Generic record patch." },
-  { name: "run_workflow",      label: "Run Workflow",      group: "Automation", description: "Enqueue a saved automation." },
-  { name: "webhook_call",      label: "Webhook Call",      group: "External",   description: "POST JSON to a webhook URL." },
-  { name: "http_request",      label: "HTTP Request",      group: "External",   description: "Generic HTTP fetch." },
+  {
+    name: "create_contact",
+    label: "Create Contact",
+    group: "CRM",
+    description: "Add a contact to the CRM.",
+  },
+  {
+    name: "update_contact",
+    label: "Update Contact",
+    group: "CRM",
+    description: "Patch an existing contact.",
+  },
+  { name: "create_lead", label: "Create Lead", group: "Sales", description: "Create a lead." },
+  {
+    name: "create_deal",
+    label: "Create Deal",
+    group: "Sales",
+    description: "Open a deal in the pipeline.",
+  },
+  {
+    name: "create_task",
+    label: "Create Task",
+    group: "Productivity",
+    description: "Create a follow-up task.",
+  },
+  {
+    name: "create_note",
+    label: "Create Note",
+    group: "Productivity",
+    description: "Attach an internal note to a record.",
+  },
+  {
+    name: "book_appointment",
+    label: "Book Appointment",
+    group: "Productivity",
+    description: "Schedule a meeting.",
+  },
+  {
+    name: "send_whatsapp",
+    label: "Send WhatsApp",
+    group: "Messaging",
+    description: "Queue an outbound WhatsApp message.",
+  },
+  {
+    name: "send_email",
+    label: "Send Email",
+    group: "Messaging",
+    description: "Queue an outbound email.",
+  },
+  {
+    name: "generate_invoice",
+    label: "Generate Invoice",
+    group: "Commerce",
+    description: "Create a draft invoice.",
+  },
+  {
+    name: "check_order",
+    label: "Check Order",
+    group: "Commerce",
+    description: "Look up an order / invoice.",
+  },
+  { name: "update_crm", label: "Update CRM", group: "CRM", description: "Generic record patch." },
+  {
+    name: "run_workflow",
+    label: "Run Workflow",
+    group: "Automation",
+    description: "Enqueue a saved automation.",
+  },
+  {
+    name: "webhook_call",
+    label: "Webhook Call",
+    group: "External",
+    description: "POST JSON to a webhook URL.",
+  },
+  {
+    name: "http_request",
+    label: "HTTP Request",
+    group: "External",
+    description: "Generic HTTP fetch.",
+  },
 ] as const;
 
 export type ActionToolName = (typeof ACTION_TOOL_CATALOG)[number]["name"];

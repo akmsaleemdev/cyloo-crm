@@ -25,12 +25,15 @@ export function messengerThreadKey(pageId: string, customerPsid: string): string
  */
 export async function ensureMessengerThread(admin: Admin, input: MessengerThreadInput) {
   const key = messengerThreadKey(input.pageId, input.customerPsid);
-  const baseQuery = () => admin.from("conversations")
-    .select("id, external_conversation_id, metadata")
-    .eq("workspace_id", input.workspaceId)
-    .eq("channel", "messenger");
+  const baseQuery = () =>
+    admin
+      .from("conversations")
+      .select("id, external_conversation_id, metadata")
+      .eq("workspace_id", input.workspaceId)
+      .eq("channel", "messenger");
   const { data: canonical, error: lookupError } = await baseQuery()
-    .eq("external_conversation_id", key).maybeSingle();
+    .eq("external_conversation_id", key)
+    .maybeSingle();
   if (lookupError) throw new Error(lookupError.message);
 
   if (!canonical) {
@@ -40,13 +43,23 @@ export async function ensureMessengerThread(admin: Admin, input: MessengerThread
     legacyQuery = input.graphThreadId
       ? legacyQuery.eq("external_conversation_id", input.graphThreadId)
       : legacyQuery.eq("contact_id", input.contactId).like("external_conversation_id", "t_%");
-    const { data: legacy, error } = await legacyQuery.order("created_at", { ascending: true }).limit(1).maybeSingle();
+    const { data: legacy, error } = await legacyQuery
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
     if (error) throw new Error(error.message);
     if (legacy) {
-      const { error: adoptionError } = await admin.from("conversations").update({
-        external_conversation_id: key,
-        metadata: { ...(legacy.metadata ?? {}), graph_thread_id: input.graphThreadId ?? legacy.external_conversation_id },
-      }).eq("id", legacy.id).eq("external_conversation_id", legacy.external_conversation_id);
+      const { error: adoptionError } = await admin
+        .from("conversations")
+        .update({
+          external_conversation_id: key,
+          metadata: {
+            ...(legacy.metadata ?? {}),
+            graph_thread_id: input.graphThreadId ?? legacy.external_conversation_id,
+          },
+        })
+        .eq("id", legacy.id)
+        .eq("external_conversation_id", legacy.external_conversation_id);
       // A simultaneous webhook may already have created/adopted the canonical
       // row. ensureInboxThread converges on it using the existing unique key.
       if (adoptionError && adoptionError.code !== "23505") throw new Error(adoptionError.message);

@@ -43,10 +43,13 @@ async function assertMember(supabase: unknown, workspaceId: string, userId: stri
 }
 
 async function assertAdmin(supabase: unknown, workspaceId: string, userId: string) {
-  const { data } = await sbAny(supabase).rpc("is_workspace_admin" as never, {
-    _workspace_id: workspaceId,
-    _user_id: userId,
-  } as never);
+  const { data } = await sbAny(supabase).rpc(
+    "is_workspace_admin" as never,
+    {
+      _workspace_id: workspaceId,
+      _user_id: userId,
+    } as never,
+  );
   if (!data) throw new Error("Only workspace owners and admins can manage TikTok messaging.");
 }
 
@@ -60,7 +63,9 @@ export const getTikTokDmSetup = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { data: rows } = await sbAny(supabaseAdmin)
       .from("tiktok_business_accounts")
-      .select("id, business_id, username, display_name, avatar_url, status, last_error, last_event_at, expires_at")
+      .select(
+        "id, business_id, username, display_name, avatar_url, status, last_error, last_event_at, expires_at",
+      )
       .eq("workspace_id", data.workspaceId)
       .neq("status", "disconnected")
       .order("created_at", { ascending: true });
@@ -85,10 +90,15 @@ export const startTikTokDmConnect = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, data.workspaceId, context.userId);
     const { tiktokDmAppCreds } = await import("./client.server");
     const creds = tiktokDmAppCreds();
-    if (!creds) throw new Error("TIKTOK_BUSINESS_APP_ID and TIKTOK_BUSINESS_APP_SECRET are not set on the server.");
+    if (!creds)
+      throw new Error(
+        "TIKTOK_BUSINESS_APP_ID and TIKTOK_BUSINESS_APP_SECRET are not set on the server.",
+      );
     const { encodeState } = await import("@/lib/social/oauth.server");
     const { buildTikTokDmAuthorizeUrl } = await import("./protocol");
-    const redirectUri = tiktokDmCallbackUri(oauthOrigin(data.origin, new URL(getRequest().url).origin));
+    const redirectUri = tiktokDmCallbackUri(
+      oauthOrigin(data.origin, new URL(getRequest().url).origin),
+    );
     const state = encodeState({
       platform: "tiktok",
       workspaceId: data.workspaceId,
@@ -97,13 +107,18 @@ export const startTikTokDmConnect = createServerFn({ method: "POST" })
       redirectUri,
       exp: Date.now() + 10 * 60 * 1000,
     });
-    return { url: buildTikTokDmAuthorizeUrl({ appId: creds.appId, redirectUri, state }), redirectUri };
+    return {
+      url: buildTikTokDmAuthorizeUrl({ appId: creds.appId, redirectUri, state }),
+      redirectUri,
+    };
   });
 
 /** Reads or (with `register`) points the app's DIRECT_MESSAGE webhook at this deployment. */
 export const syncTikTokDmWebhook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => ws.extend({ origin: z.string().url(), register: z.boolean() }).parse(v))
+  .validator((v: unknown) =>
+    ws.extend({ origin: z.string().url(), register: z.boolean() }).parse(v),
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, data.workspaceId, context.userId);
     const expected = `${oauthOrigin(data.origin, new URL(getRequest().url).origin)}/api/public/webhooks/tiktok`;

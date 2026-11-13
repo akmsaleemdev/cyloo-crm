@@ -66,9 +66,7 @@ export const listWorkspaceGateways = createServerFn({ method: "GET" })
     const { supabase } = context;
 
     const [{ data: platform, error: pErr }, { data: overrides, error: oErr }] = await Promise.all([
-      supabase
-        .rpc("list_payment_gateway_basics")
-        .returns<PlatformRow[]>(),
+      supabase.rpc("list_payment_gateway_basics").returns<PlatformRow[]>(),
       supabase
         .from("workspace_payment_gateway_settings")
         .select("provider_id, enabled, is_default, notes")
@@ -87,8 +85,7 @@ export const listWorkspaceGateways = createServerFn({ method: "GET" })
       const effectiveEnabled = p.enabled && (override ?? true);
       return {
         id: p.provider_id,
-        displayName:
-          p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
+        displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
         platformEnabled: p.enabled,
         platformDefault: p.is_default,
         mode: p.mode ?? "sandbox",
@@ -162,14 +159,16 @@ export const setWorkspaceGatewayOverride = createServerFn({ method: "POST" })
         .eq("provider_id", data.provider_id);
     }
 
-    const { error } = await sbAny(supabase).from("workspace_payment_gateway_settings").upsert(
-      {
-        workspace_id: data.workspace_id,
-        provider_id: data.provider_id,
-        enabled: data.enabled,
-      } as never,
-      { onConflict: "workspace_id,provider_id" },
-    );
+    const { error } = await sbAny(supabase)
+      .from("workspace_payment_gateway_settings")
+      .upsert(
+        {
+          workspace_id: data.workspace_id,
+          provider_id: data.provider_id,
+          enabled: data.enabled,
+        } as never,
+        { onConflict: "workspace_id,provider_id" },
+      );
     if (error) throw error;
     return { ok: true };
   });
@@ -212,15 +211,17 @@ export const setWorkspaceDefaultGateway = createServerFn({ method: "POST" })
       throw new Error("Turn this gateway on for the workspace before making it the default.");
     }
 
-    const { error } = await sbAny(supabase).from("workspace_payment_gateway_settings").upsert(
-      {
-        workspace_id: data.workspace_id,
-        provider_id: data.provider_id,
-        enabled: existing?.enabled ?? null,
-        is_default: true,
-      } as never,
-      { onConflict: "workspace_id,provider_id" },
-    );
+    const { error } = await sbAny(supabase)
+      .from("workspace_payment_gateway_settings")
+      .upsert(
+        {
+          workspace_id: data.workspace_id,
+          provider_id: data.provider_id,
+          enabled: existing?.enabled ?? null,
+          is_default: true,
+        } as never,
+        { onConflict: "workspace_id,provider_id" },
+      );
     if (error) throw error;
     return { ok: true };
   });
@@ -280,15 +281,14 @@ export const getWorkspaceGatewayHealth = createServerFn({ method: "GET" })
     const windowHours = data.window_hours ?? 24;
     const since = new Date(Date.now() - windowHours * 3600_000).toISOString();
 
-    const [{ data: platform, error: pErr }, { data: overrides, error: oErr }] =
-      await Promise.all([
-        sbAny(supabase).rpc("list_payment_gateway_basics"),
-        supabase
-          .from("workspace_payment_gateway_settings")
-          .select("provider_id, enabled, is_default, notes")
-          .eq("workspace_id", data.workspace_id)
-          .returns<OverrideRow[]>(),
-      ]);
+    const [{ data: platform, error: pErr }, { data: overrides, error: oErr }] = await Promise.all([
+      sbAny(supabase).rpc("list_payment_gateway_basics"),
+      supabase
+        .from("workspace_payment_gateway_settings")
+        .select("provider_id, enabled, is_default, notes")
+        .eq("workspace_id", data.workspace_id)
+        .returns<OverrideRow[]>(),
+    ]);
     if (pErr) throw pErr;
     if (oErr) throw oErr;
 
@@ -308,9 +308,12 @@ export const getWorkspaceGatewayHealth = createServerFn({ method: "GET" })
       { total: number; failures: number; lastAt: string | null; lastStatus: string | null }
     >();
     for (const row of deliveries ?? []) {
-      const s =
-        stats.get(row.provider_id) ??
-        { total: 0, failures: 0, lastAt: null, lastStatus: null };
+      const s = stats.get(row.provider_id) ?? {
+        total: 0,
+        failures: 0,
+        lastAt: null,
+        lastStatus: null,
+      };
       s.total += 1;
       if (FAILURE_STATUSES.has(row.status)) s.failures += 1;
       if (!s.lastAt || row.received_at > s.lastAt) {

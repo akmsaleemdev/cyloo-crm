@@ -60,9 +60,8 @@ export async function resolvePlanGatewayTarget(
     .eq("enabled", true);
   if (error) throw error;
 
-  const { enabledGatewayIds, defaultGatewayId, gatewayModes } = await import(
-    "./gateway-guard.server"
-  );
+  const { enabledGatewayIds, defaultGatewayId, gatewayModes } =
+    await import("./gateway-guard.server");
   const [allowed, fallbackDefault, modes] = await Promise.all([
     enabledGatewayIds(supabase, input.workspace_id ?? null),
     defaultGatewayId(supabase, input.workspace_id ?? null),
@@ -148,4 +147,3 @@ export async function listPurchasablePlanTargets(
     providers: byPlan.get(p.id) ?? [],
   }));
 }
-

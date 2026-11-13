@@ -4,7 +4,11 @@ import { toast } from "sonner";
 import { Download, Loader2, Upload, X } from "lucide-react";
 
 import { AppTopbar } from "@/components/app/app-topbar";
-import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
+import {
+  SettingsLayout,
+  SettingsCard,
+  SettingsRow,
+} from "@/components/app/settings/settings-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,10 +100,15 @@ function GeneralSettings() {
         </Button>
       }
     >
-      <SettingsCard title="Workspace Identity" description="Core naming and visual representation of your tenant workspace.">
+      <SettingsCard
+        title="Workspace Identity"
+        description="Core naming and visual representation of your tenant workspace."
+      >
         <form onSubmit={onSave} className="p-5 space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="name" className="text-xs font-semibold text-[#ededed]">Workspace name</Label>
+            <Label htmlFor="name" className="text-xs font-semibold text-[#ededed]">
+              Workspace name
+            </Label>
             <Input
               id="name"
               value={name}
@@ -111,11 +120,20 @@ function GeneralSettings() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="slug" className="text-xs font-semibold text-[#ededed]">Slug</Label>
-            <Input id="slug" value={ws?.slug ?? ""} disabled className="bg-[#141414] border-[#2c2c2c] text-muted-foreground" />
+            <Label htmlFor="slug" className="text-xs font-semibold text-[#ededed]">
+              Slug
+            </Label>
+            <Input
+              id="slug"
+              value={ws?.slug ?? ""}
+              disabled
+              className="bg-[#141414] border-[#2c2c2c] text-muted-foreground"
+            />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="desc" className="text-xs font-semibold text-[#ededed]">Description</Label>
+            <Label htmlFor="desc" className="text-xs font-semibold text-[#ededed]">
+              Description
+            </Label>
             <Textarea
               id="desc"
               value={description}
@@ -127,7 +145,9 @@ function GeneralSettings() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="avatar" className="text-xs font-semibold text-[#ededed]">Logo</Label>
+            <Label htmlFor="avatar" className="text-xs font-semibold text-[#ededed]">
+              Logo
+            </Label>
             <WorkspaceLogoUpload
               logoUrl={avatarUrl}
               orgId={orgId}
@@ -138,7 +158,10 @@ function GeneralSettings() {
         </form>
       </SettingsCard>
 
-      <SettingsCard title="Preferences" description="Control notifications and alert behaviors for your team.">
+      <SettingsCard
+        title="Preferences"
+        description="Control notifications and alert behaviors for your team."
+      >
         <SettingsRow
           label="Workspace notifications"
           description="Send activity emails and team announcements to workspace members."
@@ -152,7 +175,10 @@ function GeneralSettings() {
         </SettingsRow>
       </SettingsCard>
 
-      <SettingsCard title={`About ${brandName}`} description="Release and environment information for this installation.">
+      <SettingsCard
+        title={`About ${brandName}`}
+        description="Release and environment information for this installation."
+      >
         <SettingsRow label="Version" description="Current production release channel">
           <Badge variant="secondary" className="bg-[#242424] text-[#ededed] border-[#333333]">
             {APP_VERSION_LABEL} · {APP_RELEASE_CHANNEL}

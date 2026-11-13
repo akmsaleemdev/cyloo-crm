@@ -27,7 +27,8 @@ export const listMarketplaceCatalog = createServerFn({ method: "GET" }).handler(
     global: {
       fetch: (input: any, init: any) => {
         const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+          h.delete("Authorization");
         h.set("apikey", key);
         return fetch(input, { ...init, headers: h });
       },
@@ -92,7 +93,10 @@ export const installIntegration = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw error;
-    await (supabaseAdmin as any).rpc("increment_install_count", { p_id: integ.id }).then(() => {}, () => {});
+    await (supabaseAdmin as any).rpc("increment_install_count", { p_id: integ.id }).then(
+      () => {},
+      () => {},
+    );
     return { installation: installed };
   });
 
@@ -116,11 +120,13 @@ export const setInstallationEnabled = createServerFn({ method: "POST" })
 export const updateInstallationConfig = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((d) =>
-    z.object({
-      id: z.string().uuid(),
-      config: z.record(z.string(), z.any()),
-      scopes: z.array(z.string()).optional(),
-    }).parse(d),
+    z
+      .object({
+        id: z.string().uuid(),
+        config: z.record(z.string(), z.any()),
+        scopes: z.array(z.string()).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const orgId = await getOrgId(context.supabase, context.userId);

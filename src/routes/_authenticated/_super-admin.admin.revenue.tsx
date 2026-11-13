@@ -67,7 +67,11 @@ const PALETTE = [
 ];
 
 function fmtMoney(cents: number, currency: string) {
-  return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(cents / 100);
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 }
 function fmtPct(v: number) {
   return `${(v * 100).toFixed(1)}%`;
@@ -93,18 +97,75 @@ function RevenueAnalyticsPage() {
   const kpiCards = useMemo(() => {
     if (!kpis) return [];
     return [
-      { label: "MRR", value: fmtMoney(kpis.mrr_cents, currency), delta: kpis.monthly_growth, icon: DollarSign, tone: "primary" },
-      { label: "ARR", value: fmtMoney(kpis.arr_cents, currency), delta: kpis.annual_growth, icon: TrendingUp, tone: "primary" },
-      { label: "Active subs", value: fmtNum(kpis.active_subscriptions), sub: `${kpis.trialing_subscriptions} trialing`, icon: Users },
-      { label: "Trial conv.", value: fmtPct(kpis.trial_conversion_rate), sub: `${kpis.trials_converted}/${kpis.trials_started}`, icon: Repeat },
-      { label: "Churn rate", value: fmtPct(kpis.churn_rate), sub: `${kpis.churned_in_range} lost`, icon: Percent, tone: "danger" },
-      { label: "Expansion", value: fmtMoney(kpis.expansion_revenue_cents, currency), sub: `${kpis.upgrades} upgrades`, icon: ArrowUp, tone: "success" },
-      { label: "Downgrades", value: fmtMoney(kpis.downgrade_loss_cents, currency), sub: `${kpis.downgrades} downgrades`, icon: ArrowDown, tone: "danger" },
-      { label: "Refunds", value: fmtMoney(kpis.refunds_cents, currency), icon: CreditCard, tone: "danger" },
-      { label: "Failed payments", value: fmtNum(kpis.failed_payments), sub: fmtMoney(kpis.failed_payments_amount_cents, currency), icon: AlertTriangle, tone: "danger" },
+      {
+        label: "MRR",
+        value: fmtMoney(kpis.mrr_cents, currency),
+        delta: kpis.monthly_growth,
+        icon: DollarSign,
+        tone: "primary",
+      },
+      {
+        label: "ARR",
+        value: fmtMoney(kpis.arr_cents, currency),
+        delta: kpis.annual_growth,
+        icon: TrendingUp,
+        tone: "primary",
+      },
+      {
+        label: "Active subs",
+        value: fmtNum(kpis.active_subscriptions),
+        sub: `${kpis.trialing_subscriptions} trialing`,
+        icon: Users,
+      },
+      {
+        label: "Trial conv.",
+        value: fmtPct(kpis.trial_conversion_rate),
+        sub: `${kpis.trials_converted}/${kpis.trials_started}`,
+        icon: Repeat,
+      },
+      {
+        label: "Churn rate",
+        value: fmtPct(kpis.churn_rate),
+        sub: `${kpis.churned_in_range} lost`,
+        icon: Percent,
+        tone: "danger",
+      },
+      {
+        label: "Expansion",
+        value: fmtMoney(kpis.expansion_revenue_cents, currency),
+        sub: `${kpis.upgrades} upgrades`,
+        icon: ArrowUp,
+        tone: "success",
+      },
+      {
+        label: "Downgrades",
+        value: fmtMoney(kpis.downgrade_loss_cents, currency),
+        sub: `${kpis.downgrades} downgrades`,
+        icon: ArrowDown,
+        tone: "danger",
+      },
+      {
+        label: "Refunds",
+        value: fmtMoney(kpis.refunds_cents, currency),
+        icon: CreditCard,
+        tone: "danger",
+      },
+      {
+        label: "Failed payments",
+        value: fmtNum(kpis.failed_payments),
+        sub: fmtMoney(kpis.failed_payments_amount_cents, currency),
+        icon: AlertTriangle,
+        tone: "danger",
+      },
       { label: "LTV", value: fmtMoney(kpis.ltv_cents, currency), icon: Wallet, tone: "success" },
       { label: "ARPU", value: fmtMoney(kpis.arpu_cents, currency), icon: Activity },
-      { label: "Net revenue", value: fmtMoney(kpis.net_revenue_cents, currency), sub: fmtPct(kpis.revenue_growth) + " vs prev.", icon: DollarSign, tone: kpis.revenue_growth >= 0 ? "success" : "danger" },
+      {
+        label: "Net revenue",
+        value: fmtMoney(kpis.net_revenue_cents, currency),
+        sub: fmtPct(kpis.revenue_growth) + " vs prev.",
+        icon: DollarSign,
+        tone: kpis.revenue_growth >= 0 ? "success" : "danger",
+      },
     ];
   }, [kpis, currency]);
 
@@ -114,7 +175,9 @@ function RevenueAnalyticsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-display font-semibold">Revenue analytics</h2>
-          <p className="text-xs text-muted-foreground">MRR · ARR · churn · LTV — updated in real time</p>
+          <p className="text-xs text-muted-foreground">
+            MRR · ARR · churn · LTV — updated in real time
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-control border border-border bg-surface p-0.5">
@@ -134,7 +197,9 @@ function RevenueAnalyticsPage() {
             className="text-xs border border-border rounded-control bg-surface px-2 py-1.5"
           >
             {CURRENCIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
           <Button size="sm" variant="outline" onClick={() => q.refetch()} disabled={q.isFetching}>
@@ -159,8 +224,14 @@ function RevenueAnalyticsPage() {
                   </div>
                   <div className="text-lg font-display font-semibold">{k.value}</div>
                   {k.delta !== undefined && (
-                    <div className={`text-xs flex items-center gap-1 ${positive ? "text-emerald-600" : "text-rose-600"}`}>
-                      {positive ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                    <div
+                      className={`text-xs flex items-center gap-1 ${positive ? "text-emerald-600" : "text-rose-600"}`}
+                    >
+                      {positive ? (
+                        <ArrowUp className="w-3 h-3" />
+                      ) : (
+                        <ArrowDown className="w-3 h-3" />
+                      )}
                       {fmtPct(Math.abs(k.delta))}
                     </div>
                   )}
@@ -196,14 +267,44 @@ function RevenueAnalyticsPage() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="date" stroke="var(--color-muted-foreground)" fontSize={11} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <YAxis
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                />
                 <Tooltip
-                  contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
-                  formatter={(v: number, n: string) => [new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(v), n.toUpperCase()]}
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number, n: string) => [
+                    new Intl.NumberFormat(undefined, {
+                      style: "currency",
+                      currency,
+                      maximumFractionDigits: 0,
+                    }).format(v),
+                    n.toUpperCase(),
+                  ]}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area type="monotone" dataKey="mrr" stroke={PALETTE[0]} strokeWidth={2} fill="url(#mrrG)" name="MRR" />
-                <Area type="monotone" dataKey="arr" stroke={PALETTE[1]} strokeWidth={2} fill="url(#arrG)" name="ARR" />
+                <Area
+                  type="monotone"
+                  dataKey="mrr"
+                  stroke={PALETTE[0]}
+                  strokeWidth={2}
+                  fill="url(#mrrG)"
+                  name="MRR"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="arr"
+                  stroke={PALETTE[1]}
+                  strokeWidth={2}
+                  fill="url(#arrG)"
+                  name="ARR"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -231,7 +332,12 @@ function RevenueAnalyticsPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
                   formatter={(v: number) => fmtMoney(v, currency)}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -256,7 +362,12 @@ function RevenueAnalyticsPage() {
                 <XAxis dataKey="date" stroke="var(--color-muted-foreground)" fontSize={11} />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={11} />
                 <Tooltip
-                  contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
                   formatter={(v: number) => fmtMoney(v * 100, currency)}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -280,14 +391,50 @@ function RevenueAnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                 <XAxis dataKey="date" stroke="var(--color-muted-foreground)" fontSize={11} />
                 <YAxis yAxisId="l" stroke="var(--color-muted-foreground)" fontSize={11} />
-                <YAxis yAxisId="r" orientation="right" stroke="var(--color-muted-foreground)" fontSize={11} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
+                <YAxis
+                  yAxisId="r"
+                  orientation="right"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+                />
                 <Tooltip
-                  contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line yAxisId="l" type="monotone" dataKey="new_subs" stroke={PALETTE[1]} strokeWidth={2} name="New" dot={false} />
-                <Line yAxisId="l" type="monotone" dataKey="churned" stroke={PALETTE[4]} strokeWidth={2} name="Churned" dot={false} />
-                <Line yAxisId="r" type="monotone" dataKey="churn_rate" stroke={PALETTE[3]} strokeWidth={2} name="Churn %" dot={false} strokeDasharray="4 3" />
+                <Line
+                  yAxisId="l"
+                  type="monotone"
+                  dataKey="new_subs"
+                  stroke={PALETTE[1]}
+                  strokeWidth={2}
+                  name="New"
+                  dot={false}
+                />
+                <Line
+                  yAxisId="l"
+                  type="monotone"
+                  dataKey="churned"
+                  stroke={PALETTE[4]}
+                  strokeWidth={2}
+                  name="Churned"
+                  dot={false}
+                />
+                <Line
+                  yAxisId="r"
+                  type="monotone"
+                  dataKey="churn_rate"
+                  stroke={PALETTE[3]}
+                  strokeWidth={2}
+                  name="Churn %"
+                  dot={false}
+                  strokeDasharray="4 3"
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -309,10 +456,26 @@ function RevenueAnalyticsPage() {
             <ResponsiveContainer>
               <BarChart data={(q.data?.revenue_by_country ?? []).slice(0, 10)} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                <XAxis type="number" stroke="var(--color-muted-foreground)" fontSize={11} tickFormatter={(v) => `${(v / 100 / 1000).toFixed(0)}k`} />
-                <YAxis type="category" dataKey="country" stroke="var(--color-muted-foreground)" fontSize={11} width={80} />
+                <XAxis
+                  type="number"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickFormatter={(v) => `${(v / 100 / 1000).toFixed(0)}k`}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="country"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  width={80}
+                />
                 <Tooltip
-                  contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }}
+                  contentStyle={{
+                    background: "var(--color-surface-elevated)",
+                    border: "1px solid var(--color-border)",
+                    borderRadius: 8,
+                    fontSize: 12,
+                  }}
                   formatter={(v: number) => fmtMoney(v, currency)}
                 />
                 <Bar dataKey="revenue_cents" fill={PALETTE[0]} radius={[0, 4, 4, 0]} />
@@ -331,7 +494,9 @@ function RevenueAnalyticsPage() {
             </div>
           </div>
           {(q.data?.failed_by_reason ?? []).length === 0 ? (
-            <div className="h-56 flex items-center justify-center text-xs text-muted-foreground">No failures 🎉</div>
+            <div className="h-56 flex items-center justify-center text-xs text-muted-foreground">
+              No failures 🎉
+            </div>
           ) : (
             <div className="space-y-2 pt-1">
               {(q.data?.failed_by_reason ?? []).map((r, i) => {

@@ -10,7 +10,7 @@ const InputSchema = z.object({
 });
 
 /**
- * Ask Lovable AI to suggest 3-6 short tags for the given entity context.
+ * Ask the configured AI provider to suggest 3-6 short tags for the entity context.
  * Returns an array of tag names only (no colors/ids). Client decides what to create.
  */
 export const suggestTags = createServerFn({ method: "POST" })

@@ -16,12 +16,7 @@
 type Client = any;
 
 export type VerificationStatus =
-  | "verified"
-  | "mismatch"
-  | "missing"
-  | "error"
-  | "unsupported"
-  | "skipped";
+  "verified" | "mismatch" | "missing" | "error" | "unsupported" | "skipped";
 
 export interface LinkVerification {
   linkId: string;
@@ -322,7 +317,11 @@ export async function verifyPlanGatewayMappings(
         issues.push(`interval ${probe.interval} ≠ ${planRow.interval}`);
       }
       if (issues.length > 0) {
-        probe = { ...probe, status: "mismatch", message: `Gateway disagrees: ${issues.join(", ")}.` };
+        probe = {
+          ...probe,
+          status: "mismatch",
+          message: `Gateway disagrees: ${issues.join(", ")}.`,
+        };
       }
     }
 

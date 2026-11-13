@@ -575,7 +575,9 @@ export function UnifiedTimeline({ workspaceId, contactId, className }: UnifiedTi
                     onClick={() => toggle(kinds, k, setKinds)}
                     className={cn(
                       "shrink-0 inline-flex items-center gap-1.5 rounded-control border px-2 py-1 text-[11px] transition-colors",
-                      active ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted",
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "hover:bg-muted",
                     )}
                   >
                     <Icon className="h-3 w-3" />
@@ -773,7 +775,10 @@ function EventDetailSheet({
           <div className="flex items-center gap-2">
             {kindMeta && (
               <span
-                className={cn("grid h-8 w-8 place-items-center rounded-control ring-1", kindMeta.tone)}
+                className={cn(
+                  "grid h-8 w-8 place-items-center rounded-control ring-1",
+                  kindMeta.tone,
+                )}
               >
                 <KindIcon className="h-4 w-4" />
               </span>

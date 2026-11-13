@@ -52,8 +52,7 @@ export const Route = createFileRoute("/setup")({
       { title: "Setup Wizard" },
       {
         name: "description",
-        content:
-          `Initialize your ${BRAND_NAME} installation: create the first administrator, brand the app, and configure system defaults.`,
+        content: `Initialize your ${BRAND_NAME} installation: create the first administrator, brand the app, and configure system defaults.`,
       },
       { name: "robots", content: "noindex" },
     ],
@@ -194,7 +193,12 @@ function SetupWizard() {
   const bootstrapMut = useMutation({
     mutationFn: async () => {
       const r = await bootstrapFn({
-        data: { email: adminEmail, password: adminPassword, setup_token: setupToken, full_name: adminName || undefined },
+        data: {
+          email: adminEmail,
+          password: adminPassword,
+          setup_token: setupToken,
+          full_name: adminName || undefined,
+        },
       });
       if (r.ok) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -338,10 +342,7 @@ function SetupWizard() {
           <Progress value={((stepIdx + 1) / STEPS.length) * 100} />
           <div className="mt-3 hidden justify-between text-xs text-muted-foreground sm:flex">
             {STEPS.map((s, i) => (
-              <span
-                key={s.key}
-                className={i === stepIdx ? "font-medium text-foreground" : ""}
-              >
+              <span key={s.key} className={i === stepIdx ? "font-medium text-foreground" : ""}>
                 {s.label}
               </span>
             ))}
@@ -359,12 +360,16 @@ function SetupWizard() {
               </CardHeader>
               <CardContent>
                 {setupStatusError && (
-                  <p className="mb-4 rounded-control border border-rose-500/40 bg-rose-500/10 p-3 text-sm">{setupStatusError}</p>
+                  <p className="mb-4 rounded-control border border-rose-500/40 bg-rose-500/10 p-3 text-sm">
+                    {setupStatusError}
+                  </p>
                 )}
                 {env.isLoading && (
                   <p className="text-sm text-muted-foreground">Scanning environment</p>
                 )}
-                {env.isError && <p className="text-sm text-rose-500">{(env.error as Error).message}</p>}
+                {env.isError && (
+                  <p className="text-sm text-rose-500">{(env.error as Error).message}</p>
+                )}
                 {env.data && <ProbeList probes={env.data.probes} />}
                 {env.data?.overall === "fail" && (
                   <div className="mt-4 rounded-control border border-rose-500/40 bg-rose-500/10 p-3 text-sm">
@@ -382,115 +387,130 @@ function SetupWizard() {
                   <UserPlus className="h-5 w-5 text-primary" /> Create Super Administrator
                 </CardTitle>
                 <CardDescription>
-                  This account has full control over your installation. Use a strong, unique password.
+                  This account has full control over your installation. Use a strong, unique
+                  password.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {existingSuperAdmin ? (
                   <div className="flex items-start gap-2 rounded-control border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    <span>You are signed in as the existing super administrator. Continue to configure this installation.</span>
+                    <span>
+                      You are signed in as the existing super administrator. Continue to configure
+                      this installation.
+                    </span>
                   </div>
                 ) : (
-                <>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-name">Full name</Label>
-                  <Input
-                    id="admin-name"
-                    value={adminName}
-                    onChange={(e) => setAdminName(e.target.value)}
-                    placeholder="Jane Doe"
-                    disabled={adminReady}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-email">Email</Label>
-                  <Input
-                    id="admin-email"
-                    type="email"
-                    autoComplete="email"
-                    value={adminEmail}
-                    onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    disabled={adminReady}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-password">Password</Label>
-                  <Input
-                    id="admin-password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={adminPassword}
-                    onChange={(e) => setAdminPassword(e.target.value)}
-                    placeholder="At least 8 characters"
-                    disabled={adminReady}
-                  />
-                  {adminPassword.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Progress value={(strength.score / 5) * 100} className="h-1.5 flex-1" />
-                      <span className="w-20 text-right text-xs text-muted-foreground">
-                        {strength.label}
-                      </span>
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-name">Full name</Label>
+                      <Input
+                        id="admin-name"
+                        value={adminName}
+                        onChange={(e) => setAdminName(e.target.value)}
+                        placeholder="Jane Doe"
+                        disabled={adminReady}
+                      />
                     </div>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-password2">Confirm password</Label>
-                  <Input
-                    id="admin-password2"
-                    type="password"
-                    autoComplete="new-password"
-                    value={adminPassword2}
-                    onChange={(e) => setAdminPassword2(e.target.value)}
-                    disabled={adminReady}
-                  />
-                  {adminPassword2.length > 0 && !passwordsMatch && (
-                    <p className="text-xs text-rose-500">Passwords do not match.</p>
-                  )}
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="setup-token">Setup token</Label>
-                  <Input id="setup-token" type="password" autoComplete="off" value={setupToken}
-                    onChange={(e) => setSetupToken(e.target.value)} disabled={adminReady} />
-                  <p className="text-xs text-muted-foreground">Enter the server's SETUP_BOOTSTRAP_TOKEN to authorize the first administrator.</p>
-                </div>
-                <Button
-                  onClick={() => bootstrapMut.mutate()}
-                  disabled={
-                    bootstrapMut.isPending ||
-                    !adminEmail ||
-                    !passwordValid ||
-                    setupToken.length < 16 ||
-                    adminReady
-                  }
-                >
-                  {adminReady
-                    ? "Administrator ready"
-                    : bootstrapMut.isPending
-                      ? "Creating"
-                      : "Create administrator"}
-                </Button>
-                {adminMsg && (
-                  <div
-                    className={`flex items-start gap-2 rounded-control border p-3 text-sm ${
-                      adminMsg.ok
-                        ? "border-emerald-500/40 bg-emerald-500/10"
-                        : "border-rose-500/40 bg-rose-500/10"
-                    }`}
-                  >
-                    {adminMsg.ok ? (
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    ) : (
-                      <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-email">Email</Label>
+                      <Input
+                        id="admin-email"
+                        type="email"
+                        autoComplete="email"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        disabled={adminReady}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-password">Password</Label>
+                      <Input
+                        id="admin-password"
+                        type="password"
+                        autoComplete="new-password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="At least 8 characters"
+                        disabled={adminReady}
+                      />
+                      {adminPassword.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Progress value={(strength.score / 5) * 100} className="h-1.5 flex-1" />
+                          <span className="w-20 text-right text-xs text-muted-foreground">
+                            {strength.label}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-password2">Confirm password</Label>
+                      <Input
+                        id="admin-password2"
+                        type="password"
+                        autoComplete="new-password"
+                        value={adminPassword2}
+                        onChange={(e) => setAdminPassword2(e.target.value)}
+                        disabled={adminReady}
+                      />
+                      {adminPassword2.length > 0 && !passwordsMatch && (
+                        <p className="text-xs text-rose-500">Passwords do not match.</p>
+                      )}
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="setup-token">Setup token</Label>
+                      <Input
+                        id="setup-token"
+                        type="password"
+                        autoComplete="off"
+                        value={setupToken}
+                        onChange={(e) => setSetupToken(e.target.value)}
+                        disabled={adminReady}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the server's SETUP_BOOTSTRAP_TOKEN to authorize the first
+                        administrator.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => bootstrapMut.mutate()}
+                      disabled={
+                        bootstrapMut.isPending ||
+                        !adminEmail ||
+                        !passwordValid ||
+                        setupToken.length < 16 ||
+                        adminReady
+                      }
+                    >
+                      {adminReady
+                        ? "Administrator ready"
+                        : bootstrapMut.isPending
+                          ? "Creating"
+                          : "Create administrator"}
+                    </Button>
+                    {adminMsg && (
+                      <div
+                        className={`flex items-start gap-2 rounded-control border p-3 text-sm ${
+                          adminMsg.ok
+                            ? "border-emerald-500/40 bg-emerald-500/10"
+                            : "border-rose-500/40 bg-rose-500/10"
+                        }`}
+                      >
+                        {adminMsg.ok ? (
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                        ) : (
+                          <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
+                        )}
+                        <span className="break-words">{adminMsg.msg}</span>
+                      </div>
                     )}
-                    <span className="break-words">{adminMsg.msg}</span>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Already created a Supabase Auth user? Assign that user the superadmin role in the database, then sign in and reopen /setup. Creating a user alone does not grant platform access.
-                </p>
-                </>
+                    <p className="text-xs text-muted-foreground">
+                      Already created a Supabase Auth user? Assign that user the superadmin role in
+                      the database, then sign in and reopen /setup. Creating a user alone does not
+                      grant platform access.
+                    </p>
+                  </>
                 )}
               </CardContent>
             </>
@@ -602,10 +622,14 @@ function SetupWizard() {
                   <div className="grid gap-2">
                     <Label>Timezone</Label>
                     <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {TIMEZONES.map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
+                          <SelectItem key={t} value={t}>
+                            {t}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -613,10 +637,14 @@ function SetupWizard() {
                   <div className="grid gap-2">
                     <Label>Currency</Label>
                     <Select value={currency} onValueChange={setCurrency}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {CURRENCIES.map((c) => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                          <SelectItem key={c} value={c}>
+                            {c}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -627,7 +655,9 @@ function SetupWizard() {
                       value={dateFormat}
                       onValueChange={(v) => setDateFormat(v as typeof dateFormat)}
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="YYYY-MM-DD">2026-07-27 (ISO)</SelectItem>
                         <SelectItem value="MM/DD/YYYY">07/27/2026 (US)</SelectItem>
@@ -638,10 +668,14 @@ function SetupWizard() {
                   <div className="grid gap-2">
                     <Label>Default language</Label>
                     <Select value={language} onValueChange={setLanguage}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {LANGUAGES.map((l) => (
-                          <SelectItem key={l.code} value={l.code}>{l.label}</SelectItem>
+                          <SelectItem key={l.code} value={l.code}>
+                            {l.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -769,7 +803,9 @@ function SetupWizard() {
                 <label className="flex items-center justify-between rounded-control border p-3 text-sm">
                   <div>
                     <p className="font-medium">Subscriptions</p>
-                    <p className="text-xs text-muted-foreground">Enable Stripe subscription billing.</p>
+                    <p className="text-xs text-muted-foreground">
+                      Enable Stripe subscription billing.
+                    </p>
                   </div>
                   <Switch checked={subsEnabled} onCheckedChange={setSubsEnabled} />
                 </label>
@@ -821,7 +857,10 @@ function SetupWizard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-control border">
-                  <SummaryRow label="Administrator" value={existingSuperAdmin ? "Existing super administrator" : adminEmail} />
+                  <SummaryRow
+                    label="Administrator"
+                    value={existingSuperAdmin ? "Existing super administrator" : adminEmail}
+                  />
                   <SummaryRow label="App name" value={appName} />
                   <SummaryRow
                     label="Primary color"
@@ -841,10 +880,7 @@ function SetupWizard() {
                   <SummaryRow label="Language" value={language} />
                   <SummaryRow label="SMTP host" value={smtpHost || "—"} />
                   <SummaryRow label="SaaS mode" value={saasEnabled ? "Enabled" : "Disabled"} />
-                  <SummaryRow
-                    label="Multi-tenant"
-                    value={multiTenant ? "Enabled" : "Disabled"}
-                  />
+                  <SummaryRow label="Multi-tenant" value={multiTenant ? "Enabled" : "Disabled"} />
                 </div>
                 <div className="rounded-control border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
                   <p className="font-medium">Setup will be locked after launch.</p>

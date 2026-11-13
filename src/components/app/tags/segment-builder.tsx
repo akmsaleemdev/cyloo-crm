@@ -9,12 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import type {
-  SegmentCondition,
-  SegmentRules,
-  SegmentRuleOp,
-  TagEntity,
-} from "@/hooks/use-tags";
+import type { SegmentCondition, SegmentRules, SegmentRuleOp, TagEntity } from "@/hooks/use-tags";
 import { useTags } from "@/hooks/use-tags";
 
 const OPS: { value: SegmentRuleOp; label: string; needsValue?: boolean }[] = [

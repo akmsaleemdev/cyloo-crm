@@ -34,7 +34,8 @@ export const getMyWorkspaceMembership = createServerFn({ method: "GET" })
       .eq("workspace_id", data.workspaceId)
       .eq("user_id", context.userId)
       .maybeSingle();
-    const role = (row?.role as "owner" | "admin" | "manager" | "agent" | "viewer" | undefined) ?? null;
+    const role =
+      (row?.role as "owner" | "admin" | "manager" | "agent" | "viewer" | undefined) ?? null;
     const status = (row?.status as "active" | "suspended" | undefined) ?? null;
     return { role, status };
   });

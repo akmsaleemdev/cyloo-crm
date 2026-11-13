@@ -22,12 +22,7 @@ export const Route = createFileRoute("/dev/menu-items")({
   component: MenuItemsVisualFixture,
 });
 
-const VARIANTS: MenuItemVariant[] = [
-  "default",
-  "inset",
-  "indicator",
-  "subtrigger",
-];
+const VARIANTS: MenuItemVariant[] = ["default", "inset", "indicator", "subtrigger"];
 
 const STATES = [
   { id: "default", label: "Default", attrs: {} as Record<string, string> },
@@ -71,9 +66,7 @@ function Cell({
           </span>
         ) : null}
         <span>Menu item</span>
-        {variant === "subtrigger" ? (
-          <span className="ml-auto opacity-60">›</span>
-        ) : null}
+        {variant === "subtrigger" ? <span className="ml-auto opacity-60">›</span> : null}
       </div>
     </div>
   );
@@ -100,15 +93,11 @@ function MenuItemsVisualFixture() {
       <div className="space-y-10">
         {VARIANTS.map((variant) => (
           <section key={variant} className="space-y-3">
-            <h2 className="text-sm font-medium tracking-tight text-muted-foreground">
-              {variant}
-            </h2>
+            <h2 className="text-sm font-medium tracking-tight text-muted-foreground">{variant}</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {STATES.map((state) => (
                 <div key={state.id} className="space-y-2">
-                  <div className="text-xs text-muted-foreground">
-                    {state.label}
-                  </div>
+                  <div className="text-xs text-muted-foreground">{state.label}</div>
                   <Cell
                     variant={variant}
                     attrs={state.attrs}

@@ -67,11 +67,7 @@ if (buttonSrc) {
     errors.push(`${relative(ROOT, buttonPath)}: could not locate cva() base class string.`);
   } else {
     const base = baseMatch[2];
-    const required = [
-      "control-focus",
-      "control-motion",
-      "disabled:pointer-events-none",
-    ];
+    const required = ["control-focus", "control-motion", "disabled:pointer-events-none"];
     for (const token of required) {
       if (!base.includes(token)) {
         errors.push(

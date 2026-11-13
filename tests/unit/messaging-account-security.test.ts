@@ -51,10 +51,7 @@ describe("Messaging Account Security", () => {
           `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
           "i",
         ).test(allSQL);
-        expect(
-          rlsEnabled,
-          `Messaging table "${table}" should have RLS enabled`,
-        ).toBe(true);
+        expect(rlsEnabled, `Messaging table "${table}" should have RLS enabled`).toBe(true);
       }
     }
   });
@@ -98,4 +95,3 @@ describe("Messaging Account Security", () => {
     }
   });
 });
-

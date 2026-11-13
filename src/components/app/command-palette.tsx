@@ -1,8 +1,14 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem,
-  CommandList, CommandSeparator, CommandShortcut,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
 } from "@/components/ui/command";
 import { useLayout } from "@/shared/contexts/layout-context";
 import { useTheme } from "@/shared/providers/theme-provider";
@@ -11,14 +17,34 @@ import { usePlatformRuntime } from "@/hooks/use-platform-runtime";
 import { isRouteEnabled } from "@/lib/admin/platform-features";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut, Moon, Sun, Monitor, PanelLeftClose, User, Building2, Target, DollarSign, CheckSquare, ArrowRight } from "lucide-react";
+import {
+  LogOut,
+  Moon,
+  Sun,
+  Monitor,
+  PanelLeftClose,
+  User,
+  Building2,
+  Target,
+  DollarSign,
+  CheckSquare,
+  ArrowRight,
+} from "lucide-react";
 import { useCrmSearch, type SearchEntity } from "@/hooks/use-crm-search";
 
 const ENTITY_ICON: Record<SearchEntity, React.ComponentType<{ className?: string }>> = {
-  contact: User, company: Building2, lead: Target, deal: DollarSign, task: CheckSquare,
+  contact: User,
+  company: Building2,
+  lead: Target,
+  deal: DollarSign,
+  task: CheckSquare,
 };
 const ENTITY_LABEL: Record<SearchEntity, string> = {
-  contact: "Contacts", company: "Companies", lead: "Leads", deal: "Deals", task: "Tasks",
+  contact: "Contacts",
+  company: "Companies",
+  lead: "Leads",
+  deal: "Deals",
+  task: "Tasks",
 };
 const ENTITY_ROUTE: Record<SearchEntity, (id: string) => string> = {
   contact: (id) => `/contacts/${id}`,
@@ -50,13 +76,20 @@ export function CommandPalette() {
     navigate({ to: "/auth", replace: true });
   }
 
-  const hasHits = results && (Object.keys(results) as SearchEntity[]).some((e) => (results[e] ?? []).length > 0);
+  const hasHits =
+    results && (Object.keys(results) as SearchEntity[]).some((e) => (results[e] ?? []).length > 0);
 
   return (
     <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-      <CommandInput placeholder="Search contacts, companies, leads, deals" value={q} onValueChange={setQ} />
+      <CommandInput
+        placeholder="Search contacts, companies, leads, deals"
+        value={q}
+        onValueChange={setQ}
+      />
       <CommandList className="max-h-[70vh]">
-        <CommandEmpty>{q.length < 2 ? "Type to search" : isFetching ? "Searching" : "No results found."}</CommandEmpty>
+        <CommandEmpty>
+          {q.length < 2 ? "Type to search" : isFetching ? "Searching" : "No results found."}
+        </CommandEmpty>
 
         {q.length >= 2 && hasHits && (
           <>
@@ -86,7 +119,10 @@ export function CommandPalette() {
                 </CommandGroup>
               );
             })}
-            <CommandItem value={`__see-all ${q}`} onSelect={() => run(() => navigate({ to: "/search", search: { q } as never }))}>
+            <CommandItem
+              value={`__see-all ${q}`}
+              onSelect={() => run(() => navigate({ to: "/search", search: { q } as never }))}
+            >
               <ArrowRight className="h-4 w-4" /> See all results for "{q}"
             </CommandItem>
             <CommandSeparator />
@@ -94,7 +130,9 @@ export function CommandPalette() {
         )}
 
         {NAV_GROUPS.map((group) => {
-          const items = NAV_ITEMS.filter((n) => n.group === group.id).filter((n) => isRouteEnabled(platform.features, n.to));
+          const items = NAV_ITEMS.filter((n) => n.group === group.id).filter((n) =>
+            isRouteEnabled(platform.features, n.to),
+          );
           if (!items.length) return null;
           return (
             <CommandGroup key={group.id} heading={group.label}>
@@ -104,7 +142,9 @@ export function CommandPalette() {
                   value={`${group.label} ${item.label}`}
                   onSelect={() =>
                     item.external
-                      ? run(() => { window.open(item.to, "_blank", "noopener,noreferrer"); })
+                      ? run(() => {
+                          window.open(item.to, "_blank", "noopener,noreferrer");
+                        })
                       : run(() => navigate({ to: item.to }))
                   }
                 >

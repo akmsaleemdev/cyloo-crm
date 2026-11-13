@@ -1,13 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Screen } from '@/components/Screen';
-import { Input } from '@/components/Input';
-import { Button } from '@/components/Button';
-import { useTheme } from '@/theme/ThemeProvider';
-import { useAuth } from './AuthProvider';
-import { useLockStore } from './lock';
-import { promptBiometric, getBiometricCapability, type BiometricCapability } from './biometrics';
-import { hasPin, verifyPin } from './pin';
+import { useEffect, useState, type ReactNode } from "react";
+import { View, Text, Pressable } from "react-native";
+import { Screen } from "@/components/Screen";
+import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+import { useTheme } from "@/theme/ThemeProvider";
+import { useAuth } from "./AuthProvider";
+import { useLockStore } from "./lock";
+import { promptBiometric, getBiometricCapability, type BiometricCapability } from "./biometrics";
+import { hasPin, verifyPin } from "./pin";
 
 /**
  * Full-screen overlay shown when the app is locked. Order of preference:
@@ -24,7 +24,7 @@ export function LockGate({ children }: { children: ReactNode }) {
 
   const [cap, setCap] = useState<BiometricCapability | null>(null);
   const [pinConfigured, setPinConfigured] = useState(false);
-  const [pin, setPin] = useState('');
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string>();
 
   useEffect(() => {
@@ -38,9 +38,9 @@ export function LockGate({ children }: { children: ReactNode }) {
     if (!locked) return;
     if (!prefs?.biometricEnabled) return;
     if (!cap?.hasHardware || !cap.isEnrolled) return;
-    promptBiometric('Unlock CYLOO').then((r) => {
+    promptBiometric("Unlock CYLOO").then((r) => {
       if (r.ok) setLocked(false);
-      else if (r.reason && r.reason !== 'cancelled') setError(r.reason.replace('_', ' '));
+      else if (r.reason && r.reason !== "cancelled") setError(r.reason.replace("_", " "));
     });
   }, [locked, prefs?.biometricEnabled, cap, setLocked]);
 
@@ -48,21 +48,19 @@ export function LockGate({ children }: { children: ReactNode }) {
 
   return (
     <Screen>
-      <View style={{ flex: 1, justifyContent: 'center', gap: t.spacing.lg }}>
+      <View style={{ flex: 1, justifyContent: "center", gap: t.spacing.lg }}>
         <View>
           <Text style={[t.typography.h1, { color: t.colors.foreground }]}>App locked</Text>
-          <Text style={{ color: t.colors.mutedFg, marginTop: 4 }}>
-            Verify it's you to continue
-          </Text>
+          <Text style={{ color: t.colors.mutedFg, marginTop: 4 }}>Verify it's you to continue</Text>
         </View>
 
         {prefs?.biometricEnabled && cap?.hasHardware && cap.isEnrolled ? (
           <Button
-            title={`Unlock with ${cap.kind === 'faceId' ? 'Face ID' : cap.kind === 'touchId' ? 'Touch ID' : 'biometrics'}`}
+            title={`Unlock with ${cap.kind === "faceId" ? "Face ID" : cap.kind === "touchId" ? "Touch ID" : "biometrics"}`}
             onPress={async () => {
-              const r = await promptBiometric('Unlock CYLOO');
+              const r = await promptBiometric("Unlock CYLOO");
               if (r.ok) setLocked(false);
-              else if (r.reason !== 'cancelled') setError(r.reason.replace('_', ' '));
+              else if (r.reason !== "cancelled") setError(r.reason.replace("_", " "));
             }}
           />
         ) : null}
@@ -84,14 +82,14 @@ export function LockGate({ children }: { children: ReactNode }) {
                 const r = await verifyPin(pin);
                 if (r.ok) {
                   setLocked(false);
-                  setPin('');
+                  setPin("");
                   setError(undefined);
-                } else if (r.reason === 'locked') {
+                } else if (r.reason === "locked") {
                   setError(`Locked. Try again in ${Math.ceil((r.remainingMs ?? 0) / 60000)} min.`);
-                } else if (r.reason === 'invalid') {
+                } else if (r.reason === "invalid") {
                   setError(`Wrong PIN. ${r.attemptsLeft ?? 0} attempts left.`);
                 } else {
-                  setError('PIN not set up');
+                  setError("PIN not set up");
                 }
               }}
             />
@@ -101,7 +99,7 @@ export function LockGate({ children }: { children: ReactNode }) {
         {error ? <Text style={{ color: t.colors.destructive }}>{error}</Text> : null}
 
         <Pressable onPress={() => signOut()} accessibilityRole="button">
-          <Text style={{ color: t.colors.mutedFg, textAlign: 'center', marginTop: t.spacing.lg }}>
+          <Text style={{ color: t.colors.mutedFg, textAlign: "center", marginTop: t.spacing.lg }}>
             Sign out instead
           </Text>
         </Pressable>

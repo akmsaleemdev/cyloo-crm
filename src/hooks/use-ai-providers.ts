@@ -1,11 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  listAIProviders, listSupportedProviderKinds, upsertAIProvider, deleteAIProvider,
-  testAIProvider, listProviderModelsRemote, upsertAIModel, deleteAIModel,
-  upsertAIFeatureConfig, upsertAIPrompt, getAIUsageSummary, getAIRecentLogs,
-  type UpsertAIProviderInput, type UpsertAIModelInput,
-  type UpsertAIFeatureConfigInput, type UpsertAIPromptInput,
+  listAIProviders,
+  listSupportedProviderKinds,
+  upsertAIProvider,
+  deleteAIProvider,
+  testAIProvider,
+  listProviderModelsRemote,
+  upsertAIModel,
+  deleteAIModel,
+  upsertAIFeatureConfig,
+  upsertAIPrompt,
+  getAIUsageSummary,
+  getAIRecentLogs,
+  type UpsertAIProviderInput,
+  type UpsertAIModelInput,
+  type UpsertAIFeatureConfigInput,
+  type UpsertAIPromptInput,
 } from "@/lib/ai/config.functions";
 
 export function useAIProviders() {
@@ -91,10 +102,19 @@ export function useAIUsageSummary() {
   return useQuery({ queryKey: ["ai", "usage"], queryFn: () => fn() });
 }
 
-export function useAIRecentLogs(filters: { limit?: number; status?: string; providerId?: string } = {}) {
+export function useAIRecentLogs(
+  filters: { limit?: number; status?: string; providerId?: string } = {},
+) {
   const fn = useServerFn(getAIRecentLogs);
   return useQuery({
     queryKey: ["ai", "logs", filters],
-    queryFn: () => fn({ data: { limit: filters.limit ?? 100, status: filters.status as never, providerId: filters.providerId } }),
+    queryFn: () =>
+      fn({
+        data: {
+          limit: filters.limit ?? 100,
+          status: filters.status as never,
+          providerId: filters.providerId,
+        },
+      }),
   });
 }

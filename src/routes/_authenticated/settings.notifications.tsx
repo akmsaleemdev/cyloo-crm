@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
+import {
+  SettingsLayout,
+  SettingsCard,
+  SettingsRow,
+} from "@/components/app/settings/settings-layout";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/settings/notifications")({

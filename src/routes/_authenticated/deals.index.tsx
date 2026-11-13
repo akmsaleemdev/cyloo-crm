@@ -4,23 +4,39 @@ import { useMemo, useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, Search, LayoutGrid, TrendingUp, Loader2, DollarSign, Settings2,
-  BarChart3, Trophy, Flame, X as XIcon,
+  Plus,
+  Search,
+  LayoutGrid,
+  TrendingUp,
+  Loader2,
+  DollarSign,
+  Settings2,
+  BarChart3,
+  Trophy,
+  Flame,
+  X as XIcon,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
-  useDeals, useCreateDefaultPipeline,
-  formatMoney, DEAL_PRIORITIES, DEAL_STATUSES,
+  useDeals,
+  useCreateDefaultPipeline,
+  formatMoney,
+  DEAL_PRIORITIES,
+  DEAL_STATUSES,
   type DealFilters,
 } from "@/hooks/use-deals";
-import {
-  usePipelinesFull, useStagesFull, useDealsRealtime,
-} from "@/hooks/use-pipeline";
+import { usePipelinesFull, useStagesFull, useDealsRealtime } from "@/hooks/use-pipeline";
 import { useCurrentWorkspace, useWorkspaceMembers } from "@/hooks/use-workspace";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { DealFormDialog } from "@/components/app/deals/deal-form-dialog";
@@ -34,7 +50,10 @@ export const Route = createFileRoute("/_authenticated/deals/")({
   head: () => ({
     meta: [
       { title: "Sales Pipeline" },
-      { name: "description", content: `Visual sales pipeline, deals, and revenue in ${BRAND_NAME}.` },
+      {
+        name: "description",
+        content: `Visual sales pipeline, deals, and revenue in ${BRAND_NAME}.`,
+      },
     ],
   }),
   component: DealsPage,
@@ -74,7 +93,7 @@ function DealsPage() {
 
   // Client-side tag refine
   const deals = useMemo(
-    () => tag ? allDeals.filter((d) => d.tags?.includes(tag)) : allDeals,
+    () => (tag ? allDeals.filter((d) => d.tags?.includes(tag)) : allDeals),
     [allDeals, tag],
   );
 
@@ -85,8 +104,17 @@ function DealsPage() {
   }, [allDeals]);
 
   const membersById = useMemo(() => {
-    const m = new Map<string, { display_name: string | null; avatar_url: string | null; email: string | null }>();
-    (members ?? []).forEach((mm) => m.set(mm.user_id, { display_name: mm.display_name, avatar_url: mm.avatar_url, email: mm.email }));
+    const m = new Map<
+      string,
+      { display_name: string | null; avatar_url: string | null; email: string | null }
+    >();
+    (members ?? []).forEach((mm) =>
+      m.set(mm.user_id, {
+        display_name: mm.display_name,
+        avatar_url: mm.avatar_url,
+        email: mm.email,
+      }),
+    );
     return m;
   }, [members]);
 
@@ -102,7 +130,10 @@ function DealsPage() {
       wonCount: won.length,
       openValue: open.reduce((a, d) => a + Number(d.amount || 0), 0),
       wonValue: won.reduce((a, d) => a + Number(d.amount || 0), 0),
-      weightedValue: open.reduce((a, d) => a + (Number(d.amount || 0) * Number(d.probability || 0)) / 100, 0),
+      weightedValue: open.reduce(
+        (a, d) => a + (Number(d.amount || 0) * Number(d.probability || 0)) / 100,
+        0,
+      ),
       currency,
     };
   }, [deals, activePipeline, tenantCurrency]);
@@ -119,7 +150,11 @@ function DealsPage() {
   };
 
   const clearFilters = () => {
-    setSearch(""); setOwnerId("all"); setPriority("all"); setTag(""); setStatus("open");
+    setSearch("");
+    setOwnerId("all");
+    setPriority("all");
+    setTag("");
+    setStatus("open");
   };
 
   return (
@@ -142,11 +177,24 @@ function DealsPage() {
       <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
         {/* KPI cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiCard label="Open" value={formatMoney(totals.openValue, totals.currency)} hint={`${totals.openCount} deals`} />
-          <KpiCard label="Weighted" value={formatMoney(totals.weightedValue, totals.currency)}
-            hint="expected" icon={<TrendingUp className="w-3 h-3" />} />
-          <KpiCard label="Won" value={formatMoney(totals.wonValue, totals.currency)}
-            hint={`${totals.wonCount} deals`} icon={<Trophy className="w-3 h-3" />} tone="emerald" />
+          <KpiCard
+            label="Open"
+            value={formatMoney(totals.openValue, totals.currency)}
+            hint={`${totals.openCount} deals`}
+          />
+          <KpiCard
+            label="Weighted"
+            value={formatMoney(totals.weightedValue, totals.currency)}
+            hint="expected"
+            icon={<TrendingUp className="w-3 h-3" />}
+          />
+          <KpiCard
+            label="Won"
+            value={formatMoney(totals.wonValue, totals.currency)}
+            hint={`${totals.wonCount} deals`}
+            icon={<Trophy className="w-3 h-3" />}
+            tone="emerald"
+          />
           <KpiCard label="Total" value={String(totals.count)} hint="deals in view" />
         </div>
 
@@ -172,9 +220,12 @@ function DealsPage() {
                   {pipelines.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       <span className="inline-flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: p.color ?? "#6366f1" }} />
-                        {p.name}{p.is_default ? " · default" : ""}
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: p.color ?? "#6366f1" }}
+                        />
+                        {p.name}
+                        {p.is_default ? " · default" : ""}
                       </span>
                     </SelectItem>
                   ))}
@@ -183,18 +234,24 @@ function DealsPage() {
             )}
 
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-[130px] h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-[130px] h-9">
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="open">Open only</SelectItem>
                 <SelectItem value="all">All statuses</SelectItem>
                 {DEAL_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
             <Select value={ownerId} onValueChange={setOwnerId}>
-              <SelectTrigger className="w-[150px] h-9"><SelectValue placeholder="Owner" /></SelectTrigger>
+              <SelectTrigger className="w-[150px] h-9">
+                <SelectValue placeholder="Owner" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All owners</SelectItem>
                 {(members ?? []).map((m) => (
@@ -206,7 +263,9 @@ function DealsPage() {
             </Select>
 
             <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="Priority" /></SelectTrigger>
+              <SelectTrigger className="w-[130px] h-9">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Any priority</SelectItem>
                 {DEAL_PRIORITIES.map((p) => (
@@ -221,11 +280,20 @@ function DealsPage() {
             </Select>
 
             {availableTags.length > 0 && (
-              <Select value={tag || "__none__"} onValueChange={(v) => setTag(v === "__none__" ? "" : v)}>
-                <SelectTrigger className="w-[130px] h-9"><SelectValue placeholder="Tag" /></SelectTrigger>
+              <Select
+                value={tag || "__none__"}
+                onValueChange={(v) => setTag(v === "__none__" ? "" : v)}
+              >
+                <SelectTrigger className="w-[130px] h-9">
+                  <SelectValue placeholder="Tag" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Any tag</SelectItem>
-                  {availableTags.map((t) => <SelectItem key={t} value={t}>#{t}</SelectItem>)}
+                  {availableTags.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      #{t}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}
@@ -240,9 +308,15 @@ function DealsPage() {
           {hasFilters && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {search && <FilterPill label={`"${search}"`} onClear={() => setSearch("")} />}
-              {status !== "open" && <FilterPill label={`Status: ${status}`} onClear={() => setStatus("open")} />}
-              {ownerId !== "all" && <FilterPill label="Owner filter" onClear={() => setOwnerId("all")} />}
-              {priority !== "all" && <FilterPill label={`Priority: ${priority}`} onClear={() => setPriority("all")} />}
+              {status !== "open" && (
+                <FilterPill label={`Status: ${status}`} onClear={() => setStatus("open")} />
+              )}
+              {ownerId !== "all" && (
+                <FilterPill label="Owner filter" onClear={() => setOwnerId("all")} />
+              )}
+              {priority !== "all" && (
+                <FilterPill label={`Priority: ${priority}`} onClear={() => setPriority("all")} />
+              )}
               {tag && <FilterPill label={`#${tag}`} onClear={() => setTag("")} />}
             </div>
           )}
@@ -251,8 +325,12 @@ function DealsPage() {
         {/* Tabs: Board / Analytics */}
         <Tabs value={view} onValueChange={(v) => setView(v as "board" | "analytics")}>
           <TabsList>
-            <TabsTrigger value="board"><LayoutGrid className="w-3.5 h-3.5 mr-1.5" /> Board</TabsTrigger>
-            <TabsTrigger value="analytics"><BarChart3 className="w-3.5 h-3.5 mr-1.5" /> Analytics</TabsTrigger>
+            <TabsTrigger value="board">
+              <LayoutGrid className="w-3.5 h-3.5 mr-1.5" /> Board
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="w-3.5 h-3.5 mr-1.5" /> Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="board" className="mt-4">
@@ -265,10 +343,16 @@ function DealsPage() {
                 <LayoutGrid className="w-10 h-10 mx-auto text-muted-foreground/50" />
                 <div>
                   <p className="font-medium">No pipeline yet</p>
-                  <p className="text-sm text-muted-foreground">Create a default pipeline or start from a template.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Create a default pipeline or start from a template.
+                  </p>
                 </div>
                 <div className="flex gap-2 justify-center">
-                  <Button size="sm" onClick={handleCreateDefault} disabled={createDefault.isPending}>
+                  <Button
+                    size="sm"
+                    onClick={handleCreateDefault}
+                    disabled={createDefault.isPending}
+                  >
                     {createDefault.isPending && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
                     Create default pipeline
                   </Button>
@@ -285,7 +369,11 @@ function DealsPage() {
                 </Button>
               </Card>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              >
                 <DealKanban
                   stages={stages}
                   deals={deals}
@@ -319,9 +407,15 @@ function DealsPage() {
 }
 
 function KpiCard({
-  label, value, hint, icon, tone,
+  label,
+  value,
+  hint,
+  icon,
+  tone,
 }: {
-  label: string; value: string; hint: string;
+  label: string;
+  value: string;
+  hint: string;
   icon?: React.ReactNode;
   tone?: "emerald" | "destructive";
 }) {
@@ -329,13 +423,16 @@ function KpiCard({
     <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }}>
       <Card className="p-3 h-full">
         <div className="text-[11px]  text-muted-foreground flex items-center gap-1">
-          {icon}{label}
+          {icon}
+          {label}
         </div>
-        <div className={
-          "text-xl font-semibold mt-1 " +
-          (tone === "emerald" ? "text-emerald-600 dark:text-emerald-400 " : "") +
-          (tone === "destructive" ? "text-destructive " : "")
-        }>
+        <div
+          className={
+            "text-xl font-semibold mt-1 " +
+            (tone === "emerald" ? "text-emerald-600 dark:text-emerald-400 " : "") +
+            (tone === "destructive" ? "text-destructive " : "")
+          }
+        >
           {value}
         </div>
         <div className="text-xs text-muted-foreground">{hint}</div>

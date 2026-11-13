@@ -95,8 +95,12 @@ function SecurityCenterPage() {
       />
       <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
         {isError && (
-          <div role="alert" className="rounded-control border border-destructive/40 bg-destructive/5 p-4 text-sm">
-            Couldn&apos;t load the security overview: {error instanceof Error ? error.message : "unknown error"}
+          <div
+            role="alert"
+            className="rounded-control border border-destructive/40 bg-destructive/5 p-4 text-sm"
+          >
+            Couldn&apos;t load the security overview:{" "}
+            {error instanceof Error ? error.message : "unknown error"}
           </div>
         )}
         <UnavailableSignalsBanner signals={data?.unavailable} />

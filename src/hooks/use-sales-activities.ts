@@ -10,9 +10,9 @@ import { sbAny } from "@/lib/supabase/untyped";
 const db = supabase as any;
 
 export type ActivityType =
-  | "call" | "meeting" | "task" | "email" | "whatsapp" | "note" | "demo" | "follow_up";
+  "call" | "meeting" | "task" | "email" | "whatsapp" | "note" | "demo" | "follow_up";
 export type ActivityStatus =
-  | "planned" | "in_progress" | "completed" | "cancelled" | "no_show" | "overdue";
+  "planned" | "in_progress" | "completed" | "cancelled" | "no_show" | "overdue";
 export type ActivityPriority = "low" | "normal" | "high" | "urgent";
 export type EntityType = "contact" | "company" | "lead" | "deal" | "customer";
 export type CalendarProvider = "google" | "outlook" | "ical" | "apple";
@@ -75,24 +75,54 @@ export type ActivityFilters = {
   search?: string;
 };
 
-export const ACTIVITY_TYPE_META: Record<ActivityType, { label: string; icon: string; tone: string }> = {
-  call:      { label: "Call",      icon: "phone",       tone: "bg-blue-500/15 text-blue-600 dark:text-blue-300" },
-  meeting:   { label: "Meeting",   icon: "users",       tone: "bg-purple-500/15 text-purple-600 dark:text-purple-300" },
-  task:      { label: "Task",      icon: "check-square",tone: "bg-amber-500/15 text-amber-600 dark:text-amber-300" },
-  email:     { label: "Email",     icon: "mail",        tone: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300" },
-  whatsapp:  { label: "WhatsApp",  icon: "message-circle",tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" },
-  note:      { label: "Note",      icon: "sticky-note", tone: "bg-slate-500/15 text-slate-600 dark:text-slate-300" },
-  demo:      { label: "Demo",      icon: "monitor",     tone: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300" },
-  follow_up: { label: "Follow-up", icon: "corner-up-right", tone: "bg-orange-500/15 text-orange-600 dark:text-orange-300" },
+export const ACTIVITY_TYPE_META: Record<
+  ActivityType,
+  { label: string; icon: string; tone: string }
+> = {
+  call: { label: "Call", icon: "phone", tone: "bg-blue-500/15 text-blue-600 dark:text-blue-300" },
+  meeting: {
+    label: "Meeting",
+    icon: "users",
+    tone: "bg-purple-500/15 text-purple-600 dark:text-purple-300",
+  },
+  task: {
+    label: "Task",
+    icon: "check-square",
+    tone: "bg-amber-500/15 text-amber-600 dark:text-amber-300",
+  },
+  email: { label: "Email", icon: "mail", tone: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-300" },
+  whatsapp: {
+    label: "WhatsApp",
+    icon: "message-circle",
+    tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300",
+  },
+  note: {
+    label: "Note",
+    icon: "sticky-note",
+    tone: "bg-slate-500/15 text-slate-600 dark:text-slate-300",
+  },
+  demo: {
+    label: "Demo",
+    icon: "monitor",
+    tone: "bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300",
+  },
+  follow_up: {
+    label: "Follow-up",
+    icon: "corner-up-right",
+    tone: "bg-orange-500/15 text-orange-600 dark:text-orange-300",
+  },
 };
 
 export const ACTIVITY_STATUS_META: Record<ActivityStatus, { label: string; tone: string }> = {
-  planned:     { label: "Planned",     tone: "bg-muted text-muted-foreground" },
+  planned: { label: "Planned", tone: "bg-muted text-muted-foreground" },
   in_progress: { label: "In progress", tone: "bg-blue-500/15 text-blue-600 dark:text-blue-300" },
-  completed:   { label: "Completed",   tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300" },
-  cancelled:   { label: "Cancelled",   tone: "bg-muted text-muted-foreground line-through" },
-  no_show:     { label: "No show",     tone: "bg-red-500/15 text-red-600 dark:text-red-300" },
-  overdue:     { label: "Overdue",     tone: "bg-red-500/15 text-red-600 dark:text-red-300" },
+  completed: {
+    label: "Completed",
+    tone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300",
+  },
+  cancelled: { label: "Cancelled", tone: "bg-muted text-muted-foreground line-through" },
+  no_show: { label: "No show", tone: "bg-red-500/15 text-red-600 dark:text-red-300" },
+  overdue: { label: "Overdue", tone: "bg-red-500/15 text-red-600 dark:text-red-300" },
 };
 
 export function useSalesActivities(filters: ActivityFilters = {}) {
@@ -103,17 +133,24 @@ export function useSalesActivities(filters: ActivityFilters = {}) {
     queryKey: ["sales_activities", wsId, filters],
     enabled: !!wsId,
     queryFn: async (): Promise<SalesActivity[]> => {
-      let q = sbAny(db).from("sales_activities").select("*").eq("workspace_id", wsId).is("deleted_at", null);
+      let q = sbAny(db)
+        .from("sales_activities")
+        .select("*")
+        .eq("workspace_id", wsId)
+        .is("deleted_at", null);
       if (filters.types?.length) q = q.in("type", filters.types);
       if (filters.statuses?.length) q = q.in("status", filters.statuses);
       if (filters.assignee === "me" && user?.id) q = q.eq("assigned_to", user.id);
-      else if (filters.assignee && filters.assignee !== "all") q = q.eq("assigned_to", filters.assignee);
+      else if (filters.assignee && filters.assignee !== "all")
+        q = q.eq("assigned_to", filters.assignee);
       if (filters.entityType) q = q.eq("entity_type", filters.entityType);
       if (filters.entityId) q = q.eq("entity_id", filters.entityId);
       if (filters.from) q = q.gte("start_at", filters.from);
       if (filters.to) q = q.lte("start_at", filters.to);
       if (filters.search) q = q.ilike("title", `%${sanitizeSearchTerm(filters.search)}%`);
-      const { data, error } = await q.order("start_at", { ascending: true, nullsFirst: false }).limit(1000);
+      const { data, error } = await q
+        .order("start_at", { ascending: true, nullsFirst: false })
+        .limit(1000);
       if (error) throw error;
       return (data ?? []) as SalesActivity[];
     },
@@ -125,7 +162,11 @@ export function useSalesActivity(id: string | undefined) {
     queryKey: ["sales_activity", id],
     enabled: !!id,
     queryFn: async (): Promise<SalesActivity | null> => {
-      const { data, error } = await sbAny(db).from("sales_activities").select("*").eq("id", id).maybeSingle();
+      const { data, error } = await sbAny(db)
+        .from("sales_activities")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
       if (error) throw error;
       return (data ?? null) as SalesActivity | null;
     },
@@ -140,12 +181,23 @@ export function useRealtimeActivities() {
     if (!wsId) return;
     const channel = supabase
       .channel(`sales_activities:${wsId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "sales_activities", filter: `workspace_id=eq.${wsId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["sales_activities"] });
-        qc.invalidateQueries({ queryKey: ["sales_activity"] });
-      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sales_activities",
+          filter: `workspace_id=eq.${wsId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["sales_activities"] });
+          qc.invalidateQueries({ queryKey: ["sales_activity"] });
+        },
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [wsId, qc]);
 }
 
@@ -183,7 +235,11 @@ export function useCreateActivity() {
         tags: input.tags ?? [],
         custom_fields: input.custom_fields ?? {},
       };
-      const { data, error } = await sbAny(db).from("sales_activities").insert(payload).select().single();
+      const { data, error } = await sbAny(db)
+        .from("sales_activities")
+        .insert(payload)
+        .select()
+        .single();
       if (error) throw error;
       return data as SalesActivity;
     },
@@ -195,7 +251,12 @@ export function useUpdateActivity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<SalesActivity> }) => {
-      const { data, error } = await sbAny(db).from("sales_activities").update(patch).eq("id", id).select().single();
+      const { data, error } = await sbAny(db)
+        .from("sales_activities")
+        .update(patch)
+        .eq("id", id)
+        .select()
+        .single();
       if (error) throw error;
       return data as SalesActivity;
     },
@@ -209,14 +270,24 @@ export function useUpdateActivity() {
 export function useCompleteActivity() {
   const update = useUpdateActivity();
   return (id: string, outcome?: string) =>
-    update.mutateAsync({ id, patch: { status: "completed", completed_at: new Date().toISOString(), outcome: outcome ?? null } });
+    update.mutateAsync({
+      id,
+      patch: {
+        status: "completed",
+        completed_at: new Date().toISOString(),
+        outcome: outcome ?? null,
+      },
+    });
 }
 
 export function useDeleteActivity() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await sbAny(db).from("sales_activities").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+      const { error } = await sbAny(db)
+        .from("sales_activities")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sales_activities"] }),
@@ -225,10 +296,17 @@ export function useDeleteActivity() {
 
 // ---------- Recurrence expansion (client-side, within visible range) ----------
 
-export function expandRecurring(activities: SalesActivity[], rangeStart: Date, rangeEnd: Date): SalesActivity[] {
+export function expandRecurring(
+  activities: SalesActivity[],
+  rangeStart: Date,
+  rangeEnd: Date,
+): SalesActivity[] {
   const result: SalesActivity[] = [];
   for (const a of activities) {
-    if (!a.recurrence || !a.start_at) { result.push(a); continue; }
+    if (!a.recurrence || !a.start_at) {
+      result.push(a);
+      continue;
+    }
     const startMs = new Date(a.start_at).getTime();
     const endMs = a.end_at ? new Date(a.end_at).getTime() : startMs;
     const durMs = endMs - startMs;
@@ -240,10 +318,14 @@ export function expandRecurring(activities: SalesActivity[], rangeStart: Date, r
     const maxOcc = rule.count ?? 500;
     const stepMs = (() => {
       switch (rule.freq) {
-        case "daily":   return interval * 86400000;
-        case "weekly":  return interval * 7 * 86400000;
-        case "monthly": return interval * 30 * 86400000;
-        case "yearly":  return interval * 365 * 86400000;
+        case "daily":
+          return interval * 86400000;
+        case "weekly":
+          return interval * 7 * 86400000;
+        case "monthly":
+          return interval * 30 * 86400000;
+        case "yearly":
+          return interval * 365 * 86400000;
       }
     })();
     let cur = startMs;
@@ -292,8 +374,11 @@ export function useCalendarAccounts() {
     queryKey: ["calendar_accounts", active?.id, user?.id],
     enabled: !!active?.id && !!user?.id,
     queryFn: async (): Promise<CalendarAccount[]> => {
-      const { data, error } = await sbAny(db).from("calendar_accounts")
-        .select("*").eq("workspace_id", active!.id).eq("user_id", user!.id)
+      const { data, error } = await sbAny(db)
+        .from("calendar_accounts")
+        .select("*")
+        .eq("workspace_id", active!.id)
+        .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as CalendarAccount[];
@@ -320,7 +405,11 @@ export function useConnectCalendarAccount() {
         enabled: input.enabled ?? true,
         color: input.color ?? null,
       };
-      const { data, error } = await sbAny(db).from("calendar_accounts").insert(payload).select().single();
+      const { data, error } = await sbAny(db)
+        .from("calendar_accounts")
+        .insert(payload)
+        .select()
+        .single();
       if (error) throw error;
       return data as CalendarAccount;
     },
@@ -332,7 +421,12 @@ export function useUpdateCalendarAccount() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<CalendarAccount> }) => {
-      const { data, error } = await sbAny(db).from("calendar_accounts").update(patch).eq("id", id).select().single();
+      const { data, error } = await sbAny(db)
+        .from("calendar_accounts")
+        .update(patch)
+        .eq("id", id)
+        .select()
+        .single();
       if (error) throw error;
       return data as CalendarAccount;
     },

@@ -6,19 +6,19 @@
  * without them needing a CRM login. Reuses the newest open quote when one
  * already exists for the record instead of piling up duplicate drafts.
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useCurrentWorkspace } from '@/hooks/use-workspace';
-import { nextDocumentNumber } from '@/lib/sales/sales.functions';
-import { sbAny } from '@/lib/supabase/untyped';
-import type { QuoteInsert } from '@/hooks/use-quotes';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentWorkspace } from "@/hooks/use-workspace";
+import { nextDocumentNumber } from "@/lib/sales/sales.functions";
+import { sbAny } from "@/lib/supabase/untyped";
+import type { QuoteInsert } from "@/hooks/use-quotes";
 import { useTenantCurrency } from "@/hooks/use-currency";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 
 export function buildQuoteUrl(token: string): string {
-  const origin = typeof window === 'undefined' ? '' : window.location.origin;
+  const origin = typeof window === "undefined" ? "" : window.location.origin;
   return `${origin}/q/${token}`;
 }
 
@@ -38,13 +38,16 @@ export type SharedQuote = { quoteId: string; token: string; url: string; created
 
 async function ensureToken(quoteId: string): Promise<string> {
   const { data: existing } = await sbAny(db)
-    .from('quotes')
-    .select('public_token')
-    .eq('id', quoteId)
+    .from("quotes")
+    .select("public_token")
+    .eq("id", quoteId)
     .single();
   if (existing?.public_token) return existing.public_token as string;
-  const token = crypto.randomUUID().replace(/-/g, '');
-  const { error } = await sbAny(db).from('quotes').update({ public_token: token }).eq('id', quoteId);
+  const token = crypto.randomUUID().replace(/-/g, "");
+  const { error } = await sbAny(db)
+    .from("quotes")
+    .update({ public_token: token })
+    .eq("id", quoteId);
   if (error) throw error;
   return token;
 }
@@ -59,17 +62,17 @@ export function useShareQuoteLink() {
   return useMutation({
     mutationFn: async (seed: QuoteSeed): Promise<SharedQuote> => {
       const wsId = active?.id;
-      if (!wsId) throw new Error('No workspace selected');
+      if (!wsId) throw new Error("No workspace selected");
 
       // Reuse an existing quote for the deal so a prospect keeps one stable link.
       if (seed.dealId) {
         const { data: found } = await sbAny(db)
-          .from('quotes')
-          .select('id')
-          .eq('workspace_id', wsId)
-          .eq('deal_id', seed.dealId)
-          .is('deleted_at', null)
-          .order('created_at', { ascending: false })
+          .from("quotes")
+          .select("id")
+          .eq("workspace_id", wsId)
+          .eq("deal_id", seed.dealId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false })
           .limit(1);
         const existingId = found?.[0]?.id as string | undefined;
         if (existingId) {
@@ -78,7 +81,7 @@ export function useShareQuoteLink() {
         }
       }
 
-      const { number } = await nextDocumentNumber({ data: { workspaceId: wsId, kind: 'quote' } });
+      const { number } = await nextDocumentNumber({ data: { workspaceId: wsId, kind: "quote" } });
       const amount = Number(seed.amount ?? 0) || 0;
       const insert: QuoteInsert = {
         workspace_id: wsId,
@@ -94,34 +97,40 @@ export function useShareQuoteLink() {
         tax_total: 0,
         total: amount,
         version: 1,
-        status: 'draft',
+        status: "draft",
       };
-      const { data: created, error } = await sbAny(db).from('quotes').insert(insert).select('id').single();
+      const { data: created, error } = await sbAny(db)
+        .from("quotes")
+        .insert(insert)
+        .select("id")
+        .single();
       if (error) throw error;
       const quoteId = created.id as string;
 
       if (amount > 0) {
-        await sbAny(db).from('quote_line_items').insert([
-          {
-            workspace_id: wsId,
-            quote_id: quoteId,
-            name: seed.title.slice(0, 200),
-            quantity: 1,
-            unit_price: amount,
-            discount_pct: 0,
-            tax_rate: 0,
-            subtotal: amount,
-            total: amount,
-            sort_order: 0,
-          },
-        ]);
+        await sbAny(db)
+          .from("quote_line_items")
+          .insert([
+            {
+              workspace_id: wsId,
+              quote_id: quoteId,
+              name: seed.title.slice(0, 200),
+              quantity: 1,
+              unit_price: amount,
+              discount_pct: 0,
+              tax_rate: 0,
+              subtotal: amount,
+              total: amount,
+              sort_order: 0,
+            },
+          ]);
       }
 
       const token = await ensureToken(quoteId);
       return { quoteId, token, url: buildQuoteUrl(token), created: true };
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['quotes'] });
+      qc.invalidateQueries({ queryKey: ["quotes"] });
     },
   });
 }

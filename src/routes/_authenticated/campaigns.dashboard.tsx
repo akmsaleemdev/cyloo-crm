@@ -360,7 +360,12 @@ function CampaignDashboardPage() {
                 {filteredCampaigns.length} of {campaigns.length}
               </span>
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={resetFilters} className="rounded-control">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetFilters}
+                  className="rounded-control"
+                >
                   <X className="mr-1 h-3.5 w-3.5" /> Clear
                 </Button>
               )}
@@ -434,7 +439,10 @@ function CampaignDashboardPage() {
                     <div key={status} className="flex items-center justify-between">
                       <Badge
                         variant="secondary"
-                        className={cn("rounded-control uppercase text-[11px]", STATUS_STYLES[status])}
+                        className={cn(
+                          "rounded-control uppercase text-[11px]",
+                          STATUS_STYLES[status],
+                        )}
                       >
                         {status}
                       </Badge>

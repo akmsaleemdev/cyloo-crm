@@ -1,8 +1,16 @@
 /** Follow the provider's pagination without leaking store credentials to a
  * different origin through a malicious or misconfigured Link header. */
-export function nextStorePage(currentUrl: string, headers: Headers, count: number, platform: string): string | null {
+export function nextStorePage(
+  currentUrl: string,
+  headers: Headers,
+  count: number,
+  platform: string,
+): string | null {
   const current = new URL(currentUrl);
-  const nextLink = headers.get("link")?.split(/,(?=\s*<)/).find((part) => /rel=["']?next\b/i.test(part));
+  const nextLink = headers
+    .get("link")
+    ?.split(/,(?=\s*<)/)
+    .find((part) => /rel=["']?next\b/i.test(part));
   if (nextLink) {
     const href = nextLink.match(/<([^>]+)>/)?.[1];
     if (!href) throw new Error("Store returned an invalid pagination link");
@@ -49,7 +57,7 @@ export async function paginateStore<T>(opts: {
   let url: string | null = opts.startUrl;
   while (url) {
     if (seen.has(url) || seen.size >= cap) {
-      throw new Error('Store pagination did not finish; try again later.');
+      throw new Error("Store pagination did not finish; try again later.");
     }
     seen.add(url);
     const page = await opts.fetchPage(url);
@@ -62,7 +70,12 @@ export async function paginateStore<T>(opts: {
 }
 
 export function storeCurrency(platform: string, payload: unknown, fallback: string): string {
-  const info = payload as { shop?: { currency?: unknown }; settings?: { currency?: unknown } } | null;
+  const info = payload as {
+    shop?: { currency?: unknown };
+    settings?: { currency?: unknown };
+  } | null;
   const currency = platform === "shopify" ? info?.shop?.currency : info?.settings?.currency;
-  return typeof currency === "string" && /^[A-Za-z]{3}$/.test(currency) ? currency.toUpperCase() : fallback;
+  return typeof currency === "string" && /^[A-Za-z]{3}$/.test(currency)
+    ? currency.toUpperCase()
+    : fallback;
 }

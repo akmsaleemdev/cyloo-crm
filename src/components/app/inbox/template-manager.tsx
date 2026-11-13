@@ -111,8 +111,7 @@ export function TemplateManager({
           <DialogTitle>Saved replies & templates</DialogTitle>
           <DialogDescription>
             Create, edit, and organize responses your team can reuse. Use{" "}
-            <code className="text-xs bg-muted px-1 rounded">{"{{name}}"}</code>{" "}
-            for variables.
+            <code className="text-xs bg-muted px-1 rounded">{"{{name}}"}</code> for variables.
           </DialogDescription>
         </DialogHeader>
 
@@ -149,12 +148,8 @@ export function TemplateManager({
                       }
                     >
                       <div className="flex items-center gap-1.5">
-                        {t.is_favorite && (
-                          <Star className="h-3 w-3 text-amber-500 shrink-0" />
-                        )}
-                        <span className="text-sm font-medium truncate">
-                          {t.name}
-                        </span>
+                        {t.is_favorite && <Star className="h-3 w-3 text-amber-500 shrink-0" />}
+                        <span className="text-sm font-medium truncate">{t.name}</span>
                         {t.shortcut && (
                           <Badge
                             variant="outline"
@@ -195,8 +190,7 @@ export function TemplateManager({
                     </div>
                     <div className="space-y-1.5">
                       <Label>
-                        Shortcut{" "}
-                        <span className="text-muted-foreground">(optional)</span>
+                        Shortcut <span className="text-muted-foreground">(optional)</span>
                       </Label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
@@ -259,9 +253,7 @@ export function TemplateManager({
                       variant="ghost"
                       size="sm"
                       className="gap-1.5"
-                      onClick={() =>
-                        setForm({ ...form, is_favorite: !form.is_favorite })
-                      }
+                      onClick={() => setForm({ ...form, is_favorite: !form.is_favorite })}
                     >
                       {form.is_favorite ? (
                         <>
@@ -324,9 +316,7 @@ export function TemplateManager({
                   <div className="mx-auto h-12 w-12 rounded-control bg-muted grid place-items-center mb-3">
                     <Pencil className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <p className="text-sm font-medium mb-1">
-                    Pick a template to edit
-                  </p>
+                  <p className="text-sm font-medium mb-1">Pick a template to edit</p>
                   <p className="text-xs text-muted-foreground mb-4">
                     or create a new saved reply for your team.
                   </p>

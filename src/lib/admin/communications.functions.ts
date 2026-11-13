@@ -98,10 +98,11 @@ export const upsertAnnouncement = createServerFn({ method: "POST" })
     return row;
   });
 
-
 export const toggleAnnouncement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: unknown) => z.object({ id: z.string().uuid(), publish: z.boolean() }).parse(data))
+  .validator((data: unknown) =>
+    z.object({ id: z.string().uuid(), publish: z.boolean() }).parse(data),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertStaff(supabase, userId);
@@ -119,7 +120,10 @@ export const deleteAnnouncement = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertStaff(supabase, userId);
-    const { error } = await sbAny(supabase).from("platform_announcements").delete().eq("id", data.id);
+    const { error } = await sbAny(supabase)
+      .from("platform_announcements")
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -147,7 +151,9 @@ const ReleaseNoteInput = z.object({
   version: z.string().min(1),
   title: z.string().min(1),
   body: z.string().min(1),
-  category: z.enum(["feature", "improvement", "fix", "security", "breaking"]).default("improvement"),
+  category: z
+    .enum(["feature", "improvement", "fix", "security", "breaking"])
+    .default("improvement"),
   translations: z.record(z.string(), z.any()).default({}),
   publish: z.boolean().default(false),
 });
@@ -178,7 +184,11 @@ export const upsertReleaseNote = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return row;
     }
-    const { data: row, error } = await sbAny(supabase).from("release_notes").insert(payload).select().single();
+    const { data: row, error } = await sbAny(supabase)
+      .from("release_notes")
+      .insert(payload)
+      .select()
+      .single();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -233,7 +243,11 @@ export const getTicketDetail = createServerFn({ method: "GET" })
     await assertStaff(supabase, userId);
     const [{ data: ticket, error: e1 }, { data: messages, error: e2 }] = await Promise.all([
       sbAny(supabase).from("platform_support_tickets").select("*").eq("id", data.id).single(),
-      sbAny(supabase).from("support_ticket_messages").select("*").eq("ticket_id", data.id).order("created_at", { ascending: true }),
+      sbAny(supabase)
+        .from("support_ticket_messages")
+        .select("*")
+        .eq("ticket_id", data.id)
+        .order("created_at", { ascending: true }),
     ]);
     if (e1) throw new Error(e1.message);
     if (e2) throw new Error(e2.message);
@@ -269,7 +283,10 @@ export const replyTicket = createServerFn({ method: "POST" })
     if (!data.is_internal) {
       await supabase
         .from("platform_support_tickets")
-        .update({ first_response_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+        .update({
+          first_response_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", data.ticket_id)
         .is("first_response_at", null);
     }
@@ -295,12 +312,16 @@ export const updateTicket = createServerFn({ method: "POST" })
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (data.status) {
       patch.status = data.status;
-      if (data.status === "resolved" || data.status === "closed") patch.resolved_at = new Date().toISOString();
+      if (data.status === "resolved" || data.status === "closed")
+        patch.resolved_at = new Date().toISOString();
     }
     if (data.priority) patch.priority = data.priority;
     if (data.category) patch.category = data.category;
     if (data.assigned_to !== undefined) patch.assigned_to = data.assigned_to;
-    const { error } = await (supabase as any).from("platform_support_tickets").update(patch).eq("id", data.id);
+    const { error } = await (supabase as any)
+      .from("platform_support_tickets")
+      .update(patch)
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -336,7 +357,10 @@ export const broadcastNotification = createServerFn({ method: "POST" })
     // Resolve target user ids via profiles/organization_members.
     let userIds: string[] = [];
     if (data.audience === "all") {
-      const { data: rows, error: lookupErr } = await admin.from("profiles").select("id").limit(10000);
+      const { data: rows, error: lookupErr } = await admin
+        .from("profiles")
+        .select("id")
+        .limit(10000);
       if (lookupErr) throw new Error(`Recipient lookup failed: ${lookupErr.message}`);
       userIds = (rows ?? []).map((r: { id: string }) => r.id);
     } else {
@@ -380,7 +404,9 @@ export const broadcastNotification = createServerFn({ method: "POST" })
 export const listKbArticles = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((data: unknown) =>
-    z.object({ workspace_id: z.string().uuid().optional(), only_faq: z.boolean().default(false) }).parse(data ?? {}),
+    z
+      .object({ workspace_id: z.string().uuid().optional(), only_faq: z.boolean().default(false) })
+      .parse(data ?? {}),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -409,7 +435,10 @@ export const listSystemTemplates = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     await assertStaff(supabase, userId);
-    const { data, error } = await sbAny(supabase).from("system_message_templates").select("*").order("code");
+    const { data, error } = await sbAny(supabase)
+      .from("system_message_templates")
+      .select("*")
+      .order("code");
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -451,7 +480,11 @@ export const upsertSystemTemplate = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return row;
     }
-    const { data: row, error } = await sbAny(supabase).from("system_message_templates").insert(payload).select().single();
+    const { data: row, error } = await sbAny(supabase)
+      .from("system_message_templates")
+      .insert(payload)
+      .select()
+      .single();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -462,7 +495,10 @@ export const deleteSystemTemplate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertStaff(supabase, userId);
-    const { error } = await sbAny(supabase).from("system_message_templates").delete().eq("id", data.id);
+    const { error } = await sbAny(supabase)
+      .from("system_message_templates")
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });

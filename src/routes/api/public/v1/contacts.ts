@@ -26,7 +26,10 @@ export const Route = createFileRoute("/api/public/v1/contacts")({
 
         let query = ctx.supabase
           .from("contacts")
-          .select("id, first_name, last_name, email, phone, whatsapp_number, company, job_title, tags, created_at, updated_at", { count: "exact" })
+          .select(
+            "id, first_name, last_name, email, phone, whatsapp_number, company, job_title, tags, created_at, updated_at",
+            { count: "exact" },
+          )
           .eq("organization_id", ctx.organizationId)
           .order("created_at", { ascending: false })
           .range(offset, offset + limit - 1);
@@ -38,18 +41,28 @@ export const Route = createFileRoute("/api/public/v1/contacts")({
 
         const { data, error, count } = await query;
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-        return jsonOk(data ?? [], { requestId: ctx.requestId, meta: { total: count ?? 0, limit, offset } });
+        return jsonOk(data ?? [], {
+          requestId: ctx.requestId,
+          meta: { total: count ?? 0, limit, offset },
+        });
       }),
       POST: withGateway({ requiredScopes: ["contacts:write"] }, async (ctx, req) => {
         const body = await parseJson<unknown>(req);
         const parsed = CreateContactSchema.safeParse(body);
         if (!parsed.success) {
-          return jsonError("validation_error", "Invalid contact payload", { issues: parsed.error.issues }, ctx.requestId);
+          return jsonError(
+            "validation_error",
+            "Invalid contact payload",
+            { issues: parsed.error.issues },
+            ctx.requestId,
+          );
         }
         const { data, error } = await ctx.supabase
           .from("contacts")
           .insert({ ...parsed.data, organization_id: ctx.organizationId })
-          .select("id, first_name, last_name, email, phone, whatsapp_number, company, tags, created_at")
+          .select(
+            "id, first_name, last_name, email, phone, whatsapp_number, company, tags, created_at",
+          )
           .single();
         if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
         return jsonOk(data, { status: 201, requestId: ctx.requestId });

@@ -32,10 +32,7 @@ export const DEFAULT_BACKOFF: Required<Omit<BackoffOptions, "random">> = {
  * @param attempt 1-based retry attempt number.
  * @returns milliseconds to wait before the next resubscribe.
  */
-export function computeBackoffDelay(
-  attempt: number,
-  options: BackoffOptions = {},
-): number {
+export function computeBackoffDelay(attempt: number, options: BackoffOptions = {}): number {
   const {
     baseDelayMs = DEFAULT_BACKOFF.baseDelayMs,
     maxDelayMs = DEFAULT_BACKOFF.maxDelayMs,

@@ -26,15 +26,17 @@ export interface RecordAttemptInput {
   metadata?: Record<string, unknown>;
 }
 
-export async function recordPaymentAttempt(supabase: SupabaseClient, input: RecordAttemptInput): Promise<string> {
+export async function recordPaymentAttempt(
+  supabase: SupabaseClient,
+  input: RecordAttemptInput,
+): Promise<string> {
   const isFailure = input.status === "failed";
-  const previousFailures = isFailure
-    ? await countPreviousFailures(supabase, input.invoice_id)
-    : 0;
+  const previousFailures = isFailure ? await countPreviousFailures(supabase, input.invoice_id) : 0;
   const retry_count = previousFailures;
-  const next_retry_at = isFailure && retry_count < RETRY_BACKOFF_HOURS.length
-    ? new Date(Date.now() + RETRY_BACKOFF_HOURS[retry_count] * 60 * 60 * 1000).toISOString()
-    : null;
+  const next_retry_at =
+    isFailure && retry_count < RETRY_BACKOFF_HOURS.length
+      ? new Date(Date.now() + RETRY_BACKOFF_HOURS[retry_count] * 60 * 60 * 1000).toISOString()
+      : null;
 
   const row = await supabase
     .from("billing_payment_attempts")
@@ -65,18 +67,39 @@ export async function recordPaymentAttempt(supabase: SupabaseClient, input: Reco
       : input.status === "failed"
         ? "payment.attempt.failed"
         : "payment.attempt.created";
-  await emit({ type, organization_id: input.organization_id, data: { attempt_id: row.data.id, invoice_id: input.invoice_id, amount_cents: input.amount_cents } });
-  await persistEvent(supabase, { type, organization_id: input.organization_id, occurred_at: new Date().toISOString(), data: { attempt_id: row.data.id } }, { subscription_id: input.subscription_id ?? null, provider: input.provider });
+  await emit({
+    type,
+    organization_id: input.organization_id,
+    data: {
+      attempt_id: row.data.id,
+      invoice_id: input.invoice_id,
+      amount_cents: input.amount_cents,
+    },
+  });
+  await persistEvent(
+    supabase,
+    {
+      type,
+      organization_id: input.organization_id,
+      occurred_at: new Date().toISOString(),
+      data: { attempt_id: row.data.id },
+    },
+    { subscription_id: input.subscription_id ?? null, provider: input.provider },
+  );
 
   // Roll up onto invoice.
   if (input.invoice_id) {
-    if (input.status === "succeeded") await markInvoicePaid(supabase, input.invoice_id, input.amount_cents);
+    if (input.status === "succeeded")
+      await markInvoicePaid(supabase, input.invoice_id, input.amount_cents);
     if (input.status === "failed") await markInvoiceFailed(supabase, input.invoice_id);
   }
   return row.data.id;
 }
 
-async function countPreviousFailures(supabase: SupabaseClient, invoice_id?: string): Promise<number> {
+async function countPreviousFailures(
+  supabase: SupabaseClient,
+  invoice_id?: string,
+): Promise<number> {
   if (!invoice_id) return 0;
   const { count } = await supabase
     .from("billing_payment_attempts")
@@ -86,8 +109,16 @@ async function countPreviousFailures(supabase: SupabaseClient, invoice_id?: stri
   return count ?? 0;
 }
 
-async function markInvoicePaid(supabase: SupabaseClient, invoice_id: string, paid_cents: number): Promise<void> {
-  const inv = await sbAny(supabase).from("billing_invoices").select("total_cents, amount_paid_cents, organization_id").eq("id", invoice_id).single();
+async function markInvoicePaid(
+  supabase: SupabaseClient,
+  invoice_id: string,
+  paid_cents: number,
+): Promise<void> {
+  const inv = await sbAny(supabase)
+    .from("billing_invoices")
+    .select("total_cents, amount_paid_cents, organization_id")
+    .eq("id", invoice_id)
+    .single();
   if (inv.error) throw inv.error;
   const newPaid = (inv.data.amount_paid_cents ?? 0) + paid_cents;
   const fully = newPaid >= inv.data.total_cents;
@@ -101,14 +132,26 @@ async function markInvoicePaid(supabase: SupabaseClient, invoice_id: string, pai
     })
     .eq("id", invoice_id);
   if (fully) {
-    await emit({ type: "invoice.paid", organization_id: inv.data.organization_id, data: { invoice_id } });
+    await emit({
+      type: "invoice.paid",
+      organization_id: inv.data.organization_id,
+      data: { invoice_id },
+    });
   }
 }
 
 async function markInvoiceFailed(supabase: SupabaseClient, invoice_id: string): Promise<void> {
-  const inv = await sbAny(supabase).from("billing_invoices").select("organization_id").eq("id", invoice_id).single();
+  const inv = await sbAny(supabase)
+    .from("billing_invoices")
+    .select("organization_id")
+    .eq("id", invoice_id)
+    .single();
   if (inv.error) return;
-  await emit({ type: "invoice.payment_failed", organization_id: inv.data.organization_id, data: { invoice_id } });
+  await emit({
+    type: "invoice.payment_failed",
+    organization_id: inv.data.organization_id,
+    data: { invoice_id },
+  });
 }
 
 /** Find due retries — called by a scheduled worker. */

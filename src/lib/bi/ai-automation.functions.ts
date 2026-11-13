@@ -140,7 +140,8 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     const prevFrom = new Date(prevTo.getTime() - days * 24 * 60 * 60 * 1000);
 
     // ---- AI request logs (current + previous) ----
-    const aiSel = "provider_id,provider_kind,model,feature,status,latency_ms,prompt_tokens,completion_tokens,total_tokens,cost_usd,metadata,created_at";
+    const aiSel =
+      "provider_id,provider_kind,model,feature,status,latency_ms,prompt_tokens,completion_tokens,total_tokens,cost_usd,metadata,created_at";
     const [{ data: aiCurr = [] }, { data: aiPrev = [] }] = await Promise.all([
       supabase
         .from("ai_request_logs")
@@ -161,16 +162,50 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     ]);
 
     // AI aggregates for current period
-    const aiTrendMap = new Map<string, { requests: number; successRequests: number; failedRequests: number; totalTokens: number; costUsd: number }>();
+    const aiTrendMap = new Map<
+      string,
+      {
+        requests: number;
+        successRequests: number;
+        failedRequests: number;
+        totalTokens: number;
+        costUsd: number;
+      }
+    >();
     for (let i = 0; i < days; i++) {
       const d = new Date(from.getTime() + i * 86_400_000);
-      aiTrendMap.set(dayKey(d), { requests: 0, successRequests: 0, failedRequests: 0, totalTokens: 0, costUsd: 0 });
+      aiTrendMap.set(dayKey(d), {
+        requests: 0,
+        successRequests: 0,
+        failedRequests: 0,
+        totalTokens: 0,
+        costUsd: 0,
+      });
     }
 
-    const providers = new Map<string, { providerId: string | null; providerKind: string | null; name: string; requests: number; totalTokens: number; costUsd: number }>();
-    const models = new Map<string, { model: string; requests: number; totalTokens: number; costUsd: number }>();
-    const prompts = new Map<string, { key: string; requests: number; totalTokens: number; costUsd: number; accepted: number }>();
-    const featureAgg = new Map<string, { feature: string; requests: number; totalTokens: number; costUsd: number }>();
+    const providers = new Map<
+      string,
+      {
+        providerId: string | null;
+        providerKind: string | null;
+        name: string;
+        requests: number;
+        totalTokens: number;
+        costUsd: number;
+      }
+    >();
+    const models = new Map<
+      string,
+      { model: string; requests: number; totalTokens: number; costUsd: number }
+    >();
+    const prompts = new Map<
+      string,
+      { key: string; requests: number; totalTokens: number; costUsd: number; accepted: number }
+    >();
+    const featureAgg = new Map<
+      string,
+      { feature: string; requests: number; totalTokens: number; costUsd: number }
+    >();
 
     let aiSuccess = 0;
     let aiFailed = 0;
@@ -226,7 +261,12 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
 
       // Model
       if (row.model) {
-        const mcur = models.get(row.model) ?? { model: row.model, requests: 0, totalTokens: 0, costUsd: 0 };
+        const mcur = models.get(row.model) ?? {
+          model: row.model,
+          requests: 0,
+          totalTokens: 0,
+          costUsd: 0,
+        };
         mcur.requests += 1;
         mcur.totalTokens += tot;
         mcur.costUsd += cost;
@@ -237,7 +277,13 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       const promptKey = (meta && (meta.prompt_key || meta.promptKey)) || row.feature || null;
       if (promptKey) {
         const pk = String(promptKey);
-        const cur = prompts.get(pk) ?? { key: pk, requests: 0, totalTokens: 0, costUsd: 0, accepted: 0 };
+        const cur = prompts.get(pk) ?? {
+          key: pk,
+          requests: 0,
+          totalTokens: 0,
+          costUsd: 0,
+          accepted: 0,
+        };
         cur.requests += 1;
         cur.totalTokens += tot;
         cur.costUsd += cost;
@@ -247,7 +293,12 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
 
       // Feature cost
       const feat = row.feature ?? "unspecified";
-      const fcur = featureAgg.get(feat) ?? { feature: feat, requests: 0, totalTokens: 0, costUsd: 0 };
+      const fcur = featureAgg.get(feat) ?? {
+        feature: feat,
+        requests: 0,
+        totalTokens: 0,
+        costUsd: 0,
+      };
       fcur.requests += 1;
       fcur.totalTokens += tot;
       fcur.costUsd += cost;
@@ -295,9 +346,10 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       if (row.status === "success") prevSuccess += 1;
     }
 
-    const acceptanceRate = aiAccepted > 0
-      ? (aiAccepted / (aiSuccess + aiFailed || 1)) * 100
-      : safeDiv(aiSuccess, aiSuccess + aiFailed) * 100;
+    const acceptanceRate =
+      aiAccepted > 0
+        ? (aiAccepted / (aiSuccess + aiFailed || 1)) * 100
+        : safeDiv(aiSuccess, aiSuccess + aiFailed) * 100;
     const prevAcceptance = safeDiv(prevSuccess, prevRequests) * 100;
     const aiSavedSeconds = aiSuccess * AI_SAVED_SECONDS_PER_SUCCESS;
     const prevAiSaved = prevSuccess * AI_SAVED_SECONDS_PER_SUCCESS;
@@ -307,7 +359,9 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       .map((p) => ({ ...p, share: totalReqs > 0 ? (p.requests / totalReqs) * 100 : 0 }))
       .sort((a, b) => b.requests - a.requests);
 
-    const modelArr = Array.from(models.values()).sort((a, b) => b.requests - a.requests).slice(0, 10);
+    const modelArr = Array.from(models.values())
+      .sort((a, b) => b.requests - a.requests)
+      .slice(0, 10);
     const topPrompts = Array.from(prompts.values())
       .map((p) => ({
         key: p.key,
@@ -351,7 +405,19 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     }
 
     const wfStatusMix = new Map<string, number>();
-    const perWorkflow = new Map<string, { automationId: string; runs: number; succeeded: number; failed: number; durationSum: number; durationCount: number; lastFailureAt: string | null; lastError: string | null }>();
+    const perWorkflow = new Map<
+      string,
+      {
+        automationId: string;
+        runs: number;
+        succeeded: number;
+        failed: number;
+        durationSum: number;
+        durationCount: number;
+        lastFailureAt: string | null;
+        lastError: string | null;
+      }
+    >();
     let wfRuns = 0;
     let wfSucceeded = 0;
     let wfFailed = 0;
@@ -368,7 +434,8 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       wfRuns += 1;
       wfStatusMix.set(row.status, (wfStatusMix.get(row.status) ?? 0) + 1);
 
-      const succ = row.status === "succeeded" || row.status === "success" || row.status === "completed";
+      const succ =
+        row.status === "succeeded" || row.status === "success" || row.status === "completed";
       const fail = row.status === "failed" || row.status === "error";
       if (succ) {
         wfSucceeded += 1;
@@ -387,13 +454,26 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       }
 
       const key = row.automation_id;
-      const cur = perWorkflow.get(key) ?? { automationId: key, runs: 0, succeeded: 0, failed: 0, durationSum: 0, durationCount: 0, lastFailureAt: null as string | null, lastError: null as string | null };
+      const cur = perWorkflow.get(key) ?? {
+        automationId: key,
+        runs: 0,
+        succeeded: 0,
+        failed: 0,
+        durationSum: 0,
+        durationCount: 0,
+        lastFailureAt: null as string | null,
+        lastError: null as string | null,
+      };
       cur.runs += 1;
       if (succ) cur.succeeded += 1;
       if (fail) {
         cur.failed += 1;
         cur.lastFailureAt = row.started_at;
-        cur.lastError = row.error ? (typeof row.error === "string" ? row.error : row.error?.message ?? JSON.stringify(row.error).slice(0, 200)) : null;
+        cur.lastError = row.error
+          ? typeof row.error === "string"
+            ? row.error
+            : (row.error?.message ?? JSON.stringify(row.error).slice(0, 200))
+          : null;
       }
       if (row.duration_ms != null) {
         cur.durationSum += row.duration_ms;
@@ -409,7 +489,8 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     for (const r of wfPrev ?? []) {
       const row = r as any;
       prevWfRuns += 1;
-      if (row.status === "succeeded" || row.status === "success" || row.status === "completed") prevWfSucceeded += 1;
+      if (row.status === "succeeded" || row.status === "success" || row.status === "completed")
+        prevWfSucceeded += 1;
       if (row.status === "failed" || row.status === "error") prevWfFailed += 1;
     }
 
@@ -455,7 +536,9 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
 
     return {
       range: { from: from.toISOString(), to: to.toISOString(), days },
-      compareRange: data.compare ? { from: prevFrom.toISOString(), to: prevTo.toISOString() } : null,
+      compareRange: data.compare
+        ? { from: prevFrom.toISOString(), to: prevTo.toISOString() }
+        : null,
       ai: {
         totals: {
           requests: aiSuccess + aiFailed,
@@ -498,7 +581,8 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         delta: data.compare
           ? {
               runs: pctDelta(wfRuns, prevWfRuns),
-              successRate: safeDiv(wfSucceeded, wfRuns) * 100 - safeDiv(prevWfSucceeded, prevWfRuns) * 100,
+              successRate:
+                safeDiv(wfSucceeded, wfRuns) * 100 - safeDiv(prevWfSucceeded, prevWfRuns) * 100,
               failed: pctDelta(wfFailed, prevWfFailed),
               savedSeconds: pctDelta(wfSavedSeconds, prevWfSaved),
             }

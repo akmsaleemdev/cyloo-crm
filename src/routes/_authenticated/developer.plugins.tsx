@@ -77,7 +77,8 @@ function DeveloperPlugins() {
             <CardHeader>
               <CardTitle>Create plugin</CardTitle>
               <p className="text-sm text-muted-foreground">
-                This step saves the listing. Add the plugin code as an HTTPS JavaScript bundle when you create a release below.
+                This step saves the listing. Add the plugin code as an HTTPS JavaScript bundle when
+                you create a release below.
               </p>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -183,7 +184,12 @@ function DeveloperPlugins() {
 
 function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) {
   const [showPublish, setShowPublish] = useState(false);
-  const [ver, setVer] = useState({ version: "1.0.0", changelog: "", permissions: "", entryUrl: "" });
+  const [ver, setVer] = useState({
+    version: "1.0.0",
+    changelog: "",
+    permissions: "",
+    entryUrl: "",
+  });
   const validEntryUrl = (() => {
     try {
       return new URL(ver.entryUrl).protocol === "https:";
@@ -208,7 +214,9 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
         },
       }),
     onSuccess: () => {
-      toast.success(plugin.status === "published" ? "Plugin update published" : "Release submitted for review");
+      toast.success(
+        plugin.status === "published" ? "Plugin update published" : "Release submitted for review",
+      );
       setShowPublish(false);
       onChange();
     },
@@ -249,8 +257,12 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
         {showPublish && (
           <div className="space-y-2 border-t pt-3">
             <p className="text-xs text-muted-foreground">
-              Bundle your plugin functions into a CommonJS JavaScript file and host it over HTTPS. The app loads this URL after installation. See the{" "}
-              <Link to="/developer-tools/publishing" className="text-primary underline">publishing guide</Link>.
+              Bundle your plugin functions into a CommonJS JavaScript file and host it over HTTPS.
+              The app loads this URL after installation. See the{" "}
+              <Link to="/developer-tools/publishing" className="text-primary underline">
+                publishing guide
+              </Link>
+              .
             </p>
             <Input
               placeholder="Semver (e.g. 1.0.0)"
@@ -258,7 +270,9 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
               onChange={(e) => setVer((v) => ({ ...v, version: e.target.value }))}
             />
             <div className="space-y-1">
-              <label htmlFor={`plugin-entry-${plugin.id}`} className="text-xs font-medium">Code bundle URL</label>
+              <label htmlFor={`plugin-entry-${plugin.id}`} className="text-xs font-medium">
+                Code bundle URL
+              </label>
               <Input
                 id={`plugin-entry-${plugin.id}`}
                 type="url"
@@ -268,7 +282,9 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
                 aria-invalid={ver.entryUrl.length > 0 && !validEntryUrl}
               />
               {ver.entryUrl.length > 0 && !validEntryUrl && (
-                <p className="text-xs text-destructive">Enter an HTTPS URL for the built JavaScript file.</p>
+                <p className="text-xs text-destructive">
+                  Enter an HTTPS URL for the built JavaScript file.
+                </p>
               )}
             </div>
             <Textarea
@@ -282,7 +298,11 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
               value={ver.permissions}
               onChange={(e) => setVer((v) => ({ ...v, permissions: e.target.value }))}
             />
-            <Button size="sm" onClick={() => publish.mutate()} disabled={publish.isPending || !validEntryUrl}>
+            <Button
+              size="sm"
+              onClick={() => publish.mutate()}
+              disabled={publish.isPending || !validEntryUrl}
+            >
               {plugin.status === "published" ? "Publish update" : "Submit for review"}
             </Button>
           </div>

@@ -31,9 +31,7 @@ const recipientEnum = z.enum(["customer", "host", "both"]);
 
 export const listNotificationTemplates = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ event_type_id: z.string().uuid().optional() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ event_type_id: z.string().uuid().optional() }).parse(v))
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
     let q = sbAny(context.supabase)
@@ -50,16 +48,18 @@ export const listNotificationTemplates = createServerFn({ method: "POST" })
 export const upsertNotificationTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      id: z.string().uuid().optional(),
-      event_type_id: z.string().uuid().nullable().optional(),
-      kind: kindEnum,
-      channel: channelEnum,
-      subject: z.string().max(200).optional(),
-      body: z.string().min(1).max(5000),
-      is_active: z.boolean().optional(),
-      is_default: z.boolean().optional(),
-    }).parse(v),
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        event_type_id: z.string().uuid().nullable().optional(),
+        kind: kindEnum,
+        channel: channelEnum,
+        subject: z.string().max(200).optional(),
+        body: z.string().min(1).max(5000),
+        is_active: z.boolean().optional(),
+        is_default: z.boolean().optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
@@ -110,14 +110,14 @@ export const deleteNotificationTemplate = createServerFn({ method: "POST" })
 
 export const listNotificationRules = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ event_type_id: z.string().uuid().optional() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ event_type_id: z.string().uuid().optional() }).parse(v))
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
     let q = sbAny(context.supabase)
       .from("booking_notification_rules")
-      .select("id, event_type_id, name, kind, channels, offset_minutes, send_to, is_active, template_ids, updated_at")
+      .select(
+        "id, event_type_id, name, kind, channels, offset_minutes, send_to, is_active, template_ids, updated_at",
+      )
       .eq("workspace_id", workspaceId)
       .order("kind", { ascending: true });
     if (data.event_type_id) q = q.eq("event_type_id", data.event_type_id);
@@ -129,17 +129,19 @@ export const listNotificationRules = createServerFn({ method: "POST" })
 export const upsertNotificationRule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      id: z.string().uuid().optional(),
-      event_type_id: z.string().uuid().nullable().optional(),
-      name: z.string().min(1).max(100),
-      kind: kindEnum,
-      channels: z.array(channelEnum).min(1),
-      offset_minutes: z.number().int().min(-10080).max(43200),
-      send_to: recipientEnum,
-      is_active: z.boolean().optional(),
-      template_ids: z.record(z.string(), z.string().nullable()).optional(),
-    }).parse(v),
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        event_type_id: z.string().uuid().nullable().optional(),
+        name: z.string().min(1).max(100),
+        kind: kindEnum,
+        channels: z.array(channelEnum).min(1),
+        offset_minutes: z.number().int().min(-10080).max(43200),
+        send_to: recipientEnum,
+        is_active: z.boolean().optional(),
+        template_ids: z.record(z.string(), z.string().nullable()).optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
@@ -192,11 +194,13 @@ export const deleteNotificationRule = createServerFn({ method: "POST" })
 export const registerPushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      endpoint: z.string().url(),
-      keys: z.object({ p256dh: z.string(), auth: z.string() }),
-      user_agent: z.string().max(500).optional(),
-    }).parse(v),
+    z
+      .object({
+        endpoint: z.string().url(),
+        keys: z.object({ p256dh: z.string(), auth: z.string() }),
+        user_agent: z.string().max(500).optional(),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
@@ -235,8 +239,7 @@ export const sendTestNotification = createServerFn({ method: "POST" })
       throw new Error("Appointment not found");
     }
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { sendAppointmentNotification } = await import(
-      "@/lib/booking/notifications-engine.server"
-    );
+    const { sendAppointmentNotification } =
+      await import("@/lib/booking/notifications-engine.server");
     return sendAppointmentNotification(supabaseAdmin, data.appointment_id, data.kind);
   });

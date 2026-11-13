@@ -9,28 +9,16 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
-import {
-  FileText,
-  MessageSquare,
-  Paperclip,
-  Phone,
-  User,
-} from "lucide-react";
-import {
-  useAdvancedSearch,
-  type SearchHit,
-  type SearchKind,
-} from "@/hooks/use-inbox-organization";
+import { FileText, MessageSquare, Paperclip, Phone, User } from "lucide-react";
+import { useAdvancedSearch, type SearchHit, type SearchKind } from "@/hooks/use-inbox-organization";
 
-const KIND_META: Record<
-  SearchKind,
-  { label: string; icon: typeof MessageSquare; group: string }
-> = {
-  conversation: { label: "Conversation", icon: MessageSquare, group: "Conversations" },
-  message: { label: "Message", icon: FileText, group: "Messages" },
-  contact: { label: "Contact", icon: User, group: "Customers" },
-  attachment: { label: "Attachment", icon: Paperclip, group: "Attachments" },
-};
+const KIND_META: Record<SearchKind, { label: string; icon: typeof MessageSquare; group: string }> =
+  {
+    conversation: { label: "Conversation", icon: MessageSquare, group: "Conversations" },
+    message: { label: "Message", icon: FileText, group: "Messages" },
+    contact: { label: "Contact", icon: User, group: "Customers" },
+    attachment: { label: "Attachment", icon: Paperclip, group: "Attachments" },
+  };
 
 export function AdvancedSearchDialog({
   open,
@@ -94,9 +82,7 @@ export function AdvancedSearchDialog({
                       <div className="flex-1 min-w-0">
                         <div className="truncate text-sm">{h.title || "Untitled"}</div>
                         {h.snippet && (
-                          <div className="truncate text-xs text-muted-foreground">
-                            {h.snippet}
-                          </div>
+                          <div className="truncate text-xs text-muted-foreground">{h.snippet}</div>
                         )}
                       </div>
                       <Badge variant="outline" className="text-[11px] shrink-0">

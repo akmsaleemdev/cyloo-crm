@@ -24,11 +24,7 @@ describe("Tenant Audit Event Recording Pipeline", () => {
   it("should have all audit pipeline files", () => {
     for (const relPath of auditPipelineFiles) {
       const fullPath = resolve(SRC_DIR, relPath);
-      expect(
-        existsSync(fullPath),
-        `Missing audit pipeline file: ${relPath}`,
-      ).toBe(true);
+      expect(existsSync(fullPath), `Missing audit pipeline file: ${relPath}`).toBe(true);
     }
   });
 });
-

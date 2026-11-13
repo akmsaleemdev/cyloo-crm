@@ -122,7 +122,9 @@ const MATH_FUNCS = {
   max: (...xs: unknown[]) => Math.max(...xs.map(Number)),
   sum: (arr: unknown) => (Array.isArray(arr) ? arr.reduce<number>((s, x) => s + Number(x), 0) : 0),
   avg: (arr: unknown) =>
-    Array.isArray(arr) && arr.length ? arr.reduce<number>((s, x) => s + Number(x), 0) / arr.length : 0,
+    Array.isArray(arr) && arr.length
+      ? arr.reduce<number>((s, x) => s + Number(x), 0) / arr.length
+      : 0,
   pct: (a: unknown, b: unknown) => (Number(b) === 0 ? 0 : (Number(a) / Number(b)) * 100),
 };
 
@@ -138,8 +140,12 @@ const STRING_FUNCS = {
     String(s ?? "")
       .toLowerCase()
       .replace(/\b\w/g, (m) => m.toUpperCase()),
-  replace: (s: unknown, a: unknown, b: unknown) => String(s ?? "").split(String(a ?? "")).join(String(b ?? "")),
-  slice: (s: unknown, a: unknown, b?: unknown) => String(s ?? "").slice(Number(a) || 0, b == null ? undefined : Number(b)),
+  replace: (s: unknown, a: unknown, b: unknown) =>
+    String(s ?? "")
+      .split(String(a ?? ""))
+      .join(String(b ?? "")),
+  slice: (s: unknown, a: unknown, b?: unknown) =>
+    String(s ?? "").slice(Number(a) || 0, b == null ? undefined : Number(b)),
   length: (s: unknown) => (Array.isArray(s) ? s.length : String(s ?? "").length),
   split: (s: unknown, sep: unknown) => String(s ?? "").split(String(sep ?? "")),
   join: (arr: unknown, sep: unknown) => (Array.isArray(arr) ? arr.join(String(sep ?? "")) : ""),
@@ -148,7 +154,11 @@ const STRING_FUNCS = {
   startsWith: (s: unknown, needle: unknown) => String(s ?? "").startsWith(String(needle ?? "")),
   endsWith: (s: unknown, needle: unknown) => String(s ?? "").endsWith(String(needle ?? "")),
   json: (v: unknown) => {
-    try { return JSON.stringify(v); } catch { return ""; }
+    try {
+      return JSON.stringify(v);
+    } catch {
+      return "";
+    }
   },
   number: (v: unknown, digits: unknown = 2) => {
     const n = Number(v);
@@ -179,7 +189,11 @@ function applyPipe(value: unknown, pipe: string): unknown {
     if (/^['"].*['"]$/.test(a)) return a.slice(1, -1);
     return a;
   });
-  try { return fn(value, ...parsedArgs); } catch { return value; }
+  try {
+    return fn(value, ...parsedArgs);
+  } catch {
+    return value;
+  }
 }
 
 /* ------------------------- Inline expression eval ------------------------- */
@@ -200,17 +214,35 @@ export function evalInlineExpression(expr: string, vars: VariableBag): unknown {
   // For simplicity we support one level of function calls.
   const callRe = /(date|math|str)\.([a-zA-Z_]+)\(([^)]*)\)/g;
   const resolvedCalls = substituted.replace(callRe, (_m, ns, fn, argstr) => {
-    const args = argstr.split(",").map((s: string) => s.trim()).filter(Boolean).map((a: string) => {
-      try { return JSON.parse(a); } catch { return a.replace(/^["']|["']$/g, ""); }
-    });
-    const nsFns = (FUNCTION_LIBRARY as Record<string, Record<string, (...a: unknown[]) => unknown>>)[ns];
+    const args = argstr
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean)
+      .map((a: string) => {
+        try {
+          return JSON.parse(a);
+        } catch {
+          return a.replace(/^["']|["']$/g, "");
+        }
+      });
+    const nsFns = (
+      FUNCTION_LIBRARY as Record<string, Record<string, (...a: unknown[]) => unknown>>
+    )[ns];
     const f = nsFns?.[fn];
     if (!f) return "null";
-    try { return JSON.stringify(f(...args)); } catch { return "null"; }
+    try {
+      return JSON.stringify(f(...args));
+    } catch {
+      return "null";
+    }
   });
 
   // Only allow arithmetic, comparison, boolean ops, and literals now
-  if (!/^[\s\d+\-*/%().,<>=!&|?:'"`\[\]{}truefalsnl\-eE]*$/.test(resolvedCalls.replace(/"[^"]*"/g, ""))) {
+  if (
+    !/^[\s\d+\-*/%().,<>=!&|?:'"`\[\]{}truefalsnl\-eE]*$/.test(
+      resolvedCalls.replace(/"[^"]*"/g, ""),
+    )
+  ) {
     return resolvedCalls;
   }
   try {
@@ -225,7 +257,10 @@ export function evalInlineExpression(expr: string, vars: VariableBag): unknown {
 
 /** Resolve a single `{{ path | pipe:arg | pipe }}` token. */
 function resolveMergeToken(token: string, vars: VariableBag): unknown {
-  const parts = token.split("|").map((s) => s.trim()).filter(Boolean);
+  const parts = token
+    .split("|")
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (!parts.length) return "";
   const path = parts[0];
   let value: unknown;
@@ -255,7 +290,8 @@ export function interpolate(value: unknown, vars: VariableBag): unknown {
   if (Array.isArray(value)) return value.map((v) => interpolate(v, vars));
   if (value && typeof value === "object") {
     const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = interpolate(v, vars);
+    for (const [k, v] of Object.entries(value as Record<string, unknown>))
+      out[k] = interpolate(v, vars);
     return out;
   }
   return value;
@@ -305,21 +341,22 @@ export function redactSecrets(bag: VariableBag, scoped: ScopedVariable[]): Varia
 /* -------------------------- Merge-field catalogue ------------------------- */
 
 /** Static suggestions surfaced in the expression builder. */
-export const MERGE_FIELD_SUGGESTIONS: Array<{ group: string; path: string; description: string }> = [
-  { group: "Trigger", path: "trigger.message.text", description: "Incoming message text" },
-  { group: "Trigger", path: "trigger.message.from", description: "Sender phone number" },
-  { group: "Trigger", path: "trigger.event", description: "Trigger event name" },
-  { group: "Contact", path: "contact.id", description: "Contact ID" },
-  { group: "Contact", path: "contact.name", description: "Contact full name" },
-  { group: "Contact", path: "contact.email", description: "Contact email" },
-  { group: "Contact", path: "contact.phone", description: "Contact phone" },
-  { group: "Contact", path: "contact.tags", description: "Contact tags (array)" },
-  { group: "Deal", path: "deal.id", description: "Deal ID" },
-  { group: "Deal", path: "deal.value", description: "Deal amount" },
-  { group: "Deal", path: "deal.stage", description: "Current pipeline stage" },
-  { group: "Deal", path: "deal.owner", description: "Assigned agent" },
-  { group: "Conversation", path: "conversation.id", description: "Conversation ID" },
-  { group: "Conversation", path: "conversation.status", description: "Open / closed / snoozed" },
-  { group: "Organization", path: "organization.name", description: "Workspace name" },
-  { group: "Actor", path: "actor.userId", description: "User who launched the run" },
-];
+export const MERGE_FIELD_SUGGESTIONS: Array<{ group: string; path: string; description: string }> =
+  [
+    { group: "Trigger", path: "trigger.message.text", description: "Incoming message text" },
+    { group: "Trigger", path: "trigger.message.from", description: "Sender phone number" },
+    { group: "Trigger", path: "trigger.event", description: "Trigger event name" },
+    { group: "Contact", path: "contact.id", description: "Contact ID" },
+    { group: "Contact", path: "contact.name", description: "Contact full name" },
+    { group: "Contact", path: "contact.email", description: "Contact email" },
+    { group: "Contact", path: "contact.phone", description: "Contact phone" },
+    { group: "Contact", path: "contact.tags", description: "Contact tags (array)" },
+    { group: "Deal", path: "deal.id", description: "Deal ID" },
+    { group: "Deal", path: "deal.value", description: "Deal amount" },
+    { group: "Deal", path: "deal.stage", description: "Current pipeline stage" },
+    { group: "Deal", path: "deal.owner", description: "Assigned agent" },
+    { group: "Conversation", path: "conversation.id", description: "Conversation ID" },
+    { group: "Conversation", path: "conversation.status", description: "Open / closed / snoozed" },
+    { group: "Organization", path: "organization.name", description: "Workspace name" },
+    { group: "Actor", path: "actor.userId", description: "User who launched the run" },
+  ];

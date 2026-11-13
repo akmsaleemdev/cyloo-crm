@@ -26,7 +26,10 @@ import { sendGatewayTestWebhook } from "@/lib/billing/gateway-webhook-test.funct
 
 type TestResult = Awaited<ReturnType<typeof sendGatewayTestWebhook>>;
 
-const STATUS_STYLE: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+const STATUS_STYLE: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive" }
+> = {
   processed: { label: "Delivered", variant: "default" },
   misconfigured: { label: "Misconfigured", variant: "secondary" },
   failed: { label: "Failed", variant: "destructive" },
@@ -42,7 +45,8 @@ export function GatewayTestWebhook({ gatewayIds }: { gatewayIds: string[] }) {
     onSuccess: (data) => {
       setResult(data);
       if (data.status === "processed") toast.success("Test webhook delivered");
-      else if (data.status === "misconfigured") toast.warning("Endpoint reachable, but misconfigured");
+      else if (data.status === "misconfigured")
+        toast.warning("Endpoint reachable, but misconfigured");
       else toast.error("Test webhook failed");
     },
     onError: (error: Error) => toast.error(error.message || "Could not send test webhook"),

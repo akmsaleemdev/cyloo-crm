@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/api/supabase';
-import { getDeviceId, getDeviceProfile } from './device';
-import { loadPrefs, savePrefs, clearPrefs } from './prefs';
-import { bindAppLock, useLockStore } from './lock';
-import { queryClient } from '@/api/queryClient';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "@/api/supabase";
+import { getDeviceId, getDeviceProfile } from "./device";
+import { loadPrefs, savePrefs, clearPrefs } from "./prefs";
+import { bindAppLock, useLockStore } from "./lock";
+import { queryClient } from "@/api/queryClient";
 
 type AuthCtx = {
   session: Session | null;
@@ -35,8 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      if (event === 'SIGNED_OUT') useLockStore.getState().setLocked(false);
-      if (event === 'SIGNED_IN') useLockStore.getState().setLocked(false);
+      if (event === "SIGNED_OUT") useLockStore.getState().setLocked(false);
+      if (event === "SIGNED_IN") useLockStore.getState().setLocked(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -61,7 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: error?.message };
     },
     verifyOtp: async (email, token) => {
-      const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token, type: 'email' });
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: "email",
+      });
       return { error: error?.message };
     },
     signOut: async (opts) => {
@@ -72,7 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (opts?.forgetDevice) {
           try {
             const deviceId = await getDeviceId();
-            await supabase.from('trusted_devices').delete().match({ user_id: uid, device_id: deviceId });
+            await supabase
+              .from("trusted_devices")
+              .delete()
+              .match({ user_id: uid, device_id: deviceId });
           } catch {
             /* offline: outbox will retry if wired */
           }
@@ -90,20 +97,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user) return;
       const deviceId = await getDeviceId();
       const profile = getDeviceProfile();
-      await supabase
-        .from('trusted_devices')
-        .upsert(
-          {
-            user_id: user.id,
-            device_id: deviceId,
-            platform: profile.platform,
-            model: profile.model,
-            os: profile.os,
-            app_version: profile.appVersion,
-            last_seen_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id,device_id' },
-        );
+      await supabase.from("trusted_devices").upsert(
+        {
+          user_id: user.id,
+          device_id: deviceId,
+          platform: profile.platform,
+          model: profile.model,
+          os: profile.os,
+          app_version: profile.appVersion,
+          last_seen_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,device_id" },
+      );
       savePrefs(user.id, { rememberDevice: true });
     },
   };
@@ -113,6 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const c = useContext(Ctx);
-  if (!c) throw new Error('useAuth outside AuthProvider');
+  if (!c) throw new Error("useAuth outside AuthProvider");
   return c;
 }

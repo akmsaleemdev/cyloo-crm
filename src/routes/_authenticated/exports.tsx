@@ -6,7 +6,16 @@ import { ExportCenter } from "@/components/app/exports/export-center";
 
 export const Route = createFileRoute("/_authenticated/exports")({
   staticData: { breadcrumb: "Export Center" },
-  head: () => ({ meta: [{ title: "Export Center" }, { name: "description", content: "Generate professional PDF, Excel, CSV and JSON exports of reports, CRM data, campaigns and conversations." }] }),
+  head: () => ({
+    meta: [
+      { title: "Export Center" },
+      {
+        name: "description",
+        content:
+          "Generate professional PDF, Excel, CSV and JSON exports of reports, CRM data, campaigns and conversations.",
+      },
+    ],
+  }),
   component: ExportsPage,
 });
 

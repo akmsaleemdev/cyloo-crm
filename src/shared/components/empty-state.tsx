@@ -45,12 +45,15 @@ export function EmptyState({
         <Icon className={compact ? "h-4 w-4" : "h-6 w-6"} aria-hidden />
       </div>
       <div className="max-w-sm space-y-1">
-        <h3 className={cn("font-display font-semibold text-foreground", compact ? "text-sm" : "text-base")}>
+        <h3
+          className={cn(
+            "font-display font-semibold text-foreground",
+            compact ? "text-sm" : "text-base",
+          )}
+        >
           {title}
         </h3>
-        {description && (
-          <p className="text-xs text-muted-foreground text-pretty">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground text-pretty">{description}</p>}
       </div>
       {(action || secondary) && (
         <div className="mt-2 flex flex-wrap items-center justify-center gap-2">

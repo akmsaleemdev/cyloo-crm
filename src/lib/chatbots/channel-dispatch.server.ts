@@ -13,8 +13,15 @@ import { sbAny } from "@/lib/supabase/untyped";
 type Admin = any;
 
 export type BotChannel =
-  | "whatsapp" | "instagram" | "messenger" | "telegram"
-  | "livechat" | "web" | "sms" | "email" | "tiktok";
+  | "whatsapp"
+  | "instagram"
+  | "messenger"
+  | "telegram"
+  | "livechat"
+  | "web"
+  | "sms"
+  | "email"
+  | "tiktok";
 
 export interface DispatchBot {
   id: string;
@@ -72,7 +79,10 @@ export async function findDeployedBot(
   const { data: bots } = await admin
     .from("chatbots")
     .select(BOT_COLUMNS)
-    .in("id", matching.map((d) => d.chatbot_id))
+    .in(
+      "id",
+      matching.map((d) => d.chatbot_id),
+    )
     .eq("status", "active")
     .order("updated_at", { ascending: false });
   const list = (bots ?? []) as DispatchBot[];
@@ -185,13 +195,15 @@ export async function dispatchChannelBot(args: DispatchArgs): Promise<DispatchRe
         handed_off_at: new Date().toISOString(),
       })
       .eq("id", sessionId);
-    await sbAny(admin).from("chatbot_messages").insert({
-      workspace_id: bot.workspace_id,
-      session_id: sessionId,
-      role: "assistant",
-      content: reply,
-      latency_ms: Date.now() - start,
-    });
+    await sbAny(admin)
+      .from("chatbot_messages")
+      .insert({
+        workspace_id: bot.workspace_id,
+        session_id: sessionId,
+        role: "assistant",
+        content: reply,
+        latency_ms: Date.now() - start,
+      });
     return { reply, handedOff: true, botId: bot.id };
   }
 
@@ -245,18 +257,23 @@ export async function dispatchChannelBot(args: DispatchArgs): Promise<DispatchRe
     model = res.model || model;
     providerKind = res.providerKind;
   } catch (err) {
-    console.warn(`[chatbot-dispatch:${channel}] AI call failed, using fallback:`, (err as Error).message);
+    console.warn(
+      `[chatbot-dispatch:${channel}] AI call failed, using fallback:`,
+      (err as Error).message,
+    );
   }
 
-  await sbAny(admin).from("chatbot_messages").insert({
-    workspace_id: bot.workspace_id,
-    session_id: sessionId,
-    role: "assistant",
-    content: reply,
-    latency_ms: Date.now() - start,
-    model,
-    provider_kind: providerKind,
-  });
+  await sbAny(admin)
+    .from("chatbot_messages")
+    .insert({
+      workspace_id: bot.workspace_id,
+      session_id: sessionId,
+      role: "assistant",
+      content: reply,
+      latency_ms: Date.now() - start,
+      model,
+      provider_kind: providerKind,
+    });
   await admin
     .from("chatbot_sessions")
     .update({ last_message_at: new Date().toISOString() })

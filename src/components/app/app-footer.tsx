@@ -23,7 +23,6 @@ export function AppFooter() {
       aria-label="Application footer"
       className="bg-background text-foreground border-border"
     >
-
       <div className="flex w-full items-center justify-between gap-4 text-sm text-muted-foreground">
         <div
           role="status"
@@ -36,8 +35,12 @@ export function AppFooter() {
             aria-hidden="true"
           />
           <span className="truncate">All systems operational</span>
-          <span className="opacity-40 hidden sm:inline" aria-hidden="true">·</span>
-          <span className="hidden sm:inline text-xs">{brand.name} · {APP_VERSION_LABEL}</span>
+          <span className="opacity-40 hidden sm:inline" aria-hidden="true">
+            ·
+          </span>
+          <span className="hidden sm:inline text-xs">
+            {brand.name} · {APP_VERSION_LABEL}
+          </span>
         </div>
         <BrandSocials socials={brand.socials} />
         <nav
@@ -47,42 +50,50 @@ export function AppFooter() {
           <Link to="/settings" className={footerLinkClass}>
             Settings
           </Link>
-          {SHOW_RESOURCE_LINKS && <a
-            href={docsUrl()}
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="Documentation (opens in a new tab)"
-            className={`${footerLinkClass} hidden md:inline`}
-          >
-            Docs
-          </a>}
-          {SHOW_RESOURCE_LINKS && <a
-            href={docsUrl("changelog")}
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="Changelog (opens in a new tab)"
-            className={`${footerLinkClass} hidden md:inline`}
-          >
-            Changelog
-          </a>}
-          {SHOW_RESOURCE_LINKS && <a
-            href={docsUrl("status")}
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="System status (opens in a new tab)"
-            className={`${footerLinkClass} hidden lg:inline`}
-          >
-            Status
-          </a>}
-          {SHOW_RESOURCE_LINKS && <a
-            href={docsUrl("support")}
-            target="_blank"
-            rel="noreferrer noopener"
-            aria-label="Support (opens in a new tab)"
-            className={`${footerLinkClass} hidden lg:inline`}
-          >
-            Support
-          </a>}
+          {SHOW_RESOURCE_LINKS && (
+            <a
+              href={docsUrl()}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="Documentation (opens in a new tab)"
+              className={`${footerLinkClass} hidden md:inline`}
+            >
+              Docs
+            </a>
+          )}
+          {SHOW_RESOURCE_LINKS && (
+            <a
+              href={docsUrl("changelog")}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="Changelog (opens in a new tab)"
+              className={`${footerLinkClass} hidden md:inline`}
+            >
+              Changelog
+            </a>
+          )}
+          {SHOW_RESOURCE_LINKS && (
+            <a
+              href={docsUrl("status")}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="System status (opens in a new tab)"
+              className={`${footerLinkClass} hidden lg:inline`}
+            >
+              Status
+            </a>
+          )}
+          {SHOW_RESOURCE_LINKS && (
+            <a
+              href={docsUrl("support")}
+              target="_blank"
+              rel="noreferrer noopener"
+              aria-label="Support (opens in a new tab)"
+              className={`${footerLinkClass} hidden lg:inline`}
+            >
+              Support
+            </a>
+          )}
           {platform.supportEmail && (
             <a
               href={`mailto:${platform.supportEmail}`}
@@ -104,10 +115,13 @@ export function AppFooter() {
               }}
             />
           )}
-          <span className="text-muted-foreground text-xs">&copy; {year} {brand.name}</span>
+          <span className="text-muted-foreground text-xs">
+            &copy; {year} {brand.name}
+          </span>
         </nav>
-        <span className="sm:hidden text-muted-foreground">&copy; {year} {brand.name}</span>
-
+        <span className="sm:hidden text-muted-foreground">
+          &copy; {year} {brand.name}
+        </span>
       </div>
     </HeaderSlot>
   );
@@ -131,7 +145,10 @@ function BrandSocials({ socials }: { socials: TenantSocials }) {
     .filter((l) => !!l.href);
   if (links.length === 0) return null;
   return (
-    <nav aria-label="Social links" className="hidden lg:flex items-center gap-x-3 whitespace-nowrap">
+    <nav
+      aria-label="Social links"
+      className="hidden lg:flex items-center gap-x-3 whitespace-nowrap"
+    >
       {links.map((l) => (
         <a
           key={l.key}

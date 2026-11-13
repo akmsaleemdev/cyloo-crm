@@ -3,14 +3,14 @@
  * Wrap tappable atoms with these props to guarantee a WCAG-2 compliant
  * label, role, and 44x44 tap target across Android + iOS.
  */
-import { AccessibilityInfo, Platform } from 'react-native';
+import { AccessibilityInfo, Platform } from "react-native";
 
 export const MIN_TAP = 44;
 
 export function a11yButton(label: string, hint?: string) {
   return {
     accessible: true,
-    accessibilityRole: 'button' as const,
+    accessibilityRole: "button" as const,
     accessibilityLabel: label,
     ...(hint ? { accessibilityHint: hint } : {}),
     hitSlop: { top: 8, bottom: 8, left: 8, right: 8 },
@@ -20,7 +20,7 @@ export function a11yButton(label: string, hint?: string) {
 export function a11yHeader(label: string) {
   return {
     accessible: true,
-    accessibilityRole: 'header' as const,
+    accessibilityRole: "header" as const,
     accessibilityLabel: label,
   };
 }
@@ -28,7 +28,7 @@ export function a11yHeader(label: string) {
 export function a11yImage(alt: string) {
   return {
     accessible: true,
-    accessibilityRole: 'image' as const,
+    accessibilityRole: "image" as const,
     accessibilityLabel: alt,
   };
 }
@@ -47,5 +47,5 @@ export async function isScreenReaderOn(): Promise<boolean> {
   }
 }
 
-export const isIOS = Platform.OS === 'ios';
-export const isAndroid = Platform.OS === 'android';
+export const isIOS = Platform.OS === "ios";
+export const isAndroid = Platform.OS === "android";

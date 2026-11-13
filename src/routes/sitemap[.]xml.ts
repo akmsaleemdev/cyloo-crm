@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { sbAny } from "@/lib/supabase/untyped";
 
-
 const BASE_URL = "https://cyloo.ai";
 
 type SitemapEntry = {
@@ -39,8 +38,6 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/legal/dpa", changefreq: "yearly", priority: "0.5" },
         ];
 
-
-
         try {
           const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
 
@@ -50,7 +47,10 @@ export const Route = createFileRoute("/sitemap.xml")({
                 .from("booking_event_types")
                 .select("slug, updated_at")
                 .eq("is_active", true),
-              sbAny(supabaseAdmin).from("booking_pages").select("slug, updated_at").eq("is_active", true),
+              sbAny(supabaseAdmin)
+                .from("booking_pages")
+                .select("slug, updated_at")
+                .eq("is_active", true),
               supabaseAdmin
                 .from("vcards")
                 .select("slug, updated_at")

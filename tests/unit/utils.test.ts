@@ -37,4 +37,3 @@ describe("cn (class name merger)", () => {
     expect(cn({ hidden: true, flex: false })).toBe("hidden");
   });
 });
-

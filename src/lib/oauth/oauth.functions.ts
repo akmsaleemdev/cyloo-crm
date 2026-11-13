@@ -42,44 +42,41 @@ export const listOAuthClients = createServerFn({ method: "GET" })
 
 export const createOAuthClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: {
-    name: string;
-    description?: string;
-    clientType: "confidential" | "public";
-    redirectUris: string[];
-    allowedGrantTypes?: string[];
-    allowedScopes?: string[];
-    homepageUrl?: string;
-    logoUrl?: string;
-    privacyUrl?: string;
-    tosUrl?: string;
-  }) =>
-    z
-      .object({
-        name: z.string().min(1).max(120),
-        description: z.string().max(500).optional(),
-        clientType: z.enum(["confidential", "public"]),
-        redirectUris: z
-          .array(z.string().url().max(2048))
-          .min(1)
-          .max(20),
-        allowedGrantTypes: z
-          .array(z.enum(["authorization_code", "refresh_token", "client_credentials"]))
-          .optional(),
-        allowedScopes: z.array(z.string().max(60)).max(50).optional(),
-        homepageUrl: z.string().url().optional().or(z.literal("")),
-        logoUrl: z.string().url().optional().or(z.literal("")),
-        privacyUrl: z.string().url().optional().or(z.literal("")),
-        tosUrl: z.string().url().optional().or(z.literal("")),
-      })
-      .parse(d),
+  .validator(
+    (d: {
+      name: string;
+      description?: string;
+      clientType: "confidential" | "public";
+      redirectUris: string[];
+      allowedGrantTypes?: string[];
+      allowedScopes?: string[];
+      homepageUrl?: string;
+      logoUrl?: string;
+      privacyUrl?: string;
+      tosUrl?: string;
+    }) =>
+      z
+        .object({
+          name: z.string().min(1).max(120),
+          description: z.string().max(500).optional(),
+          clientType: z.enum(["confidential", "public"]),
+          redirectUris: z.array(z.string().url().max(2048)).min(1).max(20),
+          allowedGrantTypes: z
+            .array(z.enum(["authorization_code", "refresh_token", "client_credentials"]))
+            .optional(),
+          allowedScopes: z.array(z.string().max(60)).max(50).optional(),
+          homepageUrl: z.string().url().optional().or(z.literal("")),
+          logoUrl: z.string().url().optional().or(z.literal("")),
+          privacyUrl: z.string().url().optional().or(z.literal("")),
+          tosUrl: z.string().url().optional().or(z.literal("")),
+        })
+        .parse(d),
   )
   .handler(async ({ data, context }) => {
     const orgId = await getCallerOrgId(context.supabase, context.userId);
     const { generateClientCredentials, sha256Hex } = await import("./oauth.server");
     const { client_id, client_secret } = generateClientCredentials();
-    const secretHash =
-      data.clientType === "confidential" ? await sha256Hex(client_secret) : null;
+    const secretHash = data.clientType === "confidential" ? await sha256Hex(client_secret) : null;
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { data: row, error } = await supabaseAdmin
@@ -97,10 +94,7 @@ export const createOAuthClient = createServerFn({ method: "POST" })
         privacy_url: data.privacyUrl || null,
         tos_url: data.tosUrl || null,
         redirect_uris: data.redirectUris,
-        allowed_grant_types: data.allowedGrantTypes ?? [
-          "authorization_code",
-          "refresh_token",
-        ],
+        allowed_grant_types: data.allowedGrantTypes ?? ["authorization_code", "refresh_token"],
         allowed_scopes: data.allowedScopes ?? ["openid", "profile", "email"],
         require_pkce: data.clientType === "public",
       })
@@ -118,25 +112,30 @@ export const createOAuthClient = createServerFn({ method: "POST" })
 
 export const updateOAuthClient = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: {
-    id: string;
-    name?: string;
-    description?: string;
-    redirectUris?: string[];
-    allowedScopes?: string[];
-    allowedGrantTypes?: string[];
-    homepageUrl?: string;
-    logoUrl?: string;
-  }) => z.object({
-    id: z.string().uuid(),
-    name: z.string().min(1).max(120).optional(),
-    description: z.string().max(500).optional(),
-    redirectUris: z.array(z.string().url().max(2048)).max(20).optional(),
-    allowedScopes: z.array(z.string().max(60)).max(50).optional(),
-    allowedGrantTypes: z.array(z.string()).max(10).optional(),
-    homepageUrl: z.string().url().optional().or(z.literal("")),
-    logoUrl: z.string().url().optional().or(z.literal("")),
-  }).parse(d))
+  .validator(
+    (d: {
+      id: string;
+      name?: string;
+      description?: string;
+      redirectUris?: string[];
+      allowedScopes?: string[];
+      allowedGrantTypes?: string[];
+      homepageUrl?: string;
+      logoUrl?: string;
+    }) =>
+      z
+        .object({
+          id: z.string().uuid(),
+          name: z.string().min(1).max(120).optional(),
+          description: z.string().max(500).optional(),
+          redirectUris: z.array(z.string().url().max(2048)).max(20).optional(),
+          allowedScopes: z.array(z.string().max(60)).max(50).optional(),
+          allowedGrantTypes: z.array(z.string()).max(10).optional(),
+          homepageUrl: z.string().url().optional().or(z.literal("")),
+          logoUrl: z.string().url().optional().or(z.literal("")),
+        })
+        .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const orgId = await getCallerOrgId(context.supabase, context.userId);
     const patch: Record<string, any> = { updated_at: new Date().toISOString() };
@@ -228,7 +227,8 @@ export const getAuthorizationDetails = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!client || client.revoked_at) throw new Error("invalid_client");
     if (!client.redirect_uris.includes(data.redirect_uri)) throw new Error("invalid_redirect_uri");
-    if (!client.allowed_grant_types.includes("authorization_code")) throw new Error("unauthorized_grant_type");
+    if (!client.allowed_grant_types.includes("authorization_code"))
+      throw new Error("unauthorized_grant_type");
     if (client.require_pkce && !data.code_challenge) throw new Error("pkce_required");
 
     const requested = data.scope.split(/\s+/).filter(Boolean);
@@ -281,8 +281,7 @@ export const approveAuthorization = createServerFn({ method: "POST" })
     if (client.require_pkce && !data.code_challenge) throw new Error("pkce_required");
 
     const scopes = data.scope.split(/\s+/).filter(Boolean);
-    if (scopes.some((s) => !client.allowed_scopes.includes(s)))
-      throw new Error("invalid_scope");
+    if (scopes.some((s) => !client.allowed_scopes.includes(s))) throw new Error("invalid_scope");
 
     // Upsert consent (widen scopes to union).
     const { data: existing } = await context.supabase
@@ -306,18 +305,20 @@ export const approveAuthorization = createServerFn({ method: "POST" })
     const { randomToken, sha256Hex, OAUTH_TTL } = await import("./oauth.server");
     const code = randomToken(32);
     const codeHash = await sha256Hex(code);
-    const { error } = await sbAny(supabaseAdmin).from("oauth_authorization_codes").insert({
-      code_hash: codeHash,
-      client_id: client.id,
-      user_id: context.userId,
-      organization_id: client.organization_id,
-      redirect_uri: data.redirect_uri,
-      scopes,
-      code_challenge: data.code_challenge ?? null,
-      code_challenge_method: data.code_challenge_method ?? (data.code_challenge ? "S256" : null),
-      nonce: data.nonce ?? null,
-      expires_at: new Date(Date.now() + OAUTH_TTL.CODE_TTL_S * 1000).toISOString(),
-    });
+    const { error } = await sbAny(supabaseAdmin)
+      .from("oauth_authorization_codes")
+      .insert({
+        code_hash: codeHash,
+        client_id: client.id,
+        user_id: context.userId,
+        organization_id: client.organization_id,
+        redirect_uri: data.redirect_uri,
+        scopes,
+        code_challenge: data.code_challenge ?? null,
+        code_challenge_method: data.code_challenge_method ?? (data.code_challenge ? "S256" : null),
+        nonce: data.nonce ?? null,
+        expires_at: new Date(Date.now() + OAUTH_TTL.CODE_TTL_S * 1000).toISOString(),
+      });
     if (error) throw error;
 
     const url = new URL(data.redirect_uri);
@@ -368,9 +369,7 @@ export const listConnectedApps = createServerFn({ method: "GET" })
 
 export const revokeConnectedApp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((d: { consentId: string }) =>
-    z.object({ consentId: z.string().uuid() }).parse(d),
-  )
+  .validator((d: { consentId: string }) => z.object({ consentId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: consent } = await context.supabase
       .from("oauth_user_consents")

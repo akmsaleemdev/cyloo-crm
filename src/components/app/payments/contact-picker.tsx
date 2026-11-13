@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Autocomplete, type AutocompleteOption } from '@/shared/components/autocomplete';
-import { useCurrentWorkspace } from '@/hooks/use-workspace';
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Autocomplete, type AutocompleteOption } from "@/shared/components/autocomplete";
+import { useCurrentWorkspace } from "@/hooks/use-workspace";
 
 export type PickedContact = {
   id: string;
@@ -14,7 +14,7 @@ export type PickedContact = {
 export function ContactPicker({
   value,
   onPick,
-  placeholder = 'Select contact',
+  placeholder = "Select contact",
 }: {
   value?: string | null;
   onPick: (c: PickedContact | null) => void;
@@ -28,11 +28,11 @@ export function ContactPicker({
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from('contacts')
-        .select('id, display_name, name, first_name, last_name, email, phone, phones, emails')
-        .eq('workspace_id', active.id)
-        .is('deleted_at', null)
-        .order('updated_at', { ascending: false })
+        .from("contacts")
+        .select("id, display_name, name, first_name, last_name, email, phone, phones, emails")
+        .eq("workspace_id", active.id)
+        .is("deleted_at", null)
+        .order("updated_at", { ascending: false })
         .limit(200);
       if (cancelled) return;
       setRows(
@@ -45,7 +45,7 @@ export function ContactPicker({
             name:
               (rr.display_name as string) ||
               (rr.name as string) ||
-              [rr.first_name, rr.last_name].filter(Boolean).join(' ') ||
+              [rr.first_name, rr.last_name].filter(Boolean).join(" ") ||
               null,
             email: (rr.email as string) || emails[0]?.email || null,
             phone: (rr.phone as string) || phones[0]?.number || null,
@@ -62,7 +62,7 @@ export function ContactPicker({
     () =>
       rows.map((r) => ({
         value: r.id,
-        label: `${r.name || 'Unnamed'}${r.email ? ` · ${r.email}` : ''}${r.phone ? ` · ${r.phone}` : ''}`,
+        label: `${r.name || "Unnamed"}${r.email ? ` · ${r.email}` : ""}${r.phone ? ` · ${r.phone}` : ""}`,
         description: undefined,
       })),
     [rows],

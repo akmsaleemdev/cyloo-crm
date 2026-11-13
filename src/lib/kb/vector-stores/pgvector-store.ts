@@ -5,9 +5,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { toVectorLiteral } from "../embed.server";
-import type {
-  KbVectorStore, VectorChunk, VectorSearchHit, VectorSearchParams,
-} from "./types";
+import type { KbVectorStore, VectorChunk, VectorSearchHit, VectorSearchParams } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyClient = SupabaseClient<any, any, any>;
@@ -42,13 +40,16 @@ export class PgVectorStore implements KbVectorStore {
   }
 
   async search(params: VectorSearchParams): Promise<VectorSearchHit[]> {
-    const { data, error } = await this.supabase.rpc("match_kb_chunks" as never, {
-      p_workspace_id: params.workspaceId,
-      p_query_embedding: toVectorLiteral(params.queryEmbedding),
-      p_match_count: params.matchCount,
-      p_min_similarity: params.minSimilarity,
-      p_only_published: params.onlyPublished,
-    } as never);
+    const { data, error } = await this.supabase.rpc(
+      "match_kb_chunks" as never,
+      {
+        p_workspace_id: params.workspaceId,
+        p_query_embedding: toVectorLiteral(params.queryEmbedding),
+        p_match_count: params.matchCount,
+        p_min_similarity: params.minSimilarity,
+        p_only_published: params.onlyPublished,
+      } as never,
+    );
     if (error) throw new Error(`pgvector search failed: ${error.message}`);
     return (data ?? []) as unknown as VectorSearchHit[];
   }

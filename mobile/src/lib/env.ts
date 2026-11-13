@@ -1,4 +1,4 @@
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Record<string, string>;
 
@@ -9,5 +9,5 @@ export const env = {
 };
 
 if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {
-  console.warn('[env] Missing Supabase configuration in app.json → expo.extra');
+  console.warn("[env] Missing Supabase configuration in app.json → expo.extra");
 }

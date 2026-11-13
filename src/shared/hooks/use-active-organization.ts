@@ -5,7 +5,6 @@ import {
   subscribeActiveTenant,
 } from "@/lib/tenant/active-tenant";
 
-
 export type Organization = {
   id: string;
   name: string;
@@ -37,8 +36,7 @@ export function useActiveOrganization(all: Organization[]) {
     writeActiveOrgId(id);
   }, []);
 
-  const active =
-    all.find((o) => o.id === activeId) ?? all[0] ?? null;
+  const active = all.find((o) => o.id === activeId) ?? all[0] ?? null;
 
   return { active, activeId: active?.id ?? null, setActiveId, all };
 }

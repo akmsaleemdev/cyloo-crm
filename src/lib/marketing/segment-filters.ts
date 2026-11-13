@@ -87,7 +87,10 @@ function daysAgoIso(days: number): string {
 
 /** PostgREST array literal: `{a,b,c}`. Escapes commas/braces conservatively. */
 function pgArray(values: string[]): string {
-  const clean = values.map((v) => v.trim()).filter(Boolean).map((v) => v.replace(/[{},"]/g, ""));
+  const clean = values
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .map((v) => v.replace(/[{},"]/g, ""));
   return `{${clean.join(",")}}`;
 }
 

@@ -4,7 +4,13 @@
  * Uses direct Microsoft OAuth refresh tokens against Microsoft Graph v1.0.
  * Required scopes: Calendars.ReadWrite, offline_access, User.Read.
  */
-import type { CalendarProvider, ProviderContext, ExternalEvent, BusyBlock, CalendarListItem } from "./types";
+import type {
+  CalendarProvider,
+  ProviderContext,
+  ExternalEvent,
+  BusyBlock,
+  CalendarListItem,
+} from "./types";
 import { microsoftGraphFetch } from "@/lib/integrations/microsoft-calendar-oauth.server";
 
 async function mfetch(ctx: ProviderContext, path: string, init?: RequestInit) {
@@ -70,7 +76,11 @@ export const microsoftCalendarProvider: CalendarProvider = {
 
   async deleteEvent(ctx, externalId) {
     if (!ctx.connectionKey) return;
-    const response = await microsoftGraphFetch(ctx.connectionKey, `/me/events/${encodeURIComponent(externalId)}`, { method: "DELETE" });
+    const response = await microsoftGraphFetch(
+      ctx.connectionKey,
+      `/me/events/${encodeURIComponent(externalId)}`,
+      { method: "DELETE" },
+    );
     if (!response.ok) throw new Error(`Microsoft Graph ${response.status}`);
   },
 };
@@ -81,7 +91,10 @@ function buildOutlookEvent(event: ExternalEvent) {
     subject: event.title,
     body: {
       contentType: "HTML",
-      content: [event.description, event.join_url ? `<p><a href="${event.join_url}">Join meeting</a></p>` : ""]
+      content: [
+        event.description,
+        event.join_url ? `<p><a href="${event.join_url}">Join meeting</a></p>` : "",
+      ]
         .filter(Boolean)
         .join(""),
     },

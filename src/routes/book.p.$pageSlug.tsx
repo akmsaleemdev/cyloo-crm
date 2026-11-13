@@ -117,12 +117,7 @@ function PublicMultiServicePage() {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {eventTypes.map((et) => (
-              <Link
-                key={et.id}
-                to="/book/$slug"
-                params={{ slug: et.slug }}
-                className="group"
-              >
+              <Link key={et.id} to="/book/$slug" params={{ slug: et.slug }} className="group">
                 <Card className="transition-all group-hover:border-foreground group-hover:shadow-none">
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between gap-3">
@@ -166,7 +161,10 @@ function PublicMultiServicePage() {
         )}
 
         <p className="text-xs text-center text-muted-foreground mt-8">
-          Theme: {theme} · Powered by <span className="font-medium"><Brand /></span>
+          Theme: {theme} · Powered by{" "}
+          <span className="font-medium">
+            <Brand />
+          </span>
         </p>
       </div>
     </div>

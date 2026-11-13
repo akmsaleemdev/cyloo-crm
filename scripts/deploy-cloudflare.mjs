@@ -21,7 +21,10 @@ const loadEnvValues = async (path) => {
     const match = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
     if (!match) continue;
     let value = match[2].trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
       value = value.slice(1, -1);
     } else {
       value = value.replace(/\s+#.*$/, "");
@@ -46,9 +49,11 @@ Target selection (in .env or .env.local):
   process.exit(0);
 }
 
-const workerName = valueFor("--name") ?? process.env.CLOUDFLARE_WORKER_NAME ?? fileEnv.CLOUDFLARE_WORKER_NAME;
+const workerName =
+  valueFor("--name") ?? process.env.CLOUDFLARE_WORKER_NAME ?? fileEnv.CLOUDFLARE_WORKER_NAME;
 const domain = valueFor("--domain") ?? process.env.CLOUDFLARE_DOMAIN ?? fileEnv.CLOUDFLARE_DOMAIN;
-const zoneName = valueFor("--zone") ?? process.env.CLOUDFLARE_ZONE_NAME ?? fileEnv.CLOUDFLARE_ZONE_NAME;
+const zoneName =
+  valueFor("--zone") ?? process.env.CLOUDFLARE_ZONE_NAME ?? fileEnv.CLOUDFLARE_ZONE_NAME;
 
 if (!workerName || !/^[a-z0-9][a-z0-9_-]*$/i.test(workerName)) {
   throw new Error("Provide a valid Worker name with --name or CLOUDFLARE_WORKER_NAME.");
@@ -76,11 +81,13 @@ const config = JSON.parse(generatedConfig);
 const todayUtc = new Date().toISOString().slice(0, 10);
 
 config.name = workerName;
-config.routes = [{
-  pattern: domain,
-  custom_domain: true,
-  ...(zoneName ? { zone_name: zoneName } : {}),
-}];
+config.routes = [
+  {
+    pattern: domain,
+    custom_domain: true,
+    ...(zoneName ? { zone_name: zoneName } : {}),
+  },
+];
 config.workers_dev = true;
 if (config.compatibility_date > todayUtc) config.compatibility_date = todayUtc;
 
@@ -93,7 +100,9 @@ if (args.includes("--dry-run")) wranglerArgs.push("--dry-run");
 try {
   const npmCli = process.env.npm_execpath;
   if (!npmCli) throw new Error("Run deployment with `npm run deploy:cloudflare`.");
-  const deploy = spawnSync(process.execPath, [npmCli, "exec", "--", ...wranglerArgs], { stdio: "inherit" });
+  const deploy = spawnSync(process.execPath, [npmCli, "exec", "--", ...wranglerArgs], {
+    stdio: "inherit",
+  });
   if (deploy.error) throw deploy.error;
   if (deploy.status !== 0) process.exitCode = deploy.status ?? 1;
 } finally {

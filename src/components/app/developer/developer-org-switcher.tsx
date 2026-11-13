@@ -11,11 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import {
-  useOrganizations,
-  useActiveOrgIdValue,
-  setActiveOrgId,
-} from "@/hooks/use-organization";
+import { useOrganizations, useActiveOrgIdValue, setActiveOrgId } from "@/hooks/use-organization";
 import { resetRealtimeForOrgSwitch } from "@/lib/realtime/org-realtime";
 
 /**

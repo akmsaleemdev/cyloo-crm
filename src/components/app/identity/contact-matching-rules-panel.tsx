@@ -6,7 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import {
@@ -43,9 +49,8 @@ export function ContactMatchingRulesPanel() {
         <CardHeader>
           <CardTitle className="text-base">Contact matching rules</CardTitle>
           <CardDescription>
-            Rules run in priority order (lowest number first). The first
-            rule that matches an existing contact wins; otherwise a new
-            contact is created.
+            Rules run in priority order (lowest number first). The first rule that matches an
+            existing contact wins; otherwise a new contact is created.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -101,7 +106,9 @@ function RuleRow({ rule, workspaceId }: { rule: MatchingRule; workspaceId: strin
   return (
     <div className="rounded-control border p-3 space-y-3">
       <div className="flex items-center gap-2">
-        <Badge variant="secondary" className="rounded-control">#{draft.priority}</Badge>
+        <Badge variant="secondary" className="rounded-control">
+          #{draft.priority}
+        </Badge>
         <Input
           className="h-9 flex-1"
           placeholder="Label (optional)"
@@ -109,20 +116,12 @@ function RuleRow({ rule, workspaceId }: { rule: MatchingRule; workspaceId: strin
           onChange={(e) => update({ label: e.target.value })}
         />
         <div className="flex items-center gap-2">
-          <Switch
-            checked={draft.enabled}
-            onCheckedChange={(v) => update({ enabled: v })}
-          />
+          <Switch checked={draft.enabled} onCheckedChange={(v) => update({ enabled: v })} />
           <span className="text-xs text-muted-foreground">
             {draft.enabled ? "Enabled" : "Disabled"}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => del.mutate(rule.id)}
-          title="Delete rule"
-        >
+        <Button variant="ghost" size="icon" onClick={() => del.mutate(rule.id)} title="Delete rule">
           <Trash2 className="h-4 w-4" />
         </Button>
       </div>
@@ -163,9 +162,7 @@ function RuleRow({ rule, workspaceId }: { rule: MatchingRule; workspaceId: strin
                 className="h-9"
                 placeholder="+1"
                 value={draft.default_country_code ?? ""}
-                onChange={(e) =>
-                  update({ default_country_code: e.target.value || null })
-                }
+                onChange={(e) => update({ default_country_code: e.target.value || null })}
               />
             </>
           ) : draft.strategy === "last_n_digits" ? (
@@ -189,9 +186,7 @@ function RuleRow({ rule, workspaceId }: { rule: MatchingRule; workspaceId: strin
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {STRATEGY_DESCRIPTIONS[draft.strategy]}
-      </p>
+      <p className="text-xs text-muted-foreground">{STRATEGY_DESCRIPTIONS[draft.strategy]}</p>
 
       {dirty && (
         <div className="flex justify-end">
@@ -226,12 +221,7 @@ function AddRuleRow({ workspaceId }: { workspaceId: string | undefined }) {
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={add}
-      disabled={!workspaceId || upsert.isPending}
-    >
+    <Button variant="outline" size="sm" onClick={add} disabled={!workspaceId || upsert.isPending}>
       <Plus className="h-4 w-4 mr-1.5" />
       Add rule
     </Button>
@@ -255,8 +245,8 @@ function PreviewCard({ workspaceId }: { workspaceId: string | undefined }) {
           Test matching
         </CardTitle>
         <CardDescription>
-          Enter a phone number to see how each active rule normalizes it and
-          whether it matches an existing CRM contact.
+          Enter a phone number to see how each active rule normalizes it and whether it matches an
+          existing CRM contact.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -284,16 +274,11 @@ function PreviewCard({ workspaceId }: { workspaceId: string | undefined }) {
 
             <div className="rounded-control border divide-y">
               {preview.data.previews.map((p) => (
-                <div
-                  key={p.rule.id}
-                  className="flex items-center gap-2 p-2 text-xs"
-                >
+                <div key={p.rule.id} className="flex items-center gap-2 p-2 text-xs">
                   <Badge variant="secondary" className="rounded-control">
                     #{p.rule.priority}
                   </Badge>
-                  <span className="font-medium">
-                    {STRATEGY_LABELS[p.rule.strategy]}
-                  </span>
+                  <span className="font-medium">{STRATEGY_LABELS[p.rule.strategy]}</span>
                   <span className="text-muted-foreground">→</span>
                   <code className="rounded-control bg-muted px-1.5 py-0.5">
                     {p.normalized ?? "n/a"}
@@ -314,8 +299,8 @@ function PreviewCard({ workspaceId }: { workspaceId: string | undefined }) {
               </div>
             ) : (
               <div className="rounded-control border border-amber-500/40 bg-amber-500/5 p-3 text-xs text-muted-foreground">
-                No existing contact matches. Inbound messages from this number
-                would create a new contact.
+                No existing contact matches. Inbound messages from this number would create a new
+                contact.
               </div>
             )}
           </div>

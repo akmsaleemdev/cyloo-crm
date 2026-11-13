@@ -18,7 +18,9 @@ export function useRecentPages() {
     try {
       const raw = window.localStorage.getItem(KEY);
       if (raw) setItems(JSON.parse(raw));
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }, []);
 
   // record navigation
@@ -26,14 +28,22 @@ export function useRecentPages() {
     if (!pathname || IGNORE.some((p) => pathname === p || pathname.startsWith(p + "/"))) return;
     setItems((prev) => {
       const next = [pathname, ...prev.filter((p) => p !== pathname)].slice(0, MAX);
-      try { window.localStorage.setItem(KEY, JSON.stringify(next)); } catch { /* noop */ }
+      try {
+        window.localStorage.setItem(KEY, JSON.stringify(next));
+      } catch {
+        /* noop */
+      }
       return next;
     });
   }, [pathname]);
 
   const clear = () => {
     setItems([]);
-    try { window.localStorage.removeItem(KEY); } catch { /* noop */ }
+    try {
+      window.localStorage.removeItem(KEY);
+    } catch {
+      /* noop */
+    }
   };
 
   return { items, clear };

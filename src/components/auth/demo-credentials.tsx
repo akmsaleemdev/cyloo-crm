@@ -51,7 +51,8 @@ export function DemoCredentials({ onAutofill, onAfterSignIn, variant = "grid", c
       });
       if (error) {
         const res = await provisionDemoAccounts({ data: { key: acct.key } });
-        if (!res.ok) throw new Error(res.results.find((r) => !r.ok)?.error ?? "Provisioning failed");
+        if (!res.ok)
+          throw new Error(res.results.find((r) => !r.ok)?.error ?? "Provisioning failed");
         ({ error } = await supabase.auth.signInWithPassword({
           email: acct.email,
           password: DEMO_PASSWORDS[acct.key],
@@ -97,7 +98,10 @@ export function DemoCredentials({ onAutofill, onAfterSignIn, variant = "grid", c
         </div>
         {variant === "grid" && DEMO_ACCOUNTS.length > 4 ? (
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+            <Search
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"
+              aria-hidden="true"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -128,7 +132,9 @@ export function DemoCredentials({ onAutofill, onAfterSignIn, variant = "grid", c
                       {acct.key}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{acct.description}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">
+                    {acct.description}
+                  </p>
                 </div>
                 <button
                   type="button"

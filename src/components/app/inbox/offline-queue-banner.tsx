@@ -22,8 +22,7 @@ export function OfflineQueueBanner() {
         <>
           <WifiOff className="h-3.5 w-3.5 shrink-0" />
           <span>
-            You're offline. New messages will be sent automatically when the
-            connection returns.
+            You're offline. New messages will be sent automatically when the connection returns.
           </span>
         </>
       ) : (

@@ -688,7 +688,9 @@ function ActivitySection({ orgId }: { orgId: string }) {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">
                     {row.resource_type} <span className="text-muted-foreground font-normal">·</span>{" "}
-                    <span className="text-muted-foreground font-mono text-xs">{row.resource_id}</span>
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {row.resource_id}
+                    </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(row.created_at).toLocaleString()}

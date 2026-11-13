@@ -102,28 +102,40 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
 
     const { resolveActiveWorkspaceId } = await import("@/lib/auth/active-workspace.server");
     const workspaceId = await resolveActiveWorkspaceId(supabase, userId);
-    const scopeWs = <T,>(q: T) => {
+    const scopeWs = <T>(q: T) => {
       if (!workspaceId) return q;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      try { return (q as any).eq("workspace_id", workspaceId); } catch { return q; }
+      try {
+        return (q as any).eq("workspace_id", workspaceId);
+      } catch {
+        return q;
+      }
     };
     const r = createSignalReader(supabase);
 
     // The password policy is per organization, not per workspace.
     const orgRows = workspaceId
-      ? await r.select<{ organization_id: string | null }>("workspaces", "organization_id", (q) => q.eq("id", workspaceId))
+      ? await r.select<{ organization_id: string | null }>("workspaces", "organization_id", (q) =>
+          q.eq("id", workspaceId),
+        )
       : [];
     const organizationId = orgRows[0]?.organization_id ?? null;
 
     // --- Auth signals ---
-    const failed24 = await r.count("login_history", (q) =>
-      q.eq("event", "failed").gte("created_at", d1), "login_history (failed 24h)",
+    const failed24 = await r.count(
+      "login_history",
+      (q) => q.eq("event", "failed").gte("created_at", d1),
+      "login_history (failed 24h)",
     );
-    const failed7 = await r.count("login_history", (q) =>
-      q.eq("event", "failed").gte("created_at", d7), "login_history (failed 7d)",
+    const failed7 = await r.count(
+      "login_history",
+      (q) => q.eq("event", "failed").gte("created_at", d7),
+      "login_history (failed 7d)",
     );
-    const success24 = await r.count("login_history", (q) =>
-      q.eq("event", "success").gte("created_at", d1), "login_history (success 24h)",
+    const success24 = await r.count(
+      "login_history",
+      (q) => q.eq("event", "success").gte("created_at", d1),
+      "login_history (success 24h)",
     );
 
     const recentLogins = await r.select(
@@ -210,22 +222,24 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     // --- Rate limits ---
     // rate_limit_buckets only holds per-window counters, not rejections. The
     // gateway answers a rejected call with 429, so that is the real "hit" signal.
-    const rateHits24 = await r.count("api_gateway_logs", (q) =>
-      q.gte("created_at", d1).eq("status_code", 429), "api_gateway_logs (429)",
+    const rateHits24 = await r.count(
+      "api_gateway_logs",
+      (q) => q.gte("created_at", d1).eq("status_code", 429),
+      "api_gateway_logs (429)",
     );
 
     // --- API / webhook / audit ---
-    const apiErrors24 = await r.count("api_gateway_logs", (q) =>
-      q.gte("created_at", d1).gte("status_code", 400), "api_gateway_logs (errors)",
+    const apiErrors24 = await r.count(
+      "api_gateway_logs",
+      (q) => q.gte("created_at", d1).gte("status_code", 400),
+      "api_gateway_logs (errors)",
     );
     // Outbound webhook deliveries: status is one of pending / delivering /
     // succeeded / failed / dead_letter / cancelled (there is no `success` column).
     const webhookFailures24 = await r.count("webhook_deliveries", (q) =>
       q.gte("created_at", d1).in("status", ["failed", "dead_letter"]),
     );
-    const auditEvents24 = await r.count("audit_logs", (q) =>
-      scopeWs(q.gte("created_at", d1)),
-    );
+    const auditEvents24 = await r.count("audit_logs", (q) => scopeWs(q.gte("created_at", d1)));
 
     // --- Password policy (one row per organization) ---
     const policyRows = await r.select("password_policy", "*", (q) =>
@@ -406,10 +420,12 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       score >= 85 ? "strong" : score >= 65 ? "fair" : "at-risk";
 
     const geo_distribution = [...geoMap.entries()]
-      .sort((a, b) => b[1] - a[1]).slice(0, 8)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
       .map(([location, logins]) => ({ location, logins }));
     const devices = [...deviceMap.entries()]
-      .sort((a, b) => b[1] - a[1]).slice(0, 8)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
       .map(([device, logins]) => ({ device, logins }));
 
     return {

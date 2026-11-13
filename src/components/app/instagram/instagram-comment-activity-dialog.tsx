@@ -1,5 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Loader2, CheckCircle2, XCircle, MessageCircle, Send, Heart, EyeOff } from "lucide-react";
+import {
+  Activity,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  MessageCircle,
+  Send,
+  Heart,
+  EyeOff,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -56,7 +65,9 @@ export function InstagramCommentActivityDialog({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("instagram_comment_automation_logs")
-        .select("id,processed_at,commenter_username,comment_text,post_id,matched,match_reason,matched_keywords,actions_taken,status,error")
+        .select(
+          "id,processed_at,commenter_username,comment_text,post_id,matched,match_reason,matched_keywords,actions_taken,status,error",
+        )
         .eq("automation_id", automationId)
         .order("processed_at", { ascending: false })
         .limit(100);
@@ -90,7 +101,10 @@ export function InstagramCommentActivityDialog({
             {(logs.data ?? []).map((log) => {
               const failed = log.status === "failed" || !!log.error;
               return (
-                <div key={log.id} className="rounded-control border border-border bg-card p-3 space-y-2">
+                <div
+                  key={log.id}
+                  className="rounded-control border border-border bg-card p-3 space-y-2"
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -102,26 +116,39 @@ export function InstagramCommentActivityDialog({
                         <span className="text-sm font-medium truncate">
                           @{log.commenter_username ?? "unknown"}
                         </span>
-                        <Badge variant={log.matched ? "default" : "secondary"} className="text-[11px]">
+                        <Badge
+                          variant={log.matched ? "default" : "secondary"}
+                          className="text-[11px]"
+                        >
                           {log.matched ? "Matched" : "Skipped"}
                         </Badge>
                         {failed && (
-                          <Badge variant="destructive" className="text-[11px]">Failed</Badge>
+                          <Badge variant="destructive" className="text-[11px]">
+                            Failed
+                          </Badge>
                         )}
                         {log.post_id && (
-                          <Badge variant="outline" className="text-[11px]">Post {log.post_id.slice(-6)}</Badge>
+                          <Badge variant="outline" className="text-[11px]">
+                            Post {log.post_id.slice(-6)}
+                          </Badge>
                         )}
                       </div>
                       {log.comment_text && (
-                        <div className="text-sm mt-1 line-clamp-2 break-words">"{log.comment_text}"</div>
+                        <div className="text-sm mt-1 line-clamp-2 break-words">
+                          "{log.comment_text}"
+                        </div>
                       )}
                       {log.match_reason && (
-                        <div className="text-[11px] text-muted-foreground mt-1">{log.match_reason}</div>
+                        <div className="text-[11px] text-muted-foreground mt-1">
+                          {log.match_reason}
+                        </div>
                       )}
                       {log.matched_keywords?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {log.matched_keywords.map((k) => (
-                            <Badge key={k} variant="secondary" className="text-[11px]">{k}</Badge>
+                            <Badge key={k} variant="secondary" className="text-[11px]">
+                              {k}
+                            </Badge>
                           ))}
                         </div>
                       )}
@@ -131,7 +158,10 @@ export function InstagramCommentActivityDialog({
                             const Icon = ACTION_ICONS[a.type] ?? Activity;
                             const okay = !a.status || a.status === "ok" || a.status === "success";
                             return (
-                              <div key={i} className={`flex items-center gap-1 text-[11px] rounded-control border px-1.5 py-0.5 ${okay ? "border-border bg-muted/40" : "border-destructive/40 bg-destructive/10 text-destructive"}`}>
+                              <div
+                                key={i}
+                                className={`flex items-center gap-1 text-[11px] rounded-control border px-1.5 py-0.5 ${okay ? "border-border bg-muted/40" : "border-destructive/40 bg-destructive/10 text-destructive"}`}
+                              >
                                 <Icon className="w-3 h-3" />
                                 <span>{ACTION_LABELS[a.type] ?? a.type}</span>
                               </div>
@@ -140,7 +170,9 @@ export function InstagramCommentActivityDialog({
                         </div>
                       )}
                       {log.error && (
-                        <div className="text-[11px] text-destructive mt-1 break-words">{log.error}</div>
+                        <div className="text-[11px] text-destructive mt-1 break-words">
+                          {log.error}
+                        </div>
                       )}
                     </div>
                     <div className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">

@@ -51,8 +51,7 @@ function q(sql) {
 }
 
 const results = [];
-const add = (name, status, detail, rows = []) =>
-  results.push({ name, status, detail, rows });
+const add = (name, status, detail, rows = []) => results.push({ name, status, detail, rows });
 
 // ── 0. connectivity ──────────────────────────────────────────────────────────
 if (!process.env.PGHOST) {
@@ -75,7 +74,12 @@ if (!ping.ok) {
     order by 1`);
   if (!r.ok) add("column defaults", "SKIP", r.error);
   else if (r.rows.length)
-    add("column defaults", "FAIL", `${r.rows.length} default(s) still reference a retired brand`, r.rows);
+    add(
+      "column defaults",
+      "FAIL",
+      `${r.rows.length} default(s) still reference a retired brand`,
+      r.rows,
+    );
   else add("column defaults", "PASS", `no default expression names a retired brand`);
 }
 
@@ -83,16 +87,30 @@ if (!ping.ok) {
 {
   const r = q("select jobname, schedule, active::text from cron.job order by jobname");
   if (!r.ok) {
-    add("cron schedule names", "SKIP", "cron.job not readable by this role (expected for the restricted app role)");
+    add(
+      "cron schedule names",
+      "SKIP",
+      "cron.job not readable by this role (expected for the restricted app role)",
+    );
   } else {
     const stale = r.rows.filter(([n]) => namesOldBrand(n));
     const renamed = r.rows.filter(([n]) => (n || "").startsWith(EXPECTED_CRON_PREFIX));
     if (stale.length)
-      add("cron schedule names", "FAIL", `${stale.length} job(s) still named after a retired brand`, stale);
+      add(
+        "cron schedule names",
+        "FAIL",
+        `${stale.length} job(s) still named after a retired brand`,
+        stale,
+      );
     else if (!renamed.length)
       add("cron schedule names", "FAIL", `no job named "${EXPECTED_CRON_PREFIX}*" found`, r.rows);
     else
-      add("cron schedule names", "PASS", `${renamed.length} "${EXPECTED_CRON_PREFIX}*" job(s), 0 stale`, renamed);
+      add(
+        "cron schedule names",
+        "PASS",
+        `${renamed.length} "${EXPECTED_CRON_PREFIX}*" job(s), 0 stale`,
+        renamed,
+      );
   }
 }
 
@@ -105,7 +123,8 @@ if (!ping.ok) {
       and table_schema not in ('pg_catalog','information_schema')
     order by 1,2`);
   if (!cols.ok) add("target_platform rows", "SKIP", cols.error);
-  else if (!cols.rows.length) add("target_platform rows", "PASS", "no target_platform column in the schema");
+  else if (!cols.rows.length)
+    add("target_platform rows", "PASS", "no target_platform column in the schema");
   else {
     const union = cols.rows
       .map(
@@ -146,7 +165,8 @@ if (!ping.ok) {
       .join(" union all ");
     const r = q(`select src, n from (${union}) x where n > 0 order by 1`);
     if (!r.ok) add("settings payloads", "SKIP", r.error);
-    else if (r.rows.length) add("settings payloads", "FAIL", `retired brand text in settings`, r.rows);
+    else if (r.rows.length)
+      add("settings payloads", "FAIL", `retired brand text in settings`, r.rows);
     else add("settings payloads", "PASS", `no retired brand text in settings payloads`);
   }
 }

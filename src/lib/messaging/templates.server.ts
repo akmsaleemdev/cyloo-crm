@@ -7,17 +7,16 @@ import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import { loadChannelAccount, loadCredentials, getProvider } from "./registry.server";
 import { log, makeCorrelationId } from "./logger.server";
 import {
-  parseMetaError, explainMetaError, toFriendlyErrorMessage, metaErrorLogData,
+  parseMetaError,
+  explainMetaError,
+  toFriendlyErrorMessage,
+  metaErrorLogData,
   isTransientMetaError,
   type MetaStage,
-
 } from "./meta-error-messages";
 import type { ProviderName } from "./types";
 import { auditTemplateAction } from "./audit-templates.server";
 import { normalizeTemplateComponentPhones } from "./template-url-validation";
-
-
-
 
 const STATUS_MAP: Record<string, string> = {
   approved: "approved",
@@ -27,7 +26,9 @@ const STATUS_MAP: Record<string, string> = {
   disabled: "disabled",
 };
 
-export async function syncTemplatesForAccount(channelAccountId: string): Promise<{ synced: number }> {
+export async function syncTemplatesForAccount(
+  channelAccountId: string,
+): Promise<{ synced: number }> {
   const account = await loadChannelAccount(channelAccountId);
   const impl = getProvider(account.provider as ProviderName);
   if (!impl.listTemplates) return { synced: 0 };
@@ -35,11 +36,20 @@ export async function syncTemplatesForAccount(channelAccountId: string): Promise
   const correlationId = makeCorrelationId();
 
   const templates = await impl.listTemplates({
-    account, credentials: creds, correlationId,
-    log: (level, scope, message, data) => log({
-      workspaceId: account.workspaceId, channelAccountId, provider: account.provider,
-      level, scope, message, data, correlationId,
-    }),
+    account,
+    credentials: creds,
+    correlationId,
+    log: (level, scope, message, data) =>
+      log({
+        workspaceId: account.workspaceId,
+        channelAccountId,
+        provider: account.provider,
+        level,
+        scope,
+        message,
+        data,
+        correlationId,
+      }),
   });
 
   const rows = templates.map((t) => ({
@@ -58,7 +68,7 @@ export async function syncTemplatesForAccount(channelAccountId: string): Promise
     rejection_reason:
       STATUS_MAP[t.status] === "rejected"
         ? ((t as { rejectedReason?: string | null }).rejectedReason ??
-            "Meta rejected this template but did not return a reason. Review the body, buttons and header against Meta's template policy, then resubmit.")
+          "Meta rejected this template but did not return a reason. Review the body, buttons and header against Meta's template policy, then resubmit.")
         : null,
     last_synced_at: new Date().toISOString(),
   }));
@@ -70,8 +80,12 @@ export async function syncTemplatesForAccount(channelAccountId: string): Promise
   }
 
   await log({
-    workspaceId: account.workspaceId, channelAccountId, provider: account.provider,
-    level: "info", scope: "template", message: `synced ${rows.length} templates`,
+    workspaceId: account.workspaceId,
+    channelAccountId,
+    provider: account.provider,
+    level: "info",
+    scope: "template",
+    message: `synced ${rows.length} templates`,
     correlationId,
   });
 
@@ -87,9 +101,6 @@ export async function syncTemplatesForAccount(channelAccountId: string): Promise
   }
 
   return { synced: rows.length };
-
-
-
 }
 
 /**
@@ -99,13 +110,20 @@ export async function syncTemplatesForAccount(channelAccountId: string): Promise
 export async function submitTemplateToProvider(templateId: string): Promise<void> {
   const { data: row, error } = await supabaseAdmin
     .from("wa_templates" as never)
-    .select("id, workspace_id, channel_account_id, name, language, category, components, external_template_id")
+    .select(
+      "id, workspace_id, channel_account_id, name, language, category, components, external_template_id",
+    )
     .eq("id", templateId)
     .maybeSingle();
   if (error || !row) throw new Error("template not found");
   const t = row as unknown as {
-    id: string; workspace_id: string; channel_account_id: string;
-    name: string; language: string; category: string; components: unknown[];
+    id: string;
+    workspace_id: string;
+    channel_account_id: string;
+    name: string;
+    language: string;
+    category: string;
+    components: unknown[];
     external_template_id: string | null;
   };
   const account = await loadChannelAccount(t.channel_account_id);
@@ -117,8 +135,9 @@ export async function submitTemplateToProvider(templateId: string): Promise<void
   // Last line of defence before Meta: rewrite call-button numbers into E.164.
   // Covers rows created outside the editor (imports, API, older drafts) that
   // would otherwise fail with "(#192) ... is not a valid phone number".
-  const { components: submitComponents, changes: phoneFixes } =
-    normalizeTemplateComponentPhones(t.components);
+  const { components: submitComponents, changes: phoneFixes } = normalizeTemplateComponentPhones(
+    t.components,
+  );
   if (phoneFixes.length > 0) {
     t.components = submitComponents;
     await supabaseAdmin
@@ -126,33 +145,55 @@ export async function submitTemplateToProvider(templateId: string): Promise<void
       .update({ components: submitComponents } as never)
       .eq("id", templateId);
     await log({
-      workspaceId: t.workspace_id, channelAccountId: t.channel_account_id, provider: account.provider,
-      level: "info", scope: "template",
+      workspaceId: t.workspace_id,
+      channelAccountId: t.channel_account_id,
+      provider: account.provider,
+      level: "info",
+      scope: "template",
       message: `normalized ${phoneFixes.length} call button number(s) to E.164`,
-      data: { changes: phoneFixes }, correlationId,
+      data: { changes: phoneFixes },
+      correlationId,
     });
   }
 
-
   try {
     const ctx = {
-      account, credentials: creds, correlationId,
-      log: (level: "debug" | "info" | "warn" | "error", scope: string, message: string, data?: Record<string, unknown>) => log({
-        workspaceId: t.workspace_id, channelAccountId: t.channel_account_id,
-        provider: account.provider, level, scope, message, data, correlationId,
-      }),
+      account,
+      credentials: creds,
+      correlationId,
+      log: (
+        level: "debug" | "info" | "warn" | "error",
+        scope: string,
+        message: string,
+        data?: Record<string, unknown>,
+      ) =>
+        log({
+          workspaceId: t.workspace_id,
+          channelAccountId: t.channel_account_id,
+          provider: account.provider,
+          level,
+          scope,
+          message,
+          data,
+          correlationId,
+        }),
     };
     // Already published at Meta? Editing must go to the template id — creating
     // it again under the same name is rejected as "Invalid parameter".
-    const res = t.external_template_id && impl.updateTemplate
-      ? await impl.updateTemplate(
-          { externalTemplateId: t.external_template_id, category: t.category, components: t.components },
-          ctx,
-        )
-      : await impl.createTemplate(
-          { name: t.name, language: t.language, category: t.category, components: t.components },
-          ctx,
-        );
+    const res =
+      t.external_template_id && impl.updateTemplate
+        ? await impl.updateTemplate(
+            {
+              externalTemplateId: t.external_template_id,
+              category: t.category,
+              components: t.components,
+            },
+            ctx,
+          )
+        : await impl.createTemplate(
+            { name: t.name, language: t.language, category: t.category, components: t.components },
+            ctx,
+          );
 
     await supabaseAdmin
       .from("wa_templates" as never)
@@ -164,9 +205,14 @@ export async function submitTemplateToProvider(templateId: string): Promise<void
       } as never)
       .eq("id", templateId);
     await log({
-      workspaceId: t.workspace_id, channelAccountId: t.channel_account_id, provider: account.provider,
-      level: "info", scope: "template", message: `submitted template ${t.name}`,
-      data: { externalTemplateId: res.externalTemplateId, status: res.status }, correlationId,
+      workspaceId: t.workspace_id,
+      channelAccountId: t.channel_account_id,
+      provider: account.provider,
+      level: "info",
+      scope: "template",
+      message: `submitted template ${t.name}`,
+      data: { externalTemplateId: res.externalTemplateId, status: res.status },
+      correlationId,
     });
   } catch (err) {
     const pe = err as Partial<{ status: number; raw: unknown; code: string; kind: string }>;
@@ -189,9 +235,14 @@ export async function submitTemplateToProvider(templateId: string): Promise<void
       .update({ status: "rejected", rejection_reason: friendly.message } as never)
       .eq("id", templateId);
     await log({
-      workspaceId: t.workspace_id, channelAccountId: t.channel_account_id, provider: account.provider,
-      level: "error", scope: "template", message: `submit failed: ${friendly.message}`,
-      data: diagnostics, correlationId,
+      workspaceId: t.workspace_id,
+      channelAccountId: t.channel_account_id,
+      provider: account.provider,
+      level: "error",
+      scope: "template",
+      message: `submit failed: ${friendly.message}`,
+      data: diagnostics,
+      correlationId,
     }).catch(() => {});
     throw new Error(toFriendlyErrorMessage(friendly));
   }
@@ -211,11 +262,20 @@ export async function deleteTemplateAtProvider(
   await impl.deleteTemplate(
     { name, externalTemplateId: externalTemplateId ?? undefined },
     {
-      account, credentials: creds, correlationId,
-      log: (level, scope, message, data) => log({
-        workspaceId: account.workspaceId, channelAccountId, provider: account.provider,
-        level, scope, message, data, correlationId,
-      }),
+      account,
+      credentials: creds,
+      correlationId,
+      log: (level, scope, message, data) =>
+        log({
+          workspaceId: account.workspaceId,
+          channelAccountId,
+          provider: account.provider,
+          level,
+          scope,
+          message,
+          data,
+          correlationId,
+        }),
     },
   );
 }
@@ -232,7 +292,10 @@ async function resolveAppId(accessToken: string): Promise<string> {
   const res = await fetch(
     `${GRAPH_BASE}/debug_token?input_token=${encodeURIComponent(accessToken)}&access_token=${encodeURIComponent(accessToken)}`,
   );
-  const json = (await res.json().catch(() => null)) as { data?: { app_id?: string }; error?: unknown } | null;
+  const json = (await res.json().catch(() => null)) as {
+    data?: { app_id?: string };
+    error?: unknown;
+  } | null;
   if (!res.ok || !json?.data?.app_id) {
     throw metaFailure("resolve_app", res.status, json, { endpoint: "debug_token" });
   }
@@ -252,8 +315,13 @@ function metaFailure(
 ): Error {
   const parsed = parseMetaError(status, body);
   const friendly = explainMetaError(stage, parsed);
-  console.error("[whatsapp:template]", JSON.stringify({ ...metaErrorLogData(stage, parsed), ...context }));
-  const err = new Error(toFriendlyErrorMessage(friendly, { retryable: isTransientMetaError(parsed) }));
+  console.error(
+    "[whatsapp:template]",
+    JSON.stringify({ ...metaErrorLogData(stage, parsed), ...context }),
+  );
+  const err = new Error(
+    toFriendlyErrorMessage(friendly, { retryable: isTransientMetaError(parsed) }),
+  );
   (err as Error & { metaDiagnostics?: unknown }).metaDiagnostics = {
     ...metaErrorLogData(stage, parsed),
     ...context,
@@ -296,7 +364,10 @@ export async function uploadTemplateHeaderSample(input: {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const diagnostics = (err as { metaDiagnostics?: Record<string, unknown> })?.metaDiagnostics;
-    console.error("[whatsapp:template] header upload failed", JSON.stringify({ ...uploadContext, message, ...(diagnostics ?? {}) }));
+    console.error(
+      "[whatsapp:template] header upload failed",
+      JSON.stringify({ ...uploadContext, message, ...(diagnostics ?? {}) }),
+    );
     await log({
       workspaceId: account.workspaceId,
       channelAccountId: input.channelAccountId,
@@ -329,7 +400,10 @@ async function runHeaderUpload(
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  const sessionJson = (await sessionRes.json().catch(() => null)) as { id?: string; error?: unknown } | null;
+  const sessionJson = (await sessionRes.json().catch(() => null)) as {
+    id?: string;
+    error?: unknown;
+  } | null;
   if (!sessionRes.ok || !sessionJson?.id) {
     throw metaFailure("upload_session", sessionRes.status, sessionJson, uploadContext);
   }
@@ -344,7 +418,10 @@ async function runHeaderUpload(
     },
     body: input.bytes as unknown as BodyInit,
   });
-  const uploadJson = (await uploadRes.json().catch(() => null)) as { h?: string; error?: unknown } | null;
+  const uploadJson = (await uploadRes.json().catch(() => null)) as {
+    h?: string;
+    error?: unknown;
+  } | null;
   if (!uploadRes.ok || !uploadJson?.h) {
     throw metaFailure("upload_bytes", uploadRes.status, uploadJson, uploadContext);
   }

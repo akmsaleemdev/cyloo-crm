@@ -90,14 +90,18 @@ export async function setPageSubscription(
   subscribe: boolean,
 ): Promise<{ ok: boolean; error: string | null }> {
   const token = tokenOf(accessTokenCipher);
-  if (!token) return { ok: false, error: "Stored Page token could not be read — reconnect this Page." };
+  if (!token)
+    return { ok: false, error: "Stored Page token could not be read — reconnect this Page." };
 
   const url = new URL(`${GRAPH}/${encodeURIComponent(pageId)}/subscribed_apps`);
   url.searchParams.set("access_token", token);
   if (subscribe) url.searchParams.set("subscribed_fields", REQUIRED_PAGE_FIELDS.join(","));
 
   const res = await fetch(url.toString(), { method: subscribe ? "POST" : "DELETE" });
-  const json: { success?: boolean; error?: { message?: string } } = await res.json().catch(() => ({}));
-  if (!res.ok || json.error) return { ok: false, error: json.error?.message ?? `Meta returned HTTP ${res.status}` };
+  const json: { success?: boolean; error?: { message?: string } } = await res
+    .json()
+    .catch(() => ({}));
+  if (!res.ok || json.error)
+    return { ok: false, error: json.error?.message ?? `Meta returned HTTP ${res.status}` };
   return { ok: true, error: null };
 }

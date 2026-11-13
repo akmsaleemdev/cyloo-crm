@@ -167,8 +167,8 @@ export function InstagramAccountsPanel() {
           <AlertTitle>Meta app credentials missing</AlertTitle>
           <AlertDescription>
             Add <code className="rounded-control bg-muted px-1">META_APP_ID</code> and{" "}
-            <code className="rounded-control bg-muted px-1">META_APP_SECRET</code> in project secrets,
-            then reload. In your Meta app, add this OAuth redirect URI:{" "}
+            <code className="rounded-control bg-muted px-1">META_APP_SECRET</code> in project
+            secrets, then reload. In your Meta app, add this OAuth redirect URI:{" "}
             <code className="rounded-control bg-muted px-1 break-all">
               {typeof window !== "undefined" ? window.location.origin : ""}
               /api/public/instagram/callback

@@ -34,13 +34,8 @@ export function SegmentedControl<T extends string>({
 }: SegmentedControlProps<T>) {
   const heights = size === "sm" ? "h-9 text-xs" : "h-9 text-sm";
 
-  const onKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ) => {
-    const enabled = options
-      .map((o, i) => ({ o, i }))
-      .filter(({ o }) => !o.disabled);
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const enabled = options.map((o, i) => ({ o, i })).filter(({ o }) => !o.disabled);
     const currentEnabledIdx = enabled.findIndex(({ i }) => i === index);
     let nextIdx = currentEnabledIdx;
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {

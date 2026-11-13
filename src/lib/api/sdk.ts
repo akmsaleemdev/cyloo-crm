@@ -21,7 +21,12 @@ export interface ApiEnvelope<T> {
 }
 
 export class CYLOOApiError extends Error {
-  constructor(public status: number, public code: string, message: string, public requestId?: string) {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public requestId?: string,
+  ) {
     super(message);
     this.name = "CYLOOApiError";
   }
@@ -38,10 +43,18 @@ export class CYLOOClient {
     this.fetchImpl = opts.fetch ?? fetch;
   }
 
-  private async request<T>(method: string, path: string, body?: unknown, query?: Record<string, string | number | undefined>): Promise<ApiEnvelope<T>> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: unknown,
+    query?: Record<string, string | number | undefined>,
+  ): Promise<ApiEnvelope<T>> {
     const qs = query
-      ? "?" + new URLSearchParams(
-          Object.entries(query).filter(([, v]) => v !== undefined).map(([k, v]) => [k, String(v)])
+      ? "?" +
+        new URLSearchParams(
+          Object.entries(query)
+            .filter(([, v]) => v !== undefined)
+            .map(([k, v]) => [k, String(v)]),
         ).toString()
       : "";
     const res = await this.fetchImpl(`${this.baseUrl}${path}${qs}`, {
@@ -56,7 +69,12 @@ export class CYLOOClient {
     const json = (await res.json().catch(() => ({}))) as ApiEnvelope<T>;
     if (!res.ok) {
       const err = json.errors?.[0];
-      throw new CYLOOApiError(res.status, err?.code ?? "unknown", err?.title ?? res.statusText, json.meta?.request_id);
+      throw new CYLOOApiError(
+        res.status,
+        err?.code ?? "unknown",
+        err?.title ?? res.statusText,
+        json.meta?.request_id,
+      );
     }
     return json;
   }
@@ -64,7 +82,8 @@ export class CYLOOClient {
   contacts = {
     list: (params?: { limit?: number; offset?: number; search?: string }) =>
       this.request<unknown[]>("GET", "/contacts", undefined, params),
-    create: (payload: Record<string, unknown>) => this.request<unknown>("POST", "/contacts", payload),
+    create: (payload: Record<string, unknown>) =>
+      this.request<unknown>("POST", "/contacts", payload),
   };
 
   conversations = {
@@ -82,7 +101,8 @@ export class CYLOOClient {
       template_name?: string;
       template_variables?: Record<string, string>;
       media_url?: string;
-    }) => this.request<{ id: string; status: string; queued_at: string }>("POST", "/messages", payload),
+    }) =>
+      this.request<{ id: string; status: string; queued_at: string }>("POST", "/messages", payload),
   };
 
   deals = {

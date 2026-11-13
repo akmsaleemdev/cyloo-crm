@@ -76,36 +76,49 @@ export const getPlatformHealth = createServerFn({ method: "GET" })
       .gte("created_at", since);
     if (workspaceId) gwQ.eq("workspace_id", workspaceId);
     const { data: gw } = await gwQ;
-    const rows = (gw ?? []) as Array<{ status_code: number | null; latency_ms: number | null; rate_limited: boolean | null }>;
+    const rows = (gw ?? []) as Array<{
+      status_code: number | null;
+      latency_ms: number | null;
+      rate_limited: boolean | null;
+    }>;
     const total = rows.length;
-    let s = 0, e4 = 0, e5 = 0, rl = 0, latSum = 0, latN = 0;
+    let s = 0,
+      e4 = 0,
+      e5 = 0,
+      rl = 0,
+      latSum = 0,
+      latN = 0;
     for (const r of rows) {
       const c = r.status_code ?? 0;
       if (c >= 200 && c < 400) s++;
       else if (c >= 400 && c < 500) e4++;
       else if (c >= 500) e5++;
       if (r.rate_limited) rl++;
-      if (typeof r.latency_ms === "number") { latSum += r.latency_ms; latN++; }
+      if (typeof r.latency_ms === "number") {
+        latSum += r.latency_ms;
+        latN++;
+      }
     }
     const successRate = total ? s / total : 1;
     const avgLatency = latN ? Math.round(latSum / latN) : 0;
 
     // Webhooks
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const epQ: any = sbAny(supabase).from("webhook_endpoints").select("id, is_active", { count: "exact", head: false });
+    const epQ: any = sbAny(supabase)
+      .from("webhook_endpoints")
+      .select("id, is_active", { count: "exact", head: false });
     if (workspaceId) epQ.eq("workspace_id", workspaceId);
     const { data: eps } = await epQ;
     const epRows = (eps ?? []) as Array<{ id: string; is_active: boolean | null }>;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const delQ: any = supabase
-      .from("webhook_deliveries")
-      .select("status")
-      .gte("created_at", since);
+    const delQ: any = supabase.from("webhook_deliveries").select("status").gte("created_at", since);
     if (workspaceId) delQ.eq("workspace_id", workspaceId);
     const { data: dels } = await delQ;
     const delRows = (dels ?? []) as Array<{ status: string | null }>;
-    const delivered = delRows.filter((d) => d.status === "delivered" || d.status === "success").length;
+    const delivered = delRows.filter(
+      (d) => d.status === "delivered" || d.status === "success",
+    ).length;
     const failed = delRows.filter((d) => d.status === "failed").length;
     const pending = delRows.filter((d) => d.status === "pending" || d.status === "retrying").length;
     const delRate = delRows.length ? delivered / delRows.length : 1;
@@ -136,7 +149,9 @@ export const getPlatformHealth = createServerFn({ method: "GET" })
     const keyRows = (keys ?? []) as Array<{ revoked_at: string | null; expires_at: string | null }>;
     const active = keyRows.filter((k) => !k.revoked_at).length;
     const revoked = keyRows.filter((k) => !!k.revoked_at).length;
-    const expiringSoon = keyRows.filter((k) => !k.revoked_at && k.expires_at && k.expires_at < soon).length;
+    const expiringSoon = keyRows.filter(
+      (k) => !k.revoked_at && k.expires_at && k.expires_at < soon,
+    ).length;
 
     // Integrations
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

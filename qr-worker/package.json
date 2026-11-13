@@ -6,7 +6,7 @@
   "description": "Stateful WhatsApp (Baileys) QR worker for CYLOO. Implements docs/whatsapp-qr-worker-contract.md",
   "main": "src/index.js",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -16,7 +16,6 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.9",
     "express": "^4.21.2",
-    "pino": "^9.5.0",
-    "qrcode": "^1.5.4"
+    "pino": "^9.5.0"
   }
 }

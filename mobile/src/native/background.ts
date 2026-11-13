@@ -1,14 +1,16 @@
-import * as BackgroundFetch from 'expo-background-fetch';
-import * as TaskManager from 'expo-task-manager';
-import { flush as flushOutbox } from '@/offline/outbox';
+import * as BackgroundFetch from "expo-background-fetch";
+import * as TaskManager from "expo-task-manager";
+import { flush as flushOutbox } from "@/offline/outbox";
 
-export const BACKGROUND_SYNC_TASK = 'cyloo.background-sync';
+export const BACKGROUND_SYNC_TASK = "cyloo.background-sync";
 
 if (!TaskManager.isTaskDefined(BACKGROUND_SYNC_TASK)) {
   TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
     try {
       const { ok } = await flushOutbox();
-      return ok > 0 ? BackgroundFetch.BackgroundFetchResult.NewData : BackgroundFetch.BackgroundFetchResult.NoData;
+      return ok > 0
+        ? BackgroundFetch.BackgroundFetchResult.NewData
+        : BackgroundFetch.BackgroundFetchResult.NoData;
     } catch {
       return BackgroundFetch.BackgroundFetchResult.Failed;
     }
@@ -17,7 +19,10 @@ if (!TaskManager.isTaskDefined(BACKGROUND_SYNC_TASK)) {
 
 export async function registerBackgroundSync(intervalSec = 15 * 60) {
   const status = await BackgroundFetch.getStatusAsync();
-  if (status === BackgroundFetch.BackgroundFetchStatus.Restricted || status === BackgroundFetch.BackgroundFetchStatus.Denied) {
+  if (
+    status === BackgroundFetch.BackgroundFetchStatus.Restricted ||
+    status === BackgroundFetch.BackgroundFetchStatus.Denied
+  ) {
     return false;
   }
   await BackgroundFetch.registerTaskAsync(BACKGROUND_SYNC_TASK, {

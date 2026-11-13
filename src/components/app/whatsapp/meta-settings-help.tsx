@@ -7,7 +7,14 @@
  */
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight, ExternalLink, HelpCircle, KeyRound, Target } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  HelpCircle,
+  KeyRound,
+  Target,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -39,7 +46,6 @@ interface HelpItem {
 }
 
 const FIELDS: HelpItem[] = [
-
   {
     field: "Phone number ID",
     what: "Meta's internal ID for the WhatsApp number that sends and receives messages. Not the phone number itself.",
@@ -50,7 +56,8 @@ const FIELDS: HelpItem[] = [
   {
     field: "WABA ID",
     what: "Your WhatsApp Business Account ID. It groups your numbers, templates and message limits.",
-    where: "Meta App Dashboard → WhatsApp → API Setup, or Business Settings → Accounts → WhatsApp Accounts",
+    where:
+      "Meta App Dashboard → WhatsApp → API Setup, or Business Settings → Accounts → WhatsApp Accounts",
     href: "https://business.facebook.com/settings/whatsapp-business-accounts",
     target: { wizardStep: "ids", field: "wabaId" },
   },
@@ -144,7 +151,6 @@ function HelpRow({ item, onJump }: { item: HelpItem; onJump?: MetaHelpJumpHandle
   );
 }
 
-
 export function MetaSettingsHelpPanel({
   defaultOpen = false,
   onJump,
@@ -188,10 +194,9 @@ export function MetaSettingsHelpPanel({
             <HelpRow key={item.field} item={item} onJump={onJump} />
           ))}
 
-
           <p className="text-muted-foreground">
-            No permissions shown when generating a token? Assign the app and the WhatsApp account
-            to the System User first (Business Settings → System Users → Add assets).
+            No permissions shown when generating a token? Assign the app and the WhatsApp account to
+            the System User first (Business Settings → System Users → Add assets).
           </p>
         </div>
       )}

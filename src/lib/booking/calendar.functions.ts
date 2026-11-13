@@ -24,8 +24,14 @@ const entrySchema = z.object({
   owner_id: z.string().uuid().nullable().optional(),
   team_id: z.string().uuid().nullable().optional(),
   kind: z.enum([
-    "working_hours", "break", "vacation", "holiday",
-    "blocked", "custom", "recurring_available", "recurring_unavailable",
+    "working_hours",
+    "break",
+    "vacation",
+    "holiday",
+    "blocked",
+    "custom",
+    "recurring_available",
+    "recurring_unavailable",
   ]),
   title: z.string().min(1).max(200),
   description: z.string().max(2000).nullable().optional(),
@@ -52,7 +58,19 @@ export const listCalendarEntries = createServerFn({ method: "POST" })
     if (data.start) query = query.gte("end_at", data.start);
     if (data.end) query = query.lte("start_at", data.end);
     if (data.scope) query = query.eq("scope", data.scope as "personal" | "team" | "organization");
-    if (data.kind) query = query.eq("kind", data.kind as "working_hours" | "break" | "vacation" | "holiday" | "blocked" | "custom" | "recurring_available" | "recurring_unavailable");
+    if (data.kind)
+      query = query.eq(
+        "kind",
+        data.kind as
+          | "working_hours"
+          | "break"
+          | "vacation"
+          | "holiday"
+          | "blocked"
+          | "custom"
+          | "recurring_available"
+          | "recurring_unavailable",
+      );
 
     const { data: rows, error } = await query.order("start_at", { ascending: true });
     if (error) throw new Error(error.message);
@@ -85,7 +103,8 @@ export const upsertCalendarEntry = createServerFn({ method: "POST" })
     const payload = {
       ...data,
       workspace_id: workspaceId,
-      owner_id: data.scope === "personal" ? (data.owner_id ?? context.userId) : data.owner_id ?? null,
+      owner_id:
+        data.scope === "personal" ? (data.owner_id ?? context.userId) : (data.owner_id ?? null),
       created_by: context.userId,
     };
     const { data: row, error } = data.id
@@ -95,11 +114,7 @@ export const upsertCalendarEntry = createServerFn({ method: "POST" })
           .eq("id", data.id)
           .select("*")
           .maybeSingle()
-      : await context.supabase
-          .from("calendar_entries")
-          .insert(payload)
-          .select("*")
-          .maybeSingle();
+      : await context.supabase.from("calendar_entries").insert(payload).select("*").maybeSingle();
     if (error) throw new Error(error.message);
     return row;
   });
@@ -108,10 +123,7 @@ export const deleteCalendarEntry = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: { id: string }) => data)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("calendar_entries")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await context.supabase.from("calendar_entries").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -125,7 +137,13 @@ export const detectCalendarConflicts = createServerFn({ method: "POST" })
   .validator((data: { start_at: string; end_at: string; owner_id?: string | null }) => data)
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const conflicts: Array<{ kind: string; title: string; start_at: string; end_at: string; source: "entry" | "appointment" }> = [];
+    const conflicts: Array<{
+      kind: string;
+      title: string;
+      start_at: string;
+      end_at: string;
+      source: "entry" | "appointment";
+    }> = [];
 
     const { data: entries } = await context.supabase
       .from("calendar_entries")
@@ -136,8 +154,15 @@ export const detectCalendarConflicts = createServerFn({ method: "POST" })
       .gt("end_at", data.start_at);
 
     for (const e of entries ?? []) {
-      if (data.owner_id && e.scope === "personal" && e.owner_id && e.owner_id !== data.owner_id) continue;
-      conflicts.push({ kind: e.kind, title: e.title, start_at: e.start_at, end_at: e.end_at, source: "entry" });
+      if (data.owner_id && e.scope === "personal" && e.owner_id && e.owner_id !== data.owner_id)
+        continue;
+      conflicts.push({
+        kind: e.kind,
+        title: e.title,
+        start_at: e.start_at,
+        end_at: e.end_at,
+        source: "entry",
+      });
     }
 
     const { data: appts } = await context.supabase
@@ -147,7 +172,12 @@ export const detectCalendarConflicts = createServerFn({ method: "POST" })
       .lt("start_at", data.end_at)
       .gt("end_at", data.start_at);
 
-    for (const a of (appts ?? []) as Array<{ customer_name: string | null; start_at: string; end_at: string; host_id: string | null }>) {
+    for (const a of (appts ?? []) as Array<{
+      customer_name: string | null;
+      start_at: string;
+      end_at: string;
+      host_id: string | null;
+    }>) {
       if (data.owner_id && a.host_id && a.host_id !== data.owner_id) continue;
       conflicts.push({
         kind: "appointment",

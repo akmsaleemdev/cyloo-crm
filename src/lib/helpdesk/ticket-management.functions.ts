@@ -30,16 +30,18 @@ async function logActivity(
   toValue: unknown = null,
   meta: Record<string, unknown> = {},
 ) {
-  await sbAny(supabase).from("ticket_activity").insert({
-    workspace_id: workspaceId,
-    ticket_id: ticketId,
-    actor_id: actorId,
-    actor_type: "agent",
-    action,
-    from_value: fromValue as never,
-    to_value: toValue as never,
-    meta: meta as never,
-  });
+  await sbAny(supabase)
+    .from("ticket_activity")
+    .insert({
+      workspace_id: workspaceId,
+      ticket_id: ticketId,
+      actor_id: actorId,
+      actor_type: "agent",
+      action,
+      from_value: fromValue as never,
+      to_value: toValue as never,
+      meta: meta as never,
+    });
 }
 
 /* ============================ CREATE ============================ */
@@ -95,10 +97,18 @@ export const createTicket = createServerFn({ method: "POST" })
       .select("id, ticket_number")
       .single();
     if (error) throw new Error(error.message);
-    await logActivity(context.supabase, workspaceId, (row as { id: string }).id, context.userId, "created", null, {
-      subject: data.subject,
-      priority: data.priority,
-    });
+    await logActivity(
+      context.supabase,
+      workspaceId,
+      (row as { id: string }).id,
+      context.userId,
+      "created",
+      null,
+      {
+        subject: data.subject,
+        priority: data.priority,
+      },
+    );
     return row;
   });
 
@@ -231,9 +241,17 @@ export const mergeTickets = createServerFn({ method: "POST" })
       await logActivity(context.supabase, workspaceId, mid, context.userId, "merged", null, {
         into: data.primary_id,
       });
-      await logActivity(context.supabase, workspaceId, data.primary_id, context.userId, "linked", null, {
-        merged_from: mid,
-      });
+      await logActivity(
+        context.supabase,
+        workspaceId,
+        data.primary_id,
+        context.userId,
+        "linked",
+        null,
+        {
+          merged_from: mid,
+        },
+      );
     }
     return { ok: true, primary_id: data.primary_id };
   });
@@ -289,10 +307,18 @@ export const splitTicket = createServerFn({ method: "POST" })
       .from("messages")
       .update({ conversation_id: newId } as never)
       .in("id", data.message_ids);
-    await logActivity(context.supabase, workspaceId, data.source_id, context.userId, "split", null, {
-      into: newId,
-      count: data.message_ids.length,
-    });
+    await logActivity(
+      context.supabase,
+      workspaceId,
+      data.source_id,
+      context.userId,
+      "split",
+      null,
+      {
+        into: newId,
+        count: data.message_ids.length,
+      },
+    );
     await logActivity(context.supabase, workspaceId, newId, context.userId, "created", null, {
       via: "split",
       parent: data.source_id,
@@ -305,9 +331,7 @@ export const splitTicket = createServerFn({ method: "POST" })
 export const setParentTicket = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) =>
-    z
-      .object({ child_id: z.string().uuid(), parent_id: z.string().uuid().nullable() })
-      .parse(input),
+    z.object({ child_id: z.string().uuid(), parent_id: z.string().uuid().nullable() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
@@ -318,9 +342,17 @@ export const setParentTicket = createServerFn({ method: "POST" })
       .eq("id", data.child_id)
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
-    await logActivity(context.supabase, workspaceId, data.child_id, context.userId, "linked", null, {
-      parent: data.parent_id,
-    });
+    await logActivity(
+      context.supabase,
+      workspaceId,
+      data.child_id,
+      context.userId,
+      "linked",
+      null,
+      {
+        parent: data.parent_id,
+      },
+    );
     return { ok: true };
   });
 
@@ -409,7 +441,9 @@ export const bulkDeleteTickets = createServerFn({ method: "POST" })
       .eq("workspace_id", workspaceId);
     if (error) throw new Error(error.message);
     for (const id of data.ids) {
-      await logActivity(context.supabase, workspaceId, id, context.userId, "deleted", null, { bulk: true });
+      await logActivity(context.supabase, workspaceId, id, context.userId, "deleted", null, {
+        bulk: true,
+      });
     }
     return { ok: true, count: data.ids.length };
   });
@@ -478,7 +512,9 @@ export const searchTickets = createServerFn({ method: "POST" })
     const { data: rows, count, error } = await q;
     if (error) throw new Error(error.message);
     return {
-      rows: (rows ?? []) as unknown as Array<Record<string, string | number | boolean | null | string[]>>,
+      rows: (rows ?? []) as unknown as Array<
+        Record<string, string | number | boolean | null | string[]>
+      >,
       total: count ?? 0,
       page: data.page,
       page_size: data.page_size,
@@ -490,7 +526,9 @@ export const searchTickets = createServerFn({ method: "POST" })
 export const getTicketTimeline = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) =>
-    z.object({ ticket_id: z.string().uuid(), limit: z.number().min(1).max(500).default(100) }).parse(input),
+    z
+      .object({ ticket_id: z.string().uuid(), limit: z.number().min(1).max(500).default(100) })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);

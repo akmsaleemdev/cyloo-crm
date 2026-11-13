@@ -5,7 +5,7 @@ import type {
   PaymentProviderId,
   RefundInput,
   RefundResult,
-} from './types';
+} from "./types";
 
 /**
  * Stub provider used when a real API key isn't configured. It returns null for
@@ -29,12 +29,16 @@ export function makeStubProvider(config: {
     supportsRecurring: config.supportsRecurring ?? true,
     supportsRefunds: config.supportsRefunds ?? true,
     async createLink(_input: CreateLinkInput): Promise<CreateLinkResult> {
-      return { providerReference: null, hostedUrl: null, metadata: { provider: config.id, mode: 'stub' } };
+      return {
+        providerReference: null,
+        hostedUrl: null,
+        metadata: { provider: config.id, mode: "stub" },
+      };
     },
     async refund(input: RefundInput): Promise<RefundResult> {
       return {
         refundReference: `stub_${input.providerReference}_${Date.now()}`,
-        status: 'succeeded',
+        status: "succeeded",
       };
     },
   };

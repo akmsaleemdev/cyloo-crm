@@ -1,15 +1,14 @@
 # CYLOO Mobile (React Native + Expo)
 
-Production-ready architecture for the native Android/iOS companion apps to the CYLOO web platform. **This folder does not run inside Lovable's preview** — copy it into a standalone Expo project (or open it directly outside Lovable) and run it with the Expo CLI.
+Native Android/iOS companion apps to the CYLOO web platform. Run this standalone Expo application with the Expo CLI and connect it to your configured Supabase project. Native release validation is required before distribution.
 
 ## Stack
 
 - Expo SDK 51 + Expo Router (typed routes, file-based navigation)
-- React Native 0.74, TypeScript strict
+- React Native 0.74, TypeScript 5.9 (strict; compatible with current query-library declarations)
 - TanStack Query + MMKV persistence (offline-first cache)
 - Supabase JS v2 (auth, DB, realtime) with SecureStore-backed session
 - Zustand (persisted app state, MMKV)
-- React Hook Form + Zod (forms & validation)
 - Expo Notifications (push), Expo SecureStore, Expo Localization, i18next
 - React Native Reanimated + Gesture Handler for premium interactions
 
@@ -89,7 +88,7 @@ CREATE POLICY "own tokens" ON public.push_tokens FOR ALL TO authenticated
 - `ios.supportsTablet: true` enables iPad layouts.
 - Screens use flexbox with responsive spacing tokens; add split-view layouts by branching on `useWindowDimensions()` where useful (`width >= 768`).
 
-## Running (outside Lovable)
+## Running with Expo
 
 ```bash
 cd mobile

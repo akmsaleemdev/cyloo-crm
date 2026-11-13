@@ -13,10 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import { useConversations, type ConversationRow } from "@/hooks/use-conversations";
-import {
-  useForwardMessage,
-  type MessageRow,
-} from "@/hooks/use-messages";
+import { useForwardMessage, type MessageRow } from "@/hooks/use-messages";
 
 type Props = {
   open: boolean;
@@ -37,10 +34,7 @@ export function ForwardMessageDialog({
   const forward = useForwardMessage();
 
   const filtered = useMemo(
-    () =>
-      conversations.filter(
-        (c: ConversationRow) => c.id !== excludeConversationId,
-      ),
+    () => conversations.filter((c: ConversationRow) => c.id !== excludeConversationId),
     [conversations, excludeConversationId],
   );
 
@@ -63,9 +57,7 @@ export function ForwardMessageDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Forward message</DialogTitle>
-          <DialogDescription>
-            Choose a conversation to forward this message to.
-          </DialogDescription>
+          <DialogDescription>Choose a conversation to forward this message to.</DialogDescription>
         </DialogHeader>
         <div className="relative">
           <SearchIcon className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -87,9 +79,7 @@ export function ForwardMessageDialog({
             ) : (
               filtered.slice(0, 40).map((c: ConversationRow) => {
                 const name =
-                  [c.contact?.first_name, c.contact?.last_name]
-                    .filter(Boolean)
-                    .join(" ") ||
+                  [c.contact?.first_name, c.contact?.last_name].filter(Boolean).join(" ") ||
                   c.contact?.phone ||
                   c.contact?.email ||
                   "Conversation";

@@ -47,7 +47,11 @@ export function verifyInboundSignature(opts: {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-async function callWebhook(url: string, body: unknown, extraHeaders?: Record<string, string>): Promise<ActionResult> {
+async function callWebhook(
+  url: string,
+  body: unknown,
+  extraHeaders?: Record<string, string>,
+): Promise<ActionResult> {
   const t = Date.now();
   try {
     const res = await fetch(url, {
@@ -69,7 +73,7 @@ function authHeaders(config: ActionContext["config"]): Record<string, string> {
   const cred = String(config.credential ?? "");
   if (!cred) return {};
   if (scheme === "bearer") return { Authorization: `Bearer ${cred}` };
-  if (scheme === "basic")  return { Authorization: `Basic ${Buffer.from(cred).toString("base64")}` };
+  if (scheme === "basic") return { Authorization: `Basic ${Buffer.from(cred).toString("base64")}` };
   if (scheme === "custom_header") {
     const h = String(config.custom_header_name ?? "X-Api-Key");
     return { [h]: cred };
@@ -87,8 +91,10 @@ export async function runIntegrationAction(ctx: ActionContext): Promise<ActionRe
   if (!provider) return { ok: false, error: `Unknown provider: ${ctx.providerId}`, latencyMs: 0 };
 
   const capability = provider.capabilities.find((c) => c.id === ctx.capabilityId);
-  if (!capability) return { ok: false, error: `Unknown capability: ${ctx.capabilityId}`, latencyMs: 0 };
-  if (capability.kind !== "action") return { ok: false, error: "Capability is a trigger, not an action.", latencyMs: 0 };
+  if (!capability)
+    return { ok: false, error: `Unknown capability: ${ctx.capabilityId}`, latencyMs: 0 };
+  if (capability.kind !== "action")
+    return { ok: false, error: "Capability is a trigger, not an action.", latencyMs: 0 };
 
   // Provider-specific dispatch
   switch (ctx.providerId) {
@@ -169,7 +175,9 @@ export async function runIntegrationAction(ctx: ActionContext): Promise<ActionRe
           method,
           signal: controller.signal,
           headers: { "Content-Type": "application/json", ...authHeaders(ctx.config) },
-          body: ["POST", "PUT", "PATCH"].includes(method) ? JSON.stringify(ctx.input.body ?? {}) : undefined,
+          body: ["POST", "PUT", "PATCH"].includes(method)
+            ? JSON.stringify(ctx.input.body ?? {})
+            : undefined,
         });
         const data = await res.text();
         return { ok: res.ok, status: res.status, data, latencyMs: Date.now() - t };
@@ -195,7 +203,8 @@ export async function runIntegrationAction(ctx: ActionContext): Promise<ActionRe
     case "slack":
       return {
         ok: false,
-        error: "Per-user OAuth connection required. Connect this integration under Settings → Integrations to activate.",
+        error:
+          "Per-user OAuth connection required. Connect this integration under Settings → Integrations to activate.",
         latencyMs: Date.now() - t,
       };
 
@@ -204,7 +213,8 @@ export async function runIntegrationAction(ctx: ActionContext): Promise<ActionRe
     case "cloudflare-r2":
       return {
         ok: false,
-        error: "Object storage actions run through the storage abstraction. Use `getSignedUploadUrl` from `@/lib/storage`.",
+        error:
+          "Object storage actions run through the storage abstraction. Use `getSignedUploadUrl` from `@/lib/storage`.",
         latencyMs: Date.now() - t,
       };
 
@@ -213,5 +223,9 @@ export async function runIntegrationAction(ctx: ActionContext): Promise<ActionRe
       return { ok: false, error: "webhook-trigger is a trigger, not an action.", latencyMs: 0 };
   }
 
-  return { ok: false, error: `No runtime for provider ${ctx.providerId}`, latencyMs: Date.now() - t };
+  return {
+    ok: false,
+    error: `No runtime for provider ${ctx.providerId}`,
+    latencyMs: Date.now() - t,
+  };
 }

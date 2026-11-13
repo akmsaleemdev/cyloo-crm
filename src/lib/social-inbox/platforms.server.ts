@@ -73,7 +73,9 @@ export async function loadSocialInboxAccounts(
   if (opts.facebookPageId) pages = pages.eq("page_id", opts.facebookPageId);
   let channels = admin
     .from("social_channels")
-    .select("id, workspace_id, platform, external_id, name, username, access_token, refresh_token, token_expires_at, status")
+    .select(
+      "id, workspace_id, platform, external_id, name, username, access_token, refresh_token, token_expires_at, status",
+    )
     // TikTok comments come from the Business connection below: a Login Kit
     // token in social_channels cannot read comments.
     .in("platform", opts.facebookPageId ? ["facebook"] : ["facebook", "youtube", "linkedin"])
@@ -83,12 +85,21 @@ export async function loadSocialInboxAccounts(
 
   let tiktok = admin
     .from("tiktok_business_accounts")
-    .select("id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status")
+    .select(
+      "id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status",
+    )
     .eq("status", "active");
   if (opts.workspaceId) tiktok = tiktok.eq("workspace_id", opts.workspaceId);
 
-  const [{ data: pageRows, error: pageErr }, { data: channelRows, error: channelErr }, { data: tiktokRows }] =
-    await Promise.all([pages, channels, opts.facebookPageId ? Promise.resolve({ data: [] }) : tiktok]);
+  const [
+    { data: pageRows, error: pageErr },
+    { data: channelRows, error: channelErr },
+    { data: tiktokRows },
+  ] = await Promise.all([
+    pages,
+    channels,
+    opts.facebookPageId ? Promise.resolve({ data: [] }) : tiktok,
+  ]);
   if (pageErr) throw new Error(`messenger_accounts: ${pageErr.message}`);
   if (channelErr) throw new Error(`social_channels: ${channelErr.message}`);
 
@@ -167,7 +178,11 @@ export async function fetchRecentComments(
 
   if (account.platform === "facebook") {
     if (!externalId) throw new Error("Facebook Page id is missing. Reconnect the Page.");
-    const posts = await getJson(fetchImpl, "facebook", facebookRecentPostsRequest(externalId, t, MAX_POSTS));
+    const posts = await getJson(
+      fetchImpl,
+      "facebook",
+      facebookRecentPostsRequest(externalId, t, MAX_POSTS),
+    );
     for (const post of ((posts.data as Array<Record<string, unknown>>) ?? []).slice(0, MAX_POSTS)) {
       const postId = String(post.id ?? "");
       if (!postId) continue;
@@ -184,13 +199,15 @@ export async function fetchRecentComments(
   } else if (account.platform === "youtube") {
     if (!externalId || !externalId.startsWith("UC")) {
       const me = await getJson(fetchImpl, "youtube", youtubeMyChannelRequest(t));
-      externalId = ((me.items as Array<{ id?: string }> | undefined)?.[0]?.id ?? null) as string | null;
+      externalId = ((me.items as Array<{ id?: string }> | undefined)?.[0]?.id ?? null) as
+        string | null;
       if (!externalId) throw new Error("No YouTube channel is available for this token.");
     }
     const json = await getJson(fetchImpl, "youtube", youtubeCommentThreadsRequest(externalId, t));
     comments = normalizeYouTubeCommentThreads(json, externalId);
   } else if (account.platform === "linkedin") {
-    if (!externalId) throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
+    if (!externalId)
+      throw new Error("LinkedIn channel is missing the member id. Reconnect the channel.");
     const ownerUrn = `urn:li:person:${externalId}`;
     const { data: targets } = await admin
       .from("social_post_targets")
@@ -198,8 +215,15 @@ export async function fetchRecentComments(
       .eq("channel_id", account.id)
       .not("external_post_id", "is", null)
       .limit(MAX_POSTS * 2);
-    for (const target of (targets ?? []) as Array<{ external_post_id: string; permalink: string | null }>) {
-      const json = await getJson(fetchImpl, "linkedin", linkedInCommentsRequest(target.external_post_id, t));
+    for (const target of (targets ?? []) as Array<{
+      external_post_id: string;
+      permalink: string | null;
+    }>) {
+      const json = await getJson(
+        fetchImpl,
+        "linkedin",
+        linkedInCommentsRequest(target.external_post_id, t),
+      );
       comments.push(
         ...normalizeLinkedInComments(json, {
           postUrn: target.external_post_id,
@@ -209,18 +233,25 @@ export async function fetchRecentComments(
       );
     }
   } else {
-    if (!externalId) throw new Error("TikTok channel is missing the business account id. Reconnect the channel.");
+    if (!externalId)
+      throw new Error("TikTok channel is missing the business account id. Reconnect the channel.");
     const videos = await getJson(fetchImpl, "tiktok", tiktokVideoListRequest(externalId, t));
-    const list =
-      (((videos.data as Record<string, unknown> | undefined)?.videos as Array<Record<string, unknown>>) ?? []).slice(
-        0,
-        MAX_POSTS,
-      );
+    const list = (
+      ((videos.data as Record<string, unknown> | undefined)?.videos as Array<
+        Record<string, unknown>
+      >) ?? []
+    ).slice(0, MAX_POSTS);
     for (const v of list) {
       const videoId = String(v.item_id ?? "");
       if (!videoId) continue;
-      const json = await getJson(fetchImpl, "tiktok", tiktokCommentListRequest(externalId, videoId, t));
-      comments.push(...normalizeTikTokComments(json, { videoId, permalink: (v.share_url as string) ?? null }));
+      const json = await getJson(
+        fetchImpl,
+        "tiktok",
+        tiktokCommentListRequest(externalId, videoId, t),
+      );
+      comments.push(
+        ...normalizeTikTokComments(json, { videoId, permalink: (v.share_url as string) ?? null }),
+      );
     }
   }
 

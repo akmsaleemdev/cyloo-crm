@@ -62,7 +62,9 @@ export async function publishSocialPostInternal(
 ): Promise<PublishSocialPostResult> {
   const { data: post, error } = await supabase
     .from("social_posts")
-    .select("*, social_post_targets(*, social_channels(id, platform, external_id, username, name, metadata))")
+    .select(
+      "*, social_post_targets(*, social_channels(id, platform, external_id, username, name, metadata))",
+    )
     .eq("id", postId)
     .eq("workspace_id", workspaceId)
     .maybeSingle();
@@ -83,7 +85,10 @@ export async function publishSocialPostInternal(
     return {
       ok: true,
       alreadyPublished: true,
-      results: targets.map((target) => ({ channel: target.social_channels?.name ?? "Channel", ok: true })),
+      results: targets.map((target) => ({
+        channel: target.social_channels?.name ?? "Channel",
+        ok: true,
+      })),
     };
   }
 
@@ -97,7 +102,13 @@ export async function publishSocialPostInternal(
   if (!claimedPost?.length) {
     return {
       ok: false,
-      results: [{ channel: "Post", ok: false, error: "Publishing is already in progress. Wait for it to finish before retrying." }],
+      results: [
+        {
+          channel: "Post",
+          ok: false,
+          error: "Publishing is already in progress. Wait for it to finish before retrying.",
+        },
+      ],
     };
   }
 
@@ -134,11 +145,19 @@ export async function publishSocialPostInternal(
       .in("status", ["pending", "failed"])
       .select("id");
     if (claimError) {
-      results.push({ channel: channel.name, ok: false, error: `Could not reserve channel: ${claimError.message}` });
+      results.push({
+        channel: channel.name,
+        ok: false,
+        error: `Could not reserve channel: ${claimError.message}`,
+      });
       continue;
     }
     if (!claimed?.length) {
-      results.push({ channel: channel.name, ok: false, error: "Already publishing or published in another request" });
+      results.push({
+        channel: channel.name,
+        ok: false,
+        error: "Already publishing or published in another request",
+      });
       continue;
     }
     try {
@@ -268,13 +287,20 @@ export async function publishSocialPostInternal(
           .eq("id", target.id);
         persistError = saved.error;
       } catch (saveError) {
-        persistError = { message: saveError instanceof Error ? saveError.message : "Database unavailable" };
+        persistError = {
+          message: saveError instanceof Error ? saveError.message : "Database unavailable",
+        };
       }
       if (persistError) {
         // The provider may already have published. Keep the target reserved so
         // an automatic retry cannot send the same post again.
         uncertainDelivery = true;
-        results.push({ channel: channel.name, ok: false, error: "Provider accepted the post, but its result could not be saved. Check the channel before retrying." });
+        results.push({
+          channel: channel.name,
+          ok: false,
+          error:
+            "Provider accepted the post, but its result could not be saved. Check the channel before retrying.",
+        });
         continue;
       }
       results.push({ channel: channel.name, ok: true });
@@ -301,7 +327,9 @@ export async function publishSocialPostInternal(
     .update({
       status: uncertainDelivery ? "publishing" : anyOk ? "published" : "failed",
       published_at: anyOk ? new Date().toISOString() : null,
-      last_error: uncertainDelivery ? "One provider result could not be saved. Check the channel before retrying." : null,
+      last_error: uncertainDelivery
+        ? "One provider result could not be saved. Check the channel before retrying."
+        : null,
     })
     .eq("id", typedPost.id);
 

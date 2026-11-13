@@ -13,7 +13,7 @@ function generateToken(workspaceId: string) {
       uid: workspaceId.replace(/-/g, "").slice(0, 24),
       role: "user",
       iat: Math.floor(Date.now() / 1000),
-    })
+    }),
   ).replace(/=+$/, "");
   const rand = crypto.getRandomValues(new Uint8Array(32));
   const sig = btoa(String.fromCharCode(...rand))
@@ -31,7 +31,9 @@ export function WhatsAppRestApiPanel() {
   const [token, setToken] = useState<string>("");
   const [reveal, setReveal] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const [tab, setTab] = useState<"text" | "image" | "video" | "audio" | "document" | "location">("text");
+  const [tab, setTab] = useState<"text" | "image" | "video" | "audio" | "document" | "location">(
+    "text",
+  );
 
   useEffect(() => {
     if (!ws?.id) return;
@@ -61,7 +63,7 @@ export function WhatsAppRestApiPanel() {
 
   const masked = useMemo(
     () => (token ? `${token.slice(0, 12)}${"•".repeat(24)}${token.slice(-8)}` : ""),
-    [token]
+    [token],
   );
 
   const curlExample = `curl -X POST ${ENDPOINT} \\
@@ -76,46 +78,129 @@ export function WhatsAppRestApiPanel() {
     "text": "Hello from the WhatsApp API!"
   }'`;
 
-  const messageTypes: Record<string, { params: Array<{ name: string; type: string; required: boolean; desc: string; example: string }> }> = {
+  const messageTypes: Record<
+    string,
+    {
+      params: Array<{
+        name: string;
+        type: string;
+        required: boolean;
+        desc: string;
+        example: string;
+      }>;
+    }
+  > = {
     text: {
-      params: [{ name: "text", type: "string", required: true, desc: "Text to send", example: '"Hello!"' }],
+      params: [
+        { name: "text", type: "string", required: true, desc: "Text to send", example: '"Hello!"' },
+      ],
     },
     image: {
       params: [
-        { name: "imageUrl", type: "string (URL)", required: true, desc: "Public image URL", example: '"https://example.com/image.jpg"' },
-        { name: "caption", type: "string", required: false, desc: "Caption (optional)", example: '"Check this out"' },
+        {
+          name: "imageUrl",
+          type: "string (URL)",
+          required: true,
+          desc: "Public image URL",
+          example: '"https://example.com/image.jpg"',
+        },
+        {
+          name: "caption",
+          type: "string",
+          required: false,
+          desc: "Caption (optional)",
+          example: '"Check this out"',
+        },
       ],
     },
     video: {
       params: [
-        { name: "videoUrl", type: "string (URL)", required: true, desc: "Public video URL", example: '"https://example.com/video.mp4"' },
-        { name: "caption", type: "string", required: false, desc: "Optional caption", example: '"Watch this"' },
+        {
+          name: "videoUrl",
+          type: "string (URL)",
+          required: true,
+          desc: "Public video URL",
+          example: '"https://example.com/video.mp4"',
+        },
+        {
+          name: "caption",
+          type: "string",
+          required: false,
+          desc: "Optional caption",
+          example: '"Watch this"',
+        },
       ],
     },
     audio: {
-      params: [{ name: "aacUrl", type: "string (URL)", required: true, desc: "Public AAC audio URL", example: '"https://example.com/audio.aac"' }],
+      params: [
+        {
+          name: "aacUrl",
+          type: "string (URL)",
+          required: true,
+          desc: "Public AAC audio URL",
+          example: '"https://example.com/audio.aac"',
+        },
+      ],
     },
     document: {
       params: [
-        { name: "docUrl", type: "string (URL)", required: true, desc: "Public document URL", example: '"https://example.com/doc.pdf"' },
-        { name: "caption", type: "string", required: false, desc: "Document caption", example: '"See attached"' },
+        {
+          name: "docUrl",
+          type: "string (URL)",
+          required: true,
+          desc: "Public document URL",
+          example: '"https://example.com/doc.pdf"',
+        },
+        {
+          name: "caption",
+          type: "string",
+          required: false,
+          desc: "Document caption",
+          example: '"See attached"',
+        },
       ],
     },
     location: {
       params: [
         { name: "lat", type: "number", required: true, desc: "Latitude", example: "37.7749" },
         { name: "long", type: "number", required: true, desc: "Longitude", example: "-122.4194" },
-        { name: "title", type: "string", required: false, desc: "Location title", example: '"San Francisco"' },
+        {
+          name: "title",
+          type: "string",
+          required: false,
+          desc: "Location title",
+          example: '"San Francisco"',
+        },
       ],
     },
   };
 
   const requiredParams = [
-    { name: "messageType", type: "string", desc: "Type of message to send", example: "text | image | video | audio | document | location" },
+    {
+      name: "messageType",
+      type: "string",
+      desc: "Type of message to send",
+      example: "text | image | video | audio | document | location",
+    },
     { name: "requestType", type: "string", desc: "HTTP method", example: "GET or POST" },
-    { name: "token", type: "string", desc: "Authentication token", example: '"your_api_token_here"' },
-    { name: "from", type: "string", desc: "Sender phone with country code", example: '"1234567890"' },
-    { name: "to", type: "string", desc: "Recipient phone with country code", example: '"9876543210"' },
+    {
+      name: "token",
+      type: "string",
+      desc: "Authentication token",
+      example: '"your_api_token_here"',
+    },
+    {
+      name: "from",
+      type: "string",
+      desc: "Sender phone with country code",
+      example: '"1234567890"',
+    },
+    {
+      name: "to",
+      type: "string",
+      desc: "Recipient phone with country code",
+      example: '"9876543210"',
+    },
   ];
 
   return (
@@ -124,7 +209,9 @@ export function WhatsAppRestApiPanel() {
         <h2 className="font-bold text-xl flex items-center gap-2">
           <Code2 className="w-5 h-5" /> REST API
         </h2>
-        <p className="text-sm text-muted-foreground mt-1">Integrate WhatsApp messaging into your application.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Integrate WhatsApp messaging into your application.
+        </p>
       </div>
 
       {/* API Token */}
@@ -134,7 +221,9 @@ export function WhatsAppRestApiPanel() {
             <div className="text-sm font-semibold flex items-center gap-2">
               <Key className="w-4 h-4" /> API Token
             </div>
-            <div className="text-xs text-muted-foreground">Use this token to authenticate API requests</div>
+            <div className="text-xs text-muted-foreground">
+              Use this token to authenticate API requests
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -148,7 +237,11 @@ export function WhatsAppRestApiPanel() {
               onClick={() => copy(token, "Token")}
               className="h-8 px-2 rounded-control border border-border text-xs inline-flex items-center gap-1 hover:bg-muted"
             >
-              {copied === "Token" ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied === "Token" ? (
+                <Check className="w-3.5 h-3.5 text-success" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
               Copy
             </button>
             <button
@@ -175,14 +268,22 @@ export function WhatsAppRestApiPanel() {
         </h3>
         <div className="text-xs text-muted-foreground">Supports GET and POST</div>
         <div className="flex flex-wrap items-center gap-2 rounded-control border border-border p-3 bg-surface">
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-control bg-success/10 text-success">GET</span>
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-control bg-primary/10 text-primary">POST</span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-control bg-success/10 text-success">
+            GET
+          </span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-control bg-primary/10 text-primary">
+            POST
+          </span>
           <code className="font-mono text-xs break-all flex-1">{ENDPOINT}</code>
           <button
             onClick={() => copy(ENDPOINT, "Endpoint")}
             className="h-7 px-2 rounded-control border border-border text-xs inline-flex items-center gap-1 hover:bg-muted"
           >
-            {copied === "Endpoint" ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied === "Endpoint" ? (
+              <Check className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
             Copy
           </button>
         </div>
@@ -191,9 +292,7 @@ export function WhatsAppRestApiPanel() {
       {/* Required Parameters */}
       <section className="space-y-2">
         <h3 className="font-display font-semibold text-sm">Required Parameters</h3>
-        <ParamTable
-          rows={requiredParams.map((p) => ({ ...p, required: true }))}
-        />
+        <ParamTable rows={requiredParams.map((p) => ({ ...p, required: true }))} />
       </section>
 
       {/* Message Type Params */}
@@ -205,7 +304,9 @@ export function WhatsAppRestApiPanel() {
               key={k}
               onClick={() => setTab(k as typeof tab)}
               className={`px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors ${
-                tab === k ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+                tab === k
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               {k}
@@ -223,12 +324,16 @@ export function WhatsAppRestApiPanel() {
             onClick={() => copy(curlExample, "cURL")}
             className="h-7 px-2 rounded-control border border-border text-xs inline-flex items-center gap-1 hover:bg-muted"
           >
-            {copied === "cURL" ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied === "cURL" ? (
+              <Check className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
             Copy
           </button>
         </div>
         <pre className="font-mono text-xs bg-muted/50 border border-border rounded-control p-4 overflow-x-auto whitespace-pre">
-{curlExample}
+          {curlExample}
         </pre>
       </section>
 
@@ -324,10 +429,12 @@ function ResponseCard({
     <div className="rounded-control border border-border overflow-hidden">
       <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b border-border">
         <div className="text-xs font-semibold">{title}</div>
-        <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-control ${statusClass}`}>{statusLabel}</span>
+        <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-control ${statusClass}`}>
+          {statusLabel}
+        </span>
       </div>
       <pre className="font-mono text-xs p-3 overflow-x-auto whitespace-pre">
-{JSON.stringify(json, null, 2)}
+        {JSON.stringify(json, null, 2)}
       </pre>
     </div>
   );

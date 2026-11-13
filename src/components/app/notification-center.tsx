@@ -143,7 +143,8 @@ export function NotificationCenter() {
   const availableSections = NOTIFICATION_SECTIONS.filter((name) =>
     items.some((item) => notificationSection(item) === name),
   );
-  const visible = section === "All" ? items : items.filter((item) => notificationSection(item) === section);
+  const visible =
+    section === "All" ? items : items.filter((item) => notificationSection(item) === section);
 
   useEffect(() => {
     if (!open) return;
@@ -153,11 +154,17 @@ export function NotificationCenter() {
 
     const viewportBounds = viewport.getBoundingClientRect();
     const activeBounds = active.getBoundingClientRect();
-    const centeredLeft = viewport.scrollLeft + activeBounds.left - viewportBounds.left
-      + activeBounds.width / 2 - viewportBounds.width / 2;
+    const centeredLeft =
+      viewport.scrollLeft +
+      activeBounds.left -
+      viewportBounds.left +
+      activeBounds.width / 2 -
+      viewportBounds.width / 2;
     viewport.scrollTo({
       left: centeredLeft,
-      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+      behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
     });
   }, [open, section, availableSections.length]);
 
@@ -205,7 +212,9 @@ export function NotificationCenter() {
                   aria-pressed={section === name}
                   className={cn(
                     "shrink-0 rounded-xs px-2.5 py-1 text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                    section === name ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    section === name
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {name}
@@ -215,27 +224,40 @@ export function NotificationCenter() {
           </ScrollArea>
         )}
         <ScrollArea className="max-h-[420px]" viewportClassName="max-h-[420px]">
-        <ul className="divide-y divide-border">
-          {isLoading && <li className="p-8 text-center text-sm text-muted-foreground">Loading notifications...</li>}
-          {isError && <li className="p-8 text-center text-sm text-destructive">Could not load notifications. <button className="underline" onClick={() => void refetch()}>Retry</button></li>}
-          {!isLoading && !isError && visible.length === 0 && (
-            <li className="p-8 text-center text-sm text-muted-foreground">You're all caught up.</li>
-          )}
-          {visible.map((n) => (
-            <NotificationRowItem
-              key={n.id}
-              n={n}
-              onRead={markRead.mutate}
-              onArchive={archive.mutate}
-              onDelete={del.mutate}
-              onNavigate={(url, notification) => {
-                selectNotificationTenant(notification, organizations, workspaces);
-                setOpen(false);
-                navigateToAction(router, url);
-              }}
-            />
-          ))}
-        </ul>
+          <ul className="divide-y divide-border">
+            {isLoading && (
+              <li className="p-8 text-center text-sm text-muted-foreground">
+                Loading notifications...
+              </li>
+            )}
+            {isError && (
+              <li className="p-8 text-center text-sm text-destructive">
+                Could not load notifications.{" "}
+                <button className="underline" onClick={() => void refetch()}>
+                  Retry
+                </button>
+              </li>
+            )}
+            {!isLoading && !isError && visible.length === 0 && (
+              <li className="p-8 text-center text-sm text-muted-foreground">
+                You're all caught up.
+              </li>
+            )}
+            {visible.map((n) => (
+              <NotificationRowItem
+                key={n.id}
+                n={n}
+                onRead={markRead.mutate}
+                onArchive={archive.mutate}
+                onDelete={del.mutate}
+                onNavigate={(url, notification) => {
+                  selectNotificationTenant(notification, organizations, workspaces);
+                  setOpen(false);
+                  navigateToAction(router, url);
+                }}
+              />
+            ))}
+          </ul>
         </ScrollArea>
         <div className="border-t border-border px-4 py-2 text-center">
           <Link
@@ -284,7 +306,11 @@ function NotificationRowItem({
         <Icon className="h-4 w-4" />
       </div>
       <div className="min-w-0 flex-1">
-        {source && <div className="mb-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{source}</div>}
+        {source && (
+          <div className="mb-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            {source}
+          </div>
+        )}
         <div className="flex items-center justify-between gap-2">
           <div className="truncate text-sm font-medium">{n.title}</div>
           <div className="text-[11px] text-muted-foreground whitespace-nowrap">
@@ -335,10 +361,12 @@ function NotificationRowItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" sideOffset={4}>
             {actionUrl && (
-              <DropdownMenuItem onSelect={() => {
-                if (unread) onRead(n.id);
-                onNavigate(actionUrl, n);
-              }}>
+              <DropdownMenuItem
+                onSelect={() => {
+                  if (unread) onRead(n.id);
+                  onNavigate(actionUrl, n);
+                }}
+              >
                 <ExternalLink className="h-4 w-4" /> Open
               </DropdownMenuItem>
             )}
@@ -350,7 +378,10 @@ function NotificationRowItem({
             <DropdownMenuItem onSelect={() => onArchive(n.id)}>
               <Archive className="h-4 w-4" /> Archive
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => onDelete(n.id)} className="text-destructive focus:text-destructive">
+            <DropdownMenuItem
+              onSelect={() => onDelete(n.id)}
+              className="text-destructive focus:text-destructive"
+            >
               <Trash2 className="h-4 w-4" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

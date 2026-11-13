@@ -68,10 +68,7 @@ function isUniqueViolation(error: { code?: string | null; message?: string } | n
   return msg.includes("duplicate key") || msg.includes("conversations_external_thread_key");
 }
 
-async function findThread(
-  admin: Admin,
-  input: EnsureThreadInput,
-): Promise<ExistingRow | null> {
+async function findThread(admin: Admin, input: EnsureThreadInput): Promise<ExistingRow | null> {
   const { data } = await admin
     .from("conversations")
     .select("id, unread_count, metadata")

@@ -38,9 +38,7 @@ describe("Enterprise Module Registry", () => {
   });
 
   it("should have unique module numbers from 1 to 36", () => {
-    const numbers = ENTERPRISE_MODULES.map((m) => m.moduleNumber).sort(
-      (a, b) => a - b,
-    );
+    const numbers = ENTERPRISE_MODULES.map((m) => m.moduleNumber).sort((a, b) => a - b);
     const expected = Array.from({ length: 36 }, (_, i) => i + 1);
     expect(numbers).toEqual(expected);
   });
@@ -80,9 +78,7 @@ describe("Enterprise Module Registry", () => {
   });
 
   it("should have unique feature IDs across all modules", () => {
-    const allFeatureIds = ENTERPRISE_MODULES.flatMap((m) =>
-      m.features.map((f) => f.id),
-    );
+    const allFeatureIds = ENTERPRISE_MODULES.flatMap((m) => m.features.map((f) => f.id));
     expect(new Set(allFeatureIds).size).toBe(allFeatureIds.length);
   });
 

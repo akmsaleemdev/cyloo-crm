@@ -6,8 +6,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Sparkles, Loader2, TrendingUp, Languages, Flame, Snowflake, Thermometer,
-  MessageSquareText, AlertTriangle, CalendarClock, Package, RefreshCcw,
+  Sparkles,
+  Loader2,
+  TrendingUp,
+  Languages,
+  Flame,
+  Snowflake,
+  Thermometer,
+  MessageSquareText,
+  AlertTriangle,
+  CalendarClock,
+  Package,
+  RefreshCcw,
 } from "lucide-react";
 import {
   getLiveChatSessionInsight,
@@ -20,9 +30,11 @@ interface Props {
 }
 
 const SENTIMENT_STYLES: Record<string, string> = {
-  positive: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
+  positive:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900",
   neutral: "bg-muted text-muted-foreground border-border",
-  negative: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
+  negative:
+    "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900",
   frustrated: "bg-destructive/10 text-destructive border-destructive/30",
 };
 
@@ -40,7 +52,8 @@ const INTENT_LABEL: Record<string, string> = {
 };
 
 function LeadIcon({ stage }: { stage: string | null }) {
-  if (stage === "hot" || stage === "qualified") return <Flame className="h-3.5 w-3.5 text-orange-500" />;
+  if (stage === "hot" || stage === "qualified")
+    return <Flame className="h-3.5 w-3.5 text-orange-500" />;
   if (stage === "warm") return <Thermometer className="h-3.5 w-3.5 text-amber-500" />;
   return <Snowflake className="h-3.5 w-3.5 text-sky-500" />;
 }
@@ -63,7 +76,9 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
 
   if (isLoading) {
     return (
-      <div className={`flex items-center justify-center py-6 text-xs text-muted-foreground ${className ?? ""}`}>
+      <div
+        className={`flex items-center justify-center py-6 text-xs text-muted-foreground ${className ?? ""}`}
+      >
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
     );
@@ -72,7 +87,9 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
   const empty = !data || (!data.summary && !data.intent && !data.sentiment && !data.leadScore);
 
   return (
-    <aside className={`flex flex-col gap-3 rounded-control border border-border bg-background p-3 text-sm ${className ?? ""}`}>
+    <aside
+      className={`flex flex-col gap-3 rounded-control border border-border bg-background p-3 text-sm ${className ?? ""}`}
+    >
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
@@ -95,7 +112,8 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
 
       {empty && (
         <p className="rounded-control bg-muted/40 p-3 text-xs text-muted-foreground">
-          Insights appear once the visitor sends a message. Click "Refresh summary" to force a re-analysis.
+          Insights appear once the visitor sends a message. Click "Refresh summary" to force a
+          re-analysis.
         </p>
       )}
 
@@ -104,14 +122,14 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
           <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium uppercase text-muted-foreground">
             <MessageSquareText className="h-3 w-3" /> Summary
           </div>
-          <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground">{data.summary}</p>
+          <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground">
+            {data.summary}
+          </p>
         </section>
       )}
 
       <div className="grid grid-cols-2 gap-2">
-        {data?.intent && (
-          <Stat label="Intent" value={INTENT_LABEL[data.intent] ?? data.intent} />
-        )}
+        {data?.intent && <Stat label="Intent" value={INTENT_LABEL[data.intent] ?? data.intent} />}
         {data?.sentiment && (
           <div className="rounded-control border border-border bg-muted/30 p-2">
             <div className="text-[11px] uppercase text-muted-foreground">Sentiment</div>
@@ -134,7 +152,9 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
               <span className="text-lg font-semibold">{data.leadScore}</span>
               <span className="text-[11px] text-muted-foreground">/ 100</span>
               {data.leadStage && (
-                <span className="ml-auto text-[11px] capitalize text-muted-foreground">{data.leadStage}</span>
+                <span className="ml-auto text-[11px] capitalize text-muted-foreground">
+                  {data.leadStage}
+                </span>
               )}
             </div>
             <div className="mt-1 h-1 overflow-hidden rounded-full bg-muted">
@@ -161,7 +181,10 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
           </div>
           <div className="flex flex-wrap gap-1">
             {data.topics.map((t) => (
-              <span key={t} className="rounded-control border border-border bg-muted/40 px-2 py-0.5 text-[11px]">
+              <span
+                key={t}
+                className="rounded-control border border-border bg-muted/40 px-2 py-0.5 text-[11px]"
+              >
                 {t}
               </span>
             ))}
@@ -176,7 +199,9 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
           </div>
           <ul className="space-y-0.5 text-xs">
             {data.recommendations.products.map((p) => (
-              <li key={p} className="rounded-control bg-muted/30 px-2 py-1">{p}</li>
+              <li key={p} className="rounded-control bg-muted/30 px-2 py-1">
+                {p}
+              </li>
             ))}
           </ul>
         </section>
@@ -207,15 +232,7 @@ export function LiveChatAiInsights({ sessionId, className }: Props) {
   );
 }
 
-function Stat({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
+function Stat({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-control border border-border bg-muted/30 p-2">
       <div className="flex items-center gap-1 text-[11px] uppercase text-muted-foreground">

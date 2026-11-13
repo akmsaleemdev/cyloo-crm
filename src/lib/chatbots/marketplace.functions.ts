@@ -85,7 +85,10 @@ export const listChatbotTemplates = createServerFn({ method: "GET" })
         .order("usage_count", { ascending: false })
         .order("updated_at", { ascending: false })
         .limit(500),
-      sbAny(supabase).from("chatbot_template_favorites").select("template_id").eq("user_id", userId),
+      sbAny(supabase)
+        .from("chatbot_template_favorites")
+        .select("template_id")
+        .eq("user_id", userId),
       supabase
         .from("chatbot_template_usage")
         .select("template_id, used_at")
@@ -226,7 +229,8 @@ export const previewTemplateInstall = createServerFn({ method: "GET" })
       .parse(v),
   )
   .handler(async ({ data, context }) => {
-    const workspaceId = data.workspaceId ?? (await resolveWorkspaceId(sbAny(context.supabase), context.userId));
+    const workspaceId =
+      data.workspaceId ?? (await resolveWorkspaceId(sbAny(context.supabase), context.userId));
     const { data: tpl, error: tplErr } = await sbAny(context.supabase)
       .from("chatbot_templates")
       .select("id, name, version, config")
@@ -266,23 +270,32 @@ export const previewTemplateInstall = createServerFn({ method: "GET" })
     for (const key of STRING_KEYS) {
       const a = normStr(cur[key]);
       const b = normStr(inc[key]);
-      if (!eq(a, b)) diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
+      if (!eq(a, b))
+        diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
     }
     for (const key of NUMBER_KEYS) {
       const a = normNum(cur[key]);
       const b = normNum(inc[key]);
-      if (!eq(a, b)) diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
+      if (!eq(a, b))
+        diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
     }
     for (const key of BOOL_KEYS) {
       const a = normBool(cur[key]);
       const b = normBool(inc[key]);
-      if (!eq(a, b)) diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
+      if (!eq(a, b))
+        diffs.push({ key, label: LABELS[key], current: a, incoming: b, status: statusOf(a, b) });
     }
     {
       const a = normArr(cur.handoff_keywords);
       const b = normArr(inc.handoff_keywords);
       if (!eq(a, b))
-        diffs.push({ key: "handoff_keywords", label: LABELS.handoff_keywords, current: a, incoming: b, status: statusOf(a, b) });
+        diffs.push({
+          key: "handoff_keywords",
+          label: LABELS.handoff_keywords,
+          current: a,
+          incoming: b,
+          status: statusOf(a, b),
+        });
     }
 
     return {
@@ -300,9 +313,6 @@ export const previewTemplateInstall = createServerFn({ method: "GET" })
       diffs,
     };
   });
-
-
-
 
 /* --------------------------------- upsert --------------------------------- */
 
@@ -349,13 +359,15 @@ export const upsertChatbotTemplate = createServerFn({ method: "POST" })
       const nextVersion = ((current?.version as number) ?? 1) + 1;
       // Snapshot old version
       if (current) {
-        await sbAny(supabase).from("chatbot_template_versions").insert({
-          template_id: data.id,
-          version: current.version,
-          config: current.config,
-          changelog: data.changelog ?? null,
-          created_by: userId,
-        });
+        await sbAny(supabase)
+          .from("chatbot_template_versions")
+          .insert({
+            template_id: data.id,
+            version: current.version,
+            config: current.config,
+            changelog: data.changelog ?? null,
+            created_by: userId,
+          });
       }
       payload.version = nextVersion;
       const { data: updated, error } = await supabase
@@ -420,9 +432,7 @@ export const toggleChatbotTemplateFavorite = createServerFn({ method: "POST" })
 
 export const setChatbotTemplateFeatured = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ id: z.string().uuid(), featured: z.boolean() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ id: z.string().uuid(), featured: z.boolean() }).parse(v))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: tpl } = await supabase
@@ -659,9 +669,9 @@ export const ensureChatbotTemplateShareSlug = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .maybeSingle();
     if (existing?.share_slug) return { slug: existing.share_slug as string };
-    const slug = Array.from({ length: 12 }, () =>
-      Math.floor(Math.random() * 36).toString(36),
-    ).join("");
+    const slug = Array.from({ length: 12 }, () => Math.floor(Math.random() * 36).toString(36)).join(
+      "",
+    );
     const { error } = await supabase
       .from("chatbot_templates")
       .update({ share_slug: slug })
@@ -692,13 +702,15 @@ export const restoreChatbotTemplateVersion = createServerFn({ method: "POST" })
       .eq("id", data.templateId)
       .maybeSingle();
     if (!current) throw new Error("Template not found");
-    await sbAny(supabase).from("chatbot_template_versions").insert({
-      template_id: data.templateId,
-      version: current.version,
-      config: current.config,
-      changelog: `Snapshot before restore to v${data.version}`,
-      created_by: userId,
-    });
+    await sbAny(supabase)
+      .from("chatbot_template_versions")
+      .insert({
+        template_id: data.templateId,
+        version: current.version,
+        config: current.config,
+        changelog: `Snapshot before restore to v${data.version}`,
+        created_by: userId,
+      });
     await supabase
       .from("chatbot_templates")
       .update({ config: v.config, version: (current.version as number) + 1 })

@@ -11,7 +11,7 @@
  * - Revenue Prediction
  * - Abandoned Cart Recovery (message drafts for WhatsApp/Email/SMS)
  *
- * All calls go through the Lovable AI Gateway using GEMINI_API_KEY (server-only).
+ * Calls use the configured direct AI provider with server-only credentials.
  * These functions are consumed by the Commerce dashboard AND by the Omnichannel
  * Inbox via `AiCommercePanel` so agents can recommend products in-chat.
  */

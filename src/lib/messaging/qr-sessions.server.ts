@@ -12,10 +12,7 @@ export type WorkerResult = {
   available: boolean;
 };
 
-export async function callWorker(
-  path: string,
-  init: RequestInit = {},
-): Promise<WorkerResult> {
+export async function callWorker(path: string, init: RequestInit = {}): Promise<WorkerResult> {
   const base = process.env.WA_QR_WORKER_URL;
   const token = process.env.WA_QR_WORKER_TOKEN;
   if (!base) {

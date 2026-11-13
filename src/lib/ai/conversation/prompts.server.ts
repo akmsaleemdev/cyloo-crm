@@ -15,19 +15,19 @@ import type { ConversationConfig, PromptSettings, Tone, Length } from "./types";
 
 const TONE_DIRECTIVE: Record<Tone, string> = {
   professional: "Adopt a professional, courteous tone. Be precise and unambiguous.",
-  friendly:     "Adopt a warm, friendly tone. Use natural conversational language.",
-  casual:       "Keep it casual and relaxed, like a helpful colleague.",
-  empathetic:   "Be empathetic and validating. Acknowledge feelings before advising.",
-  concise:      "Be extremely concise. Prefer bullet points and short sentences.",
+  friendly: "Adopt a warm, friendly tone. Use natural conversational language.",
+  casual: "Keep it casual and relaxed, like a helpful colleague.",
+  empathetic: "Be empathetic and validating. Acknowledge feelings before advising.",
+  concise: "Be extremely concise. Prefer bullet points and short sentences.",
   enthusiastic: "Be upbeat and enthusiastic without being over the top.",
-  formal:       "Use formal register. Avoid contractions and colloquialisms.",
-  playful:      "Be witty and playful while staying helpful.",
+  formal: "Use formal register. Avoid contractions and colloquialisms.",
+  playful: "Be witty and playful while staying helpful.",
 };
 
 const LENGTH_DIRECTIVE: Record<Length, string> = {
-  short:  "Reply in 1-2 short sentences. Never exceed ~40 words.",
+  short: "Reply in 1-2 short sentences. Never exceed ~40 words.",
   medium: "Reply in a focused paragraph, typically 60-120 words.",
-  long:   "Reply thoroughly with structure (paragraphs, lists) when helpful, up to ~350 words.",
+  long: "Reply thoroughly with structure (paragraphs, lists) when helpful, up to ~350 words.",
 };
 
 export function buildSystemPrompt(
@@ -63,7 +63,7 @@ export function buildSystemPrompt(
   if (config.customerMemory && Object.keys(config.customerMemory).length) {
     parts.push(
       `# Customer memory\n${JSON.stringify(config.customerMemory, null, 2)}\n` +
-      `Use these facts to personalize replies. Do not reveal them verbatim unless asked.`,
+        `Use these facts to personalize replies. Do not reveal them verbatim unless asked.`,
     );
   }
 

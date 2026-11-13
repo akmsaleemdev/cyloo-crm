@@ -45,10 +45,7 @@ function hasVariables(text: string): boolean {
   return TOKEN_RE.test(text);
 }
 
-function extractParameters(
-  text: string,
-  values: Record<string, string>,
-): WhatsAppSendParameter[] {
+function extractParameters(text: string, values: Record<string, string>): WhatsAppSendParameter[] {
   const parameters: WhatsAppSendParameter[] = [];
   TOKEN_RE.lastIndex = 0;
   for (const match of text.matchAll(TOKEN_RE)) {
@@ -116,7 +113,13 @@ export function buildTemplateSendPayload(
 export function isWhatsAppTemplate(
   components?: TemplateComponent[] | null,
 ): components is TemplateComponent[] {
-  return Array.isArray(components) && components.length > 0 &&
-    components.some((c) => ["HEADER", "BODY", "FOOTER", "BUTTONS", "header", "body", "footer", "buttons"]
-      .includes(String(c.type ?? "").toUpperCase()));
+  return (
+    Array.isArray(components) &&
+    components.length > 0 &&
+    components.some((c) =>
+      ["HEADER", "BODY", "FOOTER", "BUTTONS", "header", "body", "footer", "buttons"].includes(
+        String(c.type ?? "").toUpperCase(),
+      ),
+    )
+  );
 }

@@ -32,7 +32,13 @@ const AccountInput = z.object({ accountId: z.string().uuid() });
 async function loadAccount(
   supabase: { from: (t: string) => any },
   accountId: string,
-): Promise<{ id: string; page_id: string; workspace_id: string; scopes: string[]; status: string }> {
+): Promise<{
+  id: string;
+  page_id: string;
+  workspace_id: string;
+  scopes: string[];
+  status: string;
+}> {
   const { data, error } = await supabase
     .from("messenger_accounts")
     .select("id, page_id, workspace_id, scopes, status")
@@ -212,7 +218,11 @@ export const reconnectMessengerAccount = createServerFn({ method: "POST" })
     const acc = await loadAccount(context.supabase as never, data.accountId);
     const cipher = await cipherFor(acc.id);
     if (!cipher) {
-      return { ok: false, needsOAuth: true, reason: "No stored Page token — re-authorize with Facebook." };
+      return {
+        ok: false,
+        needsOAuth: true,
+        reason: "No stored Page token — re-authorize with Facebook.",
+      };
     }
 
     const { verifyMessengerPageToken, markMessengerAccountConnected, markMessengerAccountExpired } =
@@ -220,7 +230,11 @@ export const reconnectMessengerAccount = createServerFn({ method: "POST" })
     const token = await verifyMessengerPageToken(acc.page_id, cipher);
     if (!token.ok) {
       await markMessengerAccountExpired(acc.id, token.reason ?? "Token invalid");
-      return { ok: false, needsOAuth: true, reason: token.reason ?? "Meta rejected the stored Page token." };
+      return {
+        ok: false,
+        needsOAuth: true,
+        reason: token.reason ?? "Meta rejected the stored Page token.",
+      };
     }
 
     const { setPageSubscription } = await import("./capabilities.server");

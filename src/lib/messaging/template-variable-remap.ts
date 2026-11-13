@@ -11,10 +11,7 @@
  * Client-safe: no server-only imports.
  */
 
-import {
-  remapTemplateComponentTokens,
-  type TemplateTokenFix,
-} from "./template-body-validation";
+import { remapTemplateComponentTokens, type TemplateTokenFix } from "./template-body-validation";
 import { templateVariableExamples } from "./template-variables";
 
 const TOKEN_RE = /\{\{([^{}]*)\}\}/g;

@@ -42,7 +42,11 @@ export const Route = createFileRoute("/api/public/widget/rate")({
         }
 
         let body: unknown;
-        try { body = await request.json(); } catch { return json(400, { error: "Invalid JSON" }); }
+        try {
+          body = await request.json();
+        } catch {
+          return json(400, { error: "Invalid JSON" });
+        }
         const parsed = BodySchema.safeParse(body);
         if (!parsed.success) return json(400, { error: "Invalid input" });
 

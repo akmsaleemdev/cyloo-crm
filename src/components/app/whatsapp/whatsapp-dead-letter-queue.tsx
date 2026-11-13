@@ -65,8 +65,7 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["whatsapp-webhook-dead-letters", workspaceId, limit],
-    queryFn: () =>
-      listFn({ data: { workspaceId: workspaceId!, limit, includePayload: true } }),
+    queryFn: () => listFn({ data: { workspaceId: workspaceId!, limit, includePayload: true } }),
     enabled: !!workspaceId,
     refetchInterval: 60_000,
   });
@@ -101,13 +100,23 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
             <AlertTriangle className="w-4 h-4" /> Failed &amp; dead-lettered webhooks
           </h3>
           <p className="text-xs text-muted-foreground">
-            Envelopes retry automatically with exponential backoff. Anything that
-            exhausts its attempts lands here and can be reprocessed manually.
+            Envelopes retry automatically with exponential backoff. Anything that exhausts its
+            attempts lands here and can be reprocessed manually.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching} className="gap-1.5">
-            {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="gap-1.5"
+          >
+            {isFetching ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="w-3.5 h-3.5" />
+            )}
             Refresh
           </Button>
           <Button
@@ -117,7 +126,11 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
             disabled={selected.length === 0 || retry.isPending}
             onClick={() => retry.mutate({ eventIds: selected })}
           >
-            {retry.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+            {retry.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <RotateCcw className="w-3.5 h-3.5" />
+            )}
             Reprocess selected{selected.length > 0 ? ` (${selected.length})` : ""}
           </Button>
           <Button
@@ -149,8 +162,8 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
           <CheckCircle2 className="w-4 h-4" />
           <AlertTitle>No failed webhooks</AlertTitle>
           <AlertDescription>
-            Every inbound envelope has been processed successfully. Failures would
-            appear here after their automatic retries are exhausted.
+            Every inbound envelope has been processed successfully. Failures would appear here after
+            their automatic retries are exhausted.
           </AlertDescription>
         </Alert>
       ) : (
@@ -159,7 +172,11 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
             <thead className="bg-muted/40 text-muted-foreground">
               <tr className="text-left">
                 <th className="px-3 py-2 w-8">
-                  <Checkbox checked={allSelected} onCheckedChange={toggleAll} aria-label="Select all" />
+                  <Checkbox
+                    checked={allSelected}
+                    onCheckedChange={toggleAll}
+                    aria-label="Select all"
+                  />
                 </th>
                 <th className="px-3 py-2 font-medium">Received</th>
                 <th className="px-3 py-2 font-medium">Account</th>
@@ -183,7 +200,7 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
                   <td className="px-3 py-2 whitespace-nowrap">{relative(e.received_at)}</td>
                   <td className="px-3 py-2">
                     {e.channel_account_id
-                      ? accountNames.get(e.channel_account_id) ?? "Unmatched"
+                      ? (accountNames.get(e.channel_account_id) ?? "Unmatched")
                       : "Unmatched"}
                   </td>
                   <td className="px-3 py-2 font-mono">{e.event_type ?? "—"}</td>
@@ -232,7 +249,8 @@ export function WhatsAppDeadLetterQueue({ limit = 50 }: { limit?: number }) {
           <DialogHeader>
             <DialogTitle>Webhook payload</DialogTitle>
             <DialogDescription>
-              Raw envelope received from Meta{inspecting ? ` · ${relative(inspecting.received_at)}` : ""}.
+              Raw envelope received from Meta
+              {inspecting ? ` · ${relative(inspecting.received_at)}` : ""}.
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] rounded-control border border-border bg-muted/30">

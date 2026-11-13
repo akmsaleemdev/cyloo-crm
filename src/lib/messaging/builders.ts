@@ -103,11 +103,7 @@ export function buildContacts(
   return { to, type: "contacts", contacts, contextMessageId: opts?.contextMessageId };
 }
 
-export function buildReaction(
-  to: string,
-  messageId: string,
-  emoji: string,
-): OutboundPayload {
+export function buildReaction(to: string, messageId: string, emoji: string): OutboundPayload {
   return { to, type: "reaction", reaction: { messageId, emoji } };
 }
 

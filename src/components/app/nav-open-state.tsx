@@ -69,7 +69,6 @@ export function useNavOpenStore(): NavOpenStore {
     return subscribeActiveTenant(sync);
   }, []);
 
-
   const setOpen = React.useCallback(
     (key: string, open: boolean) => {
       setOpenKeys((prev) => {
@@ -92,7 +91,12 @@ export function useNavOpenStore(): NavOpenStore {
           next.delete(key);
         }
         let same = next.size === prev.size;
-        if (same) for (const k of next) if (!prev.has(k)) { same = false; break; }
+        if (same)
+          for (const k of next)
+            if (!prev.has(k)) {
+              same = false;
+              break;
+            }
         if (same) return prev;
         writeOpenKeys(orgId, next);
         return next;
@@ -101,10 +105,8 @@ export function useNavOpenStore(): NavOpenStore {
     [orgId],
   );
 
-
   return React.useMemo(
     () => ({ isOpen: (key: string) => openKeys.has(key), setOpen, hydrated, hasStored }),
     [openKeys, setOpen, hydrated, hasStored],
-
   );
 }

@@ -14,7 +14,7 @@
 import type { ConversationPriority } from "./conversation-engine";
 
 export type AssignmentStrategy =
-  | "manual" | "round_robin" | "load_balanced" | "skill_based" | "sticky";
+  "manual" | "round_robin" | "load_balanced" | "skill_based" | "sticky";
 
 export interface AssignmentInput {
   workspaceId: string;

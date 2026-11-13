@@ -80,7 +80,9 @@ if (violations.length === 0) {
   process.exit(0);
 }
 
-console.error(`\n[audit:deprecated-utilities] Found ${violations.length} deprecated utility usage(s):\n`);
+console.error(
+  `\n[audit:deprecated-utilities] Found ${violations.length} deprecated utility usage(s):\n`,
+);
 for (const v of violations) {
   console.error(`  ${v.file}:${v.line}:${v.col}  ${v.rule}  →  ${v.replacement}`);
   console.error(`    ${v.snippet}`);

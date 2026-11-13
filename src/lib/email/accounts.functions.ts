@@ -118,7 +118,10 @@ export const connectEmailAccount = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     const account = saved as unknown as EmailAccountSummary;
-    return { account, webhookUrlPath: isResend ? emailWebhookPath(account.id, webhookSecret!) : null };
+    return {
+      account,
+      webhookUrlPath: isResend ? emailWebhookPath(account.id, webhookSecret!) : null,
+    };
   });
 
 function emailWebhookPath(accountId: string, secret: string): string {

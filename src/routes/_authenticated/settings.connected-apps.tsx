@@ -3,7 +3,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
-import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
+import {
+  SettingsLayout,
+  SettingsCard,
+  SettingsRow,
+} from "@/components/app/settings/settings-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +36,13 @@ export const Route = createFileRoute("/_authenticated/settings/connected-apps")(
       title="Connected Applications"
       description="Review and revoke third-party applications connected to your workspace via OAuth."
     >
-      <Suspense fallback={<div className="p-8 flex justify-center"><Loader2 className="animate-spin text-accent h-6 w-6" /></div>}>
+      <Suspense
+        fallback={
+          <div className="p-8 flex justify-center">
+            <Loader2 className="animate-spin text-accent h-6 w-6" />
+          </div>
+        }
+      >
         <AppsList />
       </Suspense>
     </SettingsLayout>

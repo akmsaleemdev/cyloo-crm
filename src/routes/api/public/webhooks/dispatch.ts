@@ -19,7 +19,8 @@ export const Route = createFileRoute("/api/public/webhooks/dispatch")({
         const provided = request.headers.get("x-cron-secret") ?? "";
         if (provided.length !== secret.length) return new Response("unauthorized", { status: 401 });
         let ok = 0;
-        for (let i = 0; i < provided.length; i++) ok |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
+        for (let i = 0; i < provided.length; i++)
+          ok |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
         if (ok !== 0) return new Response("unauthorized", { status: 401 });
 
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");

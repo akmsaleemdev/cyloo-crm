@@ -98,7 +98,9 @@ export async function recordAuditEvent(event: AuditEvent): Promise<boolean> {
   if (!AUDIT_VERBOSE && severity === "info") return false;
 
   const workspaceId = event.workspaceId ?? readActiveWorkspaceId();
-  const fingerprint = [event.eventType, workspaceId, event.resourceType, event.resourceId].join("|");
+  const fingerprint = [event.eventType, workspaceId, event.resourceType, event.resourceId].join(
+    "|",
+  );
   if (!shouldEmit(fingerprint)) return false;
 
   try {
@@ -253,7 +255,12 @@ export async function auditedRpc<T = unknown>(
   const startedAt = performance.now();
   // Never audit the audit sink itself — that would recurse.
   const selfLogging = fn === "log_security_event";
-  const { data, error } = await (db.rpc as unknown as (n: string, a?: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)(fn, args);
+  const { data, error } = await (
+    db.rpc as unknown as (
+      n: string,
+      a?: Record<string, unknown>,
+    ) => Promise<{ data: unknown; error: unknown }>
+  )(fn, args);
   const duration = Math.round(performance.now() - startedAt);
 
   if (!selfLogging) {

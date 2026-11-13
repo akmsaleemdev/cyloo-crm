@@ -57,10 +57,7 @@ function HeaderHeightProbe() {
             at identical pixel heights so both utilities stay locked to
             `--height-header` across mobile, tablet, and desktop.
           */}
-          <div
-            data-testid="probe-h15"
-            className="flex h-15 items-center border border-border px-3"
-          >
+          <div data-testid="probe-h15" className="flex h-15 items-center border border-border px-3">
             <span className="text-sm">h-15 probe</span>
           </div>
           <div

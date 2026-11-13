@@ -307,9 +307,17 @@ function CompanyDetailPage() {
               <div className="border-b">
                 <ScrollArea orientation="horizontal" type="hover" className="w-full">
                   <TabsList className="w-max flex justify-start rounded-none h-9 p-0 bg-transparent">
-                    <TabTrigger v="contacts" icon={<Users className="w-4 h-4" />} label="Contacts" />
+                    <TabTrigger
+                      v="contacts"
+                      icon={<Users className="w-4 h-4" />}
+                      label="Contacts"
+                    />
                     <TabTrigger v="deals" icon={<Briefcase className="w-4 h-4" />} label="Deals" />
-                    <TabTrigger v="tasks" icon={<CheckSquare className="w-4 h-4" />} label="Tasks" />
+                    <TabTrigger
+                      v="tasks"
+                      icon={<CheckSquare className="w-4 h-4" />}
+                      label="Tasks"
+                    />
                     <TabTrigger v="notes" icon={<StickyNote className="w-4 h-4" />} label="Notes" />
                     <TabTrigger
                       v="conversations"
@@ -326,7 +334,11 @@ function CompanyDetailPage() {
                       icon={<BarChart3 className="w-4 h-4" />}
                       label="Analytics"
                     />
-                    <TabTrigger v="timeline" icon={<Clock className="w-4 h-4" />} label="Timeline" />
+                    <TabTrigger
+                      v="timeline"
+                      icon={<Clock className="w-4 h-4" />}
+                      label="Timeline"
+                    />
                   </TabsList>
                 </ScrollArea>
               </div>

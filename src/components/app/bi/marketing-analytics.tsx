@@ -42,7 +42,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getMarketingAnalytics } from "@/lib/bi/marketing.functions";
 import { useCurrencyFormatter } from "@/hooks/use-currency";
 
@@ -127,7 +133,9 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
           </p>
         </div>
         <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="7">Last 7 days</SelectItem>
             <SelectItem value="30">Last 30 days</SelectItem>
@@ -141,13 +149,40 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <KpiCard icon={Send} label="Sent" value={fmtNum(t.sent)} hint={`${t.campaigns} campaigns`} />
-        <KpiCard icon={CheckCircle2} label="Delivered" value={fmtPct(t.deliveryRate)} hint={fmtNum(t.delivered)} tone="success" />
+        <KpiCard
+          icon={Send}
+          label="Sent"
+          value={fmtNum(t.sent)}
+          hint={`${t.campaigns} campaigns`}
+        />
+        <KpiCard
+          icon={CheckCircle2}
+          label="Delivered"
+          value={fmtPct(t.deliveryRate)}
+          hint={fmtNum(t.delivered)}
+          tone="success"
+        />
         <KpiCard icon={Eye} label="Read rate" value={fmtPct(t.readRate)} hint={fmtNum(t.read)} />
-        <KpiCard icon={MessageCircle} label="Response rate" value={fmtPct(t.responseRate)} hint={fmtNum(t.replied)} />
-        <KpiCard icon={MousePointerClick} label="Click rate" value={fmtPct(t.clickRate)} hint={fmtNum(t.clicked)} />
+        <KpiCard
+          icon={MessageCircle}
+          label="Response rate"
+          value={fmtPct(t.responseRate)}
+          hint={fmtNum(t.replied)}
+        />
+        <KpiCard
+          icon={MousePointerClick}
+          label="Click rate"
+          value={fmtPct(t.clickRate)}
+          hint={fmtNum(t.clicked)}
+        />
         <KpiCard icon={Target} label="Conversion" value={fmtPct(t.conversionRate)} tone="success" />
-        <KpiCard icon={UserMinus} label="Opt-out rate" value={fmtPct(t.optOutRate)} hint={fmtNum(t.optedOut)} tone={t.optOutRate > 2 ? "warning" : "default"} />
+        <KpiCard
+          icon={UserMinus}
+          label="Opt-out rate"
+          value={fmtPct(t.optOutRate)}
+          hint={fmtNum(t.optedOut)}
+          tone={t.optOutRate > 2 ? "warning" : "default"}
+        />
       </div>
 
       <Tabs defaultValue="performance" className="w-full">
@@ -163,7 +198,9 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
         {/* PERFORMANCE */}
         <TabsContent value="performance" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Delivery, reads & responses over time</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Delivery, reads & responses over time</CardTitle>
+            </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={data.performanceTrend}>
@@ -178,39 +215,116 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
                   <Legend />
-                  <Area type="monotone" dataKey="sent" stroke={COLORS[0]} fill="url(#g-sent)" name="Sent" />
-                  <Area type="monotone" dataKey="delivered" stroke={COLORS[1]} fill="url(#g-delivered)" name="Delivered" />
-                  <Area type="monotone" dataKey="read" stroke={COLORS[2]} fill="url(#g-read)" name="Read" />
-                  <Area type="monotone" dataKey="replied" stroke={COLORS[3]} fill="url(#g-replied)" name="Replied" />
+                  <Area
+                    type="monotone"
+                    dataKey="sent"
+                    stroke={COLORS[0]}
+                    fill="url(#g-sent)"
+                    name="Sent"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="delivered"
+                    stroke={COLORS[1]}
+                    fill="url(#g-delivered)"
+                    name="Delivered"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="read"
+                    stroke={COLORS[2]}
+                    fill="url(#g-read)"
+                    name="Read"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="replied"
+                    stroke={COLORS[3]}
+                    fill="url(#g-replied)"
+                    name="Replied"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Rates over time</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Rates over time</CardTitle>
+            </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={data.rateTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                  <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                  <YAxis
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickFormatter={(v) => `${v.toFixed(0)}%`}
+                  />
+                  <Tooltip
+                    formatter={(v: number) => `${v.toFixed(1)}%`}
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
                   <Legend />
-                  <Line type="monotone" dataKey="deliveryRate" stroke={COLORS[1]} name="Delivery" dot={false} />
-                  <Line type="monotone" dataKey="readRate" stroke={COLORS[2]} name="Read" dot={false} />
-                  <Line type="monotone" dataKey="responseRate" stroke={COLORS[3]} name="Response" dot={false} />
-                  <Line type="monotone" dataKey="clickRate" stroke={COLORS[4]} name="Click" dot={false} />
-                  <Line type="monotone" dataKey="optOutRate" stroke={COLORS[5]} name="Opt-out" dot={false} />
+                  <Line
+                    type="monotone"
+                    dataKey="deliveryRate"
+                    stroke={COLORS[1]}
+                    name="Delivery"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="readRate"
+                    stroke={COLORS[2]}
+                    name="Read"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="responseRate"
+                    stroke={COLORS[3]}
+                    name="Response"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="clickRate"
+                    stroke={COLORS[4]}
+                    name="Click"
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="optOutRate"
+                    stroke={COLORS[5]}
+                    name="Opt-out"
+                    dot={false}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-4 w-4" /> Top campaigns</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-4 w-4" /> Top campaigns
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -227,19 +341,27 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                 </TableHeader>
                 <TableBody>
                   {data.topCampaigns.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No campaigns in this range.</TableCell></TableRow>
-                  ) : data.topCampaigns.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell><Badge variant="outline">{c.status}</Badge></TableCell>
-                      <TableCell className="text-right ">{fmtNum(c.sent)}</TableCell>
-                      <TableCell className="text-right ">{fmtNum(c.delivered)}</TableCell>
-                      <TableCell className="text-right ">{fmtPct(c.readRate)}</TableCell>
-                      <TableCell className="text-right ">{fmtPct(c.responseRate)}</TableCell>
-                      <TableCell className="text-right ">{fmtPct(c.clickRate)}</TableCell>
-                      <TableCell className="text-right ">{fmtPct(c.optOutRate)}</TableCell>
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        No campaigns in this range.
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    data.topCampaigns.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium">{c.name}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{c.status}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right ">{fmtNum(c.sent)}</TableCell>
+                        <TableCell className="text-right ">{fmtNum(c.delivered)}</TableCell>
+                        <TableCell className="text-right ">{fmtPct(c.readRate)}</TableCell>
+                        <TableCell className="text-right ">{fmtPct(c.responseRate)}</TableCell>
+                        <TableCell className="text-right ">{fmtPct(c.clickRate)}</TableCell>
+                        <TableCell className="text-right ">{fmtPct(c.optOutRate)}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -249,13 +371,35 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
         {/* AUDIENCE */}
         <TabsContent value="audience" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <KpiCard icon={Users} label="Active subscribers" value={fmtNum(data.audienceTotals.activeSubscribers)} />
-            <KpiCard icon={TrendingUp} label="Opted in" value={fmtNum(data.audienceTotals.optedInPeriod)} tone="success" />
-            <KpiCard icon={UserMinus} label="Opted out" value={fmtNum(data.audienceTotals.optedOutPeriod)} tone="warning" />
-            <KpiCard icon={Percent} label="Net growth" value={fmtPct(data.audienceTotals.growthRate)} hint={`${data.audienceTotals.netGrowth >= 0 ? "+" : ""}${fmtNum(data.audienceTotals.netGrowth)}`} tone={data.audienceTotals.netGrowth >= 0 ? "success" : "destructive"} />
+            <KpiCard
+              icon={Users}
+              label="Active subscribers"
+              value={fmtNum(data.audienceTotals.activeSubscribers)}
+            />
+            <KpiCard
+              icon={TrendingUp}
+              label="Opted in"
+              value={fmtNum(data.audienceTotals.optedInPeriod)}
+              tone="success"
+            />
+            <KpiCard
+              icon={UserMinus}
+              label="Opted out"
+              value={fmtNum(data.audienceTotals.optedOutPeriod)}
+              tone="warning"
+            />
+            <KpiCard
+              icon={Percent}
+              label="Net growth"
+              value={fmtPct(data.audienceTotals.growthRate)}
+              hint={`${data.audienceTotals.netGrowth >= 0 ? "+" : ""}${fmtNum(data.audienceTotals.netGrowth)}`}
+              tone={data.audienceTotals.netGrowth >= 0 ? "success" : "destructive"}
+            />
           </div>
           <Card>
-            <CardHeader><CardTitle>Audience growth</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Audience growth</CardTitle>
+            </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={320}>
                 <AreaChart data={data.audienceGrowth}>
@@ -268,9 +412,21 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                   <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: 8,
+                    }}
+                  />
                   <Legend />
-                  <Area type="monotone" dataKey="cumulative" stroke={COLORS[0]} fill="url(#g-cum)" name="Cumulative net" />
+                  <Area
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke={COLORS[0]}
+                    fill="url(#g-cum)"
+                    name="Cumulative net"
+                  />
                   <Bar dataKey="optedIn" fill={COLORS[1]} name="Opt-in" />
                   <Bar dataKey="optedOut" fill={COLORS[5]} name="Opt-out" />
                 </AreaChart>
@@ -284,23 +440,49 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <KpiCard icon={DollarSign} label="Revenue" value={fmtCur(t.revenue)} tone="success" />
             <KpiCard icon={DollarSign} label="Spend" value={fmtCur(t.cost)} />
-            <KpiCard icon={TrendingUp} label="ROI" value={t.cost > 0 ? fmtPct(t.roi) : "—"} tone={t.roi >= 0 ? "success" : "destructive"} />
+            <KpiCard
+              icon={TrendingUp}
+              label="ROI"
+              value={t.cost > 0 ? fmtPct(t.roi) : "—"}
+              tone={t.roi >= 0 ? "success" : "destructive"}
+            />
             <KpiCard icon={Target} label="Conversions" value={fmtNum(t.replied + t.clicked)} />
           </div>
           <Card>
-            <CardHeader><CardTitle>Revenue by campaign</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Revenue by campaign</CardTitle>
+            </CardHeader>
             <CardContent>
               {data.campaignRevenue.every((c) => c.revenue === 0 && c.cost === 0) ? (
                 <p className="text-sm text-muted-foreground">
-                  No revenue or spend attribution recorded. Set <code>revenue</code> and <code>cost</code> in a campaign's audience snapshot to populate ROI.
+                  No revenue or spend attribution recorded. Set <code>revenue</code> and{" "}
+                  <code>cost</code> in a campaign's audience snapshot to populate ROI.
                 </p>
               ) : (
                 <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={data.campaignRevenue} layout="vertical" margin={{ left: 100 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => fmtCur(v as number)} />
-                    <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} width={140} />
-                    <Tooltip formatter={(v: number) => fmtCur(v)} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                    <XAxis
+                      type="number"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(v) => fmtCur(v as number)}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="name"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      width={140}
+                    />
+                    <Tooltip
+                      formatter={(v: number) => fmtCur(v)}
+                      contentStyle={{
+                        background: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: 8,
+                      }}
+                    />
                     <Legend />
                     <Bar dataKey="revenue" fill={COLORS[1]} name="Revenue" radius={[0, 4, 4, 0]} />
                     <Bar dataKey="cost" fill={COLORS[5]} name="Spend" radius={[0, 4, 4, 0]} />
@@ -310,7 +492,9 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>ROI leaderboard</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>ROI leaderboard</CardTitle>
+            </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -324,18 +508,26 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                 </TableHeader>
                 <TableBody>
                   {data.campaignRevenue.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No campaigns to report.</TableCell></TableRow>
-                  ) : data.campaignRevenue.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell className="text-right ">{fmtCur(c.revenue)}</TableCell>
-                      <TableCell className="text-right ">{fmtCur(c.cost)}</TableCell>
-                      <TableCell className="text-right ">{fmtNum(c.conversions)}</TableCell>
-                      <TableCell className="text-right ">
-                        <Badge variant={c.roi >= 0 ? "default" : "destructive"}>{c.cost > 0 ? fmtPct(c.roi) : "—"}</Badge>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        No campaigns to report.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    data.campaignRevenue.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium">{c.name}</TableCell>
+                        <TableCell className="text-right ">{fmtCur(c.revenue)}</TableCell>
+                        <TableCell className="text-right ">{fmtCur(c.cost)}</TableCell>
+                        <TableCell className="text-right ">{fmtNum(c.conversions)}</TableCell>
+                        <TableCell className="text-right ">
+                          <Badge variant={c.roi >= 0 ? "default" : "destructive"}>
+                            {c.cost > 0 ? fmtPct(c.roi) : "—"}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -345,21 +537,54 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
         {/* TEMPLATES */}
         <TabsContent value="templates" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Template performance</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Template performance</CardTitle>
+            </CardHeader>
             <CardContent>
               {data.templates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No templated campaigns in this range.</p>
+                <p className="text-sm text-muted-foreground">
+                  No templated campaigns in this range.
+                </p>
               ) : (
                 <>
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={data.templates.slice(0, 10)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} interval={0} angle={-20} height={60} textAnchor="end" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                      <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        interval={0}
+                        angle={-20}
+                        height={60}
+                        textAnchor="end"
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(v) => `${v.toFixed(0)}%`}
+                      />
+                      <Tooltip
+                        formatter={(v: number) => `${v.toFixed(1)}%`}
+                        contentStyle={{
+                          background: "hsl(var(--popover))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 8,
+                        }}
+                      />
                       <Legend />
-                      <Bar dataKey="readRate" fill={COLORS[2]} name="Read rate" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="responseRate" fill={COLORS[3]} name="Response rate" radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="readRate"
+                        fill={COLORS[2]}
+                        name="Read rate"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="responseRate"
+                        fill={COLORS[3]}
+                        name="Response rate"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                   <Table>
@@ -393,7 +618,9 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
         {/* SEGMENTS */}
         <TabsContent value="segments" className="space-y-4">
           <Card>
-            <CardHeader><CardTitle>Segment performance</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Segment performance</CardTitle>
+            </CardHeader>
             <CardContent>
               {data.segments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No segments targeted in this range.</p>
@@ -402,13 +629,47 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={data.segments.slice(0, 10)}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} interval={0} angle={-20} height={60} textAnchor="end" />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                      <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                      <XAxis
+                        dataKey="name"
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        interval={0}
+                        angle={-20}
+                        height={60}
+                        textAnchor="end"
+                      />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(v) => `${v.toFixed(0)}%`}
+                      />
+                      <Tooltip
+                        formatter={(v: number) => `${v.toFixed(1)}%`}
+                        contentStyle={{
+                          background: "hsl(var(--popover))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 8,
+                        }}
+                      />
                       <Legend />
-                      <Bar dataKey="readRate" fill={COLORS[2]} name="Read rate" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="responseRate" fill={COLORS[3]} name="Response rate" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="conversionRate" fill={COLORS[1]} name="Conversion rate" radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="readRate"
+                        fill={COLORS[2]}
+                        name="Read rate"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="responseRate"
+                        fill={COLORS[3]}
+                        name="Response rate"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="conversionRate"
+                        fill={COLORS[1]}
+                        name="Conversion rate"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                   <Table>
@@ -446,7 +707,8 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
           {data.abTests.length === 0 ? (
             <Card>
               <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                No A/B tests running in this range. Add variants to a campaign to compare performance.
+                No A/B tests running in this range. Add variants to a campaign to compare
+                performance.
               </CardContent>
             </Card>
           ) : (
@@ -456,7 +718,9 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                   <CardTitle className="flex items-center justify-between">
                     <span className="truncate">{test.campaignName}</span>
                     {test.winnerId ? (
-                      <Badge className="gap-1"><Trophy className="h-3 w-3" /> Winner selected · {fmtPct(test.lift)} lift</Badge>
+                      <Badge className="gap-1">
+                        <Trophy className="h-3 w-3" /> Winner selected · {fmtPct(test.lift)} lift
+                      </Badge>
                     ) : (
                       <Badge variant="outline">Running</Badge>
                     )}
@@ -467,16 +731,40 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                     <BarChart data={test.variants}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                       <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickFormatter={(v) => `${v.toFixed(0)}%`} />
-                      <Tooltip formatter={(v: number) => `${v.toFixed(1)}%`} contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+                      <YAxis
+                        stroke="hsl(var(--muted-foreground))"
+                        fontSize={12}
+                        tickFormatter={(v) => `${v.toFixed(0)}%`}
+                      />
+                      <Tooltip
+                        formatter={(v: number) => `${v.toFixed(1)}%`}
+                        contentStyle={{
+                          background: "hsl(var(--popover))",
+                          border: "1px solid hsl(var(--border))",
+                          borderRadius: 8,
+                        }}
+                      />
                       <Legend />
                       <Bar dataKey="readRate" name="Read rate" radius={[4, 4, 0, 0]}>
                         {test.variants.map((v, i) => (
-                          <Cell key={v.id} fill={v.isWinner ? COLORS[1] : COLORS[i % COLORS.length]} />
+                          <Cell
+                            key={v.id}
+                            fill={v.isWinner ? COLORS[1] : COLORS[i % COLORS.length]}
+                          />
                         ))}
                       </Bar>
-                      <Bar dataKey="responseRate" name="Response rate" fill={COLORS[3]} radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="clickRate" name="Click rate" fill={COLORS[4]} radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="responseRate"
+                        name="Response rate"
+                        fill={COLORS[3]}
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="clickRate"
+                        name="Click rate"
+                        fill={COLORS[4]}
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                   <Table>
@@ -500,7 +788,15 @@ export function MarketingAnalytics({ workspaceId }: { workspaceId: string }) {
                           <TableCell className="text-right ">{fmtPct(v.readRate)}</TableCell>
                           <TableCell className="text-right ">{fmtPct(v.responseRate)}</TableCell>
                           <TableCell className="text-right ">{fmtPct(v.clickRate)}</TableCell>
-                          <TableCell>{v.isWinner ? <Badge className="gap-1"><Trophy className="h-3 w-3" /> Winner</Badge> : <span className="text-muted-foreground text-xs">—</span>}</TableCell>
+                          <TableCell>
+                            {v.isWinner ? (
+                              <Badge className="gap-1">
+                                <Trophy className="h-3 w-3" /> Winner
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

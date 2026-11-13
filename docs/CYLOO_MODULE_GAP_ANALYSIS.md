@@ -4,13 +4,13 @@
 **Platform:** CYLOO CRM Enterprise SaaS  
 **Architecture Scale:** 36 Core Modules | 8 Business Hubs | 250+ Enterprise Features  
 **Audit Date:** November 2026  
-**Status:** Comprehensive Enterprise Module Specification  
+**Status:** Comprehensive Enterprise Module Specification
 
 ---
 
 ## 1. Executive Summary
 
-This specification represents the complete, gap-free architectural module inventory for **CYLOO CRM**. 
+This specification represents the complete, gap-free architectural module inventory for **CYLOO CRM**.
 
 Building upon the original 30 modules, an exhaustive architectural review identified **6 critical enterprise capability gaps** necessary to achieve parity with tier-1 enterprise platforms (Salesforce, Zoho One, Microsoft Dynamics 365, and HubSpot Enterprise). All 30 original modules have been strictly preserved, and 6 essential modules have been added to produce a robust, 36-module enterprise architecture.
 
@@ -39,14 +39,14 @@ Building upon the original 30 modules, an exhaustive architectural review identi
 
 The following 6 essential modules were identified as missing from standard CRM implementations and have been incorporated:
 
-| Missing Capability | Added Module | Target Hub | Architectural Justification |
-| :--- | :--- | :--- | :--- |
-| **B2B Contract Legalities** | **Module 6:** Contract Lifecycle Management (CLM) & Digital Legal Agreements | Hub 1 | Enterprise sales require NDAs, MSAs, SOWs, digital redlining, version comparison, multi-party e-signatures, and auto-renewal alerts. |
-| **Indirect / Partner Sales**| **Module 7:** Partner Relationship Management (PRM) & Channel Sales | Hub 1 | GCC and global enterprises distribute via brokers, resellers, and agencies. Requires deal registration locks, partner portals, and MDF budgets. |
-| **On-Site Operations** | **Module 24:** Field Service & Mobile Workforce Management | Hub 5 | Real estate inspections, clinic equipment maintenance, and telecom require dispatching, GPS route optimization, mobile work orders, and digital proof-of-service. |
-| **Regional E-Billing Mandate**| **Module 27:** ZATCA e-Invoicing & GCC Fiscal Compliance | Hub 6 | In KSA and UAE, Phase 2 e-Invoicing is legally mandated. Requires ZATCA FATOORA Phase 2, UBL 2.1 XML, and cryptographic TLV QR code generation. |
-| **Data Quality & Scrubbing** | **Module 33:** Enterprise Data Hygiene, Governance & MDM | Hub 7 | CRM data decays at 25-30% annually. Requires automated third-party data enrichment, cross-channel identity resolution, and automated GDPR/PDPL erasure. |
-| **SRE Production Telemetry** | **Module 34:** SRE Observability, System Health & Audit Telemetry | Hub 7 | Enterprise SaaS requires production observability: OpenTelemetry distributed tracing, synthetic tenant SLA monitoring, and Dead-Letter Queue (DLQ) replay. |
+| Missing Capability             | Added Module                                                                 | Target Hub | Architectural Justification                                                                                                                                       |
+| :----------------------------- | :--------------------------------------------------------------------------- | :--------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **B2B Contract Legalities**    | **Module 6:** Contract Lifecycle Management (CLM) & Digital Legal Agreements | Hub 1      | Enterprise sales require NDAs, MSAs, SOWs, digital redlining, version comparison, multi-party e-signatures, and auto-renewal alerts.                              |
+| **Indirect / Partner Sales**   | **Module 7:** Partner Relationship Management (PRM) & Channel Sales          | Hub 1      | GCC and global enterprises distribute via brokers, resellers, and agencies. Requires deal registration locks, partner portals, and MDF budgets.                   |
+| **On-Site Operations**         | **Module 24:** Field Service & Mobile Workforce Management                   | Hub 5      | Real estate inspections, clinic equipment maintenance, and telecom require dispatching, GPS route optimization, mobile work orders, and digital proof-of-service. |
+| **Regional E-Billing Mandate** | **Module 27:** ZATCA e-Invoicing & GCC Fiscal Compliance                     | Hub 6      | In KSA and UAE, Phase 2 e-Invoicing is legally mandated. Requires ZATCA FATOORA Phase 2, UBL 2.1 XML, and cryptographic TLV QR code generation.                   |
+| **Data Quality & Scrubbing**   | **Module 33:** Enterprise Data Hygiene, Governance & MDM                     | Hub 7      | CRM data decays at 25-30% annually. Requires automated third-party data enrichment, cross-channel identity resolution, and automated GDPR/PDPL erasure.           |
+| **SRE Production Telemetry**   | **Module 34:** SRE Observability, System Health & Audit Telemetry            | Hub 7      | Enterprise SaaS requires production observability: OpenTelemetry distributed tracing, synthetic tenant SLA monitoring, and Dead-Letter Queue (DLQ) replay.        |
 
 ---
 
@@ -55,6 +55,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 1 — CRM & SALES MANAGEMENT
 
 #### 1. CUSTOMER 360° MANAGEMENT
+
 - Contacts, companies, and comprehensive customer profiles
 - Customer lifecycle progression (Subscriber $\rightarrow$ Lead $\rightarrow$ MQL $\rightarrow$ SQL $\rightarrow$ Customer $\rightarrow$ Churned)
 - Custom fields engine (text, formula, relation, date, dropdown)
@@ -65,6 +66,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - High-volume asynchronous data import and export (CSV/Excel)
 
 #### 2. LEAD MANAGEMENT & ROUTING
+
 - Omnichannel lead capture from web, Meta, Google, and TikTok
 - Automated qualification rules and predictive lead scoring
 - Multi-touch UTM and campaign attribution
@@ -75,6 +77,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Response SLA tracking with overdue managerial escalation
 
 #### 3. SALES PIPELINE & OPPORTUNITY MANAGEMENT
+
 - Multiple customizable sales pipelines (B2B, Renewal, Channel)
 - Drag-and-drop Kanban deal board with optimistic UI mutations
 - Configurable deal stages, rotting decay alerts, and win probabilities
@@ -85,6 +88,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Closed-lost and closed-won post-mortem analysis
 
 #### 4. SALES ENABLEMENT & QUOTATIONS
+
 - Product and service catalogs with multi-currency pricing
 - Multiple price books and volume discount rules
 - Quotation and proposal generation with dynamic line items
@@ -95,6 +99,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Automated sales commission calculations
 
 #### 5. ACCOUNT & TERRITORY MANAGEMENT
+
 - Corporate account management and holding company structures
 - Parent-child branch and subsidiary relationship mapping
 - Account ownership, coverage teams, and account executive pods
@@ -103,7 +108,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Relationship org charts and stakeholder influence mapping
 - Territory revenue performance vs. quota reporting
 
-#### 6. CONTRACT LIFECYCLE MANAGEMENT (CLM) & LEGAL AGREEMENTS *(Added)*
+#### 6. CONTRACT LIFECYCLE MANAGEMENT (CLM) & LEGAL AGREEMENTS _(Added)_
+
 - Centralized pre-approved clause library and contract templates (NDA, MSA, SLA, SOW)
 - Dynamic contract authoring with conditional legal clauses
 - Integrated cryptographic e-signature compliant with ESIGN, eIDAS, and GCC electronic transaction laws
@@ -112,7 +118,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Contract milestone and contractual obligation tracking
 - Post-signature document archiving in encrypted storage
 
-#### 7. PARTNER RELATIONSHIP MANAGEMENT (PRM) & CHANNEL SALES *(Added)*
+#### 7. PARTNER RELATIONSHIP MANAGEMENT (PRM) & CHANNEL SALES _(Added)_
+
 - Dedicated branded portal for external resellers, brokers, and agencies
 - Deal registration with conflict locking to protect partner opportunities
 - Channel tier management (Silver, Gold, Platinum) with tiered margins
@@ -125,6 +132,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 2 — OMNICHANNEL COMMUNICATION
 
 #### 8. UNIFIED OMNICHANNEL INBOX
+
 - Consolidated workspace combining WhatsApp, Instagram, Messenger, TikTok, Email, SMS, and Web Chat
 - Real-time Supabase Realtime socket stream with live typing and read receipts
 - Shared team inboxes with manual and automated thread routing
@@ -134,6 +142,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Conversation resolution statuses, snooze timers, and canned macro replies
 
 #### 9. WHATSAPP BUSINESS AUTOMATION
+
 - Official Meta WhatsApp Cloud API direct integration
 - HSM template message submission, approval sync, and variable interpolation
 - Interactive messages: list pickers, quick-reply buttons, and product catalogs
@@ -143,6 +152,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Inbound and outbound delivery receipts, read signals, and bounce analytics
 
 #### 10. SOCIAL MEDIA DIRECT MESSAGING
+
 - Instagram Professional Direct messaging and story reply capture
 - Facebook Messenger Page inbox integration with automated greetings
 - Public social comment monitoring and auto-conversion into private inbox threads
@@ -151,6 +161,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Multi-account social connection manager with token refresh automation
 
 #### 11. EMAIL, SMS & CLOUD TELEPHONY
+
 - Bidirectional IMAP/SMTP corporate email account synchronization
 - Multi-account shared mailboxes with conversation threading
 - Multi-carrier SMS gateway integration (Twilio, local GCC telcos)
@@ -165,6 +176,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 3 — ARTIFICIAL INTELLIGENCE & AUTOMATION
 
 #### 12. MULTILINGUAL AI AGENT STUDIO
+
 - Specialized autonomous agent personas: Sales, Support, Booking, Qualification
 - Visual agent builder configuring instructions, tone, and guardrails
 - RAG knowledge base utilizing `pgvector` for semantic document retrieval
@@ -174,6 +186,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Per-tenant token consumption metering, cost tracking, and model selection (OpenAI, Anthropic, OpenRouter)
 
 #### 13. AI VOICE & CONVERSATIONAL CONTACT CENTER
+
 - Autonomous multilingual AI voice receptionist handling inbound phone calls
 - Neural Text-to-Speech (TTS) and low-latency streaming Speech-to-Text (STT)
 - Dynamic call routing, interactive IVR trees, and caller queue management
@@ -182,6 +195,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Post-call sentiment analysis, satisfaction estimation, and action-item extraction
 
 #### 14. VISUAL WORKFLOW AUTOMATION ENGINE
+
 - Node-based visual drag-and-drop workflow canvas (ReactFlow)
 - Multi-source triggers: database mutations, incoming webhooks, message events, schedules
 - Conditional branching with nested boolean filters
@@ -190,6 +204,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Workflow versioning, rollback, test sandbox execution, and execution history logs
 
 #### 15. PREDICTIVE AI & CRM INTELLIGENCE
+
 - Machine-learning predictive lead scoring based on engagement velocity
 - Customer churn risk detection based on sentiment decay and inactivity
 - Next-best-action recommendations for sales and support reps
@@ -202,6 +217,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 4 — MARKETING & BUSINESS GROWTH
 
 #### 16. MARKETING CAMPAIGN MANAGEMENT
+
 - Coordinated multi-channel broadcasts across Email, WhatsApp, and SMS
 - Dynamic audience segmentation based on CRM traits and real-time behaviors
 - Multi-step automated drip nurture campaigns
@@ -211,6 +227,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Suppression list filtering strictly enforcing opt-out compliance (GDPR/TCPA)
 
 #### 17. SOCIAL MEDIA MARKETING & CONTENT CALENDAR
+
 - Multi-platform visual editorial calendar for scheduled social publishing
 - AI copywriter generating localized captions, hashtags, and variations
 - Multi-level content review and brand approval workflows
@@ -218,6 +235,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Multi-account post scheduling across Facebook, Instagram, LinkedIn, and TikTok
 
 #### 18. ADVERTISING INTEGRATION & MULTI-TOUCH ATTRIBUTION
+
 - Direct API connections to Meta Ads, Google Ads, TikTok Ads, and Snapchat Ads
 - Sub-second lead sync from native in-app ad lead forms into CRM pipelines
 - Ad spend tracking against closed CRM revenue for accurate ROAS calculations
@@ -226,6 +244,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Multi-touch attribution modeling: First-Touch, Last-Touch, Linear, and Time-Decay
 
 #### 19. WEBSITE, LANDING PAGES & INTERACTIVE FORMS
+
 - Visual drag-and-drop landing page builder with high Core Web Vitals performance
 - Responsive lead capture forms with conditional logic and anti-spam verification
 - Embeddable website live chat and conversational bot widgets
@@ -238,6 +257,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 5 — CUSTOMER SERVICE & OPERATIONS
 
 #### 20. CUSTOMER SERVICE & HELPDESK
+
 - Multi-channel support ticketing converting chats, emails, and forms into tickets
 - Priority tiers (Low, Medium, High, Urgent) and department routing
 - Granular SLA policies with first-response and resolution countdown timers
@@ -247,6 +267,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Public and internal knowledge bases with article feedback ratings
 
 #### 21. APPOINTMENT & CALENDAR MANAGEMENT
+
 - Shareable public scheduling links with custom availability windows
 - Round-robin meeting assignment distributing bookings across sales/support staff
 - Two-way calendar sync with Google Calendar and Microsoft Outlook/Office 365
@@ -255,6 +276,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - No-show tracking and re-engagement campaigns
 
 #### 22. TASKS, PROJECTS & TEAM OPERATIONS
+
 - Collaborative project boards and Kanban task progression
 - Task assignment, subtasks, checklists, deadlines, and dependencies
 - Internal notes, mentions, and activity logs
@@ -263,6 +285,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Operational productivity dashboards tracking completed tasks per agent
 
 #### 23. CUSTOMER SELF-SERVICE PORTAL
+
 - Secure client portal with passwordless magic-link authentication
 - Self-service profile and communication preferences management
 - Real-time support ticket creation, tracking, and reply history
@@ -270,7 +293,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - View tax invoices and execute one-click payments via embedded checkout
 - Secure access to shared project documents, files, and contracts
 
-#### 24. FIELD SERVICE & MOBILE WORKFORCE MANAGEMENT *(Added)*
+#### 24. FIELD SERVICE & MOBILE WORKFORCE MANAGEMENT _(Added)_
+
 - On-site technician dispatch scheduling based on geographic proximity and skills
 - Mobile work order management with offline data caching for field engineers
 - Step-by-step repair/maintenance checklists and parts consumption tracking
@@ -283,6 +307,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 6 — COMMERCE & FINANCIAL OPERATIONS
 
 #### 25. PRODUCTS, ORDERS & E-COMMERCE INTEGRATION
+
 - Centralized product, SKU, and service catalog with variants and bundled pricing
 - Multiple price books supporting B2B tiered wholesale and retail rates
 - Sales order creation, fulfillment status progression, and tracking dispatch
@@ -291,6 +316,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Real-time stock level decrementing upon order confirmation
 
 #### 26. BILLING, PAYMENTS & SUBSCRIPTION ENGINE
+
 - Itemized tax invoice generation with sequential numbering and line-item taxes
 - Hosted payment links shareable via WhatsApp, SMS, and email
 - Recurring subscription billing supporting monthly, quarterly, and annual intervals
@@ -299,7 +325,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Native gateway integrations: Stripe, PayPal, Checkout.com, Tap, PayTabs
 - Automated payment reconciliation and refund issuance
 
-#### 27. ZATCA E-INVOICING & GCC FISCAL COMPLIANCE *(Added)*
+#### 27. ZATCA E-INVOICING & GCC FISCAL COMPLIANCE _(Added)_
+
 - Saudi Arabia ZATCA FATOORA Phase 2 compliant cryptographic invoice generation
 - Standard UBL 2.1 XML document generation conforming to gazetted tax authority schemas
 - Cryptographic stamp generation using Cryptographic Stamp Identifiers (CSID)
@@ -309,6 +336,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - UAE FTA Peppol-compatible electronic invoicing data models
 
 #### 28. REVENUE OPERATIONS & EXECUTIVE ANALYTICS
+
 - Real-time executive dashboards visualizing MRR, ARR, Net Revenue Retention (NRR)
 - Cohort churn analysis and Customer Lifetime Value (LTV) projections
 - Pipeline conversion velocity and sales rep performance leaderboards
@@ -321,6 +349,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 7 — ENTERPRISE SAAS & ADMINISTRATION
 
 #### 29. MULTI-TENANT SAAS MANAGEMENT & ISOLATION
+
 - Organization registration, tenant provisioning, and self-service onboarding
 - Free trial management with automated feature gating and expiration locks
 - Strict tenant data isolation enforced by PostgreSQL Row-Level Security (RLS)
@@ -329,6 +358,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Organization-level team hierarchy and department segmentation
 
 #### 30. SUPER-ADMIN CONSOLE & WHITE-LABEL ENGINE
+
 - Centralized platform super-admin console managing all tenant instances
 - Agency multi-tenant workspace switcher for resellers and franchise operators
 - Complete white-label branding: custom domains, logos, favicons, and CSS tokens
@@ -336,6 +366,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Super-admin support tools: impersonation audit sessions and emergency tenant locks
 
 #### 31. SECURITY, COMPLIANCE & IAM GOVERNANCE
+
 - Granular Role-Based Access Control (RBAC) and Attribute-Based Access Control (ABAC)
 - Mandatory Multi-Factor Authentication (MFA / 2FA via TOTP) with recovery codes
 - Enterprise Single Sign-On (SSO) via SAML 2.0 and OIDC (Okta, Azure AD, Google)
@@ -344,6 +375,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Compliance controls adhering to Saudi PDPL, UAE Data Protection Law, and GDPR
 
 #### 32. INTEGRATION MARKETPLACE & DEVELOPER APIS
+
 - Fully documented OpenAPI 3.0 REST API covering all CRM and messaging entities
 - Fine-grained API keys with scoped permission tokens and expiry dates
 - Cryptographically signed outbound webhooks (HMAC-SHA256) with delivery logs
@@ -351,7 +383,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Native certified connectors for Zapier, Make.com, and self-hosted n8n instances
 - Developer sandbox environment for building and testing custom integrations
 
-#### 33. ENTERPRISE DATA HYGIENE, GOVERNANCE & MDM *(Added)*
+#### 33. ENTERPRISE DATA HYGIENE, GOVERNANCE & MDM _(Added)_
+
 - Automated third-party data enrichment (company size, verified domains, revenue tiers)
 - Cross-channel identity resolution unifying records across phone, email, and social IDs
 - Continuous data health and hygiene scoring identifying incomplete or invalid records
@@ -359,7 +392,8 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Data catalog and schema dictionary documenting all custom fields and relations
 - Automated Right-to-Erasure (GDPR/PDPL) workflows wiping PII across all active tables
 
-#### 34. SRE OBSERVABILITY, SYSTEM HEALTH & AUDIT TELEMETRY *(Added)*
+#### 34. SRE OBSERVABILITY, SYSTEM HEALTH & AUDIT TELEMETRY _(Added)_
+
 - OpenTelemetry distributed tracing profiling latency across edge workers and database
 - Synthetic health probes continuously verifying webhook delivery and real-time sockets
 - Dead-Letter Queue (DLQ) visual triage console with manual/batch payload replay
@@ -372,6 +406,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 ### HUB 8 — GCC LOCALIZATION & INDUSTRY SOLUTIONS
 
 #### 35. MIDDLE EAST & GCC REGIONAL LOCALIZATION
+
 - Native Arabic-first interface with full bidirectional Right-to-Left (RTL) typography
 - Multi-currency support for all 6 GCC currencies: AED, SAR, QAR, KWD, BHD, OMR
 - Country-specific business calendars (Sunday–Thursday workweek and Friday/Saturday weekends)
@@ -380,6 +415,7 @@ The following 6 essential modules were identified as missing from standard CRM i
 - Compliance with GCC National Address formats and local data residency frameworks
 
 #### 36. INDUSTRY-SPECIFIC CRM VERTICAL SOLUTIONS
+
 - **Real Estate Brokerage Vertical:** Property listings, developer payment plans, broker commission splitting, and lead-to-unit matching.
 - **Healthcare & Clinic Vertical:** Patient intake, doctor appointment scheduling, treatment history, and medical compliance privacy.
 - **Automotive Dealership Vertical:** Vehicle inventory by VIN, test-drive booking, trade-in valuations, and maintenance service schedules.
@@ -394,6 +430,7 @@ The complete enterprise module definitions have been implemented and exported in
 [`src/config/enterprise-modules.ts`](file:///d:/cyloocrm/src/config/enterprise-modules.ts)
 
 This file exports:
+
 - `ENTERPRISE_MODULES`: Typed array of all 36 modules with icon mappings, routes, and features.
 - `BUSINESS_HUBS`: Complete hub metadata, numbers, and OKLCH color tokens.
 - `ARCHITECTURE_METRICS`: Real-time computed metrics (36 modules, 8 hubs, 278+ features).

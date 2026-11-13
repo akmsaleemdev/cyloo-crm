@@ -23,7 +23,10 @@ export function Spinner({
   } as const;
   return (
     <span role="status" aria-live="polite" className={cn("inline-flex items-center", className)}>
-      <Loader2 className={cn("animate-spin text-muted-foreground", sizes[size])} aria-hidden="true" />
+      <Loader2
+        className={cn("animate-spin text-muted-foreground", sizes[size])}
+        aria-hidden="true"
+      />
       <span className="sr-only">{label}</span>
     </span>
   );

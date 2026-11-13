@@ -276,7 +276,10 @@ export const publishPluginVersion = createServerFn({ method: "POST" })
         version: z.string().regex(/^\d+\.\d+\.\d+([+\-][\w.]+)?$/),
         changelog: z.string().max(4000).optional(),
         manifest: z.record(z.unknown()).default({}),
-        entry_url: z.string().url().refine((url) => new URL(url).protocol === "https:", "Plugin code must use HTTPS"),
+        entry_url: z
+          .string()
+          .url()
+          .refine((url) => new URL(url).protocol === "https:", "Plugin code must use HTTPS"),
         permissions: z.array(z.string()).default([]),
         min_app_version: z.string().optional(),
         is_stable: z.boolean().default(true),
@@ -314,7 +317,8 @@ export const publishPluginVersion = createServerFn({ method: "POST" })
         .eq("publisher_id", context.userId)
         .select("id")
         .maybeSingle();
-      if (reviewError || !queued) throw reviewError ?? new Error("Could not submit plugin for review");
+      if (reviewError || !queued)
+        throw reviewError ?? new Error("Could not submit plugin for review");
     }
     return { version };
   });

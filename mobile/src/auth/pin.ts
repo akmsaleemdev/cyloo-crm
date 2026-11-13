@@ -9,13 +9,13 @@
  * On correct PIN, biometrics can be re-armed. After 5 failed attempts,
  * we escalate to a 5 minute cooldown and require full re-authentication.
  */
-import * as SecureStore from 'expo-secure-store';
-import * as Crypto from 'expo-crypto';
+import * as SecureStore from "expo-secure-store";
+import * as Crypto from "expo-crypto";
 
-const SALT_KEY = 'pin.salt.v1';
-const HASH_KEY = 'pin.hash.v1';
-const ATTEMPTS_KEY = 'pin.attempts.v1';
-const LOCKED_UNTIL_KEY = 'pin.locked_until.v1';
+const SALT_KEY = "pin.salt.v1";
+const HASH_KEY = "pin.hash.v1";
+const ATTEMPTS_KEY = "pin.attempts.v1";
+const LOCKED_UNTIL_KEY = "pin.locked_until.v1";
 
 const MAX_ATTEMPTS = 5;
 const LOCK_MS = 5 * 60 * 1000;
@@ -26,7 +26,9 @@ async function derive(salt: string, pin: string) {
 
 async function randomSalt() {
   const bytes = await Crypto.getRandomBytesAsync(16);
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export async function hasPin(): Promise<boolean> {
@@ -38,7 +40,7 @@ export async function hasPin(): Promise<boolean> {
 }
 
 export async function setPin(pin: string): Promise<void> {
-  if (!/^\d{4,8}$/.test(pin)) throw new Error('PIN must be 4–8 digits');
+  if (!/^\d{4,8}$/.test(pin)) throw new Error("PIN must be 4–8 digits");
   const salt = await randomSalt();
   const hash = await derive(salt, pin);
   await SecureStore.setItemAsync(SALT_KEY, salt, { keychainAccessible: SecureStore.WHEN_UNLOCKED });
@@ -58,7 +60,12 @@ export async function clearPin(): Promise<void> {
 
 export type VerifyResult =
   | { ok: true }
-  | { ok: false; reason: 'invalid' | 'not_set' | 'locked'; remainingMs?: number; attemptsLeft?: number };
+  | {
+      ok: false;
+      reason: "invalid" | "not_set" | "locked";
+      remainingMs?: number;
+      attemptsLeft?: number;
+    };
 
 export async function verifyPin(pin: string): Promise<VerifyResult> {
   const [salt, hash, lockedUntilRaw, attemptsRaw] = await Promise.all([
@@ -67,11 +74,11 @@ export async function verifyPin(pin: string): Promise<VerifyResult> {
     SecureStore.getItemAsync(LOCKED_UNTIL_KEY),
     SecureStore.getItemAsync(ATTEMPTS_KEY),
   ]);
-  if (!salt || !hash) return { ok: false, reason: 'not_set' };
+  if (!salt || !hash) return { ok: false, reason: "not_set" };
 
   const lockedUntil = lockedUntilRaw ? Number(lockedUntilRaw) : 0;
   if (lockedUntil > Date.now()) {
-    return { ok: false, reason: 'locked', remainingMs: lockedUntil - Date.now() };
+    return { ok: false, reason: "locked", remainingMs: lockedUntil - Date.now() };
   }
 
   const candidate = await derive(salt, pin);
@@ -84,8 +91,8 @@ export async function verifyPin(pin: string): Promise<VerifyResult> {
   if (attempts >= MAX_ATTEMPTS) {
     await SecureStore.setItemAsync(LOCKED_UNTIL_KEY, String(Date.now() + LOCK_MS));
     await SecureStore.deleteItemAsync(ATTEMPTS_KEY);
-    return { ok: false, reason: 'locked', remainingMs: LOCK_MS };
+    return { ok: false, reason: "locked", remainingMs: LOCK_MS };
   }
   await SecureStore.setItemAsync(ATTEMPTS_KEY, String(attempts));
-  return { ok: false, reason: 'invalid', attemptsLeft: MAX_ATTEMPTS - attempts };
+  return { ok: false, reason: "invalid", attemptsLeft: MAX_ATTEMPTS - attempts };
 }

@@ -33,7 +33,10 @@ export const Route = createFileRoute("/403")({
 
 function formatRoles(csv?: string): string[] {
   if (!csv) return [];
-  return csv.split(",").map((r) => r.trim()).filter(Boolean);
+  return csv
+    .split(",")
+    .map((r) => r.trim())
+    .filter(Boolean);
 }
 
 function ForbiddenPage() {
@@ -59,9 +62,8 @@ function ForbiddenPage() {
       "This screen is limited to workspace owners and admins. Ask an owner to update your role if you need access.";
   } else if (scope === "organization") {
     heading = "Organization admin only";
-    const missingRoles = requiredList.filter(role => role !== have);
-    explanation =
-      `To access these controls, you need to be an organization ${missingRoles.join(" or ")}. Your current role is ${have || "guest"}.`;
+    const missingRoles = requiredList.filter((role) => role !== have);
+    explanation = `To access these controls, you need to be an organization ${missingRoles.join(" or ")}. Your current role is ${have || "guest"}.`;
   }
 
   return (
@@ -72,13 +74,9 @@ function ForbiddenPage() {
             <ShieldAlert className="h-7 w-7" aria-hidden="true" />
           </div>
 
-          <p className="mt-6 text-xs uppercase text-muted-foreground">
-            Error 403
-          </p>
+          <p className="mt-6 text-xs uppercase text-muted-foreground">Error 403</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight">{heading}</h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            {explanation}
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{explanation}</p>
 
           {(requiredList.length > 0 || have || from) && (
             <dl className="mt-6 space-y-2 rounded-control border border-border bg-muted/40 p-4 text-left text-xs">

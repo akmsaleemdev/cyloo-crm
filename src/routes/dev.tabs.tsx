@@ -26,9 +26,15 @@ function TabsRadiusFixture() {
         <p className="text-xs text-muted-foreground">Tabs</p>
         <Tabs defaultValue="a" data-testid="tabs">
           <TabsList data-testid="tabs-list">
-            <TabsTrigger value="a" data-testid="tabs-trigger-a">One</TabsTrigger>
-            <TabsTrigger value="b" data-testid="tabs-trigger-b">Two</TabsTrigger>
-            <TabsTrigger value="c" data-testid="tabs-trigger-c">Three</TabsTrigger>
+            <TabsTrigger value="a" data-testid="tabs-trigger-a">
+              One
+            </TabsTrigger>
+            <TabsTrigger value="b" data-testid="tabs-trigger-b">
+              Two
+            </TabsTrigger>
+            <TabsTrigger value="c" data-testid="tabs-trigger-c">
+              Three
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="a">A</TabsContent>
           <TabsContent value="b">B</TabsContent>

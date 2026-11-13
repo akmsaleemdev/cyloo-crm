@@ -24,11 +24,15 @@ export function PolicyCompliancePanel({ input, className, compact }: Props) {
     summary.status === "ready"
       ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/20"
       : summary.status === "review"
-      ? "text-amber-600 bg-amber-500/10 border-amber-500/20"
-      : "text-rose-600 bg-rose-500/10 border-rose-500/20";
+        ? "text-amber-600 bg-amber-500/10 border-amber-500/20"
+        : "text-rose-600 bg-rose-500/10 border-rose-500/20";
 
   const StatusIcon =
-    summary.status === "ready" ? CheckCircle2 : summary.status === "review" ? AlertTriangle : XCircle;
+    summary.status === "ready"
+      ? CheckCircle2
+      : summary.status === "review"
+        ? AlertTriangle
+        : XCircle;
 
   return (
     <section
@@ -40,7 +44,9 @@ export function PolicyCompliancePanel({ input, className, compact }: Props) {
           <ShieldCheck className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           <div className="font-medium">Policy compliance</div>
         </div>
-        <div className={`inline-flex items-center gap-1.5 rounded-control border px-2 py-0.5 text-xs ${statusColor}`}>
+        <div
+          className={`inline-flex items-center gap-1.5 rounded-control border px-2 py-0.5 text-xs ${statusColor}`}
+        >
           <StatusIcon className="w-3.5 h-3.5" aria-hidden="true" />
           <span className="capitalize">{summary.status}</span>
           <span className="opacity-60">· {summary.score}/100</span>
@@ -60,20 +66,23 @@ export function PolicyCompliancePanel({ input, className, compact }: Props) {
       )}
 
       {compact && findings.length > 3 && (
-        <div className="px-4 py-2 text-xs text-muted-foreground">+{findings.length - 3} more findings</div>
+        <div className="px-4 py-2 text-xs text-muted-foreground">
+          +{findings.length - 3} more findings
+        </div>
       )}
     </section>
   );
 }
 
 function FindingRow({ finding }: { finding: PolicyFinding }) {
-  const Icon = finding.severity === "error" ? XCircle : finding.severity === "warning" ? AlertTriangle : Info;
+  const Icon =
+    finding.severity === "error" ? XCircle : finding.severity === "warning" ? AlertTriangle : Info;
   const tone =
     finding.severity === "error"
       ? "text-rose-600"
       : finding.severity === "warning"
-      ? "text-amber-600"
-      : "text-sky-600";
+        ? "text-amber-600"
+        : "text-sky-600";
   return (
     <li className="p-3 flex items-start gap-3">
       <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${tone}`} aria-hidden="true" />

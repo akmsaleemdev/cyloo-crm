@@ -4,7 +4,7 @@
  * and quick tools: reply, summary, CRM summary, insights, meeting summary,
  * task suggestions, lead qualification, AI search, and NL commands.
  */
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -15,34 +15,34 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
-import { Screen } from '@/components/Screen';
-import { useTheme } from '@/theme/ThemeProvider';
-import { aiApi, synthesizeSpeech, transcribeAudio } from '@/api/ai';
+} from "react-native";
+import * as Haptics from "expo-haptics";
+import { Audio } from "expo-av";
+import * as FileSystem from "expo-file-system";
+import { Screen } from "@/components/Screen";
+import { useTheme } from "@/theme/ThemeProvider";
+import { aiApi, synthesizeSpeech, transcribeAudio } from "@/api/ai";
 
-type ChatMsg = { id: string; role: 'user' | 'assistant'; content: string };
+type ChatMsg = { id: string; role: "user" | "assistant"; content: string };
 
-const QUICK_TOOLS: Array<{ label: string; prompt: string; action?: 'search' | 'command' }> = [
-  { label: '🔍 Search', prompt: 'Search my workspace for ', action: 'search' },
-  { label: '⚡ Command', prompt: 'Create a task to ', action: 'command' },
-  { label: '📝 Meeting notes', prompt: 'Summarize this meeting:\n' },
-  { label: '💡 Ideas', prompt: 'Suggest 5 tasks for my top deals this week' },
+const QUICK_TOOLS: Array<{ label: string; prompt: string; action?: "search" | "command" }> = [
+  { label: "🔍 Search", prompt: "Search my workspace for ", action: "search" },
+  { label: "⚡ Command", prompt: "Create a task to ", action: "command" },
+  { label: "📝 Meeting notes", prompt: "Summarize this meeting:\n" },
+  { label: "💡 Ideas", prompt: "Suggest 5 tasks for my top deals this week" },
 ];
 
 export default function AIAssistantScreen() {
   const t = useTheme();
   const [messages, setMessages] = useState<ChatMsg[]>([
     {
-      id: 'sys',
-      role: 'assistant',
+      id: "sys",
+      role: "assistant",
       content:
         "Hi, I'm your CYLOO AI Assistant. Ask me anything — draft replies, summaries, insights, tasks, lead scoring, or use / for commands.",
     },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [speaking, setSpeaking] = useState<string | null>(null);
@@ -53,38 +53,42 @@ export default function AIAssistantScreen() {
     async (text: string, opts: { asCommand?: boolean; asSearch?: boolean } = {}) => {
       const trimmed = text.trim();
       if (!trimmed || busy) return;
-      const userMsg: ChatMsg = { id: `u-${Date.now()}`, role: 'user', content: trimmed };
+      const userMsg: ChatMsg = { id: `u-${Date.now()}`, role: "user", content: trimmed };
       setMessages((m) => [...m, userMsg]);
-      setInput('');
+      setInput("");
       setBusy(true);
       try {
-        let assistantContent = '';
+        let assistantContent = "";
         if (opts.asSearch) {
           const r = await aiApi.search(trimmed);
           const groups = Object.entries(r.results)
-            .map(([k, v]) => (v.length ? `**${k}** (${v.length})` : ''))
+            .map(([k, v]) => (v.length ? `**${k}** (${v.length})` : ""))
             .filter(Boolean)
-            .join(' · ');
-          assistantContent = `${r.commentary || 'Results:'}\n\n${groups}`;
+            .join(" · ");
+          assistantContent = `${r.commentary || "Results:"}\n\n${groups}`;
         } else if (opts.asCommand) {
           const r = await aiApi.command(trimmed);
           assistantContent = `Command:\n${r.content}`;
         } else {
           const history = [...messages, userMsg]
-            .filter((m) => m.id !== 'sys')
+            .filter((m) => m.id !== "sys")
             .map((m) => ({ role: m.role, content: m.content }));
           const r = await aiApi.chat(history);
           assistantContent = r.content;
         }
         setMessages((m) => [
           ...m,
-          { id: `a-${Date.now()}`, role: 'assistant', content: assistantContent },
+          { id: `a-${Date.now()}`, role: "assistant", content: assistantContent },
         ]);
         setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
       } catch (e: any) {
         setMessages((m) => [
           ...m,
-          { id: `err-${Date.now()}`, role: 'assistant', content: `⚠️ ${e?.message ?? 'AI failed'}` },
+          {
+            id: `err-${Date.now()}`,
+            role: "assistant",
+            content: `⚠️ ${e?.message ?? "AI failed"}`,
+          },
         ]);
       } finally {
         setBusy(false);
@@ -96,7 +100,7 @@ export default function AIAssistantScreen() {
   const startRec = useCallback(async () => {
     try {
       const perm = await Audio.requestPermissionsAsync();
-      if (!perm.granted) throw new Error('Microphone permission denied');
+      if (!perm.granted) throw new Error("Microphone permission denied");
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
       const rec = new Audio.Recording();
       await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
@@ -106,7 +110,7 @@ export default function AIAssistantScreen() {
     } catch (e: any) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: 'assistant', content: `🎙️ ${e?.message ?? 'Mic failed'}` },
+        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e?.message ?? "Mic failed"}` },
       ]);
     }
   }, []);
@@ -120,67 +124,80 @@ export default function AIAssistantScreen() {
       setRecording(null);
       if (!uri) return;
       const info = await FileSystem.getInfoAsync(uri);
-      if (!info.exists || (info.size ?? 0) < 2048) throw new Error('Recording too short');
-      const text = await transcribeAudio(uri, Platform.OS === 'ios' ? 'audio/mp4' : 'audio/m4a');
+      if (!info.exists || (info.size ?? 0) < 2048) throw new Error("Recording too short");
+      const text = await transcribeAudio(uri, Platform.OS === "ios" ? "audio/mp4" : "audio/m4a");
       if (text) await send(text);
     } catch (e: any) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: 'assistant', content: `🎙️ ${e?.message ?? 'STT failed'}` },
+        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e?.message ?? "STT failed"}` },
       ]);
     } finally {
       setBusy(false);
     }
   }, [recording, send]);
 
-  const speak = useCallback(async (msg: ChatMsg) => {
-    try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync().catch(() => {});
-        soundRef.current = null;
-      }
-      if (speaking === msg.id) {
+  const speak = useCallback(
+    async (msg: ChatMsg) => {
+      try {
+        if (soundRef.current) {
+          await soundRef.current.unloadAsync().catch(() => {});
+          soundRef.current = null;
+        }
+        if (speaking === msg.id) {
+          setSpeaking(null);
+          return;
+        }
+        setSpeaking(msg.id);
+        const dataUri = await synthesizeSpeech(msg.content.slice(0, 4000));
+        const { sound } = await Audio.Sound.createAsync({ uri: dataUri }, { shouldPlay: true });
+        soundRef.current = sound;
+        sound.setOnPlaybackStatusUpdate((s) => {
+          if ("didJustFinish" in s && s.didJustFinish) setSpeaking(null);
+        });
+      } catch (e: any) {
         setSpeaking(null);
-        return;
+        setMessages((m) => [
+          ...m,
+          {
+            id: `err-${Date.now()}`,
+            role: "assistant",
+            content: `🔊 ${e?.message ?? "TTS failed"}`,
+          },
+        ]);
       }
-      setSpeaking(msg.id);
-      const dataUri = await synthesizeSpeech(msg.content.slice(0, 4000));
-      const { sound } = await Audio.Sound.createAsync({ uri: dataUri }, { shouldPlay: true });
-      soundRef.current = sound;
-      sound.setOnPlaybackStatusUpdate((s) => {
-        if ('didJustFinish' in s && s.didJustFinish) setSpeaking(null);
-      });
-    } catch (e: any) {
-      setSpeaking(null);
-      setMessages((m) => [
-        ...m,
-        { id: `err-${Date.now()}`, role: 'assistant', content: `🔊 ${e?.message ?? 'TTS failed'}` },
-      ]);
-    }
-  }, [speaking]);
+    },
+    [speaking],
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: ChatMsg }) => {
-      const mine = item.role === 'user';
+      const mine = item.role === "user";
       return (
-        <View style={{ marginBottom: t.spacing.md, alignItems: mine ? 'flex-end' : 'flex-start' }}>
+        <View style={{ marginBottom: t.spacing.md, alignItems: mine ? "flex-end" : "flex-start" }}>
           <View
             style={{
-              maxWidth: '86%',
+              maxWidth: "86%",
               backgroundColor: mine ? t.colors.primary : t.colors.muted,
               paddingHorizontal: t.spacing.md,
               paddingVertical: t.spacing.sm,
               borderRadius: t.radius.lg,
             }}
           >
-            <Text style={{ color: mine ? t.colors.primaryFg : t.colors.foreground, fontSize: 15, lineHeight: 21 }}>
+            <Text
+              style={{
+                color: mine ? t.colors.primaryFg : t.colors.foreground,
+                fontSize: 15,
+                lineHeight: 21,
+              }}
+            >
               {item.content}
             </Text>
           </View>
-          {!mine && item.id !== 'sys' ? (
+          {!mine && item.id !== "sys" ? (
             <Pressable onPress={() => speak(item)} style={{ marginTop: 4 }}>
               <Text style={{ color: t.colors.mutedFg, fontSize: 12 }}>
-                {speaking === item.id ? '⏸ Stop' : '🔊 Speak'}
+                {speaking === item.id ? "⏸ Stop" : "🔊 Speak"}
               </Text>
             </Pressable>
           ) : null}
@@ -204,15 +221,19 @@ export default function AIAssistantScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: t.spacing.lg, paddingVertical: t.spacing.md, gap: 8 }}
+        contentContainerStyle={{
+          paddingHorizontal: t.spacing.lg,
+          paddingVertical: t.spacing.md,
+          gap: 8,
+        }}
       >
         {tools.map((tool) => (
           <Pressable
             key={tool.label}
             onPress={() => {
               setInput(tool.prompt);
-              if (tool.action === 'search') void send(tool.prompt, { asSearch: true });
-              else if (tool.action === 'command') void send(tool.prompt, { asCommand: true });
+              if (tool.action === "search") void send(tool.prompt, { asSearch: true });
+              else if (tool.action === "command") void send(tool.prompt, { asCommand: true });
             }}
             style={{
               paddingHorizontal: 12,
@@ -223,7 +244,7 @@ export default function AIAssistantScreen() {
               borderColor: t.colors.border,
             }}
           >
-            <Text style={{ color: t.colors.foreground, fontSize: 13, fontWeight: '500' }}>
+            <Text style={{ color: t.colors.foreground, fontSize: 13, fontWeight: "500" }}>
               {tool.label}
             </Text>
           </Pressable>
@@ -239,11 +260,11 @@ export default function AIAssistantScreen() {
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
       />
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             paddingHorizontal: t.spacing.lg,
             paddingVertical: t.spacing.md,
             borderTopWidth: 1,
@@ -259,12 +280,12 @@ export default function AIAssistantScreen() {
               width: 44,
               height: 44,
               borderRadius: 22,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: recording ? t.colors.destructive : t.colors.muted,
             }}
           >
-            <Text style={{ fontSize: 18 }}>{recording ? '⏺' : '🎙'}</Text>
+            <Text style={{ fontSize: 18 }}>{recording ? "⏺" : "🎙"}</Text>
           </Pressable>
           <TextInput
             value={input}
@@ -287,7 +308,8 @@ export default function AIAssistantScreen() {
           />
           <Pressable
             onPress={() => {
-              if (input.trim().startsWith('/')) void send(input.replace(/^\//, ''), { asCommand: true });
+              if (input.trim().startsWith("/"))
+                void send(input.replace(/^\//, ""), { asCommand: true });
               else void send(input);
             }}
             disabled={busy || !input.trim()}
@@ -295,13 +317,22 @@ export default function AIAssistantScreen() {
               width: 44,
               height: 44,
               borderRadius: 22,
-              alignItems: 'center',
-              justifyContent: 'center',
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: busy || !input.trim() ? t.colors.muted : t.colors.primary,
             }}
           >
-            {busy ? <ActivityIndicator color={t.colors.primaryFg} /> : (
-              <Text style={{ color: input.trim() ? t.colors.primaryFg : t.colors.mutedFg, fontSize: 18 }}>➤</Text>
+            {busy ? (
+              <ActivityIndicator color={t.colors.primaryFg} />
+            ) : (
+              <Text
+                style={{
+                  color: input.trim() ? t.colors.primaryFg : t.colors.mutedFg,
+                  fontSize: 18,
+                }}
+              >
+                ➤
+              </Text>
             )}
           </Pressable>
         </View>

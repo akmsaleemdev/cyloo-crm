@@ -59,9 +59,18 @@ function runDependencyAudit() {
     } catch {
       continue;
     }
-    const advisories = data.vulnerabilities ?? data.advisories ?? {};
+    // Registry/transport errors are not a successful vulnerability audit.
+    if (data.error || (!data.vulnerabilities && !data.advisories)) continue;
+    const advisories = data.vulnerabilities ?? data.advisories;
     for (const [name, entry] of Object.entries(advisories)) {
-      const severity = String(entry.severity ?? "moderate").toLowerCase();
+      // Bun can return several advisories for one package; npm returns one
+      // vulnerability object. Inspect every advisory in either format.
+      const entries = Array.isArray(entry) ? entry : [entry];
+      const severity = entries.some((item) => item.severity === "critical")
+        ? "critical"
+        : entries.some((item) => item.severity === "high")
+          ? "high"
+          : "moderate";
       if (severity !== "high" && severity !== "critical") continue;
       add({
         source: "dependency",
@@ -72,6 +81,12 @@ function runDependencyAudit() {
     }
     return;
   }
+  add({
+    source: "dependency",
+    id: "audit-unavailable",
+    severity: "critical",
+    title: "Dependency audit unavailable: no valid registry audit response",
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -94,10 +109,18 @@ function reviewMigrations() {
     const sql = readFileSync(file, "utf8");
     const rel = path.relative(ROOT, file);
 
-    for (const match of sql.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/gi)) {
+    for (const match of sql.matchAll(
+      /create\s+table\s+(?:if\s+not\s+exists\s+)?public\.([a-z0-9_]+)/gi,
+    )) {
       const table = match[1];
-      const grants = new RegExp(`grant[\\s\\S]*?on\\s+(?:table\\s+)?public\\.${table}\\b`, "i").test(sql);
-      const rls = new RegExp(`alter\\s+table[\\s\\S]*?public\\.${table}[\\s\\S]*?enable\\s+row\\s+level\\s+security`, "i").test(sql);
+      const grants = new RegExp(
+        `grant[\\s\\S]*?on\\s+(?:table\\s+)?public\\.${table}\\b`,
+        "i",
+      ).test(sql);
+      const rls = new RegExp(
+        `alter\\s+table[\\s\\S]*?public\\.${table}[\\s\\S]*?enable\\s+row\\s+level\\s+security`,
+        "i",
+      ).test(sql);
       if (!grants) {
         add({
           source: "sql",
@@ -124,7 +147,8 @@ function reviewMigrations() {
       const [, name, table, body] = match;
       const targetsAnon = /\bto\s+[^;]*\banon\b/i.test(body);
       const isWrite = /\bfor\s+(insert|update|delete|all)\b/i.test(body);
-      const alwaysTrue = /with\s+check\s*\(\s*true\s*\)/i.test(body) || /using\s*\(\s*true\s*\)/i.test(body);
+      const alwaysTrue =
+        /with\s+check\s*\(\s*true\s*\)/i.test(body) || /using\s*\(\s*true\s*\)/i.test(body);
       if (targetsAnon && isWrite && alwaysTrue) {
         add({
           source: "sql",
@@ -161,7 +185,8 @@ function reviewSource() {
   for (const file of files) {
     const rel = path.relative(ROOT, file);
     const code = readFileSync(file, "utf8");
-    const serverOnly = /\.server\.(ts|tsx)$/.test(rel) || rel.includes(`${path.sep}server${path.sep}`);
+    const serverOnly =
+      /\.server\.(ts|tsx)$/.test(rel) || rel.includes(`${path.sep}server${path.sep}`);
 
     if (!serverOnly && /SERVICE_ROLE|supabaseAdmin/.test(code) && !/await import\(/.test(code)) {
       add({
@@ -201,7 +226,8 @@ const baseline = existsSync(BASELINE_PATH)
 
 if (UPDATE) {
   const accepted = {};
-  for (const [fp, f] of current) accepted[fp] = { title: f.title, severity: f.severity, file: f.file ?? null };
+  for (const [fp, f] of current)
+    accepted[fp] = { title: f.title, severity: f.severity, file: f.file ?? null };
   mkdirSync(path.dirname(BASELINE_PATH), { recursive: true });
   writeFileSync(
     BASELINE_PATH,
@@ -227,8 +253,11 @@ if (JSON_OUT) {
     ),
   );
 } else {
-  console.log(`Security gate — ${current.size} finding(s) detected, ${Object.keys(baseline.accepted ?? {}).length} baselined.`);
-  if (resolved.length) console.log(`✔ ${resolved.length} baselined finding(s) no longer reproduce.`);
+  console.log(
+    `Security gate — ${current.size} finding(s) detected, ${Object.keys(baseline.accepted ?? {}).length} baselined.`,
+  );
+  if (resolved.length)
+    console.log(`✔ ${resolved.length} baselined finding(s) no longer reproduce.`);
   for (const [fp, f] of newFindings) {
     console.error(`✖ NEW [${f.severity}] ${f.title}${f.file ? ` (${f.file})` : ""}  [${fp}]`);
   }

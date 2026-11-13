@@ -33,13 +33,31 @@ export async function inspectQuota(
   requested = 1,
 ): Promise<QuotaGateResult> {
   const [subRes, quotaRes] = await Promise.all([
-    sbAny(supabase).from("subscriptions").select("plan_id, plans(features, limits, currency)").eq("organization_id", organization_id).maybeSingle(),
-    sbAny(supabase).from("tenant_quotas").select("used, included, hard_limit").eq("organization_id", organization_id).eq("meter_code", meter_code).lte("period_start", new Date().toISOString()).gt("period_end", new Date().toISOString()).maybeSingle(),
+    sbAny(supabase)
+      .from("subscriptions")
+      .select("plan_id, plans(features, limits, currency)")
+      .eq("organization_id", organization_id)
+      .maybeSingle(),
+    sbAny(supabase)
+      .from("tenant_quotas")
+      .select("used, included, hard_limit")
+      .eq("organization_id", organization_id)
+      .eq("meter_code", meter_code)
+      .lte("period_start", new Date().toISOString())
+      .gt("period_end", new Date().toISOString())
+      .maybeSingle(),
   ]);
   const view = capabilityView((subRes.data as any)?.plans ?? null);
   const usedNumber = Number(quotaRes.data?.used ?? 0);
   const check = checkQuota(view, meter_code, usedNumber, requested);
-  return { allowed: check.allowed, meter_code, used: check.used, limit: check.limit, remaining: check.remaining, approaching: check.approaching };
+  return {
+    allowed: check.allowed,
+    meter_code,
+    used: check.used,
+    limit: check.limit,
+    remaining: check.remaining,
+    approaching: check.approaching,
+  };
 }
 
 /** Increment a quota's `used` counter and check the hard limit. Idempotent by upsert. */
@@ -66,7 +84,11 @@ export async function assertAndIncrementQuota(
   const projected = Number(q.data.used) + amount;
   const hard = q.data.hard_limit == null ? null : Number(q.data.hard_limit);
   if (hard != null && projected > hard) {
-    await emit({ type: "quota.exceeded", organization_id, data: { meter_code, used: q.data.used, hard_limit: hard } });
+    await emit({
+      type: "quota.exceeded",
+      organization_id,
+      data: { meter_code, used: q.data.used, hard_limit: hard },
+    });
     return {
       allowed: false,
       meter_code,
@@ -76,11 +98,18 @@ export async function assertAndIncrementQuota(
       approaching: true,
     };
   }
-  await sbAny(supabase).from("tenant_quotas").update({ used: projected, updated_at: now }).eq("id", q.data.id);
+  await sbAny(supabase)
+    .from("tenant_quotas")
+    .update({ used: projected, updated_at: now })
+    .eq("id", q.data.id);
   const included = Number(q.data.included);
   const approaching = included > 0 && projected / included >= 0.8;
   if (approaching) {
-    await emit({ type: "quota.approaching", organization_id, data: { meter_code, used: projected, included } });
+    await emit({
+      type: "quota.approaching",
+      organization_id,
+      data: { meter_code, used: projected, included },
+    });
   }
   return {
     allowed: true,
@@ -102,7 +131,12 @@ export async function refreshQuotaPeriod(
   // Refresh existing rows for this org — reset used to 0 and shift window.
   await supabase
     .from("tenant_quotas")
-    .update({ used: 0, period_start: new_period_start, period_end: new_period_end, updated_at: new Date().toISOString() })
+    .update({
+      used: 0,
+      period_start: new_period_start,
+      period_end: new_period_end,
+      updated_at: new Date().toISOString(),
+    })
     .eq("organization_id", organization_id);
 }
 
@@ -139,5 +173,7 @@ export async function seedQuotasForSubscription(
     };
   });
   if (!rows.length) return;
-  await sbAny(supabase).from("tenant_quotas").upsert(rows, { onConflict: "organization_id,meter_code,period_start" });
+  await sbAny(supabase)
+    .from("tenant_quotas")
+    .upsert(rows, { onConflict: "organization_id,meter_code,period_start" });
 }

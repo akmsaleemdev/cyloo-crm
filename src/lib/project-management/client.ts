@@ -66,7 +66,10 @@ export interface CreatePmProjectInput {
   due_date?: string | null;
 }
 export type UpdatePmProjectInput = { id: string; workspace_id: string } & Partial<
-  Pick<PmProject, "name" | "description" | "status" | "color" | "logo_url" | "start_date" | "due_date">
+  Pick<
+    PmProject,
+    "name" | "description" | "status" | "color" | "logo_url" | "start_date" | "due_date"
+  >
 >;
 export interface CreatePmTaskInput {
   workspace_id: string;

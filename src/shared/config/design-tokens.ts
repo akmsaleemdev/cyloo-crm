@@ -51,8 +51,6 @@ export const glowTokens = {
   secondary: "--glow-secondary",
 } as const;
 
-
-
 export const statusTokens = {
   success: "--success",
   successMuted: "--success-muted",
@@ -72,9 +70,17 @@ export const presenceTokens = {
 } as const;
 
 export const neutralScale = [
-  "--neutral-50", "--neutral-100", "--neutral-200", "--neutral-300",
-  "--neutral-400", "--neutral-500", "--neutral-600", "--neutral-700",
-  "--neutral-800", "--neutral-900", "--neutral-950",
+  "--neutral-50",
+  "--neutral-100",
+  "--neutral-200",
+  "--neutral-300",
+  "--neutral-400",
+  "--neutral-500",
+  "--neutral-600",
+  "--neutral-700",
+  "--neutral-800",
+  "--neutral-900",
+  "--neutral-950",
 ] as const;
 
 /**
@@ -82,8 +88,14 @@ export const neutralScale = [
  * D3, referencing via `var(chartColors[i])`.
  */
 export const chartColors = [
-  "--chart-1", "--chart-2", "--chart-3", "--chart-4",
-  "--chart-5", "--chart-6", "--chart-7", "--chart-8",
+  "--chart-1",
+  "--chart-2",
+  "--chart-3",
+  "--chart-4",
+  "--chart-5",
+  "--chart-6",
+  "--chart-7",
+  "--chart-8",
 ] as const;
 
 /* ── Typography ───────────────────────────────────────────────────────────── */
@@ -157,9 +169,22 @@ export const shadowScale = {
 
 /* ── Opacity ──────────────────────────────────────────────────────────────── */
 export const opacityScale = {
-  0: 0, 5: 0.05, 10: 0.1, 15: 0.15, 20: 0.2, 25: 0.25,
-  30: 0.3, 40: 0.4, 50: 0.5, 60: 0.6, 70: 0.7,
-  75: 0.75, 80: 0.8, 90: 0.9, 95: 0.95, 100: 1,
+  0: 0,
+  5: 0.05,
+  10: 0.1,
+  15: 0.15,
+  20: 0.2,
+  25: 0.25,
+  30: 0.3,
+  40: 0.4,
+  50: 0.5,
+  60: 0.6,
+  70: 0.7,
+  75: 0.75,
+  80: 0.8,
+  90: 0.9,
+  95: 0.95,
+  100: 1,
 } as const;
 
 /* ── Motion ───────────────────────────────────────────────────────────────── */
@@ -196,21 +221,36 @@ export type Breakpoint = keyof typeof breakpoints;
 
 /* ── Containers ───────────────────────────────────────────────────────────── */
 export const containerSizes = {
-  "3xs": "16rem",  "2xs": "18rem",  xs: "20rem",
-  sm: "24rem",     md: "28rem",     lg: "32rem",
-  xl: "36rem",     "2xl": "42rem",  "3xl": "48rem",
-  "4xl": "56rem",  "5xl": "64rem",  "6xl": "72rem",
-  "7xl": "80rem",  app: "90rem",    prose: "65ch",
+  "3xs": "16rem",
+  "2xs": "18rem",
+  xs: "20rem",
+  sm: "24rem",
+  md: "28rem",
+  lg: "32rem",
+  xl: "36rem",
+  "2xl": "42rem",
+  "3xl": "48rem",
+  "4xl": "56rem",
+  "5xl": "64rem",
+  "6xl": "72rem",
+  "7xl": "80rem",
+  app: "90rem",
+  prose: "65ch",
 } as const;
 
 /* ── Component sizing ─────────────────────────────────────────────────────── */
 export const iconSizes = {
-  xs: 12, sm: 16, md: 20, lg: 24, xl: 32, "2xl": 40,
+  xs: 12,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
+  "2xl": 40,
 } as const;
 export type IconSize = keyof typeof iconSizes;
 
 export const buttonSizes = {
-  xs: { height: 28, padX: 8,  text: "xs" as const, icon: "xs" as const },
+  xs: { height: 28, padX: 8, text: "xs" as const, icon: "xs" as const },
   sm: { height: 32, padX: 12, text: "sm" as const, icon: "sm" as const },
   md: { height: 36, padX: 14, text: "sm" as const, icon: "sm" as const },
   lg: { height: 44, padX: 18, text: "base" as const, icon: "md" as const },
@@ -234,7 +274,10 @@ export function tokenVar(name: string): string {
 }
 
 /** Resolve a token to its current computed value (theme-aware). */
-export function getCssVar(name: string, el: Element | null = typeof document !== "undefined" ? document.documentElement : null): string {
+export function getCssVar(
+  name: string,
+  el: Element | null = typeof document !== "undefined" ? document.documentElement : null,
+): string {
   if (!el) return "";
   return getComputedStyle(el).getPropertyValue(name).trim();
 }

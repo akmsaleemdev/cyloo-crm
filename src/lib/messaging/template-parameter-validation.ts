@@ -76,7 +76,6 @@ function formatReason(inner: string): string | null {
   return `${shown} is rejected: unsupported variable format. Use numbered placeholders like {{1}}, {{2}}.`;
 }
 
-
 /**
  * Scan raw template text for placeholders WhatsApp will not accept.
  * Returns one issue per distinct malformed placeholder.
@@ -106,17 +105,13 @@ export function findFormatIssues(texts: Array<string | undefined | null>): Templ
         `{${m[2]}}`,
         `{${inner}} is not a WhatsApp variable — single braces are ignored. Use a numbered placeholder like {{1}}.`,
       );
-
     }
 
     // Unbalanced opener such as "{{name" — the placeholder never closes.
     const openers = (text.match(/\{\{/g) ?? []).length;
     const closers = (text.match(/\}\}/g) ?? []).length;
     if (openers !== closers) {
-      push(
-        "{{}}",
-        "Unbalanced braces — every variable must open with {{ and close with }}.",
-      );
+      push("{{}}", "Unbalanced braces — every variable must open with {{ and close with }}.");
     }
   }
 

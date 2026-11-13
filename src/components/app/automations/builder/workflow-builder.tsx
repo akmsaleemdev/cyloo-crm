@@ -27,7 +27,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { publishWorkflow, testRunWorkflow } from "@/lib/workflows/workflows.functions";
 import { NODE_REGISTRY_BY_TYPE, type NodeDefinition } from "@/lib/workflows/node-registry";
 import { validateGraph, type ValidationIssue } from "@/lib/workflows/validation";
-import { EMPTY_GRAPH, type WorkflowGraph, type WorkflowNode, type WorkflowEdge } from "@/lib/workflows/types";
+import {
+  EMPTY_GRAPH,
+  type WorkflowGraph,
+  type WorkflowNode,
+  type WorkflowEdge,
+} from "@/lib/workflows/types";
 import { useWorkflowHistory } from "@/hooks/use-workflow-history";
 import { CustomNode, type WFNodeData } from "./custom-node";
 import { NodePalette } from "./node-palette";
@@ -38,11 +43,29 @@ import { SimulateRunDialog } from "./simulate-run-dialog";
 import { useLayout } from "@/shared/contexts/layout-context";
 import type { WorkflowTemplate } from "@/lib/workflows/templates";
 import {
-  Undo2, Redo2, Save, Rocket, LayoutTemplate, AlertTriangle, CheckCircle2,
-  Loader2, ArrowLeft, History, Copy as CopyIcon, Play, X as XIcon, Zap, Share2, MoreHorizontal,
+  Undo2,
+  Redo2,
+  Save,
+  Rocket,
+  LayoutTemplate,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  ArrowLeft,
+  History,
+  Copy as CopyIcon,
+  Play,
+  X as XIcon,
+  Zap,
+  Share2,
+  MoreHorizontal,
 } from "lucide-react";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link } from "@tanstack/react-router";
 import { readActiveWorkspaceId } from "@/lib/tenant/active-tenant";
@@ -53,7 +76,6 @@ import {
 } from "@/hooks/use-workflow-permissions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-
 // Explains, in one sentence, why every editing control is inert. Used for both
 // the inline banner and the native tooltip on each disabled button so the
 // reason is discoverable by hover and by reading.
@@ -62,7 +84,10 @@ const UNAVAILABLE_REASON =
 
 const nodeTypes = { wf: CustomNode };
 
-function toReactFlow(graph: WorkflowGraph, invalidIds: Set<string>): { nodes: Node<WFNodeData>[]; edges: Edge[] } {
+function toReactFlow(
+  graph: WorkflowGraph,
+  invalidIds: Set<string>,
+): { nodes: Node<WFNodeData>[]; edges: Edge[] } {
   return {
     nodes: graph.nodes.map((n) => ({
       id: n.id,
@@ -113,7 +138,13 @@ function serialize(graph: WorkflowGraph, name: string): string {
     name: name.trim(),
     nodes: [...graph.nodes]
       .sort((a, b) => a.id.localeCompare(b.id))
-      .map((n) => ({ id: n.id, type: n.type, position: n.position, config: n.config ?? {}, label: n.label ?? null })),
+      .map((n) => ({
+        id: n.id,
+        type: n.type,
+        position: n.position,
+        config: n.config ?? {},
+        label: n.label ?? null,
+      })),
     edges: [...graph.edges]
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((e) => ({ id: e.id, source: e.source, target: e.target, branch: e.branch ?? null })),
@@ -175,7 +206,6 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     },
   });
 
-
   const history = useWorkflowHistory(EMPTY_GRAPH);
   const [name, setName] = React.useState("");
   const [saveState, setSaveState] = React.useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -199,7 +229,10 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     if ((g.nodes ?? []).length === 0) setShowTemplates(true);
   }, [automation, history]);
 
-  const issues = React.useMemo<ValidationIssue[]>(() => validateGraph(history.graph), [history.graph]);
+  const issues = React.useMemo<ValidationIssue[]>(
+    () => validateGraph(history.graph),
+    [history.graph],
+  );
   const invalidIds = React.useMemo(() => {
     const s = new Set<string>();
     for (const i of issues) if (i.nodeId && i.level === "error") s.add(i.nodeId);
@@ -208,8 +241,13 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
   const errorCount = issues.filter((i) => i.level === "error").length;
   const warnCount = issues.filter((i) => i.level === "warning").length;
 
-  const { nodes, edges } = React.useMemo(() => toReactFlow(history.graph, invalidIds), [history.graph, invalidIds]);
-  const selectedNode = selectedId ? history.graph.nodes.find((n) => n.id === selectedId) ?? null : null;
+  const { nodes, edges } = React.useMemo(
+    () => toReactFlow(history.graph, invalidIds),
+    [history.graph, invalidIds],
+  );
+  const selectedNode = selectedId
+    ? (history.graph.nodes.find((n) => n.id === selectedId) ?? null)
+    : null;
 
   // The workflow may load (RLS allows it) while the active tenant points at a
   // different workspace — every write would then be scoped wrong. Rather than
@@ -222,7 +260,9 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
 
   // Second guard: the tenant may be correct but the user's workspace role may
   // only grant read access. Writes would be rejected by RLS, so disable them.
-  const { canEdit, isLoading: permsLoading } = useWorkflowPermissions(automation?.workspace_id ?? null);
+  const { canEdit, isLoading: permsLoading } = useWorkflowPermissions(
+    automation?.workspace_id ?? null,
+  );
   const lacksWritePermission = Boolean(automation) && !permsLoading && !canEdit && !isUnavailable;
 
   const readOnly = isUnavailable || !canEdit;
@@ -257,8 +297,6 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     readOnlyReasonRef.current = readOnlyReason;
   }, [readOnlyReason]);
 
-
-
   // Share links must never carry the *viewer's* active org: they are scoped to
   // the organization owning this workflow's workspace, or org-free when that
   // can't be resolved, so the recipient's own tenant resolution takes over.
@@ -275,7 +313,6 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
       setCopyingLink(false);
     }
   }, [workflowId, automation?.workspace_id]);
-
 
   /* ----------------------------- Persistence ----------------------------- */
 
@@ -375,12 +412,13 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     [],
   );
 
-
   // Keyboard shortcuts
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      const inField = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      const inField =
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
       const mod = e.metaKey || e.ctrlKey;
       // ⌘S must work even while the name field has focus.
       if (mod && e.key.toLowerCase() === "s") {
@@ -400,7 +438,10 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
         if (!canMutate) return;
         e.preventDefault();
         history.undo();
-      } else if (mod && (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))) {
+      } else if (
+        mod &&
+        (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey))
+      ) {
         if (!canMutate) return;
         e.preventDefault();
         history.redo();
@@ -452,7 +493,9 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
   const onNodeDragStop = React.useCallback(
     (_: React.MouseEvent, dragged: Node<WFNodeData>) => {
       if (!allowEdit()) return;
-      const next = rfNodes.map((n) => (n.id === dragged.id ? { ...n, position: dragged.position } : n));
+      const next = rfNodes.map((n) =>
+        n.id === dragged.id ? { ...n, position: dragged.position } : n,
+      );
       history.commit(fromReactFlow(next, edges));
     },
     [rfNodes, edges, history, allowEdit],
@@ -472,7 +515,13 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
       if (!allowEdit()) return;
       if (!conn.source || !conn.target || conn.source === conn.target) return;
       const next = addEdge(
-        { ...conn, id: `e_${Math.random().toString(36).slice(2, 9)}`, type: "default", animated: true, markerEnd: { type: MarkerType.ArrowClosed } },
+        {
+          ...conn,
+          id: `e_${Math.random().toString(36).slice(2, 9)}`,
+          type: "default",
+          animated: true,
+          markerEnd: { type: MarkerType.ArrowClosed },
+        },
         edges,
       );
       history.commit(fromReactFlow(nodes, next));
@@ -502,7 +551,6 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     },
     [history, allowEdit],
   );
-
 
   const onDrop = React.useCallback(
     (e: React.DragEvent) => {
@@ -541,7 +589,11 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
     if (!allowEdit()) return;
     const src = history.graph.nodes.find((n) => n.id === id);
     if (!src) return;
-    const copy: WorkflowNode = { ...src, id: genId(), position: { x: src.position.x + 40, y: src.position.y + 40 } };
+    const copy: WorkflowNode = {
+      ...src,
+      id: genId(),
+      position: { x: src.position.x + 40, y: src.position.y + 40 },
+    };
     history.commit((g) => ({ ...g, nodes: [...g.nodes, copy] }));
     setSelectedId(copy.id);
   };
@@ -590,7 +642,10 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
       testRunFn({
         data: {
           automationId: workflowId,
-          graph: history.graph as unknown as { nodes: Record<string, unknown>[]; edges: Record<string, unknown>[] },
+          graph: history.graph as unknown as {
+            nodes: Record<string, unknown>[];
+            edges: Record<string, unknown>[];
+          },
           input,
         },
       }),
@@ -622,8 +677,7 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
           <div className="text-sm font-semibold">This workflow isn’t available</div>
           <p className="text-xs text-muted-foreground">
             {isError
-              ? (loadError as Error)?.message ??
-                "We couldn’t load this workflow."
+              ? ((loadError as Error)?.message ?? "We couldn’t load this workflow.")
               : "It may have been deleted, or it belongs to a different organization than the one you’re currently in. Switch organization from the sidebar and try again."}
           </p>
           <div className="flex items-center justify-center gap-2 pt-1">
@@ -647,7 +701,6 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
       </div>
     );
   }
-
 
   return (
     // Full viewport height: the builder has its own toolbar and no app header, so the
@@ -713,12 +766,18 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem disabled={readOnly || !history.canUndo} onSelect={() => history.undo()}>
+              <DropdownMenuItem
+                disabled={readOnly || !history.canUndo}
+                onSelect={() => history.undo()}
+              >
                 <Undo2 className="mr-2 h-3.5 w-3.5" />
                 Undo
                 <span className="ml-auto text-[11px] text-muted-foreground">⌘Z</span>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled={readOnly || !history.canRedo} onSelect={() => history.redo()}>
+              <DropdownMenuItem
+                disabled={readOnly || !history.canRedo}
+                onSelect={() => history.redo()}
+              >
                 <Redo2 className="mr-2 h-3.5 w-3.5" />
                 Redo
                 <span className="ml-auto text-[11px] text-muted-foreground">⌘⇧Z</span>
@@ -729,7 +788,12 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
                 Templates
               </DropdownMenuItem>
               {/* Sharing stays available in read-only mode — it never writes. */}
-              <DropdownMenuItem disabled={copyingLink} onSelect={() => { void copyShareLink(); }}>
+              <DropdownMenuItem
+                disabled={copyingLink}
+                onSelect={() => {
+                  void copyShareLink();
+                }}
+              >
                 <Share2 className="mr-2 h-3.5 w-3.5" />
                 Copy share link
               </DropdownMenuItem>
@@ -747,7 +811,11 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
             }
             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-control border border-border bg-surface text-xs font-medium hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {testMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            {testMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Play className="w-3.5 h-3.5" />
+            )}
             Test / Simulate
           </button>
           <button
@@ -761,7 +829,11 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
             }
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            {publishMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Rocket className="w-3.5 h-3.5" />}
+            {publishMutation.isPending ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Rocket className="w-3.5 h-3.5" />
+            )}
             Publish
           </button>
         </div>
@@ -779,7 +851,9 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <div className="space-y-0.5">
             <div className="font-semibold">
-              {isUnavailable ? "Read-only: not available in this workspace" : "Read-only: view access"}
+              {isUnavailable
+                ? "Read-only: not available in this workspace"
+                : "Read-only: view access"}
             </div>
             <p className="text-[11px] opacity-90">
               {readOnlyReason} Saving, publishing, testing and editing are disabled.
@@ -794,15 +868,12 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
         </div>
       ) : null}
 
-
-
       <TestRunDrawer
         open={testOpen}
         onClose={() => setTestOpen(false)}
         result={testMutation.data}
         pending={testMutation.isPending}
       />
-
 
       <div className="flex-1 flex min-h-0">
         {readOnly ? null : <NodePalette onAdd={(def) => addNode(def)} />}
@@ -831,7 +902,12 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
             defaultEdgeOptions={{ type: "default", animated: true }}
             className="bg-background"
           >
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} className="!bg-background opacity-60" />
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={20}
+              size={1}
+              className="!bg-background opacity-60"
+            />
             <Controls
               position="bottom-left"
               className="!bg-surface !border !border-border !rounded-control !shadow-md overflow-hidden"
@@ -844,7 +920,13 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
               className="!bg-surface !border !border-border !rounded-control overflow-hidden"
               nodeColor={(n) => {
                 const kind = NODE_REGISTRY_BY_TYPE[(n.data as WFNodeData)?.type]?.kind ?? "action";
-                return kind === "trigger" ? "#10b981" : kind === "logic" ? "#f59e0b" : kind === "ai" ? "#d946ef" : "#0ea5e9";
+                return kind === "trigger"
+                  ? "#10b981"
+                  : kind === "logic"
+                    ? "#f59e0b"
+                    : kind === "ai"
+                      ? "#d946ef"
+                      : "#0ea5e9";
               }}
               maskColor="hsl(var(--background) / 0.6)"
             />
@@ -878,7 +960,11 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
                   )}
                   {errorCount} errors · {warnCount} warnings
                 </summary>
-                <ScrollArea type="hover" className="border-t border-border" viewportClassName="max-h-56">
+                <ScrollArea
+                  type="hover"
+                  className="border-t border-border"
+                  viewportClassName="max-h-56"
+                >
                   <ul>
                     {issues.map((i, idx) => (
                       <li
@@ -913,8 +999,16 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
         )}
       </div>
 
-      <TemplateGallery open={showTemplates} onClose={() => setShowTemplates(false)} onApply={applyTemplate} />
-      <QuickAddPicker open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onPick={addPresetNode} />
+      <TemplateGallery
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        onApply={applyTemplate}
+      />
+      <QuickAddPicker
+        open={showQuickAdd}
+        onClose={() => setShowQuickAdd(false)}
+        onPick={addPresetNode}
+      />
       <SimulateRunDialog
         open={simulateOpen}
         onClose={() => setSimulateOpen(false)}
@@ -926,16 +1020,23 @@ function BuilderInner({ workflowId }: { workflowId: string }) {
 }
 
 function ToolbarBtn({
-  onClick, icon, label, hotkey, disabled, disabledReason,
+  onClick,
+  icon,
+  label,
+  hotkey,
+  disabled,
+  disabledReason,
 }: {
-  onClick: () => void; icon: React.ReactNode; label: string; hotkey?: string;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  hotkey?: string;
   disabled?: boolean;
   /** Shown as the tooltip when the button is disabled, explaining why. */
   disabledReason?: string;
 }) {
-  const tooltip = disabled && disabledReason
-    ? disabledReason
-    : hotkey ? `${label} (${hotkey})` : label;
+  const tooltip =
+    disabled && disabledReason ? disabledReason : hotkey ? `${label} (${hotkey})` : label;
   return (
     <button
       type="button"
@@ -987,7 +1088,9 @@ function ValidationBadge({ errors, warnings }: { errors: number; warnings: numbe
       }`}
     >
       <AlertTriangle className="w-3 h-3" />
-      {errors > 0 ? `${errors} error${errors > 1 ? "s" : ""}` : `${warnings} warning${warnings > 1 ? "s" : ""}`}
+      {errors > 0
+        ? `${errors} error${errors > 1 ? "s" : ""}`
+        : `${warnings} warning${warnings > 1 ? "s" : ""}`}
     </span>
   );
 }
@@ -1070,7 +1173,10 @@ function TestRunDrawer({
           )}
           <ol className="space-y-2">
             {result?.steps.map((s) => (
-              <li key={`${s.sort_order}-${s.node_id}`} className="rounded-control border border-border bg-background p-3">
+              <li
+                key={`${s.sort_order}-${s.node_id}`}
+                className="rounded-control border border-border bg-background p-3"
+              >
                 <div className="flex items-center justify-between gap-2">
                   <div className="text-xs font-medium truncate">
                     {s.sort_order + 1}. {s.node_type}

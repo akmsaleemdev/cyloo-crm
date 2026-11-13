@@ -4,8 +4,20 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
-  BookOpen, Calendar, CircleDot, FileText, Headphones, Loader2, MessageSquare,
-  Package, Receipt, Search, Send, Sparkles, TrendingUp, User2,
+  BookOpen,
+  Calendar,
+  CircleDot,
+  FileText,
+  Headphones,
+  Loader2,
+  MessageSquare,
+  Package,
+  Receipt,
+  Search,
+  Send,
+  Sparkles,
+  TrendingUp,
+  User2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { assistantChat, assistantHandoff } from "@/lib/client-portal/assistant.functions";
@@ -19,23 +31,48 @@ export const Route = createFileRoute("/_authenticated/client/assistant")({
 type Msg = { role: "user" | "assistant"; content: string; handoffReason?: string | null };
 
 const QUICK_ACTIONS: Array<{ icon: typeof Calendar; label: string; prompt: string }> = [
-  { icon: Receipt, label: "Summarize my invoices", prompt: "Give me a quick summary of my invoices — what's paid, what's due, and any overdue." },
-  { icon: Package, label: "Track my orders", prompt: "What's the current status of my open orders?" },
-  { icon: Calendar, label: "Upcoming appointments", prompt: "What appointments do I have coming up? Include the join links." },
-  { icon: MessageSquare, label: "Summarize conversations", prompt: "Summarize my recent conversations with your team." },
-  { icon: Headphones, label: "My open tickets", prompt: "What support tickets do I have open and what's their status?" },
-  { icon: TrendingUp, label: "Recommend products", prompt: "Based on my history, what products or services do you recommend for me?" },
-  { icon: BookOpen, label: "How-to help", prompt: "How do I reschedule an appointment through the portal?" },
+  {
+    icon: Receipt,
+    label: "Summarize my invoices",
+    prompt: "Give me a quick summary of my invoices — what's paid, what's due, and any overdue.",
+  },
+  {
+    icon: Package,
+    label: "Track my orders",
+    prompt: "What's the current status of my open orders?",
+  },
+  {
+    icon: Calendar,
+    label: "Upcoming appointments",
+    prompt: "What appointments do I have coming up? Include the join links.",
+  },
+  {
+    icon: MessageSquare,
+    label: "Summarize conversations",
+    prompt: "Summarize my recent conversations with your team.",
+  },
+  {
+    icon: Headphones,
+    label: "My open tickets",
+    prompt: "What support tickets do I have open and what's their status?",
+  },
+  {
+    icon: TrendingUp,
+    label: "Recommend products",
+    prompt: "Based on my history, what products or services do you recommend for me?",
+  },
+  {
+    icon: BookOpen,
+    label: "How-to help",
+    prompt: "How do I reschedule an appointment through the portal?",
+  },
 ];
 
 function AssistantPage() {
   const chatFn = useServerFn(assistantChat);
   const handoffFn = useServerFn(assistantHandoff);
 
-  const locale = useMemo(
-    () => (typeof navigator !== "undefined" ? navigator.language : "en"),
-    []
-  );
+  const locale = useMemo(() => (typeof navigator !== "undefined" ? navigator.language : "en"), []);
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -44,41 +81,54 @@ function AssistantPage() {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const chat = useMutation({
-    mutationFn: (history: Msg[]) => chatFn({
-      data: {
-        locale,
-        messages: history.map((m) => ({ role: m.role, content: m.content })),
-      },
-    }),
+    mutationFn: (history: Msg[]) =>
+      chatFn({
+        data: {
+          locale,
+          messages: history.map((m) => ({ role: m.role, content: m.content })),
+        },
+      }),
     onSuccess: (res) => {
       setProviderKind(res.providerKind);
-      setMessages((prev) => [...prev, {
-        role: "assistant", content: res.reply || "", handoffReason: res.handoffReason,
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: res.reply || "",
+          handoffReason: res.handoffReason,
+        },
+      ]);
       setTimeout(() => inputRef.current?.focus(), 30);
     },
     onError: (e) => {
-      setMessages((prev) => [...prev, {
-        role: "assistant",
-        content: `Sorry, I had trouble responding. ${e instanceof Error ? e.message : ""}`,
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Sorry, I had trouble responding. ${e instanceof Error ? e.message : ""}`,
+        },
+      ]);
     },
   });
 
   const handoff = useMutation({
-    mutationFn: ({ reason }: { reason: string }) => handoffFn({
-      data: {
-        reason,
-        transcript: messages.map((m) => ({ role: m.role, content: m.content })),
-        priority: "normal",
-      },
-    }),
+    mutationFn: ({ reason }: { reason: string }) =>
+      handoffFn({
+        data: {
+          reason,
+          transcript: messages.map((m) => ({ role: m.role, content: m.content })),
+          priority: "normal",
+        },
+      }),
     onSuccess: (r) => {
       toast.success("Connected — a support agent will follow up.");
-      setMessages((prev) => [...prev, {
-        role: "assistant",
-        content: `I've opened a ticket for you and shared this conversation. You can [view it here](/client/tickets/${r.ticketId}).`,
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `I've opened a ticket for you and shared this conversation. You can [view it here](/client/tickets/${r.ticketId}).`,
+        },
+      ]);
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Handoff failed"),
   });
@@ -87,7 +137,9 @@ function AssistantPage() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, chat.isPending]);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   function submit(text?: string) {
     const value = (text ?? input).trim();
@@ -117,9 +169,11 @@ function AssistantPage() {
               Grounded in your account · multilingual · {providerKind ?? "ready"}
             </p>
           </div>
-          <Link to="/client/tickets/new"><Button variant="outline" size="sm">
-            <User2 className="w-3.5 h-3.5 mr-1.5" /> Talk to a human
-          </Button></Link>
+          <Link to="/client/tickets/new">
+            <Button variant="outline" size="sm">
+              <User2 className="w-3.5 h-3.5 mr-1.5" /> Talk to a human
+            </Button>
+          </Link>
         </header>
 
         {/* Transcript */}
@@ -131,8 +185,8 @@ function AssistantPage() {
               </div>
               <h2 className="font-display text-xl font-semibold">How can I help today?</h2>
               <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-                Ask me anything about your account — orders, invoices, appointments, or how to use the portal.
-                I speak your language and can search our help center.
+                Ask me anything about your account — orders, invoices, appointments, or how to use
+                the portal. I speak your language and can search our help center.
               </p>
               <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-2xl mx-auto">
                 {QUICK_ACTIONS.slice(0, 6).map((a) => (
@@ -149,17 +203,22 @@ function AssistantPage() {
           )}
 
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-start gap-2`}>
+            <div
+              key={i}
+              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"} items-start gap-2`}
+            >
               {m.role === "assistant" && (
                 <div className="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center shrink-0 mt-1">
                   <Sparkles className="w-3.5 h-3.5" />
                 </div>
               )}
-              <div className={`max-w-[80%] rounded-control px-4 py-2.5 text-sm ${
-                m.role === "user"
-                  ? "bg-accent text-accent-foreground rounded-br-sm"
-                  : "bg-background border border-border rounded-bl-sm"
-              }`}>
+              <div
+                className={`max-w-[80%] rounded-control px-4 py-2.5 text-sm ${
+                  m.role === "user"
+                    ? "bg-accent text-accent-foreground rounded-br-sm"
+                    : "bg-background border border-border rounded-bl-sm"
+                }`}
+              >
                 {m.role === "assistant" ? (
                   <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-a:text-accent prose-a:no-underline hover:prose-a:underline prose-code:text-xs">
                     <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -189,10 +248,13 @@ function AssistantPage() {
                 <User2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium">Would you like a human to take over?</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{handoffReason}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                    {handoffReason}
+                  </p>
                 </div>
                 <Button
-                  size="sm" className="h-7"
+                  size="sm"
+                  className="h-7"
                   disabled={handoff.isPending}
                   onClick={() => handoff.mutate({ reason: handoffReason })}
                 >
@@ -206,7 +268,10 @@ function AssistantPage() {
 
         {/* Composer */}
         <form
-          onSubmit={(e) => { e.preventDefault(); submit(); }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
           className="border-t border-border p-3 flex items-end gap-2 bg-background"
         >
           <div className="flex-1 relative">
@@ -216,7 +281,10 @@ function AssistantPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  submit();
+                }
               }}
               placeholder="Ask anything — orders, invoices, appointments, products"
               rows={1}
@@ -225,7 +293,11 @@ function AssistantPage() {
             />
           </div>
           <Button type="submit" disabled={!input.trim() || chat.isPending}>
-            {chat.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {chat.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
           </Button>
         </form>
       </div>
@@ -269,10 +341,24 @@ function AssistantPage() {
             <FileText className="w-3 h-3" /> Related
           </h3>
           <div className="space-y-1 text-sm">
-            <Link to="/client/knowledge" className="block px-2 py-1.5 rounded-control hover:bg-muted">Browse help center</Link>
-            <Link to="/client/tickets" className="block px-2 py-1.5 rounded-control hover:bg-muted">My support tickets</Link>
-            <Link to="/client/billing" className="block px-2 py-1.5 rounded-control hover:bg-muted">Billing & orders</Link>
-            <Link to="/client/appointments" className="block px-2 py-1.5 rounded-control hover:bg-muted">My appointments</Link>
+            <Link
+              to="/client/knowledge"
+              className="block px-2 py-1.5 rounded-control hover:bg-muted"
+            >
+              Browse help center
+            </Link>
+            <Link to="/client/tickets" className="block px-2 py-1.5 rounded-control hover:bg-muted">
+              My support tickets
+            </Link>
+            <Link to="/client/billing" className="block px-2 py-1.5 rounded-control hover:bg-muted">
+              Billing & orders
+            </Link>
+            <Link
+              to="/client/appointments"
+              className="block px-2 py-1.5 rounded-control hover:bg-muted"
+            >
+              My appointments
+            </Link>
           </div>
         </section>
       </aside>

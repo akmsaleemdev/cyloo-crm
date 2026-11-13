@@ -1,12 +1,24 @@
 import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app/app-topbar";
 import {
-  LayoutGrid, FileText, Zap, BarChart3, Users, Building2,
-  ChevronDown, Smile, Check, Settings2,
+  LayoutGrid,
+  FileText,
+  Zap,
+  BarChart3,
+  Users,
+  Building2,
+  ChevronDown,
+  Smile,
+  Check,
+  Settings2,
 } from "lucide-react";
 import {
-  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent,
-  DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -15,13 +27,23 @@ export const Route = createFileRoute("/_authenticated/satisfaction")({
   head: () => ({
     meta: [
       { title: "Satisfaction" },
-      { name: "description", content: "CSAT, NPS, CES, feedback forms, agent & department ratings — with survey automation and analytics." },
+      {
+        name: "description",
+        content:
+          "CSAT, NPS, CES, feedback forms, agent & department ratings — with survey automation and analytics.",
+      },
     ],
   }),
   component: SatisfactionLayout,
 });
 
-type NavLeaf = { to: string; label: string; icon: LucideIcon; description?: string; exact?: boolean };
+type NavLeaf = {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  description?: string;
+  exact?: boolean;
+};
 type NavGroup = { key: string; label: string; icon: LucideIcon; items: NavLeaf[] };
 
 const GROUPS: NavGroup[] = [
@@ -30,9 +52,25 @@ const GROUPS: NavGroup[] = [
     label: "Surveys",
     icon: LayoutGrid,
     items: [
-      { to: "/satisfaction", label: "Surveys", icon: LayoutGrid, description: "Active surveys & responses", exact: true },
-      { to: "/satisfaction/templates", label: "Templates", icon: FileText, description: "Start from a preset" },
-      { to: "/satisfaction/automations", label: "Automations", icon: Zap, description: "Trigger & schedule surveys" },
+      {
+        to: "/satisfaction",
+        label: "Surveys",
+        icon: LayoutGrid,
+        description: "Active surveys & responses",
+        exact: true,
+      },
+      {
+        to: "/satisfaction/templates",
+        label: "Templates",
+        icon: FileText,
+        description: "Start from a preset",
+      },
+      {
+        to: "/satisfaction/automations",
+        label: "Automations",
+        icon: Zap,
+        description: "Trigger & schedule surveys",
+      },
     ],
   },
   {
@@ -40,16 +78,32 @@ const GROUPS: NavGroup[] = [
     label: "Analytics",
     icon: BarChart3,
     items: [
-      { to: "/satisfaction/analytics", label: "Analytics", icon: BarChart3, description: "Volume, trends & insights" },
-      { to: "/satisfaction/agents", label: "Agent Ratings", icon: Users, description: "Agent leaderboard & CSAT" },
-      { to: "/satisfaction/departments", label: "Department Ratings", icon: Building2, description: "Department performance" },
+      {
+        to: "/satisfaction/analytics",
+        label: "Analytics",
+        icon: BarChart3,
+        description: "Volume, trends & insights",
+      },
+      {
+        to: "/satisfaction/agents",
+        label: "Agent Ratings",
+        icon: Users,
+        description: "Agent leaderboard & CSAT",
+      },
+      {
+        to: "/satisfaction/departments",
+        label: "Department Ratings",
+        icon: Building2,
+        description: "Department performance",
+      },
     ],
   },
 ];
 
 function SatisfactionLayout() {
   const loc = useLocation();
-  const isActive = (n: NavLeaf) => (n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to));
+  const isActive = (n: NavLeaf) =>
+    n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to);
   const activeLeaf = GROUPS.flatMap((g) => g.items).find(isActive);
 
   return (
@@ -86,7 +140,11 @@ function SatisfactionLayout() {
                     <ChevronDown className="h-3.5 w-3.5 opacity-60 shrink-0" />
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="start" sideOffset={4} className="w-[min(16rem,calc(100vw-1.5rem))]">
+                  <DropdownMenuContent
+                    align="start"
+                    sideOffset={4}
+                    className="w-[min(16rem,calc(100vw-1.5rem))]"
+                  >
                     <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
                       {group.label}
                     </DropdownMenuLabel>
@@ -100,19 +158,29 @@ function SatisfactionLayout() {
                             to={leaf.to}
                             className={cn(
                               "relative flex items-start gap-2.5 cursor-pointer px-2 transition-colors",
-                              active
-                                ? "bg-primary/10 text-primary"
-                                : "hover:bg-muted",
+                              active ? "bg-primary/10 text-primary" : "hover:bg-muted",
                             )}
                             aria-current={active ? "page" : undefined}
                           >
-                            <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", active && "text-primary")} />
+                            <Icon
+                              className={cn("h-4 w-4 mt-0.5 shrink-0", active && "text-primary")}
+                            />
                             <span className="flex min-w-0 flex-1 flex-col">
-                              <span className={cn("text-sm leading-tight truncate", active && "font-semibold")}>
+                              <span
+                                className={cn(
+                                  "text-sm leading-tight truncate",
+                                  active && "font-semibold",
+                                )}
+                              >
                                 {leaf.label}
                               </span>
                               {leaf.description && (
-                                <span className={cn("text-[11px] truncate", active ? "text-primary/80" : "text-muted-foreground")}>
+                                <span
+                                  className={cn(
+                                    "text-[11px] truncate",
+                                    active ? "text-primary/80" : "text-muted-foreground",
+                                  )}
+                                >
                                   {leaf.description}
                                 </span>
                               )}
@@ -133,7 +201,9 @@ function SatisfactionLayout() {
               <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Settings2 className="h-3.5 w-3.5 shrink-0" />
                 <span className="hidden md:inline">Current:</span>
-                <span className="font-medium text-foreground truncate max-w-[10rem]">{activeLeaf.label}</span>
+                <span className="font-medium text-foreground truncate max-w-[10rem]">
+                  {activeLeaf.label}
+                </span>
               </span>
             )}
           </div>

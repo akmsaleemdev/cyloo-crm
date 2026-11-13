@@ -38,7 +38,9 @@ export const getHelpdeskReadiness = createServerFn({ method: "POST" })
     const push = (c: ReadinessCheck) => checks.push(c);
 
     // ---------- Tickets ----------
-    const tickets = await count(supabase, "conversations", (q) => q.not("ticket_number", "is", null));
+    const tickets = await count(supabase, "conversations", (q) =>
+      q.not("ticket_number", "is", null),
+    );
     const openTickets = await count(supabase, "conversations", (q) =>
       q.not("ticket_number", "is", null).in("status", ["open", "pending"]),
     );

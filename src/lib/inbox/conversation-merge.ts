@@ -40,7 +40,6 @@ export type InboxSelection = {
   sortByRecency?: "asc" | "desc" | null;
 };
 
-
 function metaString(
   metadata: Record<string, unknown> | null | undefined,
   key: string,
@@ -77,7 +76,9 @@ export function conversationMatchesSelection(
 
   const external = parseExternalAccountId(accountId);
   if (external) {
-    return row.channel === external.channel && metaString(row.metadata, "account_id") === external.rowId;
+    return (
+      row.channel === external.channel && metaString(row.metadata, "account_id") === external.rowId
+    );
   }
 
   return row.channel_account_id === accountId;
@@ -106,9 +107,7 @@ export function mergeConversationPages<T extends MergeableConversation>(
       out.push(candidate);
     }
   }
-  return selection.sortByRecency
-    ? sortByRecency(out, selection.sortByRecency === "asc")
-    : out;
+  return selection.sortByRecency ? sortByRecency(out, selection.sortByRecency === "asc") : out;
 }
 
 /**
@@ -120,10 +119,7 @@ export function mergeConversationPages<T extends MergeableConversation>(
  * sitting in its old slot until the user reloaded. Sorting at the merge gate
  * guarantees the rendered order always matches the sort the query asked for.
  */
-export function sortByRecency<T extends MergeableConversation>(
-  rows: T[],
-  ascending: boolean,
-): T[] {
+export function sortByRecency<T extends MergeableConversation>(rows: T[], ascending: boolean): T[] {
   const ts = (row: T) => {
     const value = row.last_message_at ?? null;
     const parsed = value ? Date.parse(value) : NaN;
@@ -136,4 +132,3 @@ export function sortByRecency<T extends MergeableConversation>(
     return ascending ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id);
   });
 }
-

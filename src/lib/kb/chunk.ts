@@ -15,7 +15,7 @@ export function estimateTokens(text: string): number {
 }
 
 const DEFAULT_TARGET = 500; // target ~500 tokens per chunk (≈2000 chars)
-const DEFAULT_MAX = 800;    // hard cap ≈ 3200 chars
+const DEFAULT_MAX = 800; // hard cap ≈ 3200 chars
 const DEFAULT_OVERLAP = 60; // ~60 tokens of overlap (≈240 chars)
 
 /**

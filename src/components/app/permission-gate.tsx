@@ -22,10 +22,7 @@ export function PermissionGate({ anyOf, allOf, permission, fallback = null, chil
   if (loading) return null;
   if (isSuperAdmin) return <>{children}</>;
 
-  const keys = [
-    ...(permission ? [permission] : []),
-    ...(anyOf ?? []),
-  ];
+  const keys = [...(permission ? [permission] : []), ...(anyOf ?? [])];
   const okAny = keys.length === 0 ? true : canAny(keys);
   const okAll = allOf && allOf.length > 0 ? canAll(allOf) : true;
   return okAny && okAll ? <>{children}</> : <>{fallback}</>;

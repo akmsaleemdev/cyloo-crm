@@ -82,7 +82,12 @@ export function useSlaPolicies() {
       .channel(`sla-policies-${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "sla_policies", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "sla_policies",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["sla_policies", workspaceId] }),
       )
       .subscribe();
@@ -145,7 +150,12 @@ export function useConversationSla(conversationId: string | undefined) {
       .channel(`conv-sla-${conversationId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversation_sla", filter: `conversation_id=eq.${conversationId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "conversation_sla",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["conversation_sla", conversationId] }),
       )
       .subscribe();
@@ -161,7 +171,9 @@ export function useApplySla() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (conversationId: string) => {
-      const { data, error } = await rpc("apply_sla_to_conversation", { _conversation_id: conversationId });
+      const { data, error } = await rpc("apply_sla_to_conversation", {
+        _conversation_id: conversationId,
+      });
       if (error) throw error;
       return data as string | null;
     },
@@ -175,7 +187,13 @@ export function useApplySla() {
 export function useAssignConversation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ conversationId, userId }: { conversationId: string; userId: string | null }) => {
+    mutationFn: async ({
+      conversationId,
+      userId,
+    }: {
+      conversationId: string;
+      userId: string | null;
+    }) => {
       const { error } = await rpc("assign_conversation", {
         _conversation_id: conversationId,
         _assignee: userId,
@@ -199,7 +217,9 @@ export function useAutoAssign() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (conversationId: string) => {
-      const { data, error } = await rpc("auto_assign_conversation", { _conversation_id: conversationId });
+      const { data, error } = await rpc("auto_assign_conversation", {
+        _conversation_id: conversationId,
+      });
       if (error) throw error;
       return data as string | null;
     },
@@ -212,7 +232,13 @@ export function useAutoAssign() {
 export function useSetConversationPriority() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ conversationId, priority }: { conversationId: string; priority: ConversationPriority }) => {
+    mutationFn: async ({
+      conversationId,
+      priority,
+    }: {
+      conversationId: string;
+      priority: ConversationPriority;
+    }) => {
       const { error } = await anyFrom("conversations")
         .update({ priority })
         .eq("id", conversationId);
@@ -249,7 +275,12 @@ export function useAssignmentRules() {
       .channel(`assignment-rules-${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "assignment_rules", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "assignment_rules",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["assignment_rules", workspaceId] }),
       )
       .subscribe();

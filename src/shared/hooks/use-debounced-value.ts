@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 /**
  * Debounce a rapidly changing value (search boxes, sliders) so downstream

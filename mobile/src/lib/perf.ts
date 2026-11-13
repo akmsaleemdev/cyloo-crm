@@ -4,8 +4,8 @@
  * - InteractionBatch: defer expensive work until after animations.
  * - measure: perf timers surfaced in __DEV__.
  */
-import { InteractionManager } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import { InteractionManager } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
 
 let splashHeld = false;
 

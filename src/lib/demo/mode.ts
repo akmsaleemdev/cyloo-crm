@@ -32,10 +32,8 @@ import { DEMO_ACCOUNTS } from "./accounts";
 type EnvBag = Record<string, string | undefined>;
 
 function readEnv(): EnvBag {
-  const viteEnv =
-    (import.meta as unknown as { env?: EnvBag }).env ?? ({} as EnvBag);
-  const nodeEnv =
-    typeof process !== "undefined" ? (process.env as EnvBag) : ({} as EnvBag);
+  const viteEnv = (import.meta as unknown as { env?: EnvBag }).env ?? ({} as EnvBag);
+  const nodeEnv = typeof process !== "undefined" ? (process.env as EnvBag) : ({} as EnvBag);
   return { ...nodeEnv, ...viteEnv };
 }
 
@@ -71,18 +69,18 @@ export function isProductionMode(): boolean {
 // ---------------------------------------------------------------------------
 
 const ALLOWED_IN_DEMO = false; // writes blocked in demo
-const READS_ALLOWED = true;    // reads always allowed
+const READS_ALLOWED = true; // reads always allowed
 
-export const canRead      = () => READS_ALLOWED;
-export const canCreate    = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canUpdate    = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canDelete    = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canRestore   = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canRead = () => READS_ALLOWED;
+export const canCreate = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canUpdate = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canDelete = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canRestore = () => isProductionMode() || ALLOWED_IN_DEMO;
 export const canDuplicate = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canImport    = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canExport    = () => true; // exports are read-only side effects
-export const canBulk      = () => isProductionMode() || ALLOWED_IN_DEMO;
-export const canExecute   = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canImport = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canExport = () => true; // exports are read-only side effects
+export const canBulk = () => isProductionMode() || ALLOWED_IN_DEMO;
+export const canExecute = () => isProductionMode() || ALLOWED_IN_DEMO;
 export const canChangeSettings = () => isProductionMode() || ALLOWED_IN_DEMO;
 
 /** Imperative guard — returns true when the action is permitted. */

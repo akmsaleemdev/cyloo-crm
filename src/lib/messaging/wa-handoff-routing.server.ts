@@ -39,9 +39,7 @@ export { WA_HANDOFF_DEFAULTS, selectWaHandoffAgent };
 type Db = any;
 
 function coerceStrategy(value: unknown): WaHandoffStrategy {
-  return value === "least_busy" || value === "skill" || value === "auto"
-    ? value
-    : "round_robin";
+  return value === "least_busy" || value === "skill" || value === "auto" ? value : "round_robin";
 }
 
 /** Load workspace settings, falling back to defaults when no row exists. */
@@ -83,9 +81,7 @@ interface AgentRow {
 async function loadAgents(db: Db, workspaceId: string): Promise<AgentRow[]> {
   const { data } = await db
     .from("agent_availability")
-    .select(
-      "user_id, presence, skills, languages, max_concurrent, current_load, last_assigned_at",
-    )
+    .select("user_id, presence, skills, languages, max_concurrent, current_load, last_assigned_at")
     .eq("workspace_id", workspaceId);
   return (data ?? []) as AgentRow[];
 }
@@ -199,15 +195,17 @@ export async function routeWaHandoff(
         .maybeSingle();
 
       if (!alreadyQueued) {
-        await sbAny(db).from("handoff_queue").insert({
-          workspace_id: input.workspaceId,
-          conversation_id: input.conversationId,
-          required_skills: required,
-          reason: input.reason ?? "WhatsApp handoff requested",
-          status: "waiting",
-          requested_by: input.actorId ?? null,
-          metadata: { source: "wa-chatbot", strategy: settings.strategy },
-        });
+        await sbAny(db)
+          .from("handoff_queue")
+          .insert({
+            workspace_id: input.workspaceId,
+            conversation_id: input.conversationId,
+            required_skills: required,
+            reason: input.reason ?? "WhatsApp handoff requested",
+            status: "waiting",
+            requested_by: input.actorId ?? null,
+            metadata: { source: "wa-chatbot", strategy: settings.strategy },
+          });
       }
 
       await db
@@ -215,14 +213,16 @@ export async function routeWaHandoff(
         .update({ metadata: nextMeta, handoff_state: "queued" })
         .eq("id", input.conversationId);
 
-      await sbAny(db).from("handoff_events").insert({
-        workspace_id: input.workspaceId,
-        conversation_id: input.conversationId,
-        kind: "requested",
-        actor_id: input.actorId ?? null,
-        reason: input.reason ?? "WhatsApp handoff requested",
-        metadata: { source: "wa-chatbot", strategy: settings.strategy, queued: true },
-      });
+      await sbAny(db)
+        .from("handoff_events")
+        .insert({
+          workspace_id: input.workspaceId,
+          conversation_id: input.conversationId,
+          kind: "requested",
+          actor_id: input.actorId ?? null,
+          reason: input.reason ?? "WhatsApp handoff requested",
+          metadata: { source: "wa-chatbot", strategy: settings.strategy, queued: true },
+        });
 
       return {
         ...base,
@@ -253,31 +253,35 @@ export async function routeWaHandoff(
       .eq("conversation_id", input.conversationId)
       .eq("is_current", true);
 
-    await sbAny(db).from("conversation_assignments").insert({
-      workspace_id: input.workspaceId,
-      conversation_id: input.conversationId,
-      assigned_to: agentId,
-      assigned_by: input.actorId ?? null,
-      reason: input.reason ?? "WhatsApp handoff",
-      is_current: true,
-    });
+    await sbAny(db)
+      .from("conversation_assignments")
+      .insert({
+        workspace_id: input.workspaceId,
+        conversation_id: input.conversationId,
+        assigned_to: agentId,
+        assigned_by: input.actorId ?? null,
+        reason: input.reason ?? "WhatsApp handoff",
+        is_current: true,
+      });
 
-    await sbAny(db).from("handoff_events").insert({
-      workspace_id: input.workspaceId,
-      conversation_id: input.conversationId,
-      kind: "assigned",
-      to_user_id: agentId,
-      from_user_id: (convo.assigned_to as string | null) ?? null,
-      actor_id: input.actorId ?? null,
-      reason: input.reason ?? "WhatsApp handoff",
-      metadata: {
-        source: "wa-chatbot",
-        strategy: settings.strategy,
-        required_skills: required,
-        eligible_agents: picked.eligible,
-        cooled_down_agents: picked.cooledDown,
-      },
-    });
+    await sbAny(db)
+      .from("handoff_events")
+      .insert({
+        workspace_id: input.workspaceId,
+        conversation_id: input.conversationId,
+        kind: "assigned",
+        to_user_id: agentId,
+        from_user_id: (convo.assigned_to as string | null) ?? null,
+        actor_id: input.actorId ?? null,
+        reason: input.reason ?? "WhatsApp handoff",
+        metadata: {
+          source: "wa-chatbot",
+          strategy: settings.strategy,
+          required_skills: required,
+          eligible_agents: picked.eligible,
+          cooled_down_agents: picked.cooledDown,
+        },
+      });
 
     // Fairness bookkeeping — powers round-robin + agent cooldown.
     await db
@@ -370,15 +374,17 @@ export async function assignWaHandoffToTarget(
         .maybeSingle();
 
       if (!alreadyQueued) {
-        const { error } = await sbAny(db).from("handoff_queue").insert({
-          workspace_id: input.workspaceId,
-          conversation_id: input.conversationId,
-          required_skills: required,
-          reason: input.reason ?? "Queued manually",
-          status: "waiting",
-          requested_by: input.actorId ?? null,
-          metadata: { source: "wa-chatbot", strategy: "manual" },
-        });
+        const { error } = await sbAny(db)
+          .from("handoff_queue")
+          .insert({
+            workspace_id: input.workspaceId,
+            conversation_id: input.conversationId,
+            required_skills: required,
+            reason: input.reason ?? "Queued manually",
+            status: "waiting",
+            requested_by: input.actorId ?? null,
+            metadata: { source: "wa-chatbot", strategy: "manual" },
+          });
         if (error) return { ...base, status: "error", reason: error.message };
       }
 
@@ -394,15 +400,17 @@ export async function assignWaHandoffToTarget(
         .eq("conversation_id", input.conversationId)
         .eq("is_current", true);
 
-      await sbAny(db).from("handoff_events").insert({
-        workspace_id: input.workspaceId,
-        conversation_id: input.conversationId,
-        kind: "requested",
-        from_user_id: (convo.assigned_to as string | null) ?? null,
-        actor_id: input.actorId ?? null,
-        reason: input.reason ?? "Queued manually",
-        metadata: { source: "wa-chatbot", strategy: "manual", queued: true },
-      });
+      await sbAny(db)
+        .from("handoff_events")
+        .insert({
+          workspace_id: input.workspaceId,
+          conversation_id: input.conversationId,
+          kind: "requested",
+          from_user_id: (convo.assigned_to as string | null) ?? null,
+          actor_id: input.actorId ?? null,
+          reason: input.reason ?? "Queued manually",
+          metadata: { source: "wa-chatbot", strategy: "manual", queued: true },
+        });
 
       return {
         ...base,
@@ -439,14 +447,16 @@ export async function assignWaHandoffToTarget(
       .eq("conversation_id", input.conversationId)
       .eq("is_current", true);
 
-    await sbAny(db).from("conversation_assignments").insert({
-      workspace_id: input.workspaceId,
-      conversation_id: input.conversationId,
-      assigned_to: agentId,
-      assigned_by: input.actorId ?? null,
-      reason: input.reason ?? "Manual handoff",
-      is_current: true,
-    });
+    await sbAny(db)
+      .from("conversation_assignments")
+      .insert({
+        workspace_id: input.workspaceId,
+        conversation_id: input.conversationId,
+        assigned_to: agentId,
+        assigned_by: input.actorId ?? null,
+        reason: input.reason ?? "Manual handoff",
+        is_current: true,
+      });
 
     // A direct assignment resolves any pending queue entry for this thread.
     await db
@@ -455,16 +465,18 @@ export async function assignWaHandoffToTarget(
       .eq("conversation_id", input.conversationId)
       .eq("status", "waiting");
 
-    await sbAny(db).from("handoff_events").insert({
-      workspace_id: input.workspaceId,
-      conversation_id: input.conversationId,
-      kind: "assigned",
-      to_user_id: agentId,
-      from_user_id: (convo.assigned_to as string | null) ?? null,
-      actor_id: input.actorId ?? null,
-      reason: input.reason ?? "Manual handoff",
-      metadata: { source: "wa-chatbot", strategy: "manual", manual_target: "agent" },
-    });
+    await sbAny(db)
+      .from("handoff_events")
+      .insert({
+        workspace_id: input.workspaceId,
+        conversation_id: input.conversationId,
+        kind: "assigned",
+        to_user_id: agentId,
+        from_user_id: (convo.assigned_to as string | null) ?? null,
+        actor_id: input.actorId ?? null,
+        reason: input.reason ?? "Manual handoff",
+        metadata: { source: "wa-chatbot", strategy: "manual", manual_target: "agent" },
+      });
 
     await db
       .from("agent_availability")

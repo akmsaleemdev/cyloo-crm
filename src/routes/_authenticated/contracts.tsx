@@ -161,7 +161,8 @@ export function ContractsPage() {
       c.counterparty.toLowerCase().includes(search.toLowerCase()) ||
       c.id.toLowerCase().includes(search.toLowerCase());
     if (!matchQuery) return false;
-    if (activeTab === "pending") return c.status === "pending_signature" || c.status === "in_review";
+    if (activeTab === "pending")
+      return c.status === "pending_signature" || c.status === "in_review";
     if (activeTab === "signed") return c.status === "signed";
     if (activeTab === "expiring") return c.daysToRenewal <= 60;
     return true;
@@ -200,8 +201,8 @@ export function ContractsPage() {
               signedBy: "Current Operator (Authorized Representative)",
               signedAt: new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC",
             }
-          : c
-      )
+          : c,
+      ),
     );
     toast.success("Contract cryptographically signed with audit stamp.");
   };
@@ -214,13 +215,19 @@ export function ContractsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Contract Lifecycle Management (CLM)</h1>
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Contract Lifecycle Management (CLM)
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/10 text-primary border-primary/20"
+              >
                 Module 6 • Hub 1
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Master legal clause library, NDA/MSA authoring, e-signatures, and automated renewal triggers.
+              Master legal clause library, NDA/MSA authoring, e-signatures, and automated renewal
+              triggers.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -319,7 +326,11 @@ export function ContractsPage() {
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Pending Signatures</p>
                 <p className="text-2xl font-bold mt-1">
-                  {contracts.filter((c) => c.status === "pending_signature" || c.status === "in_review").length}
+                  {
+                    contracts.filter(
+                      (c) => c.status === "pending_signature" || c.status === "in_review",
+                    ).length
+                  }
                 </p>
               </div>
               <div className="p-2.5 rounded-full bg-amber-500/10 text-amber-600">
@@ -546,4 +557,3 @@ function ContractTable({
     </div>
   );
 }
-

@@ -12,8 +12,17 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { formatDistanceToNow } from "date-fns";
 import {
-  AlertTriangle, CheckCircle2, Copy, ExternalLink, KeyRound, Link2,
-  Loader2, PlugZap, RefreshCw, ShieldCheck, Webhook,
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  ExternalLink,
+  KeyRound,
+  Link2,
+  Loader2,
+  PlugZap,
+  RefreshCw,
+  ShieldCheck,
+  Webhook,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -68,8 +77,10 @@ export function WhatsAppWebhookPanel() {
   const workspaceId = workspace?.id;
   const { data: accountsData, isLoading } = useChannelAccounts(workspaceId);
   const accounts = useMemo(
-    () => ((accountsData?.accounts ?? []) as unknown as ChannelAccountRow[])
-      .filter((a) => a.provider === "whatsapp_cloud"),
+    () =>
+      ((accountsData?.accounts ?? []) as unknown as ChannelAccountRow[]).filter(
+        (a) => a.provider === "whatsapp_cloud",
+      ),
     [accountsData?.accounts],
   );
 
@@ -102,14 +113,23 @@ export function WhatsAppWebhookPanel() {
             <Webhook className="w-5 h-5" /> WhatsApp Webhook Configuration
           </h2>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Point Meta at this URL so inbound WhatsApp messages, delivery
-            receipts, and template updates sync into your workspace in
-            real time. Signature verification uses each account's app
-            secret; subscription challenges use its verify token.
+            Point Meta at this URL so inbound WhatsApp messages, delivery receipts, and template
+            updates sync into your workspace in real time. Signature verification uses each
+            account's app secret; subscription challenges use its verify token.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => refetch()} disabled={isFetching} className="gap-1.5">
-          {isFetching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="gap-1.5"
+        >
+          {isFetching ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
           Refresh
         </Button>
       </header>
@@ -119,12 +139,14 @@ export function WhatsAppWebhookPanel() {
         <div className="flex items-center gap-2">
           <Link2 className="w-4 h-4 text-primary" />
           <h3 className="font-medium text-sm">Callback URL</h3>
-          <Badge variant="outline" className="text-[11px] uppercase tracking-wide">Shared</Badge>
+          <Badge variant="outline" className="text-[11px] uppercase tracking-wide">
+            Shared
+          </Badge>
         </div>
         <p className="text-xs text-muted-foreground">
-          Paste this URL into Meta &rarr; WhatsApp &rarr; Configuration &rarr; Webhook.
-          The endpoint is public; each request is authenticated by HMAC
-          signature and matched to a channel account via its verify token.
+          Paste this URL into Meta &rarr; WhatsApp &rarr; Configuration &rarr; Webhook. The endpoint
+          is public; each request is authenticated by HMAC signature and matched to a channel
+          account via its verify token.
         </p>
         <CopyField label="Callback URL" value={webhookUrl} hint="POST + GET" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -132,7 +154,9 @@ export function WhatsAppWebhookPanel() {
             <div className="font-medium">Required webhook fields</div>
             <ul className="text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-0.5">
               {REQUIRED_FIELDS.map((f) => (
-                <li key={f} className="font-mono">• {f}</li>
+                <li key={f} className="font-mono">
+                  • {f}
+                </li>
               ))}
             </ul>
           </div>
@@ -179,8 +203,8 @@ export function WhatsAppWebhookPanel() {
             <AlertTriangle className="w-4 h-4" />
             <AlertTitle>No WhatsApp accounts connected</AlertTitle>
             <AlertDescription>
-              Connect a WhatsApp Cloud account first &mdash; its verify token
-              is what Meta uses to authenticate webhook subscriptions.
+              Connect a WhatsApp Cloud account first &mdash; its verify token is what Meta uses to
+              authenticate webhook subscriptions.
             </AlertDescription>
           </Alert>
         ) : (
@@ -220,8 +244,7 @@ function AccountWebhookCard({
 
   const testFn = useServerFn(testWhatsAppWebhook);
   const testMutation = useMutation({
-    mutationFn: () =>
-      testFn({ data: { workspaceId: workspaceId!, channelAccountId: account.id } }),
+    mutationFn: () => testFn({ data: { workspaceId: workspaceId!, channelAccountId: account.id } }),
     onSuccess: (result) => {
       setTestResult(result);
       if (result.ok) toast.success(result.message);
@@ -230,22 +253,37 @@ function AccountWebhookCard({
     onError: (err: Error) => toast.error(err.message || "Webhook test failed"),
   });
 
-
   const lastReceived = stats?.last_received_at
     ? formatDistanceToNow(new Date(stats.last_received_at), { addSuffix: true })
     : "Never";
 
   const health: { label: string; className: string; icon: typeof CheckCircle2 } = (() => {
     if (missingAppSecret || missingVerifyToken) {
-      return { label: "Not configured", className: "bg-warning/10 text-warning border-warning/30", icon: AlertTriangle };
+      return {
+        label: "Not configured",
+        className: "bg-warning/10 text-warning border-warning/30",
+        icon: AlertTriangle,
+      };
     }
     if (!stats || stats.total === 0) {
-      return { label: "Awaiting first event", className: "bg-muted text-muted-foreground border-border", icon: Loader2 };
+      return {
+        label: "Awaiting first event",
+        className: "bg-muted text-muted-foreground border-border",
+        icon: Loader2,
+      };
     }
     if (stats.signature_invalid > 0 || stats.failed > 0) {
-      return { label: "Delivery issues", className: "bg-destructive/10 text-destructive border-destructive/30", icon: AlertTriangle };
+      return {
+        label: "Delivery issues",
+        className: "bg-destructive/10 text-destructive border-destructive/30",
+        icon: AlertTriangle,
+      };
     }
-    return { label: "Healthy", className: "bg-success/10 text-success border-success/30", icon: CheckCircle2 };
+    return {
+      label: "Healthy",
+      className: "bg-success/10 text-success border-success/30",
+      icon: CheckCircle2,
+    };
   })();
 
   return (
@@ -266,8 +304,8 @@ function AccountWebhookCard({
         <Alert variant="destructive" className="py-2">
           <AlertTriangle className="w-4 h-4" />
           <AlertDescription className="text-xs">
-            No app secret configured — webhook signatures cannot be verified.
-            Edit the account to set <span className="font-mono">app_secret_name</span>.
+            No app secret configured — webhook signatures cannot be verified. Edit the account to
+            set <span className="font-mono">app_secret_name</span>.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -317,7 +355,11 @@ function AccountWebhookCard({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
         <Stat label="Events (7d)" value={stats?.total ?? 0} />
         <Stat label="Processed" value={stats?.processed ?? 0} tone="success" />
-        <Stat label="Failed" value={stats?.failed ?? 0} tone={stats && stats.failed > 0 ? "destructive" : undefined} />
+        <Stat
+          label="Failed"
+          value={stats?.failed ?? 0}
+          tone={stats && stats.failed > 0 ? "destructive" : undefined}
+        />
         <Stat
           label="Signature invalid"
           value={stats?.signature_invalid ?? 0}
@@ -330,7 +372,10 @@ function AccountWebhookCard({
           Last inbound event: <span className="text-foreground font-medium">{lastReceived}</span>
         </span>
         {stats?.last_error ? (
-          <span className="text-destructive font-mono truncate max-w-[380px]" title={stats.last_error}>
+          <span
+            className="text-destructive font-mono truncate max-w-[380px]"
+            title={stats.last_error}
+          >
             {stats.last_error}
           </span>
         ) : null}
@@ -362,7 +407,11 @@ function AccountWebhookCard({
 
       {testResult ? (
         <Alert variant={testResult.ok ? "default" : "destructive"} className="py-2">
-          {testResult.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+          {testResult.ok ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <AlertTriangle className="w-4 h-4" />
+          )}
           <AlertTitle className="text-xs">
             {testResult.ok ? "Webhook verified" : "Webhook test failed"}
           </AlertTitle>
@@ -382,7 +431,6 @@ function AccountWebhookCard({
           </AlertDescription>
         </Alert>
       ) : null}
-
     </div>
   );
 }
@@ -400,8 +448,8 @@ function Stat({
     tone === "success"
       ? "text-success"
       : tone === "destructive"
-      ? "text-destructive"
-      : "text-foreground";
+        ? "text-destructive"
+        : "text-foreground";
   return (
     <div className="rounded-control border border-border bg-background p-2">
       <div className={`text-lg font-semibold ${toneClass}`}>{value}</div>

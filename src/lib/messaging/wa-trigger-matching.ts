@@ -30,11 +30,7 @@ export const WA_TRIGGER_LABEL: Record<WaTriggerType, string> = {
 };
 
 /** Triggers that ignore the keyword list entirely. */
-export const WA_TRIGGERS_WITHOUT_KEYWORDS: WaTriggerType[] = [
-  "any",
-  "welcome",
-  "offline",
-];
+export const WA_TRIGGERS_WITHOUT_KEYWORDS: WaTriggerType[] = ["any", "welcome", "offline"];
 
 /** Placeholder shown in the keywords input, per trigger type. */
 export function keywordsPlaceholder(trigger: WaTriggerType): string {
@@ -50,16 +46,38 @@ export function keywordsPlaceholder(trigger: WaTriggerType): string {
 
 /** Built-in phrases that signal the contact wants a human agent. */
 export const HANDOFF_PHRASES: string[] = [
-  "human", "human agent", "real person", "real human",
-  "agent", "operator", "representative", "customer service",
-  "talk to someone", "speak to someone", "talk to a person",
-  "speak to a person", "live chat", "live agent", "support team",
-  "escalate", "supervisor", "manager",
+  "human",
+  "human agent",
+  "real person",
+  "real human",
+  "agent",
+  "operator",
+  "representative",
+  "customer service",
+  "talk to someone",
+  "speak to someone",
+  "talk to a person",
+  "speak to a person",
+  "live chat",
+  "live agent",
+  "support team",
+  "escalate",
+  "supervisor",
+  "manager",
   // common non-English equivalents
-  "agente", "persona real", "hablar con alguien",
-  "humano", "atendente", "conseiller", "parler à un humain",
-  "mitarbeiter", "mensch", "оператор", "живой человек",
-  "موظف", "خدمة العملاء",
+  "agente",
+  "persona real",
+  "hablar con alguien",
+  "humano",
+  "atendente",
+  "conseiller",
+  "parler à un humain",
+  "mitarbeiter",
+  "mensch",
+  "оператор",
+  "живой человек",
+  "موظف",
+  "خدمة العملاء",
 ];
 
 /**
@@ -86,7 +104,6 @@ export function isHandoffRequest(
     phrases: hits,
   };
 }
-
 
 /* ------------------------------------------------------------------ */
 /* Lightweight language detection                                      */
@@ -124,12 +141,77 @@ const SCRIPT_RANGES: { code: string; re: RegExp }[] = [
 
 /** High-signal stop words per Latin-script language. */
 const STOPWORDS: Record<string, string[]> = {
-  en: ["the", "is", "are", "you", "please", "hello", "hi", "thanks", "help", "and", "what", "how", "my", "can"],
-  es: ["hola", "gracias", "por favor", "buenos", "cómo", "qué", "necesito", "quiero", "el", "la", "los", "una", "está", "puedo"],
-  pt: ["olá", "obrigado", "obrigada", "por favor", "você", "não", "preciso", "quero", "está", "bom dia", "como"],
-  fr: ["bonjour", "merci", "s'il vous plaît", "je", "vous", "est", "les", "une", "pourquoi", "comment", "besoin"],
+  en: [
+    "the",
+    "is",
+    "are",
+    "you",
+    "please",
+    "hello",
+    "hi",
+    "thanks",
+    "help",
+    "and",
+    "what",
+    "how",
+    "my",
+    "can",
+  ],
+  es: [
+    "hola",
+    "gracias",
+    "por favor",
+    "buenos",
+    "cómo",
+    "qué",
+    "necesito",
+    "quiero",
+    "el",
+    "la",
+    "los",
+    "una",
+    "está",
+    "puedo",
+  ],
+  pt: [
+    "olá",
+    "obrigado",
+    "obrigada",
+    "por favor",
+    "você",
+    "não",
+    "preciso",
+    "quero",
+    "está",
+    "bom dia",
+    "como",
+  ],
+  fr: [
+    "bonjour",
+    "merci",
+    "s'il vous plaît",
+    "je",
+    "vous",
+    "est",
+    "les",
+    "une",
+    "pourquoi",
+    "comment",
+    "besoin",
+  ],
   de: ["hallo", "danke", "bitte", "ich", "nicht", "und", "wie", "brauche", "guten", "kann", "eine"],
-  it: ["ciao", "grazie", "per favore", "sono", "non", "come", "vorrei", "buongiorno", "una", "posso"],
+  it: [
+    "ciao",
+    "grazie",
+    "per favore",
+    "sono",
+    "non",
+    "come",
+    "vorrei",
+    "buongiorno",
+    "una",
+    "posso",
+  ],
   nl: ["hallo", "bedankt", "alstublieft", "ik", "niet", "hoe", "een", "graag", "kan"],
   no: ["hei", "takk", "vær så snill", "jeg", "ikke", "hvordan", "kan", "trenger", "god dag"],
 };
@@ -190,7 +272,10 @@ export function detectLanguageWithConfidence(message: string): LanguageDetection
     };
   }
 
-  const normalized = ` ${raw.toLowerCase().replace(/[^\p{L}\s']/gu, " ").replace(/\s+/g, " ")} `;
+  const normalized = ` ${raw
+    .toLowerCase()
+    .replace(/[^\p{L}\s']/gu, " ")
+    .replace(/\s+/g, " ")} `;
   const wordCount = normalized.trim().split(" ").filter(Boolean).length;
 
   let best = "unknown";
@@ -283,9 +368,8 @@ export function matchesLanguage(
     .map((k) => SUPPORTED_LANGUAGES.find((l) => l.label.toLowerCase() === k)?.code ?? k)
     .filter(Boolean);
 
-  const languageMatch = wanted.length === 0
-    ? detected !== "en" && detected !== "unknown"
-    : wanted.includes(detected);
+  const languageMatch =
+    wanted.length === 0 ? detected !== "en" && detected !== "unknown" : wanted.includes(detected);
 
   const confident = confidence >= min;
   return {
@@ -300,4 +384,3 @@ export function matchesLanguage(
     targeted: wanted,
   };
 }
-

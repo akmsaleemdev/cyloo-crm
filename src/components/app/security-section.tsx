@@ -11,7 +11,10 @@ const pwSchema = z
     password: z.string().min(8, "Password must be at least 8 characters"),
     confirm: z.string(),
   })
-  .refine((d) => d.password === d.confirm, { message: "Passwords do not match", path: ["confirm"] });
+  .refine((d) => d.password === d.confirm, {
+    message: "Passwords do not match",
+    path: ["confirm"],
+  });
 
 export function SecuritySection() {
   const [password, setPassword] = useState("");
@@ -65,7 +68,10 @@ export function SecuritySection() {
           <KeyRound className="w-4 h-4 text-muted-foreground" />
           <h2 className="font-bold text-xl">Change password</h2>
         </div>
-        <p className="text-sm text-muted-foreground">Use at least 8 characters. Passwords are hashed on our servers — we never see the raw value.</p>
+        <p className="text-sm text-muted-foreground">
+          Use at least 8 characters. Passwords are hashed on our servers — we never see the raw
+          value.
+        </p>
         <form onSubmit={handleChangePassword} className="mt-4 grid gap-3 max-w-md">
           <div>
             <label className="text-xs font-medium text-muted-foreground">New password</label>

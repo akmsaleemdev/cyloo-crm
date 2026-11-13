@@ -711,7 +711,9 @@ function ActivityTab({ wsId }: { wsId: string }) {
                 <div className="min-w-0 flex-1">
                   <div className="font-medium">
                     {row.resource_type} <span className="font-normal text-muted-foreground">·</span>{" "}
-                    <span className="font-mono text-xs text-muted-foreground">{row.resource_id}</span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {row.resource_id}
+                    </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {new Date(row.created_at).toLocaleString()}

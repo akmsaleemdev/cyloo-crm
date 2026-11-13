@@ -44,7 +44,8 @@ export function EmailAccountsPanel() {
   const accountsQuery = useQuery({
     queryKey: ["email-accounts", workspaceId],
     enabled: !!workspaceId,
-    queryFn: async () => (await listEmailAccounts({ data: { workspaceId: workspaceId! } })).accounts,
+    queryFn: async () =>
+      (await listEmailAccounts({ data: { workspaceId: workspaceId! } })).accounts,
   });
 
   const invalidate = () => {
@@ -178,7 +179,8 @@ export function EmailAccountsPanel() {
               maxLength={255}
             />
             <p className="text-xs text-muted-foreground">
-              Replies arriving on this address are matched to this account and routed into the Inbox.
+              Replies arriving on this address are matched to this account and routed into the
+              Inbox.
             </p>
           </div>
           <div className="space-y-2 md:col-span-2">

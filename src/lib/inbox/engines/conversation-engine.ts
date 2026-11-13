@@ -8,13 +8,7 @@
  */
 
 export type ConversationStatus =
-  | "open"
-  | "pending"
-  | "assigned"
-  | "snoozed"
-  | "resolved"
-  | "archived"
-  | "spam";
+  "open" | "pending" | "assigned" | "snoozed" | "resolved" | "archived" | "spam";
 
 export type ConversationPriority = "low" | "medium" | "high" | "urgent";
 

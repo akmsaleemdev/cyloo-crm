@@ -2,16 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { withGateway, jsonOk, jsonError, parseJson, preflight } from "@/lib/api/gateway.server";
 import { z } from "zod";
 
-const SendMessageSchema = z.object({
-  conversation_id: z.string().uuid().optional(),
-  to: z.string().min(6).max(40).optional(),
-  channel: z.enum(["whatsapp", "sms", "email"]).default("whatsapp"),
-  type: z.enum(["text", "template", "image", "document"]).default("text"),
-  body: z.string().max(4096).optional(),
-  template_name: z.string().max(200).optional(),
-  template_variables: z.record(z.string(), z.string()).optional(),
-  media_url: z.string().url().optional(),
-}).refine((v) => v.conversation_id || v.to, { message: "conversation_id or to is required" });
+const SendMessageSchema = z
+  .object({
+    conversation_id: z.string().uuid().optional(),
+    to: z.string().min(6).max(40).optional(),
+    channel: z.enum(["whatsapp", "sms", "email"]).default("whatsapp"),
+    type: z.enum(["text", "template", "image", "document"]).default("text"),
+    body: z.string().max(4096).optional(),
+    template_name: z.string().max(200).optional(),
+    template_variables: z.record(z.string(), z.string()).optional(),
+    media_url: z.string().url().optional(),
+  })
+  .refine((v) => v.conversation_id || v.to, { message: "conversation_id or to is required" });
 
 export const Route = createFileRoute("/api/public/v1/messages")({
   server: {
@@ -23,7 +25,12 @@ export const Route = createFileRoute("/api/public/v1/messages")({
           const body = await parseJson<unknown>(req);
           const parsed = SendMessageSchema.safeParse(body);
           if (!parsed.success) {
-            return jsonError("validation_error", "Invalid message payload", { issues: parsed.error.issues }, ctx.requestId);
+            return jsonError(
+              "validation_error",
+              "Invalid message payload",
+              { issues: parsed.error.issues },
+              ctx.requestId,
+            );
           }
 
           // Enqueue via message_outbox for the async delivery worker.

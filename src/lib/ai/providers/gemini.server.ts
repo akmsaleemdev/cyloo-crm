@@ -5,14 +5,20 @@
  */
 
 import type {
-  AIProvider, ChatRequest, ChatResponse, ProviderCapabilities, ProviderCredentials, StreamChunk, TokenUsage,
+  AIProvider,
+  ChatRequest,
+  ChatResponse,
+  ProviderCapabilities,
+  ProviderCredentials,
+  StreamChunk,
+  TokenUsage,
 } from "../types";
 import { AIError, classifyHttpError } from "../errors";
 
 const DEFAULT_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 /**
- * Callers across the app still pass Lovable-gateway-style provider-prefixed
+ * Callers across the app still pass legacy provider-prefixed
  * model ids (e.g. "google/gemini-2.5-flash") left over from before this app
  * had its own direct Gemini credentials. Google's API only accepts the bare
  * model id. Strip a leading "google/" (or "gemini/") segment here, in one
@@ -35,7 +41,11 @@ function toGeminiContents(req: ChatRequest) {
 
 function usage(u: unknown): TokenUsage | undefined {
   if (!u || typeof u !== "object") return undefined;
-  const r = u as { promptTokenCount?: number; candidatesTokenCount?: number; totalTokenCount?: number };
+  const r = u as {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+    totalTokenCount?: number;
+  };
   return {
     prompt_tokens: r.promptTokenCount ?? 0,
     completion_tokens: r.candidatesTokenCount ?? 0,
@@ -50,7 +60,8 @@ export const geminiProvider: AIProvider = {
   },
 
   async chat(req, creds): Promise<ChatResponse> {
-    if (!creds.apiKey) throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
+    if (!creds.apiKey)
+      throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
     const base = (creds.baseUrl || DEFAULT_BASE).replace(/\/+$/, "");
     const { system, contents } = toGeminiContents(req);
     const body: Record<string, unknown> = {
@@ -65,7 +76,15 @@ export const geminiProvider: AIProvider = {
       },
     };
     if (req.tools?.length) {
-      body.tools = [{ functionDeclarations: req.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }];
+      body.tools = [
+        {
+          functionDeclarations: req.tools.map((t) => ({
+            name: t.name,
+            description: t.description,
+            parameters: t.parameters,
+          })),
+        },
+      ];
     }
 
     const url = `${base}/models/${encodeURIComponent(normalizeModelId(req.model))}:generateContent?key=${encodeURIComponent(creds.apiKey)}`;
@@ -76,51 +95,86 @@ export const geminiProvider: AIProvider = {
       res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(creds.extraHeaders ?? {}) },
-        body: JSON.stringify(body), signal: controller.signal,
+        body: JSON.stringify(body),
+        signal: controller.signal,
       });
     } catch (e) {
       const err = e as Error;
-      throw new AIError(err.name === "AbortError" ? "timeout" : "network", err.message, { providerKind: "gemini" });
-    } finally { clearTimeout(to); }
+      throw new AIError(err.name === "AbortError" ? "timeout" : "network", err.message, {
+        providerKind: "gemini",
+      });
+    } finally {
+      clearTimeout(to);
+    }
 
     const text = await res.text();
     if (!res.ok) {
       throw new AIError(classifyHttpError(res.status, text), text.slice(0, 500), {
-        httpStatus: res.status, providerKind: "gemini",
+        httpStatus: res.status,
+        providerKind: "gemini",
       });
     }
     const j = JSON.parse(text) as {
-      candidates?: { content: { parts: { text?: string; functionCall?: { name: string; args: Record<string, unknown> } }[] }; finishReason?: string }[];
+      candidates?: {
+        content: {
+          parts: {
+            text?: string;
+            functionCall?: { name: string; args: Record<string, unknown> };
+          }[];
+        };
+        finishReason?: string;
+      }[];
       usageMetadata?: unknown;
     };
     const cand = j.candidates?.[0];
     const parts = cand?.content?.parts ?? [];
     const content = parts.map((p) => p.text || "").join("");
-    const toolCalls = parts.filter((p) => p.functionCall).map((p, i) => ({
-      id: `call_${i}`, name: p.functionCall!.name, arguments: p.functionCall!.args || {},
-    }));
-    const finish = cand?.finishReason === "MAX_TOKENS" ? "length"
-      : cand?.finishReason === "SAFETY" ? "content_filter"
-      : toolCalls.length ? "tool_calls" : "stop";
+    const toolCalls = parts
+      .filter((p) => p.functionCall)
+      .map((p, i) => ({
+        id: `call_${i}`,
+        name: p.functionCall!.name,
+        arguments: p.functionCall!.args || {},
+      }));
+    const finish =
+      cand?.finishReason === "MAX_TOKENS"
+        ? "length"
+        : cand?.finishReason === "SAFETY"
+          ? "content_filter"
+          : toolCalls.length
+            ? "tool_calls"
+            : "stop";
     return {
-      model: req.model, content,
+      model: req.model,
+      content,
       tool_calls: toolCalls.length ? toolCalls : undefined,
-      finish_reason: finish, usage: usage(j.usageMetadata), raw: j,
+      finish_reason: finish,
+      usage: usage(j.usageMetadata),
+      raw: j,
     };
   },
 
   async *stream(req, creds): AsyncIterable<StreamChunk> {
-    if (!creds.apiKey) throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
+    if (!creds.apiKey)
+      throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
     const base = (creds.baseUrl || DEFAULT_BASE).replace(/\/+$/, "");
     const { system, contents } = toGeminiContents(req);
     const url = `${base}/models/${encodeURIComponent(normalizeModelId(req.model))}:streamGenerateContent?alt=sse&key=${encodeURIComponent(creds.apiKey)}`;
-    const body = { contents, systemInstruction: system ? { parts: [{ text: system }] } : undefined };
+    const body = {
+      contents,
+      systemInstruction: system ? { parts: [{ text: system }] } : undefined,
+    };
     const res = await fetch(url, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
     if (!res.ok || !res.body) {
       const t = await res.text();
-      throw new AIError(classifyHttpError(res.status, t), t.slice(0, 500), { httpStatus: res.status, providerKind: "gemini" });
+      throw new AIError(classifyHttpError(res.status, t), t.slice(0, 500), {
+        httpStatus: res.status,
+        providerKind: "gemini",
+      });
     }
     const reader = res.body.getReader();
     const dec = new TextDecoder();
@@ -135,27 +189,43 @@ export const geminiProvider: AIProvider = {
         const l = line.trim();
         if (!l.startsWith("data:")) continue;
         try {
-          const j = JSON.parse(l.slice(5).trim()) as { candidates?: { content?: { parts?: { text?: string }[] } }[]; usageMetadata?: unknown };
+          const j = JSON.parse(l.slice(5).trim()) as {
+            candidates?: { content?: { parts?: { text?: string }[] } }[];
+            usageMetadata?: unknown;
+          };
           const delta = j.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("") || "";
           if (delta) yield { delta };
           if (j.usageMetadata) yield { delta: "", usage: usage(j.usageMetadata) };
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
   },
 
   async embed(req, creds) {
-    if (!creds.apiKey) throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
+    if (!creds.apiKey)
+      throw new AIError("auth", "Gemini requires an API key", { providerKind: "gemini" });
     const base = (creds.baseUrl || DEFAULT_BASE).replace(/\/+$/, "");
     const inputs = Array.isArray(req.input) ? req.input : [req.input];
     const modelId = normalizeModelId(req.model);
     const url = `${base}/models/${encodeURIComponent(modelId)}:batchEmbedContents?key=${encodeURIComponent(creds.apiKey)}`;
     const res = await fetch(url, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ requests: inputs.map((t) => ({ model: `models/${modelId}`, content: { parts: [{ text: t }] } })) }),
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        requests: inputs.map((t) => ({
+          model: `models/${modelId}`,
+          content: { parts: [{ text: t }] },
+        })),
+      }),
     });
     const text = await res.text();
-    if (!res.ok) throw new AIError(classifyHttpError(res.status, text), text.slice(0, 500), { httpStatus: res.status, providerKind: "gemini" });
+    if (!res.ok)
+      throw new AIError(classifyHttpError(res.status, text), text.slice(0, 500), {
+        httpStatus: res.status,
+        providerKind: "gemini",
+      });
     const j = JSON.parse(text) as { embeddings: { values: number[] }[] };
     return { model: req.model, embeddings: j.embeddings.map((e) => e.values) };
   },
@@ -165,7 +235,13 @@ export const geminiProvider: AIProvider = {
     try {
       const base = (creds.baseUrl || DEFAULT_BASE).replace(/\/+$/, "");
       const res = await fetch(`${base}/models?key=${encodeURIComponent(creds.apiKey || "")}`);
-      return { ok: res.ok, latency_ms: Date.now() - start, error: res.ok ? undefined : `HTTP ${res.status}` };
-    } catch (e) { return { ok: false, latency_ms: Date.now() - start, error: (e as Error).message }; }
+      return {
+        ok: res.ok,
+        latency_ms: Date.now() - start,
+        error: res.ok ? undefined : `HTTP ${res.status}`,
+      };
+    } catch (e) {
+      return { ok: false, latency_ms: Date.now() - start, error: (e as Error).message };
+    }
   },
 };

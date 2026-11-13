@@ -80,16 +80,12 @@ export function RealtimeStatusIndicator({
         ? "bg-destructive"
         : "bg-amber-500";
 
-  const Icon =
-    status === "syncing" ? Loader2 : status === "disconnected" ? WifiOff : Wifi;
+  const Icon = status === "syncing" ? Loader2 : status === "disconnected" ? WifiOff : Wifi;
 
   if (collapsed) {
     return (
       <div
-        className={cn(
-          "flex items-center justify-center px-1.5 py-1",
-          className,
-        )}
+        className={cn("flex items-center justify-center px-1.5 py-1", className)}
         role="status"
         aria-live="polite"
         aria-label={label}

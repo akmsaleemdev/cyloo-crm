@@ -85,9 +85,7 @@ export function GatewayAuditLog({ providerId }: { providerId?: string }) {
           {(auditQ.error as Error)?.message ?? "Unable to load the change history."}
         </p>
       ) : entries.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4">
-          No gateway changes recorded yet.
-        </p>
+        <p className="text-sm text-muted-foreground py-4">No gateway changes recorded yet.</p>
       ) : (
         <ul className="divide-y">
           {entries.map((entry) => {

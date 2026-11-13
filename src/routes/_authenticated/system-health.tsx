@@ -58,7 +58,7 @@ const INITIAL_DLQ: DeadLetterItem[] = [
     payload: JSON.stringify(
       { to: "+971501234567", template: "order_confirmation_v2", language: "ar" },
       null,
-      2
+      2,
     ),
   },
   {
@@ -68,11 +68,7 @@ const INITIAL_DLQ: DeadLetterItem[] = [
     errorMessage: "HTTP 504: Gateway timeout on TikTok webhook intake",
     retryAttempts: 2,
     timestamp: "2026-11-08 06:05:44 UTC",
-    payload: JSON.stringify(
-      { lead_id: "TT-LEAD-89211", campaign_id: "CMP-DUBAI-AI-01" },
-      null,
-      2
-    ),
+    payload: JSON.stringify({ lead_id: "TT-LEAD-89211", campaign_id: "CMP-DUBAI-AI-01" }, null, 2),
   },
 ];
 
@@ -132,13 +128,19 @@ export function SystemHealthPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">SRE Observability, System Health & Telemetry</h1>
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                SRE Observability, System Health & Telemetry
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/10 text-primary border-primary/20"
+              >
                 Module 34 • Hub 7
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Distributed latency tracing, real-time webhook health probes, dead-letter queue (DLQ) replay, and pg_cron telemetry.
+              Distributed latency tracing, real-time webhook health probes, dead-letter queue (DLQ)
+              replay, and pg_cron telemetry.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -157,7 +159,9 @@ export function SystemHealthPage() {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Platform SLA Availability</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Platform SLA Availability
+                </p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-2xl font-bold text-emerald-600">99.98%</span>
@@ -171,7 +175,9 @@ export function SystemHealthPage() {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Edge Worker Latency (p95)</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Edge Worker Latency (p95)
+                </p>
                 <p className="text-2xl font-bold mt-1 text-primary">34 ms</p>
               </div>
               <div className="p-2.5 rounded-full bg-primary/10 text-primary">
@@ -296,7 +302,9 @@ export function SystemHealthPage() {
                     <td className="px-4 py-3 font-semibold flex items-center gap-2">
                       <Radio className="w-3.5 h-3.5 text-emerald-500" /> WhatsApp Cloud API
                     </td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">graph.facebook.com</td>
+                    <td className="px-4 py-3 font-mono text-muted-foreground">
+                      graph.facebook.com
+                    </td>
                     <td className="px-4 py-3 font-semibold text-emerald-600">99.94%</td>
                     <td className="px-4 py-3 font-mono">112 ms</td>
                     <td className="px-4 py-3 text-right">
@@ -309,7 +317,9 @@ export function SystemHealthPage() {
                     <td className="px-4 py-3 font-semibold flex items-center gap-2">
                       <Radio className="w-3.5 h-3.5 text-emerald-500" /> TikTok Business Messaging
                     </td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">business-api.tiktok.com</td>
+                    <td className="px-4 py-3 font-mono text-muted-foreground">
+                      business-api.tiktok.com
+                    </td>
                     <td className="px-4 py-3 font-semibold text-emerald-600">99.82%</td>
                     <td className="px-4 py-3 font-mono">145 ms</td>
                     <td className="px-4 py-3 text-right">
@@ -322,7 +332,9 @@ export function SystemHealthPage() {
                     <td className="px-4 py-3 font-semibold flex items-center gap-2">
                       <Radio className="w-3.5 h-3.5 text-emerald-500" /> Supabase Realtime Socket
                     </td>
-                    <td className="px-4 py-3 font-mono text-muted-foreground">wss://project.supabase.co</td>
+                    <td className="px-4 py-3 font-mono text-muted-foreground">
+                      wss://project.supabase.co
+                    </td>
                     <td className="px-4 py-3 font-semibold text-emerald-600">100.0%</td>
                     <td className="px-4 py-3 font-mono">18 ms</td>
                     <td className="px-4 py-3 text-right">
@@ -345,7 +357,12 @@ export function SystemHealthPage() {
                 </p>
               </div>
               {dlqItems.length > 0 && (
-                <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={handleReplayAll}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs"
+                  onClick={handleReplayAll}
+                >
                   <RotateCcw className="w-3.5 h-3.5" /> Replay All Stalled
                 </Button>
               )}
@@ -354,7 +371,8 @@ export function SystemHealthPage() {
             {dlqItems.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center text-sm text-muted-foreground">
-                  ✓ Dead-Letter Queue is empty. All background workers and webhook dispatches operating normally.
+                  ✓ Dead-Letter Queue is empty. All background workers and webhook dispatches
+                  operating normally.
                 </CardContent>
               </Card>
             ) : (
@@ -364,7 +382,9 @@ export function SystemHealthPage() {
                     <Card
                       key={item.id}
                       className={`cursor-pointer transition-all ${
-                        selectedDlq?.id === item.id ? "ring-2 ring-primary" : "hover:border-primary/50"
+                        selectedDlq?.id === item.id
+                          ? "ring-2 ring-primary"
+                          : "hover:border-primary/50"
                       }`}
                       onClick={() => setSelectedDlq(item)}
                     >
@@ -373,9 +393,13 @@ export function SystemHealthPage() {
                           <Badge variant="outline" className="font-mono text-xs">
                             {item.id}
                           </Badge>
-                          <span className="text-[11px] text-muted-foreground">{item.timestamp}</span>
+                          <span className="text-[11px] text-muted-foreground">
+                            {item.timestamp}
+                          </span>
                         </div>
-                        <CardTitle className="text-sm mt-1 text-foreground">{item.failedEvent}</CardTitle>
+                        <CardTitle className="text-sm mt-1 text-foreground">
+                          {item.failedEvent}
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="text-xs space-y-2">
                         <div className="text-rose-600 font-mono bg-rose-500/10 p-2 rounded border border-rose-500/20">
@@ -395,7 +419,9 @@ export function SystemHealthPage() {
                     <Card>
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm font-semibold">Payload Inspection: {selectedDlq.id}</CardTitle>
+                          <CardTitle className="text-sm font-semibold">
+                            Payload Inspection: {selectedDlq.id}
+                          </CardTitle>
                           <Button
                             size="sm"
                             className="h-8 gap-1 text-xs"
@@ -414,7 +440,8 @@ export function SystemHealthPage() {
                   ) : (
                     <Card>
                       <CardContent className="p-8 text-center text-xs text-muted-foreground">
-                        Select a dead-letter item to inspect its JSON payload and execute manual replay.
+                        Select a dead-letter item to inspect its JSON payload and execute manual
+                        replay.
                       </CardContent>
                     </Card>
                   )}
@@ -460,4 +487,3 @@ export function SystemHealthPage() {
     </div>
   );
 }
-

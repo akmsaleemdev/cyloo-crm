@@ -43,7 +43,12 @@ const REQUIRED_ENV: Record<SocialInboxPlatform, string[]> = {
 function summarize(raw: unknown): SyncResultSummary {
   const r = (raw ?? {}) as Record<string, unknown>;
   const n = (v: unknown) => (typeof v === "number" ? v : undefined);
-  return { fetched: n(r.fetched), inserted: n(r.inserted), skipped: n(r.skipped), failed: n(r.failed) };
+  return {
+    fetched: n(r.fetched),
+    inserted: n(r.inserted),
+    skipped: n(r.skipped),
+    failed: n(r.failed),
+  };
 }
 
 export const getSocialInboxSetup = createServerFn({ method: "POST" })
@@ -74,7 +79,9 @@ export const getSocialInboxSetup = createServerFn({ method: "POST" })
         .in("platform", ["facebook", "youtube", "linkedin"]),
       admin
         .from("social_inbox_sync_state")
-        .select("account_source, account_id, last_synced_at, last_success_at, last_error, last_result")
+        .select(
+          "account_source, account_id, last_synced_at, last_success_at, last_error, last_result",
+        )
         .eq("workspace_id", data.workspaceId),
       admin
         .from("tiktok_business_accounts")
@@ -88,7 +95,10 @@ export const getSocialInboxSetup = createServerFn({ method: "POST" })
         (s) => s.account_source === source && s.account_id === id,
       );
     const withState = (
-      base: Omit<SocialInboxAccountStatus, "lastSyncedAt" | "lastSuccessAt" | "lastError" | "lastResult">,
+      base: Omit<
+        SocialInboxAccountStatus,
+        "lastSyncedAt" | "lastSuccessAt" | "lastError" | "lastResult"
+      >,
     ): SocialInboxAccountStatus => {
       const s = stateFor(base.source, base.id);
       return {
@@ -100,7 +110,12 @@ export const getSocialInboxSetup = createServerFn({ method: "POST" })
       };
     };
 
-    const pageRows = (pages.data ?? []) as Array<{ id: string; page_name: string | null; page_id: string | null; status: string | null }>;
+    const pageRows = (pages.data ?? []) as Array<{
+      id: string;
+      page_name: string | null;
+      page_id: string | null;
+      status: string | null;
+    }>;
     const pageIds = new Set(pageRows.map((p) => p.page_id));
     const channelRows = (channels.data ?? []) as Array<{
       id: string;

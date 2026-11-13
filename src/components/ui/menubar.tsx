@@ -54,11 +54,7 @@ const MenubarTrigger = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <MenubarPrimitive.Trigger
     ref={ref}
-    className={menuItemClass(
-      "default",
-      "px-3 py-1.5 font-medium",
-      className,
-    )}
+    className={menuItemClass("default", "px-3 py-1.5 font-medium", className)}
     {...props}
   />
 ));
@@ -196,12 +192,7 @@ const MenubarSeparator = React.forwardRef<
 MenubarSeparator.displayName = MenubarPrimitive.Separator.displayName;
 
 const MenubarShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => {
-  return (
-    <span
-      className={cn("ml-auto text-xs   text-muted-foreground", className)}
-      {...props}
-    />
-  );
+  return <span className={cn("ml-auto text-xs   text-muted-foreground", className)} {...props} />;
 };
 MenubarShortcut.displayname = "MenubarShortcut";
 

@@ -17,7 +17,8 @@ export const Route = createFileRoute("/api/public/hooks/billing/rollup")({
         if (denied) return denied;
 
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-        const { computeRevenueSnapshot, persistRevenueSnapshot } = await import("@/lib/billing/revenue.server");
+        const { computeRevenueSnapshot, persistRevenueSnapshot } =
+          await import("@/lib/billing/revenue.server");
 
         // Global (organization_id null) + per-org snapshots.
         const orgs = await supabaseAdmin

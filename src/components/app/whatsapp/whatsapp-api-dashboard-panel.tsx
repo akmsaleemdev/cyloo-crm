@@ -380,7 +380,10 @@ export function WhatsAppApiDashboardPanel() {
                 <h3 className="font-display font-semibold">Log details</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 font-mono">{selected.id}</p>
               </div>
-              <button onClick={() => setSelected(null)} className="p-1 rounded-control hover:bg-muted">
+              <button
+                onClick={() => setSelected(null)}
+                className="p-1 rounded-control hover:bg-muted"
+              >
                 <XCircle className="w-5 h-5 text-muted-foreground" />
               </button>
             </div>
@@ -453,9 +456,7 @@ function Kpi({ label, value, tone }: { label: string; value: number; tone: strin
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
       <div className="mt-2 flex items-center gap-2">
         <span className="text-2xl font-display font-semibold">{value}</span>
-        <span className={`text-[11px] uppercase px-1.5 py-0.5 rounded-control ${tone}`}>
-          logs
-        </span>
+        <span className={`text-[11px] uppercase px-1.5 py-0.5 rounded-control ${tone}`}>logs</span>
       </div>
     </div>
   );

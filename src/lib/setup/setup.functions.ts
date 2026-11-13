@@ -42,7 +42,9 @@ async function readSetupStatus() {
 async function assertSetupOpen() {
   const status = await readSetupStatus();
   if (status.setupComplete) {
-    const err = new Error("Setup is already complete. Sign in as an administrator to change these settings.");
+    const err = new Error(
+      "Setup is already complete. Sign in as an administrator to change these settings.",
+    );
     (err as Error & { status?: number }).status = 423;
     throw err;
   }
@@ -51,7 +53,8 @@ async function assertSetupOpen() {
 
 async function assertSetupAdmin(supabase: unknown, userId: string) {
   const status = await assertSetupOpen();
-  if (!status.superAdminExists) throw new Error("Create or assign the first super admin before saving setup.");
+  if (!status.superAdminExists)
+    throw new Error("Create or assign the first super admin before saving setup.");
   const { assertSuperAdmin } = await import("@/lib/admin/platform-guard.server");
   await assertSuperAdmin(supabase, userId);
   return status;
@@ -63,18 +66,20 @@ export const getSetupStatus = createServerFn({ method: "GET" }).handler(async ()
 
 async function upsertPlatformSetting(key: string, value: Record<string, unknown>) {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const { error } = await sbAny(supabaseAdmin).from("settings").upsert(
-    {
-      scope: "platform",
-      key,
-      value: value as Json,
-      organization_id: null,
-      workspace_id: null,
-      user_id: null,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "scope,organization_id,workspace_id,user_id,key" },
-  );
+  const { error } = await sbAny(supabaseAdmin)
+    .from("settings")
+    .upsert(
+      {
+        scope: "platform",
+        key,
+        value: value as Json,
+        organization_id: null,
+        workspace_id: null,
+        user_id: null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "scope,organization_id,workspace_id,user_id,key" },
+    );
   if (error) throw new Error(error.message);
 }
 

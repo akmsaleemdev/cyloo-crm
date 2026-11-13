@@ -17,8 +17,12 @@ import { useMemo } from "react";
 import { useActiveOrganization } from "@/hooks/use-organization";
 import { getMySubscription } from "@/lib/billing/plans.functions";
 import {
-  capabilityView, checkQuota as checkQuotaFn, getLimit as getLimitFn, hasFeature as hasFeatureFn,
-  type PlanCapabilityView, type QuotaCheck,
+  capabilityView,
+  checkQuota as checkQuotaFn,
+  getLimit as getLimitFn,
+  hasFeature as hasFeatureFn,
+  type PlanCapabilityView,
+  type QuotaCheck,
 } from "@/lib/billing/feature-limits";
 import { bucketForTier, LIMITS, FEATURES } from "@/lib/billing/feature-catalog";
 
@@ -45,7 +49,19 @@ export function usePlanFeatures(): UsePlanFeaturesResult {
   });
 
   return useMemo<UsePlanFeaturesResult>(() => {
-    const sub = q.data as { plan?: { id: string; code: string; name: string; tier: string; features: unknown; limits: unknown } } | null | undefined;
+    const sub = q.data as
+      | {
+          plan?: {
+            id: string;
+            code: string;
+            name: string;
+            tier: string;
+            features: unknown;
+            limits: unknown;
+          };
+        }
+      | null
+      | undefined;
     const plan = sub?.plan ?? null;
 
     // Merge plan-defined values with catalog defaults so unspecified keys
@@ -56,7 +72,10 @@ export function usePlanFeatures(): UsePlanFeaturesResult {
     const mergedFeatures: Record<string, boolean> = {};
     for (const f of FEATURES) mergedFeatures[f.key] = f.defaults[bucket];
 
-    const view = capabilityView({ features: { ...mergedFeatures, ...(plan?.features as object ?? {}) }, limits: { ...mergedLimits, ...(plan?.limits as object ?? {}) } });
+    const view = capabilityView({
+      features: { ...mergedFeatures, ...((plan?.features as object) ?? {}) },
+      limits: { ...mergedLimits, ...((plan?.limits as object) ?? {}) },
+    });
 
     return {
       loading: q.isLoading,

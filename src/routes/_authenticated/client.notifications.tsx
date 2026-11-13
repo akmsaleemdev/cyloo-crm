@@ -3,19 +3,40 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
-  Bell, Check, CheckCheck, Loader2, MessageSquare, Calendar, Receipt, CreditCard,
-  Package, Headphones, Megaphone, Info, ShieldAlert, Mail, Smartphone, Globe, Settings2,
+  Bell,
+  Check,
+  CheckCheck,
+  Loader2,
+  MessageSquare,
+  Calendar,
+  Receipt,
+  CreditCard,
+  Package,
+  Headphones,
+  Megaphone,
+  Info,
+  ShieldAlert,
+  Mail,
+  Smartphone,
+  Globe,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  listMyNotificationsV2, markNotificationRead,
-  getMyNotificationPrefs, updateMyNotificationPrefs,
+  listMyNotificationsV2,
+  markNotificationRead,
+  getMyNotificationPrefs,
+  updateMyNotificationPrefs,
 } from "@/lib/client-portal/portal.functions";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/_authenticated/client/notifications")({
@@ -23,13 +44,27 @@ export const Route = createFileRoute("/_authenticated/client/notifications")({
 });
 
 type NotifGroup =
-  | "messages" | "appointments" | "invoices" | "payments"
-  | "orders" | "tickets" | "campaigns" | "announcements" | "system";
+  | "messages"
+  | "appointments"
+  | "invoices"
+  | "payments"
+  | "orders"
+  | "tickets"
+  | "campaigns"
+  | "announcements"
+  | "system";
 
 type Notif = {
-  id: string; title: string | null; body: string | null; category: string | null;
-  channel: string | null; action_url: string | null; status: string | null;
-  read_at: string | null; created_at: string; group: NotifGroup;
+  id: string;
+  title: string | null;
+  body: string | null;
+  category: string | null;
+  channel: string | null;
+  action_url: string | null;
+  status: string | null;
+  read_at: string | null;
+  created_at: string;
+  group: NotifGroup;
 };
 
 type Counts = Record<NotifGroup, number>;
@@ -46,7 +81,11 @@ const GROUPS: Array<{ key: NotifGroup; label: string; icon: typeof Bell }> = [
   { key: "system", label: "System alerts", icon: ShieldAlert },
 ];
 
-const CHANNELS: Array<{ key: "in_app" | "email" | "whatsapp" | "push"; label: string; icon: typeof Bell }> = [
+const CHANNELS: Array<{
+  key: "in_app" | "email" | "whatsapp" | "push";
+  label: string;
+  icon: typeof Bell;
+}> = [
   { key: "in_app", label: "In-app", icon: Bell },
   { key: "email", label: "Email", icon: Mail },
   { key: "whatsapp", label: "WhatsApp", icon: Globe },
@@ -74,22 +113,26 @@ function NotificationsPage() {
 
   const q = useQuery({
     queryKey: ["client-notifications-v2", category, unreadOnly],
-    queryFn: () => listFn({
-      data: {
-        category: category === "all" ? undefined : category,
-        unread_only: unreadOnly || undefined,
-        limit: 100,
-      },
-    }),
+    queryFn: () =>
+      listFn({
+        data: {
+          category: category === "all" ? undefined : category,
+          unread_only: unreadOnly || undefined,
+          limit: 100,
+        },
+      }),
   });
 
   useEffect(() => {
     const ch = supabase
       .channel("client-notifications")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" },
-        () => qc.invalidateQueries({ queryKey: ["client-notifications-v2"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () =>
+        qc.invalidateQueries({ queryKey: ["client-notifications-v2"] }),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
   const mark = useMutation({
@@ -98,7 +141,7 @@ function NotificationsPage() {
   });
 
   const rows = (q.data?.items ?? []) as Notif[];
-  const counts = (q.data?.counts ?? {} as Counts) as Counts;
+  const counts = (q.data?.counts ?? ({} as Counts)) as Counts;
   const unreadTotal = q.data?.unread_total ?? 0;
 
   return (
@@ -109,7 +152,9 @@ function NotificationsPage() {
           <h2 className="font-display text-2xl font-semibold flex items-center gap-2">
             <Bell className="w-5 h-5" /> Inbox
             {unreadTotal > 0 && (
-              <span className="text-xs bg-accent text-accent-foreground rounded-control px-2 py-0.5">{unreadTotal}</span>
+              <span className="text-xs bg-accent text-accent-foreground rounded-control px-2 py-0.5">
+                {unreadTotal}
+              </span>
             )}
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -132,14 +177,20 @@ function NotificationsPage() {
       {/* Category tabs */}
       <div className="flex flex-wrap gap-1.5 border-b border-border pb-3">
         <CatTab
-          active={category === "all"} onClick={() => setCategory("all")}
-          label="All" icon={Bell}
+          active={category === "all"}
+          onClick={() => setCategory("all")}
+          label="All"
+          icon={Bell}
           count={Object.values(counts).reduce((a: number, b) => a + (b as number), 0)}
         />
         {GROUPS.map((g) => (
           <CatTab
-            key={g.key} active={category === g.key} onClick={() => setCategory(g.key)}
-            label={g.label} icon={g.icon} count={counts[g.key] ?? 0}
+            key={g.key}
+            active={category === g.key}
+            onClick={() => setCategory(g.key)}
+            label={g.label}
+            icon={g.icon}
+            count={counts[g.key] ?? 0}
           />
         ))}
       </div>
@@ -168,8 +219,18 @@ function NotificationsPage() {
 }
 
 function CatTab({
-  active, onClick, label, icon: Icon, count,
-}: { active: boolean; onClick: () => void; label: string; icon: typeof Bell; count: number }) {
+  active,
+  onClick,
+  label,
+  icon: Icon,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  icon: typeof Bell;
+  count: number;
+}) {
   return (
     <button
       onClick={onClick}
@@ -181,9 +242,13 @@ function CatTab({
     >
       <Icon className="w-3.5 h-3.5" /> {label}
       {count > 0 && (
-        <span className={`ml-0.5 rounded-control text-[11px] px-1.5 py-0.5 ${
-          active ? "bg-white/20" : "bg-background/60 border border-border"
-        }`}>{count}</span>
+        <span
+          className={`ml-0.5 rounded-control text-[11px] px-1.5 py-0.5 ${
+            active ? "bg-white/20" : "bg-background/60 border border-border"
+          }`}
+        >
+          {count}
+        </span>
       )}
     </button>
   );
@@ -201,10 +266,14 @@ function NotifRow({ n, onMark }: { n: Notif; onMark: (id: string) => void }) {
   const group = GROUPS.find((g) => g.key === n.group);
   const ChannelIcon = channelIcon(n.channel);
   return (
-    <li className={`p-4 flex items-start gap-3 transition-colors ${n.read_at ? "opacity-70" : "bg-accent/[0.03]"}`}>
-      <div className={`mt-0.5 w-8 h-8 rounded-control grid place-items-center shrink-0 ${
-        n.read_at ? "bg-muted/50 text-muted-foreground" : "bg-accent/10 text-accent"
-      }`}>
+    <li
+      className={`p-4 flex items-start gap-3 transition-colors ${n.read_at ? "opacity-70" : "bg-accent/[0.03]"}`}
+    >
+      <div
+        className={`mt-0.5 w-8 h-8 rounded-control grid place-items-center shrink-0 ${
+          n.read_at ? "bg-muted/50 text-muted-foreground" : "bg-accent/10 text-accent"
+        }`}
+      >
         {group ? <group.icon className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
       </div>
       <div className="min-w-0 flex-1">
@@ -224,11 +293,16 @@ function NotifRow({ n, onMark }: { n: Notif; onMark: (id: string) => void }) {
       </div>
       <div className="flex flex-col items-end gap-2">
         {n.action_url && (
-          <a href={n.action_url} className="text-xs text-accent hover:underline">Open</a>
+          <a href={n.action_url} className="text-xs text-accent hover:underline">
+            Open
+          </a>
         )}
         {!n.read_at && (
-          <button onClick={() => onMark(n.id)} title="Mark as read"
-            className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => onMark(n.id)}
+            title="Mark as read"
+            className="text-xs inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
             <Check className="w-3.5 h-3.5" />
           </button>
         )}
@@ -286,7 +360,9 @@ function PreferencesDialog() {
                   <th className="text-left py-2 pl-1">Category</th>
                   {CHANNELS.map((c) => (
                     <th key={c.key} className="py-2 text-center">
-                      <div className="inline-flex items-center gap-1"><c.icon className="w-3 h-3" /> {c.label}</div>
+                      <div className="inline-flex items-center gap-1">
+                        <c.icon className="w-3 h-3" /> {c.label}
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -303,10 +379,12 @@ function PreferencesDialog() {
                         <td key={c.key} className="py-2.5 text-center">
                           <Switch
                             checked={!!row[c.key]}
-                            onCheckedChange={(v) => upd.mutate({
-                              category: g.key,
-                              channels: { [c.key]: v },
-                            })}
+                            onCheckedChange={(v) =>
+                              upd.mutate({
+                                category: g.key,
+                                channels: { [c.key]: v },
+                              })
+                            }
                           />
                         </td>
                       ))}

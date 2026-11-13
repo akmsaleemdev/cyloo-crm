@@ -123,7 +123,6 @@ export function TelegramAccountsPanel() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-
   const verify = useMutation({
     mutationFn: async (accountId: string) =>
       verifyTelegramAccount({ data: { accountId, origin: origin() } }),
@@ -151,8 +150,8 @@ export function TelegramAccountsPanel() {
       <div className="space-y-1">
         <h2 className="font-bold text-xl">Telegram bots</h2>
         <p className="text-sm text-muted-foreground">
-          Connect as many Telegram bots as you need — each one gets its own webhook and shows up
-          as a separate account in the unified Inbox alongside WhatsApp, Messenger and Instagram.
+          Connect as many Telegram bots as you need — each one gets its own webhook and shows up as
+          a separate account in the unified Inbox alongside WhatsApp, Messenger and Instagram.
         </p>
       </div>
 

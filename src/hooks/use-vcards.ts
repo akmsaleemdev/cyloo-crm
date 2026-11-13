@@ -125,8 +125,10 @@ export function validateVCard(input: VCardInput): Record<string, string> {
   if (!input.slug?.trim()) errors.slug = "Share link is required";
   else if (!/^[a-z0-9-]{3,48}$/.test(input.slug))
     errors.slug = "Use 3-48 lowercase letters, numbers or hyphens";
-  if (input.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) errors.email = "Enter a valid email";
-  if (input.website && !/^https?:\/\/.+/i.test(input.website)) errors.website = "Website must start with http(s)://";
+  if (input.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email))
+    errors.email = "Enter a valid email";
+  if (input.website && !/^https?:\/\/.+/i.test(input.website))
+    errors.website = "Website must start with http(s)://";
   if (!input.phone && !input.email && !input.whatsapp)
     errors.phone = "Add at least one contact method (phone, WhatsApp or email)";
   return errors;
@@ -139,7 +141,9 @@ export function useSaveVCard() {
     mutationFn: async (input: VCardInput) => {
       const workspaceId = await resolveWorkspaceId(active?.id);
       if (!workspaceId)
-        throw new Error("No workspace is available for your account yet. Create a workspace in Settings first.");
+        throw new Error(
+          "No workspace is available for your account yet. Create a workspace in Settings first.",
+        );
       const errors = validateVCard(input);
       const first = Object.values(errors)[0];
       if (first) throw new Error(first);
@@ -164,11 +168,17 @@ export function useSaveVCard() {
       };
       if (input.id) {
         const { error } = await db("vcards").update(payload).eq("id", input.id);
-        if (error) throw new Error(error.code === "23505" ? "That share link is already taken" : error.message);
+        if (error)
+          throw new Error(
+            error.code === "23505" ? "That share link is already taken" : error.message,
+          );
         return input.id;
       }
       const { data, error } = await db("vcards").insert(payload).select("id").single();
-      if (error) throw new Error(error.code === "23505" ? "That share link is already taken" : error.message);
+      if (error)
+        throw new Error(
+          error.code === "23505" ? "That share link is already taken" : error.message,
+        );
       return data.id as string;
     },
     onSuccess: (id) => {
@@ -271,7 +281,9 @@ export function useCanManageVCardLifecycle() {
 function asLifecycleError(error: { code?: string; message?: string } | null): Error | null {
   if (!error) return null;
   if (error.code === "42501" || /owners, admins and managers/i.test(error.message ?? ""))
-    return new Error("You need workspace manager, admin or owner access to change a card's status.");
+    return new Error(
+      "You need workspace manager, admin or owner access to change a card's status.",
+    );
   if (error.code === "23505") return new Error("That share link is already taken");
   return new Error(error.message ?? "Something went wrong");
 }
@@ -280,7 +292,15 @@ function asLifecycleError(error: { code?: string; message?: string } | null): Er
 export function useSetVCardRevocation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, revoked, reason }: { id: string; revoked: boolean; reason?: string }) => {
+    mutationFn: async ({
+      id,
+      revoked,
+      reason,
+    }: {
+      id: string;
+      revoked: boolean;
+      reason?: string;
+    }) => {
       const { data: auth } = await supabase.auth.getUser();
       const patch = revoked
         ? {
@@ -322,4 +342,3 @@ export function useRestoreVCardVersion() {
     },
   });
 }
-

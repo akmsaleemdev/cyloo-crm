@@ -53,7 +53,11 @@ import { ChannelIcon } from "./channel-icon";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useChannelAccounts, type ChannelAccountRow } from "@/hooks/use-channel-accounts";
 
-import { ConversationListItem, ConversationListItemSkeleton, type ConversationListAction } from "./conversation-list-item";
+import {
+  ConversationListItem,
+  ConversationListItemSkeleton,
+  type ConversationListAction,
+} from "./conversation-list-item";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1155,8 +1159,19 @@ export function ConversationList({
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="icon" className="h-9 w-9 shrink-0" aria-label="Conversation list options" title="Conversation list options">
-                {syncFailed ? <AlertTriangle className="h-4 w-4 text-destructive" /> : <SlidersHorizontal className="h-4 w-4" />}
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                aria-label="Conversation list options"
+                title="Conversation list options"
+              >
+                {syncFailed ? (
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                ) : (
+                  <SlidersHorizontal className="h-4 w-4" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-60">
@@ -1168,7 +1183,10 @@ export function ConversationList({
                   Sort: {sortLabel(sort)}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-44">
-                  <DropdownMenuRadioGroup value={sort} onValueChange={(value) => setSort(value as ConversationSort)}>
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => setSort(value as ConversationSort)}
+                  >
                     <DropdownMenuRadioItem value="recent">Most recent</DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="oldest">Oldest first</DropdownMenuRadioItem>
                     <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
@@ -1207,16 +1225,28 @@ export function ConversationList({
                   Sync settings
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-56">
-                  <DropdownMenuCheckboxItem checked={syncSettings.realtimeEnabled} onCheckedChange={(checked) => updateSyncSettings({ realtimeEnabled: Boolean(checked) })}>
+                  <DropdownMenuCheckboxItem
+                    checked={syncSettings.realtimeEnabled}
+                    onCheckedChange={(checked) =>
+                      updateSyncSettings({ realtimeEnabled: Boolean(checked) })
+                    }
+                  >
                     Live updates
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Background refresh</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-44">
-                      <DropdownMenuRadioGroup value={String(syncSettings.refetchIntervalMs)} onValueChange={(value) => updateSyncSettings({ refetchIntervalMs: Number(value) })}>
+                      <DropdownMenuRadioGroup
+                        value={String(syncSettings.refetchIntervalMs)}
+                        onValueChange={(value) =>
+                          updateSyncSettings({ refetchIntervalMs: Number(value) })
+                        }
+                      >
                         {SYNC_INTERVAL_OPTIONS.map((option) => (
-                          <DropdownMenuRadioItem key={option.value} value={String(option.value)}>{option.label}</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem key={option.value} value={String(option.value)}>
+                            {option.label}
+                          </DropdownMenuRadioItem>
                         ))}
                       </DropdownMenuRadioGroup>
                     </DropdownMenuSubContent>
@@ -1224,9 +1254,18 @@ export function ConversationList({
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Manual sync button</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-44">
-                      <DropdownMenuRadioGroup value={syncSettings.syncButtonMode} onValueChange={(value) => updateSyncSettings({ syncButtonMode: value as typeof syncSettings.syncButtonMode })}>
+                      <DropdownMenuRadioGroup
+                        value={syncSettings.syncButtonMode}
+                        onValueChange={(value) =>
+                          updateSyncSettings({
+                            syncButtonMode: value as typeof syncSettings.syncButtonMode,
+                          })
+                        }
+                      >
                         {SYNC_BUTTON_OPTIONS.map((option) => (
-                          <DropdownMenuRadioItem key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>
+                          <DropdownMenuRadioItem key={option.value} value={option.value}>
+                            {option.label}
+                          </DropdownMenuRadioItem>
                         ))}
                       </DropdownMenuRadioGroup>
                     </DropdownMenuSubContent>
@@ -1239,14 +1278,18 @@ export function ConversationList({
                   Sync details
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-64">
-                  <DropdownMenuLabel>Status: {isFetching ? "Syncing" : syncFailed ? "Failed" : "Healthy"}</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    Status: {isFetching ? "Syncing" : syncFailed ? "Failed" : "Healthy"}
+                  </DropdownMenuLabel>
                   <div className="space-y-1 px-2 py-1 text-xs text-muted-foreground">
                     <div>Last synced: {lastSyncedLabel}</div>
                     <div>Duration: {formatSyncDuration(lastSyncMs)}</div>
                     <div>Conversations: {conversations.length}</div>
                     {syncFailed && (
                       <>
-                        <div className="break-words text-destructive">Last error: {lastErrorMsg ?? "Unknown sync error"}</div>
+                        <div className="break-words text-destructive">
+                          Last error: {lastErrorMsg ?? "Unknown sync error"}
+                        </div>
                         <div className="text-destructive">Next retry: {nextRetryLabel}</div>
                       </>
                     )}
@@ -1255,23 +1298,28 @@ export function ConversationList({
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>Recent syncs</DropdownMenuLabel>
-                        <div className="max-h-32 space-y-1 overflow-y-auto px-2 pb-1 text-xs text-muted-foreground">
-                          {syncRuns.map((run) => (
-                            <div key={run.at}>
-                              <div className="flex justify-between gap-2">
-                                <span className={cn(!run.ok && "text-destructive")}>
-                                  {formatZoned(new Date(run.at), { hour: "numeric", minute: "2-digit", second: "2-digit" })}
-                                </span>
-                                <span>
-                                  {formatSyncDuration(run.ms)} · {run.count} {run.count === 1 ? "item" : "items"}
-                                </span>
-                              </div>
-                              {!run.ok && run.error && (
-                                <div className="break-words text-destructive">{run.error}</div>
-                              )}
+                      <div className="max-h-32 space-y-1 overflow-y-auto px-2 pb-1 text-xs text-muted-foreground">
+                        {syncRuns.map((run) => (
+                          <div key={run.at}>
+                            <div className="flex justify-between gap-2">
+                              <span className={cn(!run.ok && "text-destructive")}>
+                                {formatZoned(new Date(run.at), {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })}
+                              </span>
+                              <span>
+                                {formatSyncDuration(run.ms)} · {run.count}{" "}
+                                {run.count === 1 ? "item" : "items"}
+                              </span>
                             </div>
-                          ))}
-                        </div>
+                            {!run.ok && run.error && (
+                              <div className="break-words text-destructive">{run.error}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </>
                   )}
                   <DropdownMenuSeparator />

@@ -16,8 +16,10 @@ export interface ClaimableMessage {
 }
 
 export function deliveryMetadata(metadata: unknown): Record<string, unknown> {
-  const copy = metadata && typeof metadata === "object" && !Array.isArray(metadata)
-    ? { ...(metadata as Record<string, unknown>) } : {};
+  const copy =
+    metadata && typeof metadata === "object" && !Array.isArray(metadata)
+      ? { ...(metadata as Record<string, unknown>) }
+      : {};
   delete copy[OUTBOUND_CLAIM_KEY];
   return copy;
 }
@@ -28,8 +30,14 @@ export function deliveryMetadata(metadata: unknown): Record<string, unknown> {
  * it again. A normal provider failure clears the reservation and can be retried.
  */
 export async function claimOutboundMessage(admin: Admin, message: ClaimableMessage) {
-  if (message.status !== "queued" || message.direction !== "outbound" ||
-    message.is_internal || message.deleted_at || message.provider_message_id) return "skipped" as const;
+  if (
+    message.status !== "queued" ||
+    message.direction !== "outbound" ||
+    message.is_internal ||
+    message.deleted_at ||
+    message.provider_message_id
+  )
+    return "skipped" as const;
 
   const metadata = deliveryMetadata(message.metadata);
   const started = (message.metadata as Record<string, unknown> | null)?.[OUTBOUND_CLAIM_KEY];
@@ -39,7 +47,8 @@ export async function claimOutboundMessage(admin: Admin, message: ClaimableMessa
     return "uncertain" as const;
   }
 
-  const { data, error } = await admin.from("messages")
+  const { data, error } = await admin
+    .from("messages")
     .update({ metadata: { ...metadata, [OUTBOUND_CLAIM_KEY]: new Date().toISOString() } })
     .eq("id", message.id)
     .eq("status", "queued")
@@ -51,5 +60,5 @@ export async function claimOutboundMessage(admin: Admin, message: ClaimableMessa
     .select("id")
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? "claimed" as const : "skipped" as const;
+  return data ? ("claimed" as const) : ("skipped" as const);
 }

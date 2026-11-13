@@ -7,7 +7,10 @@ export const Route = createFileRoute("/maintenance")({
   head: () => ({
     meta: [
       { title: "Scheduled maintenance" },
-      { name: "description", content: "We are performing scheduled maintenance and will be back shortly." },
+      {
+        name: "description",
+        content: "We are performing scheduled maintenance and will be back shortly.",
+      },
       { name: "robots", content: "noindex" },
       { httpEquiv: "refresh", content: "60" },
     ],
@@ -26,11 +29,15 @@ function MaintenancePage() {
         <p className="mt-6 text-xs uppercase text-muted-foreground">{brand.platformName}</p>
         <h1 className="mt-2 font-display text-4xl font-semibold">We'll be right back</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {brand.platformName} is undergoing scheduled maintenance. This page refreshes automatically every 60 seconds.
+          {brand.platformName} is undergoing scheduled maintenance. This page refreshes
+          automatically every 60 seconds.
         </p>
         {brand.supportEmail && (
           <p className="mt-6 text-xs text-muted-foreground">
-            Contact support: <a href={`mailto:${brand.supportEmail}`} className="underline hover:text-foreground">{brand.supportEmail}</a>
+            Contact support:{" "}
+            <a href={`mailto:${brand.supportEmail}`} className="underline hover:text-foreground">
+              {brand.supportEmail}
+            </a>
           </p>
         )}
       </div>

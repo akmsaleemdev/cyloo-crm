@@ -14,11 +14,15 @@ import type { TurnResult } from "./types";
 
 export interface InboundEvent {
   channel: ChatbotChannel;
-  externalId: string;      // provider-side conversation/thread id
-  senderId: string;        // provider-side user id (phone, IG id, )
+  externalId: string; // provider-side conversation/thread id
+  senderId: string; // provider-side user id (phone, IG id, )
   text: string;
   locale?: string;
-  attachments?: Array<{ url: string; mime: string; kind: "image" | "audio" | "video" | "document" }>;
+  attachments?: Array<{
+    url: string;
+    mime: string;
+    kind: "image" | "audio" | "video" | "document";
+  }>;
   meta?: Record<string, JsonValue>;
 }
 
@@ -37,13 +41,14 @@ export interface ChannelAdapter {
 
 // ---------- Adapters ----------
 
-const asRecord = (v: unknown): Record<string, unknown> => (v && typeof v === "object" ? v as Record<string, unknown> : {});
+const asRecord = (v: unknown): Record<string, unknown> =>
+  v && typeof v === "object" ? (v as Record<string, unknown>) : {};
 const asString = (v: unknown): string => (typeof v === "string" ? v : "");
 
 const whatsapp: ChannelAdapter = {
   parse: (raw) => {
     const r = asRecord(raw);
-    const change = ((asRecord((asRecord(r).entry as unknown[])?.[0]).changes) as unknown[])?.[0];
+    const change = (asRecord((asRecord(r).entry as unknown[])?.[0]).changes as unknown[])?.[0];
     const value = asRecord(asRecord(change).value);
     const msg = asRecord((value.messages as unknown[])?.[0]);
     if (!msg.id) return null;
@@ -168,7 +173,14 @@ const web: ChannelAdapter = {
 };
 
 export const CHANNEL_ADAPTERS: Record<ChatbotChannel, ChannelAdapter> = {
-  whatsapp, instagram, messenger, telegram, livechat, email, sms, web,
+  whatsapp,
+  instagram,
+  messenger,
+  telegram,
+  livechat,
+  email,
+  sms,
+  web,
 };
 
 export const ChannelAdapterRegistry = {

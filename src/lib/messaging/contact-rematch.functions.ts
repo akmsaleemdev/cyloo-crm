@@ -50,9 +50,7 @@ export type ContactRematchJob = {
 
 export const listContactRematchJobs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ workspaceId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("contact_rematch_jobs")
@@ -143,7 +141,11 @@ interface RematchTotals {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function runRematch(sb: any, workspaceId: string, opts: RematchOptions): Promise<RematchTotals> {
+async function runRematch(
+  sb: any,
+  workspaceId: string,
+  opts: RematchOptions,
+): Promise<RematchTotals> {
   const rules = await loadMatchingRules(sb, workspaceId);
 
   // Restrict to WhatsApp channel accounts when scope=whatsapp.
@@ -227,7 +229,9 @@ async function runRematch(sb: any, workspaceId: string, opts: RematchOptions): P
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-        const m = (msg as { sender_identifier?: string | null; external_from?: string | null } | null) ?? null;
+        const m =
+          (msg as { sender_identifier?: string | null; external_from?: string | null } | null) ??
+          null;
         identifier = m?.sender_identifier ?? m?.external_from ?? null;
       }
 
@@ -262,17 +266,19 @@ async function runRematch(sb: any, workspaceId: string, opts: RematchOptions): P
 
       // Best-effort audit trail.
       try {
-        await sbAny(sb).from("conversation_activity").insert({
-          conversation_id: conv.id,
-          workspace_id: workspaceId,
-          activity_type: "contact_relinked",
-          metadata: {
-            source: "bulk_rematch",
-            previous_contact_id: previous,
-            new_contact_id: match.id,
-            identifier,
-          },
-        } as never);
+        await sbAny(sb)
+          .from("conversation_activity")
+          .insert({
+            conversation_id: conv.id,
+            workspace_id: workspaceId,
+            activity_type: "contact_relinked",
+            metadata: {
+              source: "bulk_rematch",
+              previous_contact_id: previous,
+              new_contact_id: match.id,
+              identifier,
+            },
+          } as never);
       } catch {
         /* optional table */
       }

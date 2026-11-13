@@ -39,12 +39,24 @@ function safeUrl(input: string): URL | null {
   }
 }
 
-function inBusinessHours(nowIso: string, from: string, to: string, tz?: string): { ok: boolean; local: string } {
+function inBusinessHours(
+  nowIso: string,
+  from: string,
+  to: string,
+  tz?: string,
+): { ok: boolean; local: string } {
   const now = new Date(nowIso);
   const timeZone = tz && tz.trim() ? tz.trim() : "UTC";
-  let hh = 0, mm = 0, local = "";
+  let hh = 0,
+    mm = 0,
+    local = "";
   try {
-    const parts = new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(now);
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
     hh = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
     mm = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
     local = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")} ${timeZone}`;
@@ -60,7 +72,10 @@ function inBusinessHours(nowIso: string, from: string, to: string, tz?: string):
   return { ok, local };
 }
 
-export function evaluateRoutingRules(rules: RoutingRule[], visitor: VisitorSample): EvaluationResult {
+export function evaluateRoutingRules(
+  rules: RoutingRule[],
+  visitor: VisitorSample,
+): EvaluationResult {
   const url = safeUrl(visitor.url);
   const path = url?.pathname ?? "";
   const lang = (visitor.language || "").toLowerCase();
@@ -70,27 +85,61 @@ export function evaluateRoutingRules(rules: RoutingRule[], visitor: VisitorSampl
       switch (c.type) {
         case "url_contains": {
           const matched = !!c.value && visitor.url.includes(c.value);
-          return { index: i, type: c.type, matched, reason: matched ? `URL contains "${c.value}"` : `URL does not contain "${c.value}"` };
+          return {
+            index: i,
+            type: c.type,
+            matched,
+            reason: matched ? `URL contains "${c.value}"` : `URL does not contain "${c.value}"`,
+          };
         }
         case "url_equals": {
           const matched = visitor.url === c.value;
-          return { index: i, type: c.type, matched, reason: matched ? `URL matches exactly` : `URL is not "${c.value}"` };
+          return {
+            index: i,
+            type: c.type,
+            matched,
+            reason: matched ? `URL matches exactly` : `URL is not "${c.value}"`,
+          };
         }
         case "path_starts_with": {
           const matched = !!c.value && path.startsWith(c.value);
-          return { index: i, type: c.type, matched, reason: matched ? `Path starts with "${c.value}"` : `Path "${path}" does not start with "${c.value}"` };
+          return {
+            index: i,
+            type: c.type,
+            matched,
+            reason: matched
+              ? `Path starts with "${c.value}"`
+              : `Path "${path}" does not start with "${c.value}"`,
+          };
         }
         case "language": {
           const target = (c.value || "").toLowerCase();
           const matched = !!target && (lang === target || lang.startsWith(target + "-"));
-          return { index: i, type: c.type, matched, reason: matched ? `Language "${lang}" matches` : `Language "${lang}" ≠ "${target}"` };
+          return {
+            index: i,
+            type: c.type,
+            matched,
+            reason: matched ? `Language "${lang}" matches` : `Language "${lang}" ≠ "${target}"`,
+          };
         }
         case "business_hours": {
           const r = inBusinessHours(visitor.now, c.from, c.to, c.timezone ?? visitor.timezone);
-          return { index: i, type: c.type, matched: r.ok, reason: r.ok ? `Inside ${c.from}–${c.to} (${r.local})` : `Outside ${c.from}–${c.to} (${r.local})` };
+          return {
+            index: i,
+            type: c.type,
+            matched: r.ok,
+            reason: r.ok
+              ? `Inside ${c.from}–${c.to} (${r.local})`
+              : `Outside ${c.from}–${c.to} (${r.local})`,
+          };
         }
         default:
-          return { index: i, type: (c as { type: string }).type, matched: false, reason: "Unknown condition type" };
+          return {
+            index: i,
+            type: (c as { type: string }).type,
+            matched: false,
+            reason: "Unknown condition type",
+          };
       }
     });
 

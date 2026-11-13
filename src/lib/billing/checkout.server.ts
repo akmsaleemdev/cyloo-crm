@@ -64,10 +64,16 @@ export async function insertBillingEvent(
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { error } = await sbAny(supabaseAdmin).from("billing_events").insert(row);
     if (error) {
-      console.error("[billing_events] insert failed", { event_type: row.event_type, error: error.message });
+      console.error("[billing_events] insert failed", {
+        event_type: row.event_type,
+        error: error.message,
+      });
     }
   } catch (e) {
-    console.error("[billing_events] insert threw", { event_type: row.event_type, error: (e as Error)?.message });
+    console.error("[billing_events] insert threw", {
+      event_type: row.event_type,
+      error: (e as Error)?.message,
+    });
   }
 }
 
@@ -168,7 +174,12 @@ export async function createGatewayCheckout(
     provider: providerId,
     event_type: "checkout.session.created",
     provider_event_id: session.id,
-    payload: { session_id: session.id, url: session.url, plan_code: data.plan_code, ...(data.metadata ?? {}) },
+    payload: {
+      session_id: session.id,
+      url: session.url,
+      plan_code: data.plan_code,
+      ...(data.metadata ?? {}),
+    },
   });
 
   return { ...session, provider: providerId } as CheckoutResult;

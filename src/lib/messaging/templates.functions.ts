@@ -29,12 +29,14 @@ import {
   normalizeTemplateComponentPhones,
 } from "./template-url-validation";
 
-import { assertValidTemplatePayload, assertValidTemplateComponents } from "./template-payload-schema";
+import {
+  assertValidTemplatePayload,
+  assertValidTemplateComponents,
+} from "./template-payload-schema";
 import { assertNotSampleTemplate } from "./sample-templates";
 import { auditTemplateAction } from "./audit-templates.server";
 import { appendTemplateVersion } from "./template-versions";
 import { sbAny } from "@/lib/supabase/untyped";
-
 
 // ---------------------------------------------------------------------------
 // schemas
@@ -62,7 +64,13 @@ const UpdateSchema = z.object({
   id: z.string().uuid(),
   // Name/language may only be changed while the template is a local draft
   // that Meta has never seen (enforced in the handler).
-  name: z.string().trim().min(1).max(512).regex(/^[a-z0-9_]+$/).optional(),
+  name: z
+    .string()
+    .trim()
+    .min(1)
+    .max(512)
+    .regex(/^[a-z0-9_]+$/)
+    .optional(),
   language: z.string().min(2).max(10).optional(),
   category: z.enum(["MARKETING", "UTILITY", "AUTHENTICATION"]).optional(),
   components: z.array(TemplateComponent).min(1).max(10).optional(),
@@ -70,8 +78,14 @@ const UpdateSchema = z.object({
 });
 
 const IdSchema = z.object({ id: z.string().uuid() });
-const WsSchema = z.object({ workspaceId: z.string().uuid(), channelAccountId: z.string().uuid().optional() });
-const SyncSchema = z.object({ workspaceId: z.string().uuid(), channelAccountId: z.string().uuid() });
+const WsSchema = z.object({
+  workspaceId: z.string().uuid(),
+  channelAccountId: z.string().uuid().optional(),
+});
+const SyncSchema = z.object({
+  workspaceId: z.string().uuid(),
+  channelAccountId: z.string().uuid(),
+});
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -105,7 +119,9 @@ function extractVariables(components: unknown[]): string[] {
   const re = /\{\{\s*(\d+)\s*\}\}/g;
   for (const raw of components) {
     const c = raw as { text?: string; buttons?: Array<{ text?: string; url?: string }> };
-    const bits = [c.text, ...(c.buttons ?? []).flatMap((b) => [b.text, b.url])].filter(Boolean) as string[];
+    const bits = [c.text, ...(c.buttons ?? []).flatMap((b) => [b.text, b.url])].filter(
+      Boolean,
+    ) as string[];
     for (const s of bits) {
       let m: RegExpExecArray | null;
       while ((m = re.exec(s)) !== null) set.add(m[1]);
@@ -190,7 +206,13 @@ export const createTemplate = createServerFn({ method: "POST" })
       status: "draft",
       created_by: context.userId,
       versions: [
-        { version: 1, created_at: new Date().toISOString(), user_id: context.userId, category: data.category, components: normalizedComponents },
+        {
+          version: 1,
+          created_at: new Date().toISOString(),
+          user_id: context.userId,
+          category: data.category,
+          components: normalizedComponents,
+        },
       ],
     };
 
@@ -271,7 +293,9 @@ export const updateTemplate = createServerFn({ method: "POST" })
     // the template its name/language are immutable.
     const isLocalDraft = cur.status === "draft" && !cur.external_template_id;
     if ((data.name || data.language) && !isLocalDraft) {
-      throw new Error("Name and language can only be changed while the template is an unsubmitted draft.");
+      throw new Error(
+        "Name and language can only be changed while the template is an unsubmitted draft.",
+      );
     }
 
     const patch = {
@@ -306,7 +330,6 @@ export const updateTemplate = createServerFn({ method: "POST" })
       await submitTemplateToProvider(data.id);
     }
     return { template: updatedRow };
-
   });
 
 // ---------------------------------------------------------------------------
@@ -325,7 +348,14 @@ export const deleteTemplate = createServerFn({ method: "POST" })
       .maybeSingle();
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Template not found");
-    const t = row as unknown as { id: string; workspace_id: string; name: string; channel_account_id: string; external_template_id: string | null; status: string };
+    const t = row as unknown as {
+      id: string;
+      workspace_id: string;
+      name: string;
+      channel_account_id: string;
+      external_template_id: string | null;
+      status: string;
+    };
 
     // Role-based check: Only workspace admins (owners/admins) can delete templates.
     const { data: isAdmin } = await sbAny(context.supabase).rpc("is_workspace_admin", {
@@ -335,7 +365,6 @@ export const deleteTemplate = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Unauthorized: Only workspace admins can delete templates.");
 
     assertNotSampleTemplate(t.name);
-
 
     // Best-effort delete at provider if it was ever submitted.
     if (t.status !== "draft") {
@@ -356,7 +385,10 @@ export const deleteTemplate = createServerFn({ method: "POST" })
         });
       }
     }
-    const { error } = await sbAny(context.supabase).from("wa_templates" as never).delete().eq("id", data.id);
+    const { error } = await sbAny(context.supabase)
+      .from("wa_templates" as never)
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
 
     await auditTemplateAction("template.delete", {
@@ -368,7 +400,6 @@ export const deleteTemplate = createServerFn({ method: "POST" })
     });
 
     return { ok: true };
-
   });
 
 // ---------------------------------------------------------------------------
@@ -404,18 +435,36 @@ export const previewTemplate = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Template not found");
-    const t = row as unknown as { components: unknown[]; variables: string[]; language: string; name: string; category: string };
+    const t = row as unknown as {
+      components: unknown[];
+      variables: string[];
+      language: string;
+      name: string;
+      category: string;
+    };
     const vars = data.variables ?? {};
-    const render = (s: string) => s.replace(/\{\{\s*([\w]+)\s*\}\}/g, (_, k: string) => vars[k] ?? `{{${k}}}`);
+    const render = (s: string) =>
+      s.replace(/\{\{\s*([\w]+)\s*\}\}/g, (_, k: string) => vars[k] ?? `{{${k}}}`);
     const rendered = t.components.map((raw) => {
-      const c = raw as { type: string; format?: string; text?: string; buttons?: Array<{ text?: string; url?: string; type?: string }> };
+      const c = raw as {
+        type: string;
+        format?: string;
+        text?: string;
+        buttons?: Array<{ text?: string; url?: string; type?: string }>;
+      };
       return {
         ...c,
         text: c.text ? render(c.text) : c.text,
-        buttons: c.buttons?.map((b) => ({ ...b, text: b.text ? render(b.text) : b.text, url: b.url ? render(b.url) : b.url })),
+        buttons: c.buttons?.map((b) => ({
+          ...b,
+          text: b.text ? render(b.text) : b.text,
+          url: b.url ? render(b.url) : b.url,
+        })),
       };
     });
-    return { preview: { name: t.name, language: t.language, category: t.category, components: rendered } };
+    return {
+      preview: { name: t.name, language: t.language, category: t.category, components: rendered },
+    };
   });
 
 // ---------------------------------------------------------------------------
@@ -464,8 +513,15 @@ const HeaderSampleSchema = z.object({
       message: "Unsupported file type for a template header",
     }),
   // base64-encoded file contents (no data: prefix)
-  base64: z.string().min(1).max(Math.ceil((MAX_HEADER_BYTES * 4) / 3) + 1024),
-  durationSeconds: z.number().positive().max(60 * 60).optional(),
+  base64: z
+    .string()
+    .min(1)
+    .max(Math.ceil((MAX_HEADER_BYTES * 4) / 3) + 1024),
+  durationSeconds: z
+    .number()
+    .positive()
+    .max(60 * 60)
+    .optional(),
 });
 
 export const uploadTemplateHeaderSample = createServerFn({ method: "POST" })
@@ -513,4 +569,3 @@ export const uploadTemplateHeaderSample = createServerFn({ method: "POST" })
     });
     return { handle };
   });
-

@@ -89,7 +89,12 @@ export type DashConversation = {
   unread_count: number;
   last_message_at: string | null;
   ai_summary: string | null;
-  contact?: { display_name: string | null; first_name: string | null; last_name: string | null; avatar_url: string | null };
+  contact?: {
+    display_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  };
 };
 export type DashActivity = {
   id: string;
@@ -115,27 +120,75 @@ export function useDashboardData() {
     if (!workspaceId) return;
     const ch = supabase
       .channel(`dashboard:${workspaceId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "contacts", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "leads", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "companies", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "tasks", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "deals", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversations", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "activities", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["dash"] });
-      })
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "contacts",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "leads", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "companies",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tasks", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "deals", filter: `workspace_id=eq.${workspaceId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "conversations",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "activities",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => {
+          qc.invalidateQueries({ queryKey: ["dash"] });
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -147,7 +200,9 @@ export function useDashboardData() {
     enabled: !!workspaceId,
     queryFn: async () => {
       const { data, error } = await anyFrom("leads")
-        .select("id, first_name, last_name, email, company_name, status, score, rating, source, owner_id, created_at")
+        .select(
+          "id, first_name, last_name, email, company_name, status, score, rating, source, owner_id, created_at",
+        )
         .eq("workspace_id", workspaceId)
         .is("deleted_at", null)
         .gte("created_at", daysAgo(7))
@@ -177,7 +232,9 @@ export function useDashboardData() {
     enabled: !!workspaceId && !!userId,
     queryFn: async () => {
       const { data, error } = await anyFrom("leads")
-        .select("id, first_name, last_name, email, company_name, status, score, rating, source, owner_id, created_at")
+        .select(
+          "id, first_name, last_name, email, company_name, status, score, rating, source, owner_id, created_at",
+        )
         .eq("workspace_id", workspaceId)
         .eq("owner_id", userId)
         .is("deleted_at", null)
@@ -204,7 +261,13 @@ export function useDashboardData() {
     },
   });
 
-  const activeCustomers = useQuery<{ total: number; active: number; atRisk: number; churned: number; vip: number }>({
+  const activeCustomers = useQuery<{
+    total: number;
+    active: number;
+    atRisk: number;
+    churned: number;
+    vip: number;
+  }>({
     queryKey: ["dash", "customers-summary", workspaceId],
     enabled: !!workspaceId,
     queryFn: async () => {
@@ -269,7 +332,9 @@ export function useDashboardData() {
     enabled: !!workspaceId,
     queryFn: async () => {
       const { data, error } = await anyFrom("activities")
-        .select("id, verb, summary, object_type, object_id, target_type, target_id, created_at, actor_id")
+        .select(
+          "id, verb, summary, object_type, object_id, target_type, target_id, created_at, actor_id",
+        )
         .eq("workspace_id", workspaceId)
         .gte("created_at", startOfToday())
         .lte("created_at", endOfToday())
@@ -285,7 +350,9 @@ export function useDashboardData() {
     enabled: !!workspaceId,
     queryFn: async () => {
       const { data, error } = await anyFrom("conversations")
-        .select("id, contact_id, status, unread_count, last_message_at, ai_summary, contact:contacts(display_name, first_name, last_name, avatar_url)")
+        .select(
+          "id, contact_id, status, unread_count, last_message_at, ai_summary, contact:contacts(display_name, first_name, last_name, avatar_url)",
+        )
         .eq("workspace_id", workspaceId)
         .order("last_message_at", { ascending: false, nullsFirst: false })
         .limit(6);
@@ -315,7 +382,9 @@ export function useCustomerDeals(customerId: string | undefined) {
     enabled: !!customerId,
     queryFn: async () => {
       const { data } = await anyFrom("deals")
-        .select("id, title, amount, currency, status, stage_id, probability, expected_close_date, owner_id")
+        .select(
+          "id, title, amount, currency, status, stage_id, probability, expected_close_date, owner_id",
+        )
         .eq("contact_id", customerId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
@@ -355,7 +424,15 @@ export function useCustomerConversations(customerId: string | undefined) {
 }
 
 export function useCustomerNotes(customerId: string | undefined) {
-  return useQuery<Array<{ id: string; body: string; is_pinned: boolean; created_at: string; author_id: string | null }>>({
+  return useQuery<
+    Array<{
+      id: string;
+      body: string;
+      is_pinned: boolean;
+      created_at: string;
+      author_id: string | null;
+    }>
+  >({
     queryKey: ["customer-notes", customerId],
     enabled: !!customerId,
     queryFn: async () => {
@@ -384,7 +461,9 @@ export function useCustomerCampaigns(customerId: string | undefined) {
         .limit(50);
       const seen = new Set<string>();
       const out: Array<{ id: string; name: string; status: string; created_at: string }> = [];
-      for (const r of (data ?? []) as Array<{ campaigns?: { id: string; name: string; status: string; created_at: string } | null }>) {
+      for (const r of (data ?? []) as Array<{
+        campaigns?: { id: string; name: string; status: string; created_at: string } | null;
+      }>) {
         const c = r.campaigns;
         if (c && !seen.has(c.id)) {
           seen.add(c.id);
@@ -396,7 +475,10 @@ export function useCustomerCampaigns(customerId: string | undefined) {
   });
 }
 
-export function useRelatedContacts(customerId: string | undefined, companyId: string | null | undefined) {
+export function useRelatedContacts(
+  customerId: string | undefined,
+  companyId: string | null | undefined,
+) {
   return useQuery<DashContact[]>({
     queryKey: ["related-contacts", companyId, customerId],
     enabled: !!companyId && !!customerId,

@@ -147,8 +147,7 @@ export function applyAudienceFilter(query: Q, filter: AudienceFilter): Q {
         const vals = Array.isArray(c.value) ? (c.value as string[]) : [];
         if (vals.length === 0) break;
         if (useOr) push(`${c.field}.cs.{${vals.join(",")}}`);
-        else if (c.operator === "not_in")
-          query = query.not(c.field, "cs", `{${vals.join(",")}}`);
+        else if (c.operator === "not_in") query = query.not(c.field, "cs", `{${vals.join(",")}}`);
         else query = query.contains(c.field, vals);
         break;
       }
@@ -300,7 +299,10 @@ export function useDeleteSavedAudience() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await sbAny(supabase).from("saved_audiences" as never).delete().eq("id", id);
+      const { error } = await sbAny(supabase)
+        .from("saved_audiences" as never)
+        .delete()
+        .eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["saved-audiences"] }),
@@ -326,7 +328,10 @@ export function useBulkTagContacts() {
           const cur = new Set((r.tags as string[] | null) ?? []);
           add.forEach((t) => cur.add(t));
           remove.forEach((t) => cur.delete(t));
-          await sbAny(supabase).from("contacts").update({ tags: Array.from(cur) }).eq("id", r.id);
+          await sbAny(supabase)
+            .from("contacts")
+            .update({ tags: Array.from(cur) })
+            .eq("id", r.id);
         }),
       );
     },
@@ -496,22 +501,26 @@ export function useImportContacts() {
       if (!active?.id) throw new Error("No workspace");
       const payload = rows.map((r) => ({
         workspace_id: active.id,
-        display_name: r.display_name || r.name || `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || null,
+        display_name:
+          r.display_name || r.name || `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || null,
         first_name: r.first_name || null,
         last_name: r.last_name || null,
         email: r.email || null,
         phone: r.phone || null,
         whatsapp: r.whatsapp || r.phone || null,
-        tags: r.tags ? r.tags.split("|").map((t) => t.trim()).filter(Boolean) : [],
+        tags: r.tags
+          ? r.tags
+              .split("|")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
         lifecycle_stage: r.lifecycle_stage || "lead",
         lead_status: r.lead_status || null,
         customer_status: r.customer_status || null,
         locale: r.language || r.locale || null,
         timezone: r.timezone || null,
         address:
-          r.country || r.city
-            ? { country: r.country || undefined, city: r.city || undefined }
-            : {},
+          r.country || r.city ? { country: r.country || undefined, city: r.city || undefined } : {},
       }));
       // Chunk 500 rows at a time.
       let inserted = 0;
@@ -520,7 +529,11 @@ export function useImportContacts() {
         const { error, count } = await supabase
           .from("contacts")
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .upsert(chunk as any, { onConflict: "workspace_id,phone", count: "exact", ignoreDuplicates: false });
+          .upsert(chunk as any, {
+            onConflict: "workspace_id,phone",
+            count: "exact",
+            ignoreDuplicates: false,
+          });
         if (error) throw error;
         inserted += count ?? chunk.length;
       }
@@ -549,7 +562,12 @@ export function useAudienceRealtime() {
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "saved_audiences", filter: `workspace_id=eq.${active.id}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "saved_audiences",
+          filter: `workspace_id=eq.${active.id}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["saved-audiences"] }),
       )
       .subscribe();

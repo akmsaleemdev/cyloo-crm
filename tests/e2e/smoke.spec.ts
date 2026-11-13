@@ -17,7 +17,7 @@ test.describe("Smoke Tests", () => {
   });
 
   test("should load the login page", async ({ page }) => {
-    await page.goto(`${BASE_URL}/login`);
+    await page.goto(`${BASE_URL}/auth`);
     await expect(page.locator("form")).toBeVisible();
   });
 
@@ -34,9 +34,7 @@ test.describe("Smoke Tests", () => {
 
   test("should have correct meta tags", async ({ page }) => {
     await page.goto(BASE_URL);
-    const description = await page
-      .locator('meta[name="description"]')
-      .getAttribute("content");
+    const description = await page.locator('meta[name="description"]').getAttribute("content");
     if (description) {
       expect(description.toLowerCase()).not.toContain("wrapcoders");
       expect(description.toLowerCase()).not.toContain("wacrm");
@@ -50,6 +48,7 @@ test.describe("Smoke Tests", () => {
     expect(bodyText).not.toContain("WRAPCODERS");
     expect(bodyText).not.toContain("WACRM");
     expect(bodyText).not.toContain("WaCRM");
+    expect(bodyText.toLowerCase()).not.toContain("monday.com");
+    expect(bodyText.toLowerCase()).not.toContain("lovable");
   });
 });
-

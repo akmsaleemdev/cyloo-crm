@@ -2,7 +2,7 @@
  * Customer conversation insights — summary + next best action.
  *
  * Fetches the customer's recent WhatsApp threads and their latest messages,
- * then asks Lovable AI Gateway to produce a compact JSON with:
+ * then asks the configured AI provider to produce compact JSON with:
  *  - summary       : 2-4 sentence recap
  *  - sentiment     : positive | neutral | negative
  *  - topics        : short tags
@@ -135,7 +135,7 @@ export const generateCustomerInsight = createServerFn({ method: "POST" })
       })
       .join("\n");
 
-    // Call Lovable AI Gateway with JSON mode.
+    // Call the configured AI provider with JSON mode.
     const model = "gemini-3.6-flash";
     const systemPrompt = [
       "You are a senior CRM analyst.",

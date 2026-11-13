@@ -13,7 +13,7 @@ const SettingsSchema = z.object({
 export const getBirthdayReminderSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: { workspace_id: string }) =>
-    z.object({ workspace_id: z.string().uuid() }).parse(input)
+    z.object({ workspace_id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context as any;
@@ -56,18 +56,16 @@ export const upsertBirthdayReminderSettings = createServerFn({ method: "POST" })
     // Normalize + dedupe lead_days
     const lead = Array.from(new Set(data.lead_days)).sort((a, b) => a - b);
 
-    const { error } = await supabase
-      .from("birthday_reminder_settings")
-      .upsert(
-        {
-          workspace_id: data.workspace_id,
-          enabled: data.enabled,
-          lead_days: lead,
-          email_enabled: data.email_enabled,
-          inapp_enabled: data.inapp_enabled,
-        },
-        { onConflict: "workspace_id" }
-      );
+    const { error } = await supabase.from("birthday_reminder_settings").upsert(
+      {
+        workspace_id: data.workspace_id,
+        enabled: data.enabled,
+        lead_days: lead,
+        email_enabled: data.email_enabled,
+        inapp_enabled: data.inapp_enabled,
+      },
+      { onConflict: "workspace_id" },
+    );
     if (error) throw new Error(error.message);
     return { ok: true };
   });
@@ -75,7 +73,7 @@ export const upsertBirthdayReminderSettings = createServerFn({ method: "POST" })
 export const runBirthdayRemindersNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: { workspace_id: string }) =>
-    z.object({ workspace_id: z.string().uuid() }).parse(input)
+    z.object({ workspace_id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
@@ -100,7 +98,7 @@ export const getUpcomingBirthdays = createServerFn({ method: "POST" })
         workspace_id: z.string().uuid(),
         days: z.number().int().min(1).max(60).optional(),
       })
-      .parse(input)
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context as any;
@@ -130,7 +128,9 @@ export const getUpcomingBirthdays = createServerFn({ method: "POST" })
       const mm = Number(m[1]);
       const dd = Number(m[2]);
       let next = new Date(Date.UTC(y, mm - 1, dd));
-      const t0 = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+      const t0 = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+      );
       if (next < t0) next = new Date(Date.UTC(y + 1, mm - 1, dd));
       const diff = Math.round((next.getTime() - t0.getTime()) / 86400000);
       if (diff > horizon) continue;

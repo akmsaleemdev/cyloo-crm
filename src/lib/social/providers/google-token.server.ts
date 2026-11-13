@@ -18,7 +18,9 @@ export interface GoogleChannelTokens {
 
 export function googleOAuthCreds(): { clientId: string; clientSecret: string } | null {
   const clientId = (process.env.YOUTUBE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID)?.trim();
-  const clientSecret = (process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET)?.trim();
+  const clientSecret = (
+    process.env.YOUTUBE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+  )?.trim();
   return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
@@ -37,7 +39,8 @@ export async function freshGoogleAccessToken(
   }
 
   const creds = googleOAuthCreds();
-  if (!creds) throw new Error("YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET are not set on the server.");
+  if (!creds)
+    throw new Error("YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET are not set on the server.");
   const res = await fetchImpl("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },

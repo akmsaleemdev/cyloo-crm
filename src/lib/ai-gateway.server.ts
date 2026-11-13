@@ -27,7 +27,10 @@ function withGeminiModelId(inner: typeof fetch): typeof fetch {
     return inner(input, init);
   };
 }
-export function createDirectGeminiProvider(apiKey: string, options?: { structuredOutputs?: boolean }) {
+export function createDirectGeminiProvider(
+  apiKey: string,
+  options?: { structuredOutputs?: boolean },
+) {
   return createOpenAICompatible({
     name: "gemini",
     baseURL: GEMINI_OPENAI_BASE,

@@ -101,9 +101,7 @@ export function ProviderDetailsSheet({
 
               {actions.length > 0 && (
                 <section className="space-y-2">
-                  <h3 className="text-xs font-medium uppercase text-muted-foreground">
-                    Actions
-                  </h3>
+                  <h3 className="text-xs font-medium uppercase text-muted-foreground">Actions</h3>
                   <ul className="space-y-1.5">
                     {actions.map((c) => (
                       <li key={c.id} className="flex items-start gap-2 text-sm">
@@ -117,9 +115,7 @@ export function ProviderDetailsSheet({
 
               {triggers.length > 0 && (
                 <section className="space-y-2">
-                  <h3 className="text-xs font-medium uppercase text-muted-foreground">
-                    Triggers
-                  </h3>
+                  <h3 className="text-xs font-medium uppercase text-muted-foreground">Triggers</h3>
                   <ul className="space-y-1.5">
                     {triggers.map((c) => (
                       <li key={c.id} className="flex items-start gap-2 text-sm">

@@ -44,21 +44,11 @@ function ScrollableTabsFixture() {
       {/* Constrained container forces horizontal overflow */}
       <section className="mb-8 max-w-[520px] space-y-2">
         <p className="text-xs text-muted-foreground">Scrollable Tabs</p>
-        <div
-          className="overflow-x-auto"
-          data-testid="tabs-scroll-container"
-        >
+        <div className="overflow-x-auto" data-testid="tabs-scroll-container">
           <Tabs defaultValue="overview" data-testid="tabs-scrollable">
-            <TabsList
-              className="inline-flex w-max"
-              data-testid="tabs-list-scrollable"
-            >
+            <TabsList className="inline-flex w-max" data-testid="tabs-list-scrollable">
               {TRIGGERS.map((t) => (
-                <TabsTrigger
-                  key={t}
-                  value={t}
-                  data-testid={`tabs-trigger-${t}`}
-                >
+                <TabsTrigger key={t} value={t} data-testid={`tabs-trigger-${t}`}>
                   {t}
                 </TabsTrigger>
               ))}
@@ -74,13 +64,8 @@ function ScrollableTabsFixture() {
 
       {/* Same scrollable list, but with a disabled trigger to snapshot */}
       <section className="max-w-[520px] space-y-2">
-        <p className="text-xs text-muted-foreground">
-          Scrollable Tabs with disabled item
-        </p>
-        <div
-          className="overflow-x-auto"
-          data-testid="tabs-scroll-container-disabled"
-        >
+        <p className="text-xs text-muted-foreground">Scrollable Tabs with disabled item</p>
+        <div className="overflow-x-auto" data-testid="tabs-scroll-container-disabled">
           <Tabs defaultValue="a" data-testid="tabs-scrollable-disabled">
             <TabsList className="inline-flex w-max" data-testid="tabs-list-scrollable-disabled">
               <TabsTrigger value="a" data-testid="tabs-scroll-disabled-a">

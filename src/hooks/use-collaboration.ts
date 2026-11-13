@@ -2,7 +2,11 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { useCurrentWorkspace, useWorkspaceMembers, type WorkspaceMemberRow } from "@/hooks/use-workspace";
+import {
+  useCurrentWorkspace,
+  useWorkspaceMembers,
+  type WorkspaceMemberRow,
+} from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
 
 /* -------------------------------------------------------------------------- */
@@ -83,10 +87,11 @@ export function useConversationNotes(conversationId: string | undefined) {
         .select("id, display_name, avatar_url")
         .in("id", authorIds);
       type Author = { id: string; display_name: string | null; avatar_url: string | null };
-      const byId = new Map<string, Author>(
-        ((profiles ?? []) as Author[]).map((p) => [p.id, p]),
-      );
-      return rows.map((r) => ({ ...r, author: r.author_id ? byId.get(r.author_id) ?? null : null }));
+      const byId = new Map<string, Author>(((profiles ?? []) as Author[]).map((p) => [p.id, p]));
+      return rows.map((r) => ({
+        ...r,
+        author: r.author_id ? (byId.get(r.author_id) ?? null) : null,
+      }));
     },
   });
 
@@ -96,7 +101,12 @@ export function useConversationNotes(conversationId: string | undefined) {
       .channel(`conv-notes:${conversationId}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversation_notes", filter: `conversation_id=eq.${conversationId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "conversation_notes",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["conversation-notes", conversationId] }),
       )
       .subscribe();
@@ -134,7 +144,12 @@ export function useCreateNote(conversationId: string | undefined, workspaceId: s
 export function useUpdateNote(conversationId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (input: { id: string; body?: string; is_pinned?: boolean; mentions?: string[] }) => {
+    mutationFn: async (input: {
+      id: string;
+      body?: string;
+      is_pinned?: boolean;
+      mentions?: string[];
+    }) => {
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (input.body !== undefined) {
         patch.body = input.body;
@@ -187,7 +202,12 @@ export function useConversationParticipants(conversationId: string | undefined) 
       .channel(`conv-participants:${conversationId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "conversation_participants", filter: `conversation_id=eq.${conversationId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "conversation_participants",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["conversation-participants", conversationId] }),
       )
       .subscribe();
@@ -199,7 +219,10 @@ export function useConversationParticipants(conversationId: string | undefined) 
   return query;
 }
 
-export function useAddParticipant(conversationId: string | undefined, workspaceId: string | undefined) {
+export function useAddParticipant(
+  conversationId: string | undefined,
+  workspaceId: string | undefined,
+) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: { user_id: string; role?: "follower" | "watcher" | "agent" }) => {
@@ -212,7 +235,8 @@ export function useAddParticipant(conversationId: string | undefined, workspaceI
       });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["conversation-participants", conversationId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["conversation-participants", conversationId] }),
   });
 }
 
@@ -225,7 +249,8 @@ export function useRemoveParticipant(conversationId: string | undefined) {
         .eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["conversation-participants", conversationId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["conversation-participants", conversationId] }),
   });
 }
 
@@ -269,7 +294,6 @@ export function useAssignConversation() {
   });
 }
 
-
 /* -------------------------------------------------------------------------- */
 /*                            Activity / Timeline                             */
 /* -------------------------------------------------------------------------- */
@@ -297,7 +321,12 @@ export function useConversationActivity(conversationId: string | undefined) {
       .channel(`conv-activity:${conversationId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "conversation_activity", filter: `conversation_id=eq.${conversationId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "conversation_activity",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["conversation-activity", conversationId] }),
       )
       .subscribe();
@@ -313,7 +342,10 @@ export function useConversationActivity(conversationId: string | undefined) {
 /*                                  Helpers                                   */
 /* -------------------------------------------------------------------------- */
 
-export function useTeamDirectory(): { members: WorkspaceMemberRow[]; byId: Map<string, WorkspaceMemberRow> } {
+export function useTeamDirectory(): {
+  members: WorkspaceMemberRow[];
+  byId: Map<string, WorkspaceMemberRow>;
+} {
   const { active } = useCurrentWorkspace();
   const q = useWorkspaceMembers(active?.id);
   const members = q.data ?? [];

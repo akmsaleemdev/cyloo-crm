@@ -26,7 +26,14 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   const admin = supabaseAdmin as any;
   const now = opts.now ?? new Date();
-  const result: RunResult = { tasks_scanned: 0, project_tasks_scanned: 0, notifications_created: 0, emails_sent: 0, emails_skipped: 0, errors: [] };
+  const result: RunResult = {
+    tasks_scanned: 0,
+    project_tasks_scanned: 0,
+    notifications_created: 0,
+    emails_sent: 0,
+    emails_skipped: 0,
+    errors: [],
+  };
   const projectResult = await runProjectTaskReminders(admin, now);
   result.project_tasks_scanned = projectResult.tasks_scanned;
   result.notifications_created += projectResult.notifications_created;
@@ -68,28 +75,39 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
 
   const workspaceIds = [...new Set(list.map((task) => task.workspace_id))];
   const { data: workspaces, error: workspaceError } = await admin
-    .from("workspaces").select("id, organization_id").in("id", workspaceIds);
+    .from("workspaces")
+    .select("id, organization_id")
+    .in("id", workspaceIds);
   if (workspaceError) {
     result.errors.push(`workspaces: ${workspaceError.message}`);
     return result;
   }
   const organizationByWorkspace = new Map<string, string | null>(
-    ((workspaces ?? []) as Array<{ id: string; organization_id: string | null }>).map((workspace) => [workspace.id, workspace.organization_id])
+    ((workspaces ?? []) as Array<{ id: string; organization_id: string | null }>).map(
+      (workspace) => [workspace.id, workspace.organization_id],
+    ),
   );
 
   // Load all relevant users' settings in one shot
   const userIds = Array.from(
-    new Set(list.flatMap((t) => [t.assigned_to, t.created_by]).filter((x): x is string => !!x))
+    new Set(list.flatMap((t) => [t.assigned_to, t.created_by]).filter((x): x is string => !!x)),
   );
   if (!userIds.length) return result;
-  const { data: members, error: membersError } = await admin.from("workspace_members")
-    .select("workspace_id,user_id").in("workspace_id", workspaceIds).in("user_id", userIds).eq("status", "active");
+  const { data: members, error: membersError } = await admin
+    .from("workspace_members")
+    .select("workspace_id,user_id")
+    .in("workspace_id", workspaceIds)
+    .in("user_id", userIds)
+    .eq("status", "active");
   if (membersError) {
     result.errors.push(`task reminder members: ${membersError.message}`);
     return result;
   }
-  const memberKeys = new Set(((members ?? []) as Array<{ workspace_id: string; user_id: string }>)
-    .map((member) => `${member.workspace_id}/${member.user_id}`));
+  const memberKeys = new Set(
+    ((members ?? []) as Array<{ workspace_id: string; user_id: string }>).map(
+      (member) => `${member.workspace_id}/${member.user_id}`,
+    ),
+  );
   const { data: settingsRows, error: settingsError } = await admin
     .from("task_reminder_settings")
     .select("*")
@@ -98,12 +116,21 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
     result.errors.push(`task reminder settings: ${settingsError.message}`);
     return result;
   }
-  const settingsMap = new Map<string, {
-    enabled: boolean; lead_minutes: number[]; notify_overdue: boolean;
-    overdue_repeat_minutes: number; inapp_enabled: boolean; email_enabled: boolean;
-  }>();
+  const settingsMap = new Map<
+    string,
+    {
+      enabled: boolean;
+      lead_minutes: number[];
+      notify_overdue: boolean;
+      overdue_repeat_minutes: number;
+      inapp_enabled: boolean;
+      email_enabled: boolean;
+    }
+  >();
   for (const r of (settingsRows ?? []) as any[]) settingsMap.set(r.user_id, r);
-  const emailDelivery = [...settingsMap.values()].some((setting) => setting.enabled && setting.email_enabled)
+  const emailDelivery = [...settingsMap.values()].some(
+    (setting) => setting.enabled && setting.email_enabled,
+  )
     ? await createTaskReminderEmailDelivery(admin, workspaceIds, userIds, result)
     : null;
 
@@ -116,7 +143,9 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
     }
     const dueMs = new Date(t.due_at).getTime();
     const deltaMin = Math.round((dueMs - now.getTime()) / 60000); // + = future, - = overdue
-    const recipients = Array.from(new Set([t.assigned_to, t.created_by].filter((x): x is string => !!x)));
+    const recipients = Array.from(
+      new Set([t.assigned_to, t.created_by].filter((x): x is string => !!x)),
+    );
 
     for (const uid of recipients) {
       if (!memberKeys.has(`${t.workspace_id}/${uid}`)) continue;
@@ -130,10 +159,19 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
       };
       if (!s.enabled) continue;
       const fire = async (kind: "lead" | "due" | "overdue", offsetMinutes: number) => {
-        if (s.inapp_enabled) await fireReminder(admin, t, organizationId, uid, kind, offsetMinutes, result);
+        if (s.inapp_enabled)
+          await fireReminder(admin, t, organizationId, uid, kind, offsetMinutes, result);
         if (s.email_enabled && emailDelivery && kind !== "overdue") {
-          await emailDelivery({ source: "crm", taskId: t.id, userId: uid, workspaceId: t.workspace_id,
-            title: t.title, kind, offsetMinutes, dueKey: t.due_at });
+          await emailDelivery({
+            source: "crm",
+            taskId: t.id,
+            userId: uid,
+            workspaceId: t.workspace_id,
+            title: t.title,
+            kind,
+            offsetMinutes,
+            dueKey: t.due_at,
+          });
         }
       };
 
@@ -151,13 +189,12 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
       // Overdue: fire once per configured slot (default 15/60/240/1440 min past due)
       if (s.notify_overdue && deltaMin < 0) {
         const overdueMin = -deltaMin;
-        const slots = s.overdue_repeat_minutes > 0
-          ? [s.overdue_repeat_minutes] // simple periodic bucket
-          : OVERDUE_SLOTS;
+        const slots =
+          s.overdue_repeat_minutes > 0
+            ? [s.overdue_repeat_minutes] // simple periodic bucket
+            : OVERDUE_SLOTS;
         for (const slot of slots) {
-          const bucket = s.overdue_repeat_minutes > 0
-            ? Math.floor(overdueMin / slot) * slot
-            : slot;
+          const bucket = s.overdue_repeat_minutes > 0 ? Math.floor(overdueMin / slot) * slot : slot;
           if (overdueMin >= bucket && overdueMin < bucket + 6 && bucket > 0) {
             await fire("overdue", bucket);
           }
@@ -176,7 +213,7 @@ async function fireReminder(
   userId: string,
   kind: "lead" | "due" | "overdue",
   offsetMinutes: number,
-  result: RunResult
+  result: RunResult,
 ) {
   const { error: logErr } = await sbAny(admin).from("task_reminder_log").insert({
     task_id: t.id,
@@ -196,32 +233,39 @@ async function fireReminder(
     kind === "overdue"
       ? `Overdue: ${t.title}`
       : kind === "due"
-      ? `Due now: ${t.title}`
-      : `Upcoming task: ${t.title}`;
+        ? `Due now: ${t.title}`
+        : `Upcoming task: ${t.title}`;
   const body =
     kind === "overdue"
       ? `This task is ${formatMinutes(offsetMinutes)} past its due date.`
       : kind === "due"
-      ? `This task is due now.`
-      : `Due in ${formatMinutes(offsetMinutes)}.`;
+        ? `This task is due now.`
+        : `Due in ${formatMinutes(offsetMinutes)}.`;
 
-  const { error: nErr } = await sbAny(admin).from("notifications").insert({
-    user_id: userId,
-    organization_id: organizationId,
-    channel: "in_app",
-    status: "unread",
-    title,
-    body,
-    action_url: `/tasks?taskId=${t.id}`,
-    category: "task",
-    data: { task_id: t.id, kind, offset_minutes: offsetMinutes, due_at: t.due_at },
-  });
+  const { error: nErr } = await sbAny(admin)
+    .from("notifications")
+    .insert({
+      user_id: userId,
+      organization_id: organizationId,
+      channel: "in_app",
+      status: "unread",
+      title,
+      body,
+      action_url: `/tasks?taskId=${t.id}`,
+      category: "task",
+      data: { task_id: t.id, kind, offset_minutes: offsetMinutes, due_at: t.due_at },
+    });
   if (nErr) {
     result.errors.push(`notify ${t.id}/${userId}: ${nErr.message}`);
     const { error: rollbackError } = await sbAny(admin).from("task_reminder_log").delete().match({
-      task_id: t.id, user_id: userId, kind, offset_minutes: offsetMinutes, due_at: t.due_at,
+      task_id: t.id,
+      user_id: userId,
+      kind,
+      offset_minutes: offsetMinutes,
+      due_at: t.due_at,
     });
-    if (rollbackError) result.errors.push(`log rollback ${t.id}/${userId}: ${rollbackError.message}`);
+    if (rollbackError)
+      result.errors.push(`log rollback ${t.id}/${userId}: ${rollbackError.message}`);
   } else {
     result.notifications_created++;
   }

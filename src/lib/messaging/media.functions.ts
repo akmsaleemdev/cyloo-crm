@@ -31,10 +31,7 @@ const UPLOAD_URL_TTL_SECONDS = 60 * 30; // 30 minutes for uploads
  * Returns `null` when the caller cannot see the workspace or when the
  * workspace has no `organization_id`.
  */
-async function resolveWorkspaceOrgId(
-  supabase: any,
-  workspaceId: string,
-): Promise<string | null> {
+async function resolveWorkspaceOrgId(supabase: any, workspaceId: string): Promise<string | null> {
   const { data } = await supabase
     .from("workspaces")
     .select("organization_id")
@@ -60,9 +57,7 @@ async function assertActiveOrgOwnsWorkspace(
   const verifiedOrgId = await getCallerOrgId(supabase, userId, activeOrgId);
   const workspaceOrgId = await resolveWorkspaceOrgId(supabase, workspaceId);
   if (!workspaceOrgId || workspaceOrgId !== verifiedOrgId) {
-    throw new Error(
-      "Forbidden: attachment does not belong to the active organization",
-    );
+    throw new Error("Forbidden: attachment does not belong to the active organization");
   }
   return verifiedOrgId;
 }
@@ -107,8 +102,8 @@ export const createMediaUploadUrl = createServerFn({ method: "POST" })
 
     // Admin client is required because Storage signed uploads use the service key.
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { data: signed, error } = await supabaseAdmin
-      .storage.from(BUCKET)
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from(BUCKET)
       .createSignedUploadUrl(objectPath);
     if (error || !signed) throw new Error(error?.message ?? "Failed to sign upload");
 
@@ -168,10 +163,13 @@ export const finalizeMediaUpload = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    await sbAny(context.supabase).rpc("mark_media_accessed" as never, {
-      _attachment_id: (row as { id: string }).id,
-      _action: "upload",
-    } as never);
+    await sbAny(context.supabase).rpc(
+      "mark_media_accessed" as never,
+      {
+        _attachment_id: (row as { id: string }).id,
+        _action: "upload",
+      } as never,
+    );
 
     return row as { id: string };
   });
@@ -180,12 +178,14 @@ const SignedUrlSchema = z.object({
   attachmentId: z.string().uuid(),
   activeOrgId: z.string().uuid(),
   download: z.boolean().default(false),
-  transform: z.object({
-    width: z.number().int().min(16).max(4096).optional(),
-    height: z.number().int().min(16).max(4096).optional(),
-    quality: z.number().int().min(20).max(100).optional(),
-    resize: z.enum(["cover", "contain", "fill"]).optional(),
-  }).optional(),
+  transform: z
+    .object({
+      width: z.number().int().min(16).max(4096).optional(),
+      height: z.number().int().min(16).max(4096).optional(),
+      quality: z.number().int().min(20).max(100).optional(),
+      resize: z.enum(["cover", "contain", "fill"]).optional(),
+    })
+    .optional(),
 });
 
 /** Issue a short-lived signed URL for viewing/downloading media. */
@@ -199,15 +199,22 @@ export const getMediaSignedUrl = createServerFn({ method: "POST" })
     // org-B from minting an org-A URL while operating inside org-B.
     const { data: att, error: aErr } = await context.supabase
       .from("message_attachments" as never)
-      .select("workspace_id, storage_bucket, storage_path, file_name, mime_type, expires_at, is_deleted, visibility, size_bytes")
+      .select(
+        "workspace_id, storage_bucket, storage_path, file_name, mime_type, expires_at, is_deleted, visibility, size_bytes",
+      )
       .eq("id", data.attachmentId)
       .maybeSingle();
     if (aErr || !att) throw new Error("Attachment not found");
     const a = att as unknown as {
       workspace_id: string;
-      storage_bucket: string; storage_path: string | null; file_name: string | null;
-      mime_type: string | null; expires_at: string | null; is_deleted: boolean;
-      visibility: string; size_bytes: number | null;
+      storage_bucket: string;
+      storage_path: string | null;
+      file_name: string | null;
+      mime_type: string | null;
+      expires_at: string | null;
+      is_deleted: boolean;
+      visibility: string;
+      size_bytes: number | null;
     };
 
     // Cross-tenant guard — mint the URL ONLY when the caller's active org
@@ -219,7 +226,8 @@ export const getMediaSignedUrl = createServerFn({ method: "POST" })
       data.activeOrgId,
     );
     if (a.is_deleted) throw new Error("Attachment has been deleted");
-    if (a.expires_at && new Date(a.expires_at) < new Date()) throw new Error("Attachment has expired");
+    if (a.expires_at && new Date(a.expires_at) < new Date())
+      throw new Error("Attachment has expired");
     if (!a.storage_path) throw new Error("Attachment has no storage path");
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
@@ -233,15 +241,18 @@ export const getMediaSignedUrl = createServerFn({ method: "POST" })
         resize: data.transform.resize ?? "contain",
       };
     }
-    const { data: signed, error } = await supabaseAdmin
-      .storage.from(a.storage_bucket)
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from(a.storage_bucket)
       .createSignedUrl(a.storage_path, SIGNED_URL_TTL_SECONDS, options);
     if (error || !signed) throw new Error(error?.message ?? "Failed to sign URL");
 
-    await sbAny(context.supabase).rpc("mark_media_accessed" as never, {
-      _attachment_id: data.attachmentId,
-      _action: data.download ? "download" : "view",
-    } as never);
+    await sbAny(context.supabase).rpc(
+      "mark_media_accessed" as never,
+      {
+        _attachment_id: data.attachmentId,
+        _action: data.download ? "download" : "view",
+      } as never,
+    );
 
     return {
       signedUrl: signed.signedUrl,
@@ -262,7 +273,13 @@ export const deleteMediaAttachment = createServerFn({ method: "POST" })
       .select("id, workspace_id, storage_bucket, storage_path, uploaded_by")
       .eq("id", data.attachmentId)
       .maybeSingle();
-    const a = att as { id: string; workspace_id: string; storage_bucket: string; storage_path: string | null; uploaded_by: string | null } | null;
+    const a = att as {
+      id: string;
+      workspace_id: string;
+      storage_bucket: string;
+      storage_path: string | null;
+      uploaded_by: string | null;
+    } | null;
     if (!a) throw new Error("Attachment not found");
 
     // Allow uploader OR workspace admin/owner.
@@ -286,10 +303,13 @@ export const deleteMediaAttachment = createServerFn({ method: "POST" })
       const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
       await supabaseAdmin.storage.from(a.storage_bucket).remove([a.storage_path]);
     }
-    await sbAny(context.supabase).rpc("mark_media_accessed" as never, {
-      _attachment_id: a.id,
-      _action: "delete",
-    } as never);
+    await sbAny(context.supabase).rpc(
+      "mark_media_accessed" as never,
+      {
+        _attachment_id: a.id,
+        _action: "delete",
+      } as never,
+    );
     return { ok: true };
   });
 
@@ -304,20 +324,32 @@ export const getMediaStats = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const { data: recent } = await context.supabase
       .from("message_attachments" as never)
-      .select("id, file_name, mime_type, size_bytes, uploaded_at, expires_at, download_count, uploaded_by")
+      .select(
+        "id, file_name, mime_type, size_bytes, uploaded_at, expires_at, download_count, uploaded_by",
+      )
       .eq("workspace_id", data.workspaceId)
       .eq("is_deleted", false)
       .order("uploaded_at", { ascending: false })
       .limit(25);
     return {
       stats: stats as {
-        total_files: number; total_bytes: number;
-        image_bytes: number; video_bytes: number; audio_bytes: number; document_bytes: number;
+        total_files: number;
+        total_bytes: number;
+        image_bytes: number;
+        video_bytes: number;
+        audio_bytes: number;
+        document_bytes: number;
         expiring_soon: number;
       },
       recent: (recent ?? []) as Array<{
-        id: string; file_name: string | null; mime_type: string | null; size_bytes: number | null;
-        uploaded_at: string; expires_at: string | null; download_count: number; uploaded_by: string | null;
+        id: string;
+        file_name: string | null;
+        mime_type: string | null;
+        size_bytes: number | null;
+        uploaded_at: string;
+        expires_at: string | null;
+        download_count: number;
+        uploaded_by: string | null;
       }>,
     };
   });
@@ -325,7 +357,9 @@ export const getMediaStats = createServerFn({ method: "POST" })
 /** Admin/cron: hard-delete storage objects for expired attachments. */
 export const cleanupExpiredMedia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => z.object({ batch: z.number().int().min(1).max(500).default(100) }).parse(input))
+  .validator((input: unknown) =>
+    z.object({ batch: z.number().int().min(1).max(500).default(100) }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     // Admin gate: any workspace admin OR superadmin can trigger.
     const { data: admin } = await context.supabase
@@ -343,7 +377,11 @@ export const cleanupExpiredMedia = createServerFn({ method: "POST" })
       { _limit: data.batch } as never,
     );
     if (error) throw new Error(error.message);
-    const claimed = (rows ?? []) as Array<{ id: string; storage_bucket: string; storage_path: string }>;
+    const claimed = (rows ?? []) as Array<{
+      id: string;
+      storage_bucket: string;
+      storage_path: string;
+    }>;
 
     // Group by bucket and delete in batches.
     const byBucket = new Map<string, string[]>();

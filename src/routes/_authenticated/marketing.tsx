@@ -36,7 +36,12 @@ function MarketingDashboard() {
     { to: "/audience", label: "Audience", icon: UsersRound },
     { to: "/contact-lists", label: "Contact Lists", icon: UsersRound, count: data?.counts.lists },
     { to: "/drip", label: "Drip Campaigns", icon: Zap, count: data?.counts.activeDrips },
-    { to: "/campaign-templates", label: "Templates", icon: FileText, count: data?.counts.templates },
+    {
+      to: "/campaign-templates",
+      label: "Templates",
+      icon: FileText,
+      count: data?.counts.templates,
+    },
     { to: "/whatsapp-templates", label: "WhatsApp Templates", icon: FileText },
     { to: "/scheduling", label: "Scheduling", icon: Zap },
     { to: "/consent", label: "Consent Center", icon: ShieldCheck, count: data?.counts.optedIn },
@@ -49,7 +54,10 @@ function MarketingDashboard() {
       <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((k) => (
-            <div key={k.label} className="rounded-control border border-border bg-surface p-4 shadow-sm">
+            <div
+              key={k.label}
+              className="rounded-control border border-border bg-surface p-4 shadow-sm"
+            >
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <k.icon className="w-3.5 h-3.5" />
                 {k.label}
@@ -118,7 +126,9 @@ function MarketingDashboard() {
                       {c.sent_count?.toLocaleString?.() ?? 0} sent
                     </div>
                   </div>
-                  <span className="text-xs px-2 py-0.5 rounded-control bg-muted capitalize">{c.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-control bg-muted capitalize">
+                    {c.status}
+                  </span>
                 </Link>
               ))
             )}

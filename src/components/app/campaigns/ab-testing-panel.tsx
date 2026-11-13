@@ -25,24 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   useAbVariants,
   useUpsertAbVariant,
   useDeleteAbVariant,
 } from "@/hooks/use-marketing-extras";
 import { useCampaign } from "@/hooks/use-marketing";
-import {
-  analyzeAb,
-  METRIC_LABEL,
-  type AbVariant,
-  type MetricKey,
-} from "@/hooks/ab-stats";
+import { analyzeAb, METRIC_LABEL, type AbVariant, type MetricKey } from "@/hooks/ab-stats";
 import {
   declareAbWinner,
   applyAbWinner,
@@ -105,7 +95,8 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
 
   async function addVariant() {
     if (!campaign) return;
-    const suggestedWeight = vars.length === 0 ? 50 : Math.max(0, Math.floor(100 / (vars.length + 1)));
+    const suggestedWeight =
+      vars.length === 0 ? 50 : Math.max(0, Math.floor(100 / (vars.length + 1)));
     await upsert.mutateAsync({
       campaign_id: campaignId,
       workspace_id: campaign.workspace_id,
@@ -241,7 +232,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
               <Button
                 onClick={async () => {
                   try {
-                    await declare({ data: { campaignId, variantId: analytics.winner!.id, metric } });
+                    await declare({
+                      data: { campaignId, variantId: analytics.winner!.id, metric },
+                    });
                     await apply({ data: { campaignId, variantId: analytics.winner!.id } });
                     toast.success("Winner promoted to 100% traffic");
                   } catch (e) {
@@ -279,7 +272,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                 </SelectTrigger>
                 <SelectContent>
                   {SPLIT_TYPES.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -315,7 +310,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
             </div>
           )}
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setCreating(false)}>
+              Cancel
+            </Button>
             <Button onClick={addVariant} disabled={!campaign || upsert.isPending}>
               {upsert.isPending ? "Adding" : "Add variant"}
             </Button>
@@ -347,10 +344,16 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                 return (
                   <Card key={v.id} className={`p-4 ${a.isWinner ? "ring-2 ring-success" : ""}`}>
                     <div className="flex items-start gap-2">
-                      <div className={`w-9 h-9 grid place-items-center font-semibold ${
-                        a.isWinner ? "bg-success/10 text-success" : "bg-accent/10 text-accent"
-                      }`}>
-                        {a.isWinner ? <Trophy className="w-4 h-4" /> : v.name[0]?.toUpperCase() ?? "V"}
+                      <div
+                        className={`w-9 h-9 grid place-items-center font-semibold ${
+                          a.isWinner ? "bg-success/10 text-success" : "bg-accent/10 text-accent"
+                        }`}
+                      >
+                        {a.isWinner ? (
+                          <Trophy className="w-4 h-4" />
+                        ) : (
+                          (v.name[0]?.toUpperCase() ?? "V")
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -382,11 +385,10 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                     {/* Rate + CI */}
                     <div className="mt-4">
                       <div className="flex items-baseline justify-between">
-                        <div className="text-2xl font-semibold ">
-                          {(a.rate * 100).toFixed(1)}%
-                        </div>
+                        <div className="text-2xl font-semibold ">{(a.rate * 100).toFixed(1)}%</div>
                         <div className="text-xs text-muted-foreground">
-                          95% CI [{(a.wilsonLow * 100).toFixed(1)}–{(a.wilsonHigh * 100).toFixed(1)}]
+                          95% CI [{(a.wilsonLow * 100).toFixed(1)}–{(a.wilsonHigh * 100).toFixed(1)}
+                          ]
                         </div>
                       </div>
                       <div className="mt-2 h-1.5 bg-muted rounded-full relative">
@@ -404,7 +406,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                       </div>
                       <div className="mt-2 flex items-center gap-2 text-xs">
                         {a.vsBaselinePct !== null && (
-                          <span className={a.vsBaselinePct >= 0 ? "text-success" : "text-destructive"}>
+                          <span
+                            className={a.vsBaselinePct >= 0 ? "text-success" : "text-destructive"}
+                          >
                             {a.vsBaselinePct >= 0 ? "+" : ""}
                             {a.vsBaselinePct.toFixed(1)}% vs A
                           </span>
@@ -412,7 +416,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                         {a.pValue !== null && (
                           <span className="text-muted-foreground">
                             p={a.pValue.toFixed(3)}
-                            {a.significant && <CheckCircle2 className="inline w-3 h-3 ml-1 text-success" />}
+                            {a.significant && (
+                              <CheckCircle2 className="inline w-3 h-3 ml-1 text-success" />
+                            )}
                           </span>
                         )}
                         {!a.sampleSufficient && (
@@ -430,24 +436,28 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                       <Metric label="Replied" v={v.replied_count} />
                     </div>
 
-                    {!a.isWinner && analytics.hasEnoughData && a.significant && a.vsBaselinePct !== null && a.vsBaselinePct > 0 && (
-                      <div className="mt-3">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={async () => {
-                            try {
-                              await declare({ data: { campaignId, variantId: v.id, metric } });
-                              toast.success("Marked as winner");
-                            } catch (e) {
-                              toast.error((e as Error).message);
-                            }
-                          }}
-                        >
-                          <Trophy className="w-3 h-3 " /> Declare winner
-                        </Button>
-                      </div>
-                    )}
+                    {!a.isWinner &&
+                      analytics.hasEnoughData &&
+                      a.significant &&
+                      a.vsBaselinePct !== null &&
+                      a.vsBaselinePct > 0 && (
+                        <div className="mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                await declare({ data: { campaignId, variantId: v.id, metric } });
+                                toast.success("Marked as winner");
+                              } catch (e) {
+                                toast.error((e as Error).message);
+                              }
+                            }}
+                          >
+                            <Trophy className="w-3 h-3 " /> Declare winner
+                          </Button>
+                        </div>
+                      )}
                   </Card>
                 );
               })}
@@ -483,16 +493,28 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                           </div>
                         </td>
                         <td className="px-4 py-2.5 text-right ">{v.sent_count.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-right ">{v.delivered_count.toLocaleString()}</td>
+                        <td className="px-4 py-2.5 text-right ">
+                          {v.delivered_count.toLocaleString()}
+                        </td>
                         <td className="px-4 py-2.5 text-right ">{v.read_count.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-right ">{v.replied_count.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-right ">{v.clicked_count.toLocaleString()}</td>
-                        <td className="px-4 py-2.5 text-right  font-medium">{(a.rate * 100).toFixed(2)}%</td>
+                        <td className="px-4 py-2.5 text-right ">
+                          {v.replied_count.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2.5 text-right ">
+                          {v.clicked_count.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2.5 text-right  font-medium">
+                          {(a.rate * 100).toFixed(2)}%
+                        </td>
                         <td className="px-4 py-2.5 text-right text-muted-foreground text-xs ">
                           {(a.wilsonLow * 100).toFixed(1)}–{(a.wilsonHigh * 100).toFixed(1)}
                         </td>
-                        <td className={`px-4 py-2.5 text-right  ${a.vsBaselinePct !== null && a.vsBaselinePct > 0 ? "text-success" : a.vsBaselinePct !== null && a.vsBaselinePct < 0 ? "text-destructive" : ""}`}>
-                          {a.vsBaselinePct === null ? "—" : `${a.vsBaselinePct >= 0 ? "+" : ""}${a.vsBaselinePct.toFixed(1)}%`}
+                        <td
+                          className={`px-4 py-2.5 text-right  ${a.vsBaselinePct !== null && a.vsBaselinePct > 0 ? "text-success" : a.vsBaselinePct !== null && a.vsBaselinePct < 0 ? "text-destructive" : ""}`}
+                        >
+                          {a.vsBaselinePct === null
+                            ? "—"
+                            : `${a.vsBaselinePct >= 0 ? "+" : ""}${a.vsBaselinePct.toFixed(1)}%`}
                         </td>
                         <td className="px-4 py-2.5 text-right ">
                           {a.pValue === null ? "—" : a.pValue.toFixed(3)}
@@ -547,7 +569,9 @@ export function AbTestingPanel({ campaignId }: { campaignId: string }) {
                   <div className="text-xs text-muted-foreground mt-1">{h.rationale}</div>
                   {h.changes?.length ? (
                     <ul className="text-xs mt-2 list-disc pl-4 space-y-0.5">
-                      {h.changes.map((c, j) => <li key={j}>{c}</li>)}
+                      {h.changes.map((c, j) => (
+                        <li key={j}>{c}</li>
+                      ))}
                     </ul>
                   ) : null}
                 </div>

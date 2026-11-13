@@ -1,4 +1,4 @@
-import { savedOAuthRedirect } from '@/lib/social/oauth-origin.server';
+import { savedOAuthRedirect } from "@/lib/social/oauth-origin.server";
 /**
  * X (Twitter) OAuth 2.0 PKCE callback. Exchanges the code for an access token,
  * reads the authenticated account, and stores it as a social channel.
@@ -23,13 +23,18 @@ export const Route = createFileRoute("/api/public/social/x-callback")({
         const origin = url.origin;
         const mod = await import("@/lib/social/oauth.server");
         const state = mod.decodeState(url.searchParams.get("state") ?? "");
-        if (!state) return back(origin, "/social", { social_error: "This connect link expired. Please try again." });
+        if (!state)
+          return back(origin, "/social", {
+            social_error: "This connect link expired. Please try again.",
+          });
 
         const err = url.searchParams.get("error_description") || url.searchParams.get("error");
         if (err) return back(origin, state.returnTo, { social_error: err });
         const code = url.searchParams.get("code");
         if (!code || !state.verifier)
-          return back(origin, state.returnTo, { social_error: "X did not return an authorization code." });
+          return back(origin, state.returnTo, {
+            social_error: "X did not return an authorization code.",
+          });
 
         try {
           const creds = mod.oauthCreds("x");
@@ -56,19 +61,26 @@ export const Route = createFileRoute("/api/public/social/x-callback")({
           };
           if (!tokenRes.ok || !tokenJson.access_token) {
             return back(origin, state.returnTo, {
-              social_error: tokenJson.error_description ?? tokenJson.error ?? "X token exchange failed.",
+              social_error:
+                tokenJson.error_description ?? tokenJson.error ?? "X token exchange failed.",
             });
           }
 
-          const meRes = await fetch("https://api.twitter.com/2/users/me?user.fields=username,profile_image_url", {
-            headers: { Authorization: `Bearer ${tokenJson.access_token}` },
-          });
+          const meRes = await fetch(
+            "https://api.twitter.com/2/users/me?user.fields=username,profile_image_url",
+            {
+              headers: { Authorization: `Bearer ${tokenJson.access_token}` },
+            },
+          );
           const meJson = (await meRes.json()) as {
             data?: { id: string; name?: string; username?: string; profile_image_url?: string };
             detail?: string;
           };
           const me = meJson.data;
-          if (!me?.id) return back(origin, state.returnTo, { social_error: meJson.detail ?? "Could not read your X account." });
+          if (!me?.id)
+            return back(origin, state.returnTo, {
+              social_error: meJson.detail ?? "Could not read your X account.",
+            });
 
           const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
           const db = sbAny(supabaseAdmin);

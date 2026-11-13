@@ -135,7 +135,11 @@ export function DripSequenceEditor({ id, onClose }: { id: string | null; onClose
                 const template = templates.find((t) => t.id === step.template_id);
                 const variables = extractTemplateVariables(template?.components);
                 return (
-                  <fieldset key={i} className="rounded-control border p-4 space-y-3" disabled={readOnly}>
+                  <fieldset
+                    key={i}
+                    className="rounded-control border p-4 space-y-3"
+                    disabled={readOnly}
+                  >
                     <legend className="px-1 text-sm font-medium">Step {i + 1}</legend>
                     <div className="flex flex-wrap gap-2">
                       <Button

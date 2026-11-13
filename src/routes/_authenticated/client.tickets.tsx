@@ -3,11 +3,21 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
-  BookOpen, ChevronRight, HelpCircle, LifeBuoy, Loader2, MessageCircle,
-  Plus, Search, Star,
+  BookOpen,
+  ChevronRight,
+  HelpCircle,
+  LifeBuoy,
+  Loader2,
+  MessageCircle,
+  Plus,
+  Search,
+  Star,
 } from "lucide-react";
 import {
-  listMyTickets, listFaqs, suggestKbArticles, listKbArticles,
+  listMyTickets,
+  listFaqs,
+  suggestKbArticles,
+  listKbArticles,
 } from "@/lib/client-portal/portal.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,16 +46,23 @@ function SupportCenterPage() {
 
   const tickets = useQuery({ queryKey: ["portal-tickets"], queryFn: () => listFn() });
   const faqs = useQuery({ queryKey: ["portal-faqs"], queryFn: () => faqsFn() });
-  const popular = useQuery({ queryKey: ["portal-kb-popular"], queryFn: () => popularFn({ data: {} }) });
+  const popular = useQuery({
+    queryKey: ["portal-kb-popular"],
+    queryFn: () => popularFn({ data: {} }),
+  });
   const suggestions = useQuery({
     queryKey: ["portal-kb-suggest", debounced],
     queryFn: () => suggestFn({ data: { query: debounced, limit: 6 } }),
     enabled: debounced.length >= 2,
   });
 
-  const openTickets = useMemo(() =>
-    (tickets.data ?? []).filter((t) => (t.status as string) !== "resolved" && (t.status as string) !== "closed"),
-    [tickets.data]);
+  const openTickets = useMemo(
+    () =>
+      (tickets.data ?? []).filter(
+        (t) => (t.status as string) !== "resolved" && (t.status as string) !== "closed",
+      ),
+    [tickets.data],
+  );
   const recentTickets = (tickets.data ?? []).slice(0, 5);
 
   return (
@@ -57,7 +74,9 @@ function SupportCenterPage() {
             <LifeBuoy className="w-3.5 h-3.5" /> Support center
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-semibold mt-2">How can we help?</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Search our help center or browse FAQs — most questions are answered instantly.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Search our help center or browse FAQs — most questions are answered instantly.
+          </p>
 
           <div className="mt-5 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -72,9 +91,13 @@ function SupportCenterPage() {
           {debounced.length >= 2 && (
             <div className="mt-3 rounded-control border border-border bg-background shadow-lg overflow-hidden">
               {suggestions.isLoading ? (
-                <div className="p-4 flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Searching</div>
+                <div className="p-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Searching
+                </div>
               ) : (suggestions.data ?? []).length === 0 ? (
-                <div className="p-4 text-sm text-muted-foreground">No matches. Try different keywords or open a ticket.</div>
+                <div className="p-4 text-sm text-muted-foreground">
+                  No matches. Try different keywords or open a ticket.
+                </div>
               ) : (
                 <ul className="divide-y divide-border max-h-80 overflow-auto">
                   {suggestions.data!.map((a) => (
@@ -86,9 +109,15 @@ function SupportCenterPage() {
                         <BookOpen className="w-4 h-4 text-accent shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium truncate">{a.title}</p>
-                          {a.summary && <p className="text-xs text-muted-foreground truncate">{a.summary}</p>}
+                          {a.summary && (
+                            <p className="text-xs text-muted-foreground truncate">{a.summary}</p>
+                          )}
                         </div>
-                        {a.is_faq && <Badge variant="outline" className="text-[11px]">FAQ</Badge>}
+                        {a.is_faq && (
+                          <Badge variant="outline" className="text-[11px]">
+                            FAQ
+                          </Badge>
+                        )}
                         <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
                       </Link>
                     </li>
@@ -99,8 +128,16 @@ function SupportCenterPage() {
           )}
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <Link to="/client/knowledge"><Button variant="outline" size="sm"><BookOpen className="w-3.5 h-3.5 mr-1.5" /> Browse all articles</Button></Link>
-            <Link to="/client/tickets/new"><Button size="sm"><Plus className="w-3.5 h-3.5 mr-1.5" /> Contact support</Button></Link>
+            <Link to="/client/knowledge">
+              <Button variant="outline" size="sm">
+                <BookOpen className="w-3.5 h-3.5 mr-1.5" /> Browse all articles
+              </Button>
+            </Link>
+            <Link to="/client/tickets/new">
+              <Button size="sm">
+                <Plus className="w-3.5 h-3.5 mr-1.5" /> Contact support
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -110,7 +147,9 @@ function SupportCenterPage() {
           {/* FAQs */}
           <section className="rounded-control border border-border bg-surface p-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display text-lg font-semibold flex items-center gap-2"><HelpCircle className="w-4 h-4 text-accent" /> Frequently asked questions</h2>
+              <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+                <HelpCircle className="w-4 h-4 text-accent" /> Frequently asked questions
+              </h2>
             </div>
             {faqs.isLoading ? (
               <SkeletonRows n={4} />
@@ -124,10 +163,16 @@ function SupportCenterPage() {
                       to="/client/knowledge"
                       className="group flex items-start gap-3 py-3 hover:bg-muted -mx-2 px-2 rounded-control transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-control bg-accent/10 text-accent flex items-center justify-center shrink-0"><HelpCircle className="w-3.5 h-3.5" /></div>
+                      <div className="w-7 h-7 rounded-control bg-accent/10 text-accent flex items-center justify-center shrink-0">
+                        <HelpCircle className="w-3.5 h-3.5" />
+                      </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{a.faq_question || a.title}</p>
-                        {a.summary && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{a.summary}</p>}
+                        {a.summary && (
+                          <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                            {a.summary}
+                          </p>
+                        )}
                       </div>
                       <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-accent shrink-0 mt-1" />
                     </Link>
@@ -139,14 +184,25 @@ function SupportCenterPage() {
 
           {/* Popular articles */}
           <section className="rounded-control border border-border bg-surface p-5">
-            <h2 className="font-display text-lg font-semibold mb-3 flex items-center gap-2"><Star className="w-4 h-4 text-amber-500" /> Popular help articles</h2>
-            {popular.isLoading ? <SkeletonRows n={4} /> : (
+            <h2 className="font-display text-lg font-semibold mb-3 flex items-center gap-2">
+              <Star className="w-4 h-4 text-amber-500" /> Popular help articles
+            </h2>
+            {popular.isLoading ? (
+              <SkeletonRows n={4} />
+            ) : (
               <div className="grid sm:grid-cols-2 gap-2">
                 {(popular.data ?? []).slice(0, 6).map((a) => (
-                  <Link key={a.id} to="/client/knowledge"
-                    className="rounded-control border border-border p-3 hover:border-border-strong transition-colors group">
-                    <p className="text-sm font-medium group-hover:text-accent line-clamp-1">{a.title}</p>
-                    {a.summary && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{a.summary}</p>}
+                  <Link
+                    key={a.id}
+                    to="/client/knowledge"
+                    className="rounded-control border border-border p-3 hover:border-border-strong transition-colors group"
+                  >
+                    <p className="text-sm font-medium group-hover:text-accent line-clamp-1">
+                      {a.title}
+                    </p>
+                    {a.summary && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{a.summary}</p>
+                    )}
                   </Link>
                 ))}
               </div>
@@ -158,33 +214,53 @@ function SupportCenterPage() {
         <aside className="space-y-4">
           <section className="rounded-control border border-border bg-surface p-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display text-base font-semibold flex items-center gap-2"><MessageCircle className="w-4 h-4" /> Your tickets</h2>
-              <Link to="/client/tickets/new"><Button size="sm" variant="ghost" className="h-7 -mr-2"><Plus className="w-3.5 h-3.5" /></Button></Link>
+              <h2 className="font-display text-base font-semibold flex items-center gap-2">
+                <MessageCircle className="w-4 h-4" /> Your tickets
+              </h2>
+              <Link to="/client/tickets/new">
+                <Button size="sm" variant="ghost" className="h-7 -mr-2">
+                  <Plus className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
             </div>
 
             {tickets.isLoading ? (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading
+              </div>
             ) : recentTickets.length === 0 ? (
               <div className="text-center py-6">
                 <LifeBuoy className="w-8 h-8 mx-auto text-muted-foreground/40" />
                 <p className="mt-2 text-xs text-muted-foreground">No tickets yet.</p>
-                <Link to="/client/tickets/new"><Button size="sm" className="mt-3">Open your first ticket</Button></Link>
+                <Link to="/client/tickets/new">
+                  <Button size="sm" className="mt-3">
+                    Open your first ticket
+                  </Button>
+                </Link>
               </div>
             ) : (
               <ul className="space-y-1.5">
                 {recentTickets.map((t) => (
                   <li key={t.id}>
                     <Link
-                      to="/client/tickets/$id" params={{ id: t.id }}
+                      to="/client/tickets/$id"
+                      params={{ id: t.id }}
                       className="group flex items-start gap-2 rounded-control border border-transparent hover:border-border p-2 -mx-1"
                     >
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{t.subject ?? "Support request"}</p>
+                        <p className="text-sm font-medium truncate">
+                          {t.subject ?? "Support request"}
+                        </p>
                         <p className="text-[11px] text-muted-foreground mt-0.5">
                           {t.last_message_at ? relTime(t.last_message_at) : relTime(t.created_at)}
                         </p>
                       </div>
-                      <Badge variant={STATUS_BADGE[t.status] ?? "outline"} className="capitalize text-[11px] shrink-0">{t.status.replace("_", " ")}</Badge>
+                      <Badge
+                        variant={STATUS_BADGE[t.status] ?? "outline"}
+                        className="capitalize text-[11px] shrink-0"
+                      >
+                        {t.status.replace("_", " ")}
+                      </Badge>
                     </Link>
                   </li>
                 ))}
@@ -193,15 +269,22 @@ function SupportCenterPage() {
 
             {openTickets.length > 0 && (
               <p className="mt-3 pt-3 border-t border-border text-[11px] text-muted-foreground">
-                {openTickets.length} open · {(tickets.data?.length ?? 0) - openTickets.length} resolved
+                {openTickets.length} open · {(tickets.data?.length ?? 0) - openTickets.length}{" "}
+                resolved
               </p>
             )}
           </section>
 
           <section className="rounded-control border border-border bg-surface p-5">
             <h3 className="text-sm font-semibold mb-2">Still need help?</h3>
-            <p className="text-xs text-muted-foreground mb-3">Our support team usually responds within a few business hours.</p>
-            <Link to="/client/tickets/new" className="block"><Button className="w-full" size="sm">Contact support</Button></Link>
+            <p className="text-xs text-muted-foreground mb-3">
+              Our support team usually responds within a few business hours.
+            </p>
+            <Link to="/client/tickets/new" className="block">
+              <Button className="w-full" size="sm">
+                Contact support
+              </Button>
+            </Link>
           </section>
         </aside>
       </div>

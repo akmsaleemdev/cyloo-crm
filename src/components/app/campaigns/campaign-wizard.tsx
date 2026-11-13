@@ -430,9 +430,11 @@ export function CampaignWizard({
       (components.find((c) => String(c?.type).toUpperCase() === "FOOTER") as { text?: string })
         ?.text ?? "",
     );
-    const btnComp = components.find((c) => String(c?.type).toUpperCase() === "BUTTONS") as {
-      buttons?: Array<{ type?: string; text?: string; url?: string }>;
-    } | undefined;
+    const btnComp = components.find((c) => String(c?.type).toUpperCase() === "BUTTONS") as
+      | {
+          buttons?: Array<{ type?: string; text?: string; url?: string }>;
+        }
+      | undefined;
     const buttons = Array.isArray(btnComp?.buttons)
       ? btnComp.buttons
           .map((b) => {

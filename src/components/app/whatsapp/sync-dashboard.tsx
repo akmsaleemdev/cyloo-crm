@@ -29,12 +29,20 @@ const KIND_LABELS: Record<SyncKind, string> = {
 };
 
 const ACCOUNT_SCOPED: SyncKind[] = [
-  "account_health", "business_profile", "phone_numbers", "templates",
+  "account_health",
+  "business_profile",
+  "phone_numbers",
+  "templates",
 ];
 
 const WORKSPACE_SCOPED: SyncKind[] = [
-  "webhook_drain", "outbox_drain", "scheduled_messages", "media_cleanup",
-  "contacts_reconcile", "conversations_reconcile", "status_reconcile",
+  "webhook_drain",
+  "outbox_drain",
+  "scheduled_messages",
+  "media_cleanup",
+  "contacts_reconcile",
+  "conversations_reconcile",
+  "status_reconcile",
 ];
 
 export function SyncDashboard() {
@@ -62,7 +70,8 @@ export function SyncDashboard() {
         <div>
           <h2 className="font-bold text-xl">Synchronization</h2>
           <p className="text-sm text-muted-foreground">
-            Manage templates, contacts, conversations, media, and delivery queues across every connected account.
+            Manage templates, contacts, conversations, media, and delivery queues across every
+            connected account.
           </p>
         </div>
         {currentAccountId && (
@@ -71,7 +80,11 @@ export function SyncDashboard() {
             disabled={runAll.isPending}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-control bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-60"
           >
-            {runAll.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            {runAll.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
             Sync everything
           </button>
         )}
@@ -174,8 +187,13 @@ export function SyncDashboard() {
                 </div>
               </div>
               <div className="text-xs text-muted-foreground text-right shrink-0">
-                <div>{j.items_succeeded}/{j.items_processed} ok</div>
-                <div>{j.duration_ms ?? 0}ms · {formatDistanceToNow(new Date(j.started_at), { addSuffix: true })}</div>
+                <div>
+                  {j.items_succeeded}/{j.items_processed} ok
+                </div>
+                <div>
+                  {j.duration_ms ?? 0}ms ·{" "}
+                  {formatDistanceToNow(new Date(j.started_at), { addSuffix: true })}
+                </div>
               </div>
             </div>
           ))}
@@ -185,11 +203,23 @@ export function SyncDashboard() {
   );
 }
 
-function StatCard({ label, value, tone }: { label: string; value: number; tone?: "success" | "warning" | "danger" }) {
+function StatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "success" | "warning" | "danger";
+}) {
   const toneCls =
-    tone === "success" ? "text-success" :
-    tone === "warning" ? "text-amber-600" :
-    tone === "danger" ? "text-destructive" : "text-foreground";
+    tone === "success"
+      ? "text-success"
+      : tone === "warning"
+        ? "text-amber-600"
+        : tone === "danger"
+          ? "text-destructive"
+          : "text-foreground";
   return (
     <div className="rounded-control border border-border p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
@@ -199,10 +229,17 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone?:
 }
 
 function SyncRow({
-  label, cursor, onRun, disabled,
+  label,
+  cursor,
+  onRun,
+  disabled,
 }: {
   label: string;
-  cursor?: { last_success_at: string | null; last_failure_at: string | null; last_error: string | null };
+  cursor?: {
+    last_success_at: string | null;
+    last_failure_at: string | null;
+    last_error: string | null;
+  };
   onRun: () => void;
   disabled?: boolean;
 }) {
@@ -218,7 +255,9 @@ function SyncRow({
               <Clock className="w-3 h-3" />
               synced {formatDistanceToNow(new Date(ok), { addSuffix: true })}
             </span>
-          ) : "never synced"}
+          ) : (
+            "never synced"
+          )}
           {err && <span className="text-destructive"> · {cursor?.last_error}</span>}
         </div>
       </div>

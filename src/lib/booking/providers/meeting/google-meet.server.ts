@@ -29,7 +29,10 @@ export const googleMeetProvider: MeetingProvider = {
       external_meeting_id: code,
       waiting_room_enabled: !!req.options?.waiting_room,
       recording_enabled: !!req.options?.recording, // requires Google Workspace add-on
-      raw: { provisioned_via: "deterministic", note: "Real Meet link is issued via calendar-sync-engine when a Google Calendar account is connected" },
+      raw: {
+        provisioned_via: "deterministic",
+        note: "Real Meet link is issued via calendar-sync-engine when a Google Calendar account is connected",
+      },
     };
   },
 };

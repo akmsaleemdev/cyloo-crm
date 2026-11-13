@@ -12,7 +12,11 @@ import {
  * Configurations, `/settings/<page>` for account panels). This route only
  * translates old hash deep links into the new paths so bookmarks keep working.
  */
-export const apiSections = API_CONFIG_SECTIONS.map((s) => ({ id: s.id, label: s.label, icon: s.icon }));
+export const apiSections = API_CONFIG_SECTIONS.map((s) => ({
+  id: s.id,
+  label: s.label,
+  icon: s.icon,
+}));
 
 /** The Settings page no longer renders its own left rail. */
 export const settingsSections: { id: string; label: string; icon: unknown }[] = [];

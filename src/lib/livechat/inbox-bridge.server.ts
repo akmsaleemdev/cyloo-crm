@@ -51,7 +51,10 @@ async function ensureVisitorContact(
   const phone = visitor?.phone?.trim() || null;
 
   // Prefer identity matching on email/phone so repeat visitors merge.
-  for (const [col, val] of [["email", email], ["phone", phone]] as const) {
+  for (const [col, val] of [
+    ["email", email],
+    ["phone", phone],
+  ] as const) {
     if (!val) continue;
     const { data: match } = await db
       .from("contacts")
@@ -92,7 +95,10 @@ async function ensureVisitorContact(
 }
 
 /** Stable inbox thread key for a returning widget visitor. */
-export function liveChatThreadKey(chatbotId: string | null | undefined, visitorKey: string): string {
+export function liveChatThreadKey(
+  chatbotId: string | null | undefined,
+  visitorKey: string,
+): string {
   return `lc:${chatbotId ?? "any"}:${visitorKey}`;
 }
 
@@ -131,7 +137,9 @@ export async function ensureConversationForSession(a: EnsureArgs): Promise<strin
   const visitorKey = readVisitorKey(meta);
   // One inbox conversation per widget session. The visitor's sessions still
   // share one contact (below), so agents see every conversation on that contact.
-  const threadKey = visitorKey ? liveChatThreadKey(chatbotId, `${visitorKey}:${a.sessionId}`) : null;
+  const threadKey = visitorKey
+    ? liveChatThreadKey(chatbotId, `${visitorKey}:${a.sessionId}`)
+    : null;
 
   if (s.conversation_id) {
     // A soft-deleted thread must come back to the inbox as soon as the visitor
@@ -139,7 +147,10 @@ export async function ensureConversationForSession(a: EnsureArgs): Promise<strin
     const patch: Record<string, unknown> = { deleted_at: null };
     // Heal older threads created before visitor-key linking existed.
     if (threadKey) patch.external_conversation_id = threadKey;
-    await sbAny(db).from("conversations").update(patch as never).eq("id", s.conversation_id);
+    await sbAny(db)
+      .from("conversations")
+      .update(patch as never)
+      .eq("id", s.conversation_id);
     return s.conversation_id;
   }
 
@@ -220,8 +231,6 @@ export async function ensureConversationForSession(a: EnsureArgs): Promise<strin
   return conversationId;
 }
 
-
-
 export interface BridgeAttachment {
   url: string;
   name: string;
@@ -248,24 +257,26 @@ export async function bridgeMessage(a: BridgeMessageArgs): Promise<void> {
     const attachments = (a.attachments ?? []).filter((x) => x && x.url);
     const primary = attachments[0] ?? null;
 
-    await sbAny(db).from("messages").insert({
-      workspace_id: a.workspaceId,
-      conversation_id: a.conversationId,
-      direction: a.direction,
-      body: a.body,
-      status: "delivered",
-      is_demo: false,
-      sent_by: a.agentId ?? null,
-      media_url: primary?.url ?? null,
-      media_type: primary?.mime ?? null,
-      media_size: primary?.size ?? null,
-      metadata: {
-        source: "live_chat",
-        from_bot: a.fromBot ?? false,
-        ...(primary ? { media_name: primary.name, media_kind: primary.kind } : {}),
-        ...(attachments.length ? { attachments } : {}),
-      },
-    } as never);
+    await sbAny(db)
+      .from("messages")
+      .insert({
+        workspace_id: a.workspaceId,
+        conversation_id: a.conversationId,
+        direction: a.direction,
+        body: a.body,
+        status: "delivered",
+        is_demo: false,
+        sent_by: a.agentId ?? null,
+        media_url: primary?.url ?? null,
+        media_type: primary?.mime ?? null,
+        media_size: primary?.size ?? null,
+        metadata: {
+          source: "live_chat",
+          from_bot: a.fromBot ?? false,
+          ...(primary ? { media_name: primary.name, media_kind: primary.kind } : {}),
+          ...(attachments.length ? { attachments } : {}),
+        },
+      } as never);
 
     const preview = a.body.trim()
       ? a.body.slice(0, 200)
@@ -284,7 +295,10 @@ export async function bridgeMessage(a: BridgeMessageArgs): Promise<void> {
       deleted_at: null,
     };
     if (a.direction === "outbound") patch.unread_count = 0;
-    await sbAny(db).from("conversations").update(patch as never).eq("id", a.conversationId);
+    await sbAny(db)
+      .from("conversations")
+      .update(patch as never)
+      .eq("id", a.conversationId);
 
     if (a.direction === "inbound") {
       // Increment unread without clobbering concurrent updates.
@@ -354,7 +368,11 @@ export async function markConversationHandoff(
 
     // Notify active workspace members (owners/admins/agents) about the handoff.
     const [{ data: members }, { data: workspace }] = await Promise.all([
-      db.from("workspace_members").select("user_id").eq("workspace_id", workspaceId).eq("status", "active"),
+      db
+        .from("workspace_members")
+        .select("user_id")
+        .eq("workspace_id", workspaceId)
+        .eq("status", "active"),
       db.from("workspaces").select("organization_id").eq("id", workspaceId).maybeSingle(),
     ]);
     const userIds = Array.from(
@@ -375,7 +393,8 @@ export async function markConversationHandoff(
           data: { conversation_id: conversationId, workspace_id: workspaceId },
         })),
       );
-      if (notificationError) console.warn("[inbox-bridge] handoff notification failed:", notificationError);
+      if (notificationError)
+        console.warn("[inbox-bridge] handoff notification failed:", notificationError);
     }
   } catch (err) {
     console.warn("[inbox-bridge] markConversationHandoff failed:", (err as Error).message);

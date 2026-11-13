@@ -16,8 +16,19 @@ export interface DocumentLike {
   discount_cents: number;
   tax_cents: number;
   total_cents: number;
-  tax_breakdown: Array<{ code: string; name: string; rate_percent: number; tax_cents: number; taxable_cents: number }>;
-  line_items: Array<{ description: string; quantity: number; unit_amount_cents: number; tax_rate_id?: string | null }>;
+  tax_breakdown: Array<{
+    code: string;
+    name: string;
+    rate_percent: number;
+    tax_cents: number;
+    taxable_cents: number;
+  }>;
+  line_items: Array<{
+    description: string;
+    quantity: number;
+    unit_amount_cents: number;
+    tax_rate_id?: string | null;
+  }>;
   notes?: string | null;
   issued_at?: string | null;
   due_at?: string | null;
@@ -48,26 +59,174 @@ function formatDate(iso: string | null | undefined, locale: string) {
 }
 
 const HEADINGS: Record<string, Record<DocumentLike["type"], string>> = {
-  "en-US": { invoice: "INVOICE", credit_note: "CREDIT NOTE", receipt: "RECEIPT", refund_receipt: "REFUND RECEIPT" },
-  "en-GB": { invoice: "INVOICE", credit_note: "CREDIT NOTE", receipt: "RECEIPT", refund_receipt: "REFUND RECEIPT" },
-  "de-DE": { invoice: "RECHNUNG", credit_note: "GUTSCHRIFT", receipt: "QUITTUNG", refund_receipt: "ERSTATTUNGSBELEG" },
-  "es-ES": { invoice: "FACTURA", credit_note: "NOTA DE CRÉDITO", receipt: "RECIBO", refund_receipt: "RECIBO DE REEMBOLSO" },
-  "fr-FR": { invoice: "FACTURE", credit_note: "AVOIR", receipt: "REÇU", refund_receipt: "REÇU DE REMBOURSEMENT" },
-  "pt-BR": { invoice: "FATURA", credit_note: "NOTA DE CRÉDITO", receipt: "RECIBO", refund_receipt: "RECIBO DE REEMBOLSO" },
-  "it-IT": { invoice: "FATTURA", credit_note: "NOTA DI CREDITO", receipt: "RICEVUTA", refund_receipt: "RICEVUTA DI RIMBORSO" },
-  "nb-NO": { invoice: "FAKTURA", credit_note: "KREDITNOTA", receipt: "KVITTERING", refund_receipt: "REFUSJONSKVITTERING" },
-  "hi-IN": { invoice: "चालान", credit_note: "क्रेडिट नोट", receipt: "रसीद", refund_receipt: "रिफंड रसीद" },
-  "ar-SA": { invoice: "فاتورة", credit_note: "إشعار دائن", receipt: "إيصال", refund_receipt: "إيصال استرداد" },
+  "en-US": {
+    invoice: "INVOICE",
+    credit_note: "CREDIT NOTE",
+    receipt: "RECEIPT",
+    refund_receipt: "REFUND RECEIPT",
+  },
+  "en-GB": {
+    invoice: "INVOICE",
+    credit_note: "CREDIT NOTE",
+    receipt: "RECEIPT",
+    refund_receipt: "REFUND RECEIPT",
+  },
+  "de-DE": {
+    invoice: "RECHNUNG",
+    credit_note: "GUTSCHRIFT",
+    receipt: "QUITTUNG",
+    refund_receipt: "ERSTATTUNGSBELEG",
+  },
+  "es-ES": {
+    invoice: "FACTURA",
+    credit_note: "NOTA DE CRÉDITO",
+    receipt: "RECIBO",
+    refund_receipt: "RECIBO DE REEMBOLSO",
+  },
+  "fr-FR": {
+    invoice: "FACTURE",
+    credit_note: "AVOIR",
+    receipt: "REÇU",
+    refund_receipt: "REÇU DE REMBOURSEMENT",
+  },
+  "pt-BR": {
+    invoice: "FATURA",
+    credit_note: "NOTA DE CRÉDITO",
+    receipt: "RECIBO",
+    refund_receipt: "RECIBO DE REEMBOLSO",
+  },
+  "it-IT": {
+    invoice: "FATTURA",
+    credit_note: "NOTA DI CREDITO",
+    receipt: "RICEVUTA",
+    refund_receipt: "RICEVUTA DI RIMBORSO",
+  },
+  "nb-NO": {
+    invoice: "FAKTURA",
+    credit_note: "KREDITNOTA",
+    receipt: "KVITTERING",
+    refund_receipt: "REFUSJONSKVITTERING",
+  },
+  "hi-IN": {
+    invoice: "चालान",
+    credit_note: "क्रेडिट नोट",
+    receipt: "रसीद",
+    refund_receipt: "रिफंड रसीद",
+  },
+  "ar-SA": {
+    invoice: "فاتورة",
+    credit_note: "إشعار دائن",
+    receipt: "إيصال",
+    refund_receipt: "إيصال استرداد",
+  },
 };
 
 const LABELS: Record<string, Record<string, string>> = {
-  "en-US": { bill_to: "Bill to", issued: "Issued", due: "Due", subtotal: "Subtotal", discount: "Discount", tax: "Tax", total: "Total", qty: "Qty", unit: "Unit price", amount: "Amount", desc: "Description", notes: "Notes", terms: "Terms" },
-  "de-DE": { bill_to: "Rechnung an", issued: "Ausgestellt", due: "Fällig", subtotal: "Zwischensumme", discount: "Rabatt", tax: "Steuer", total: "Gesamt", qty: "Menge", unit: "Einzelpreis", amount: "Betrag", desc: "Beschreibung", notes: "Hinweise", terms: "Bedingungen" },
-  "es-ES": { bill_to: "Facturar a", issued: "Emitido", due: "Vencimiento", subtotal: "Subtotal", discount: "Descuento", tax: "Impuesto", total: "Total", qty: "Cant.", unit: "Precio", amount: "Importe", desc: "Descripción", notes: "Notas", terms: "Términos" },
-  "fr-FR": { bill_to: "Facturer à", issued: "Émis", due: "Échéance", subtotal: "Sous-total", discount: "Remise", tax: "Taxe", total: "Total", qty: "Qté", unit: "Prix", amount: "Montant", desc: "Description", notes: "Notes", terms: "Conditions" },
-  "pt-BR": { bill_to: "Faturar para", issued: "Emitido", due: "Vencimento", subtotal: "Subtotal", discount: "Desconto", tax: "Imposto", total: "Total", qty: "Qtd", unit: "Preço", amount: "Valor", desc: "Descrição", notes: "Notas", terms: "Termos" },
-  "it-IT": { bill_to: "Fatturare a", issued: "Emesso", due: "Scadenza", subtotal: "Subtotale", discount: "Sconto", tax: "Imposta", total: "Totale", qty: "Qtà", unit: "Prezzo", amount: "Importo", desc: "Descrizione", notes: "Note", terms: "Condizioni" },
-  "nb-NO": { bill_to: "Faktureres til", issued: "Utstedt", due: "Forfall", subtotal: "Subtotal", discount: "Rabatt", tax: "MVA", total: "Sum", qty: "Antall", unit: "Pris", amount: "Beløp", desc: "Beskrivelse", notes: "Notater", terms: "Vilkår" },
+  "en-US": {
+    bill_to: "Bill to",
+    issued: "Issued",
+    due: "Due",
+    subtotal: "Subtotal",
+    discount: "Discount",
+    tax: "Tax",
+    total: "Total",
+    qty: "Qty",
+    unit: "Unit price",
+    amount: "Amount",
+    desc: "Description",
+    notes: "Notes",
+    terms: "Terms",
+  },
+  "de-DE": {
+    bill_to: "Rechnung an",
+    issued: "Ausgestellt",
+    due: "Fällig",
+    subtotal: "Zwischensumme",
+    discount: "Rabatt",
+    tax: "Steuer",
+    total: "Gesamt",
+    qty: "Menge",
+    unit: "Einzelpreis",
+    amount: "Betrag",
+    desc: "Beschreibung",
+    notes: "Hinweise",
+    terms: "Bedingungen",
+  },
+  "es-ES": {
+    bill_to: "Facturar a",
+    issued: "Emitido",
+    due: "Vencimiento",
+    subtotal: "Subtotal",
+    discount: "Descuento",
+    tax: "Impuesto",
+    total: "Total",
+    qty: "Cant.",
+    unit: "Precio",
+    amount: "Importe",
+    desc: "Descripción",
+    notes: "Notas",
+    terms: "Términos",
+  },
+  "fr-FR": {
+    bill_to: "Facturer à",
+    issued: "Émis",
+    due: "Échéance",
+    subtotal: "Sous-total",
+    discount: "Remise",
+    tax: "Taxe",
+    total: "Total",
+    qty: "Qté",
+    unit: "Prix",
+    amount: "Montant",
+    desc: "Description",
+    notes: "Notes",
+    terms: "Conditions",
+  },
+  "pt-BR": {
+    bill_to: "Faturar para",
+    issued: "Emitido",
+    due: "Vencimento",
+    subtotal: "Subtotal",
+    discount: "Desconto",
+    tax: "Imposto",
+    total: "Total",
+    qty: "Qtd",
+    unit: "Preço",
+    amount: "Valor",
+    desc: "Descrição",
+    notes: "Notas",
+    terms: "Termos",
+  },
+  "it-IT": {
+    bill_to: "Fatturare a",
+    issued: "Emesso",
+    due: "Scadenza",
+    subtotal: "Subtotale",
+    discount: "Sconto",
+    tax: "Imposta",
+    total: "Totale",
+    qty: "Qtà",
+    unit: "Prezzo",
+    amount: "Importo",
+    desc: "Descrizione",
+    notes: "Note",
+    terms: "Condizioni",
+  },
+  "nb-NO": {
+    bill_to: "Faktureres til",
+    issued: "Utstedt",
+    due: "Forfall",
+    subtotal: "Subtotal",
+    discount: "Rabatt",
+    tax: "MVA",
+    total: "Sum",
+    qty: "Antall",
+    unit: "Pris",
+    amount: "Beløp",
+    desc: "Beskrivelse",
+    notes: "Notater",
+    terms: "Vilkår",
+  },
 };
 
 function labels(locale: string) {
@@ -105,19 +264,50 @@ export function buildDocumentPdf(doc: DocumentLike, template: TemplateLike | nul
   pdf.setTextColor(accent);
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(12);
-  if (template?.company_name) { pdf.text(template.company_name, rightX, y, { align: "right" }); y += 14; }
+  if (template?.company_name) {
+    pdf.text(template.company_name, rightX, y, { align: "right" });
+    y += 14;
+  }
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   pdf.setTextColor("#555");
-  const addr = template?.company_address as { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string } | null;
-  if (addr?.line1) { pdf.text(addr.line1, rightX, y, { align: "right" }); y += 12; }
-  if (addr?.line2) { pdf.text(addr.line2, rightX, y, { align: "right" }); y += 12; }
+  const addr = template?.company_address as {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  } | null;
+  if (addr?.line1) {
+    pdf.text(addr.line1, rightX, y, { align: "right" });
+    y += 12;
+  }
+  if (addr?.line2) {
+    pdf.text(addr.line2, rightX, y, { align: "right" });
+    y += 12;
+  }
   const cityLine = [addr?.city, addr?.state, addr?.postal_code].filter(Boolean).join(", ");
-  if (cityLine) { pdf.text(cityLine, rightX, y, { align: "right" }); y += 12; }
-  if (addr?.country) { pdf.text(addr.country, rightX, y, { align: "right" }); y += 12; }
-  if (template?.company_tax_id) { pdf.text(`Tax ID: ${template.company_tax_id}`, rightX, y, { align: "right" }); y += 12; }
-  if (template?.company_email) { pdf.text(template.company_email, rightX, y, { align: "right" }); y += 12; }
-  if (template?.company_phone) { pdf.text(template.company_phone, rightX, y, { align: "right" }); y += 12; }
+  if (cityLine) {
+    pdf.text(cityLine, rightX, y, { align: "right" });
+    y += 12;
+  }
+  if (addr?.country) {
+    pdf.text(addr.country, rightX, y, { align: "right" });
+    y += 12;
+  }
+  if (template?.company_tax_id) {
+    pdf.text(`Tax ID: ${template.company_tax_id}`, rightX, y, { align: "right" });
+    y += 12;
+  }
+  if (template?.company_email) {
+    pdf.text(template.company_email, rightX, y, { align: "right" });
+    y += 12;
+  }
+  if (template?.company_phone) {
+    pdf.text(template.company_phone, rightX, y, { align: "right" });
+    y += 12;
+  }
 
   // Bill-to + meta
   let cy = 110;
@@ -128,13 +318,30 @@ export function buildDocumentPdf(doc: DocumentLike, template: TemplateLike | nul
   cy += 14;
   pdf.setFont("helvetica", "normal");
   pdf.setTextColor("#333");
-  if (doc.customer_name) { pdf.text(doc.customer_name, 40, cy); cy += 12; }
-  if (doc.customer_email) { pdf.text(doc.customer_email, 40, cy); cy += 12; }
+  if (doc.customer_name) {
+    pdf.text(doc.customer_name, 40, cy);
+    cy += 12;
+  }
+  if (doc.customer_email) {
+    pdf.text(doc.customer_email, 40, cy);
+    cy += 12;
+  }
   const caddr = doc.customer_address as any;
-  if (caddr?.line1) { pdf.text(caddr.line1, 40, cy); cy += 12; }
-  const ccity = [caddr?.city, caddr?.state, caddr?.postal_code, caddr?.country].filter(Boolean).join(", ");
-  if (ccity) { pdf.text(ccity, 40, cy); cy += 12; }
-  if (doc.customer_tax_id) { pdf.text(`Tax ID: ${doc.customer_tax_id}`, 40, cy); cy += 12; }
+  if (caddr?.line1) {
+    pdf.text(caddr.line1, 40, cy);
+    cy += 12;
+  }
+  const ccity = [caddr?.city, caddr?.state, caddr?.postal_code, caddr?.country]
+    .filter(Boolean)
+    .join(", ");
+  if (ccity) {
+    pdf.text(ccity, 40, cy);
+    cy += 12;
+  }
+  if (doc.customer_tax_id) {
+    pdf.text(`Tax ID: ${doc.customer_tax_id}`, 40, cy);
+    cy += 12;
+  }
 
   // Meta right col
   const meta: Array<[string, string]> = [
@@ -189,8 +396,9 @@ export function buildDocumentPdf(doc: DocumentLike, template: TemplateLike | nul
     ty += bold ? 20 : 16;
   };
   const sign = doc.type === "credit_note" || doc.type === "refund_receipt" ? -1 : 1;
-  addRow(L.subtotal, money(sign * doc.subtotal_cents / sign, currency, doc.locale));
-  if (doc.discount_cents !== 0) addRow(L.discount, "-" + money(Math.abs(doc.discount_cents), currency, doc.locale));
+  addRow(L.subtotal, money((sign * doc.subtotal_cents) / sign, currency, doc.locale));
+  if (doc.discount_cents !== 0)
+    addRow(L.discount, "-" + money(Math.abs(doc.discount_cents), currency, doc.locale));
   for (const t of doc.tax_breakdown ?? []) {
     addRow(`${t.name} (${t.rate_percent}%)`, money(t.tax_cents, currency, doc.locale));
   }
@@ -243,7 +451,12 @@ export function printDocumentPdf(doc: DocumentLike, template: TemplateLike | nul
   const w = window.open(blob as unknown as string, "_blank");
   if (w) {
     w.onload = () => {
-      try { w.focus(); w.print(); } catch { /* ignore */ }
+      try {
+        w.focus();
+        w.print();
+      } catch {
+        /* ignore */
+      }
     };
   }
 }

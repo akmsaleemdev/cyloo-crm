@@ -22,10 +22,7 @@ export type ProviderValidation =
   | { ok: false; status: 400 | 422; code: string; message: string };
 
 /** Pure validation — no throwing, so it is unit-testable and reusable. */
-export function validateWritableProvider(
-  value: unknown,
-  field = "provider",
-): ProviderValidation {
+export function validateWritableProvider(value: unknown, field = "provider"): ProviderValidation {
   if (typeof value !== "string" || value.trim() === "") {
     return {
       ok: false,
@@ -53,14 +50,11 @@ export function validateWritableProvider(
 export function providerErrorResponse(
   result: Extract<ProviderValidation, { ok: false }>,
 ): Response {
-  return new Response(
-    JSON.stringify({ error: result.code, message: result.message }),
-    {
-      status: result.status,
-      statusText: result.message.slice(0, 120),
-      headers: { "Content-Type": "application/json" },
-    },
-  );
+  return new Response(JSON.stringify({ error: result.code, message: result.message }), {
+    status: result.status,
+    statusText: result.message.slice(0, 120),
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /**

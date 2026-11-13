@@ -96,7 +96,16 @@ function csvCell(value: string): string {
 }
 
 export function buildTranscriptCsv(messages: TranscriptMessage[], meta: TranscriptMeta): string {
-  const header = ["Timestamp", "Sender", "Direction", "Type", "Status", "Internal", "Message", "Media URL"];
+  const header = [
+    "Timestamp",
+    "Sender",
+    "Direction",
+    "Type",
+    "Status",
+    "Internal",
+    "Message",
+    "Media URL",
+  ];
   const lines = [header.map(csvCell).join(",")];
   for (const m of messages) {
     lines.push(
@@ -121,11 +130,9 @@ export async function buildTranscriptPdf(
   messages: TranscriptMessage[],
   meta: TranscriptMeta,
 ): Promise<Blob> {
-  const [{ jsPDF }, autoTableMod] = await Promise.all([
-    import("jspdf"),
-    import("jspdf-autotable"),
-  ]);
-  const autoTable = (autoTableMod as unknown as { default: (doc: unknown, opts: unknown) => void }).default;
+  const [{ jsPDF }, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+  const autoTable = (autoTableMod as unknown as { default: (doc: unknown, opts: unknown) => void })
+    .default;
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   doc.setFontSize(16);
@@ -146,7 +153,12 @@ export async function buildTranscriptPdf(
   autoTable(doc, {
     startY: 140,
     head: [["Time", "Sender", "Message", "Status"]],
-    body: messages.map((m) => [fmt(m.created_at), senderLabel(m, meta.contactName), bodyText(m), m.status]),
+    body: messages.map((m) => [
+      fmt(m.created_at),
+      senderLabel(m, meta.contactName),
+      bodyText(m),
+      m.status,
+    ]),
     styles: { fontSize: 8, cellPadding: 4, overflow: "linebreak" },
     headStyles: { fillColor: [216, 28, 32], textColor: 255 },
     columnStyles: {
@@ -162,7 +174,11 @@ export async function buildTranscriptPdf(
 }
 
 export function transcriptFileName(meta: TranscriptMeta, ext: "csv" | "pdf"): string {
-  const safe = meta.contactName.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "conversation";
+  const safe =
+    meta.contactName
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-|-$/g, "")
+      .toLowerCase() || "conversation";
   const date = new Date().toISOString().slice(0, 10);
   return `transcript-${safe}-${date}.${ext}`;
 }

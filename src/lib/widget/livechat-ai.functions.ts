@@ -29,9 +29,7 @@ export interface LiveChatSessionInsight {
 
 export const getLiveChatSessionInsight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ sessionId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ sessionId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }): Promise<LiveChatSessionInsight | null> => {
     const { supabase } = context;
     const { data: row, error } = await supabase
@@ -61,9 +59,7 @@ export const getLiveChatSessionInsight = createServerFn({ method: "POST" })
       leadStage: (r.ai_lead_stage as string | null) ?? null,
       recommendations: {
         products: Array.isArray(rec.products)
-          ? (rec.products as unknown[]).filter(
-              (x): x is string => typeof x === "string",
-            )
+          ? (rec.products as unknown[]).filter((x): x is string => typeof x === "string")
           : [],
         appointment: rec.appointment ? { reason: rec.appointment.reason ?? null } : null,
       },
@@ -74,9 +70,7 @@ export const getLiveChatSessionInsight = createServerFn({ method: "POST" })
 
 export const summarizeLiveChatSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    z.object({ sessionId: z.string().uuid() }).parse(v),
-  )
+  .validator((v: unknown) => z.object({ sessionId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: sess } = await supabase
@@ -96,10 +90,7 @@ export const summarizeLiveChatSession = createServerFn({ method: "POST" })
 
     const transcript = ((msgs ?? []) as { role: string; content: string }[])
       .filter((m) => m.role !== "system")
-      .map(
-        (m) =>
-          `${m.role === "user" ? "Visitor" : "Assistant"}: ${m.content.slice(0, 400)}`,
-      )
+      .map((m) => `${m.role === "user" ? "Visitor" : "Assistant"}: ${m.content.slice(0, 400)}`)
       .join("\n");
 
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");

@@ -89,8 +89,7 @@ export function useConversationIntelligence(conversationId: string | null | unde
       !insight.analyzedAt ||
       (insight.lastMessageAt &&
         insight.analyzedAt &&
-        new Date(insight.lastMessageAt).getTime() >
-          new Date(insight.analyzedAt).getTime());
+        new Date(insight.lastMessageAt).getTime() > new Date(insight.analyzedAt).getTime());
     if (stale && !insight.summary) {
       void analyze({ silent: true });
     }

@@ -17,7 +17,11 @@ const RangeInput = z.object({
 
 type Row = Record<string, unknown>;
 
-function bucketByDay(rows: Row[], key: string, days: number): Array<{ day: string; value: number }> {
+function bucketByDay(
+  rows: Row[],
+  key: string,
+  days: number,
+): Array<{ day: string; value: number }> {
   const map = new Map<string, number>();
   const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
@@ -59,15 +63,12 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
     const sinceIso = since.toISOString();
     const ws = data.workspaceId;
 
-    const [
-      visitorsRes,
-      eventsRes,
-      sessionsRes,
-      handoffsRes,
-    ] = await Promise.all([
+    const [visitorsRes, eventsRes, sessionsRes, handoffsRes] = await Promise.all([
       supabase
         .from("livechat_visitors")
-        .select("id, country, device, browser, os, language, utm_source, utm_medium, utm_campaign, last_referrer, last_page, first_seen_at, last_seen_at, visits_count, page_views, contact_id")
+        .select(
+          "id, country, device, browser, os, language, utm_source, utm_medium, utm_campaign, last_referrer, last_page, first_seen_at, last_seen_at, visits_count, page_views, contact_id",
+        )
         .eq("workspace_id", ws)
         .gte("first_seen_at", sinceIso)
         .limit(5000),
@@ -79,7 +80,9 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
         .limit(20000),
       supabase
         .from("chatbot_sessions")
-        .select("id, status, handed_off_at, handed_off_to, rating, rated_at, created_at, last_message_at, routed_agent_id, ai_lead_score, ai_intent, ai_language, message_count")
+        .select(
+          "id, status, handed_off_at, handed_off_to, rating, rated_at, created_at, last_message_at, routed_agent_id, ai_lead_score, ai_intent, ai_language, message_count",
+        )
         .eq("workspace_id", ws)
         .gte("created_at", sinceIso)
         .limit(5000),
@@ -109,12 +112,23 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
     // Response / resolution — derived from session + message timing.
     const responseSecs = sessions
       .filter((s) => s.handed_off_at && s.created_at)
-      .map((s) => (new Date(s.handed_off_at as string).getTime() - new Date(s.created_at as string).getTime()) / 1000);
+      .map(
+        (s) =>
+          (new Date(s.handed_off_at as string).getTime() -
+            new Date(s.created_at as string).getTime()) /
+          1000,
+      );
     const resolutionSecs = sessions
       .filter((s) => s.status === "closed" && s.last_message_at)
-      .map((s) => (new Date(s.last_message_at as string).getTime() - new Date(s.created_at as string).getTime()) / 1000);
+      .map(
+        (s) =>
+          (new Date(s.last_message_at as string).getTime() -
+            new Date(s.created_at as string).getTime()) /
+          1000,
+      );
 
-    const avg = (arr: number[]) => (arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0);
+    const avg = (arr: number[]) =>
+      arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
     const avgResponseSec = avg(responseSecs);
     const avgResolutionSec = avg(resolutionSecs);
 
@@ -126,7 +140,9 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
     const humanResolutionRate = +((closedByHuman / closed) * 100).toFixed(1);
 
     // Lead generation — sessions with non-null ai_lead_score >= 50 or identified.
-    const leads = sessions.filter((s) => (s.ai_lead_score as number | null) != null && (s.ai_lead_score as number) >= 50).length;
+    const leads = sessions.filter(
+      (s) => (s.ai_lead_score as number | null) != null && (s.ai_lead_score as number) >= 50,
+    ).length;
 
     // ── Time series ──────────────────────────────────────
     const visitorSeries = bucketByDay(visitors, "first_seen_at", data.days);
@@ -145,7 +161,8 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
 
     // Widget engagement funnel.
     const pageviews = events.filter((e) => e.event_type === "pageview").length;
-    const engaged = events.filter((e) => e.event_type === "custom" && e.event_name === "widget_open").length ||
+    const engaged =
+      events.filter((e) => e.event_type === "custom" && e.event_name === "widget_open").length ||
       Math.round(pageviews * 0.35);
     const startedChat = sessions.length;
     const messaged = sessions.filter((s) => (s.message_count as number) > 1).length;
@@ -181,16 +198,21 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
     const byLanguage = topCounts(visitors, "language", 8);
 
     // Agent performance — group handoffs by to_agent_id.
-    const agentMap = new Map<string, { handled: number; response: number[]; resolution: number[]; rating: number[] }>();
+    const agentMap = new Map<
+      string,
+      { handled: number; response: number[]; resolution: number[]; rating: number[] }
+    >();
     for (const h of handoffs) {
       const key = (h.to_user_id as string | null) ?? "unassigned";
-      if (!agentMap.has(key)) agentMap.set(key, { handled: 0, response: [], resolution: [], rating: [] });
+      if (!agentMap.has(key))
+        agentMap.set(key, { handled: 0, response: [], resolution: [], rating: [] });
       agentMap.get(key)!.handled += 1;
     }
     for (const s of sessions) {
       const key = s.routed_agent_id as string | null;
       if (!key || s.rating == null) continue;
-      if (!agentMap.has(key)) agentMap.set(key, { handled: 0, response: [], resolution: [], rating: [] });
+      if (!agentMap.has(key))
+        agentMap.set(key, { handled: 0, response: [], resolution: [], rating: [] });
       agentMap.get(key)!.rating.push(s.rating as number);
     }
 
@@ -207,19 +229,27 @@ export const getLivechatAnalytics = createServerFn({ method: "POST" })
       const p = profiles.find((x) => x.id === id);
       return p?.full_name ?? p?.email ?? id.slice(0, 8);
     };
-    const agents = Array.from(agentMap.entries()).map(([id, b]) => ({
-      id,
-      name: id === "unassigned" ? "Unassigned" : nameFor(id),
-      handled: b.handled,
-      avgResponseSec: avg(b.response),
-      avgResolutionSec: avg(b.resolution),
-      rating: b.rating.length ? +(b.rating.reduce((a, x) => a + x, 0) / b.rating.length).toFixed(2) : null,
-    })).sort((a, b) => b.handled - a.handled).slice(0, 20);
+    const agents = Array.from(agentMap.entries())
+      .map(([id, b]) => ({
+        id,
+        name: id === "unassigned" ? "Unassigned" : nameFor(id),
+        handled: b.handled,
+        avgResponseSec: avg(b.response),
+        avgResolutionSec: avg(b.resolution),
+        rating: b.rating.length
+          ? +(b.rating.reduce((a, x) => a + x, 0) / b.rating.length).toFixed(2)
+          : null,
+      }))
+      .sort((a, b) => b.handled - a.handled)
+      .slice(0, 20);
 
     // Realtime snapshot.
     const now = Date.now();
     const activeSessions = sessions.filter(
-      (s) => s.status !== "closed" && s.last_message_at && now - new Date(s.last_message_at as string).getTime() < 15 * 60_000,
+      (s) =>
+        s.status !== "closed" &&
+        s.last_message_at &&
+        now - new Date(s.last_message_at as string).getTime() < 15 * 60_000,
     ).length;
     const visitorsOnline = visitors.filter(
       (v) => v.last_seen_at && now - new Date(v.last_seen_at as string).getTime() < 5 * 60_000,

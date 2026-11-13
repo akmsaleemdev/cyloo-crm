@@ -88,11 +88,15 @@ function aiStatus(status: string | null | undefined, failures: number): SystemSt
 
 function accountStatus(status: string | null | undefined): SystemStatus {
   switch (status) {
-    case "connected": return "healthy";
-    case "disconnected": return "degraded";
+    case "connected":
+      return "healthy";
+    case "disconnected":
+      return "degraded";
     case "error":
-    case "suspended": return "down";
-    default: return "unknown"; // pending, or anything new
+    case "suspended":
+      return "down";
+    default:
+      return "unknown"; // pending, or anything new
   }
 }
 
@@ -103,23 +107,37 @@ export async function getMonitoringSnapshotInternal(): Promise<MonitoringSnapsho
   const fiveMinAgo = new Date(now.getTime() - 5 * 60_000).toISOString();
   const db = sbAny(supabaseAdmin);
 
-  const [statsRes, sessions, conversations, aiRows, aiHealth, accounts, gateways, host] = await Promise.all([
-    db.rpc("platform_monitoring_stats"),
-    db.from("sessions").select("id", { count: "exact", head: true })
-      .gte("last_seen_at", fiveMinAgo).is("revoked_at", null),
-    db.from("conversations").select("id", { count: "exact", head: true })
-      .gte("last_message_at", fiveMinAgo),
-    db.from("ai_providers").select("id, name, kind, enabled").eq("enabled", true),
-    db.from("ai_provider_health")
-      .select("provider_id, status, last_check_at, last_error, latency_ms, consecutive_failures"),
-    db.from("channel_accounts")
-      .select("id, display_name, phone_number, provider, status, status_reason, last_verified_at"),
-    db.from("payment_gateway_settings")
-      .select("provider_id, display_label, mode, enabled").eq("enabled", true),
-    readHost(),
-  ]);
+  const [statsRes, sessions, conversations, aiRows, aiHealth, accounts, gateways, host] =
+    await Promise.all([
+      db.rpc("platform_monitoring_stats"),
+      db
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .gte("last_seen_at", fiveMinAgo)
+        .is("revoked_at", null),
+      db
+        .from("conversations")
+        .select("id", { count: "exact", head: true })
+        .gte("last_message_at", fiveMinAgo),
+      db.from("ai_providers").select("id, name, kind, enabled").eq("enabled", true),
+      db
+        .from("ai_provider_health")
+        .select("provider_id, status, last_check_at, last_error, latency_ms, consecutive_failures"),
+      db
+        .from("channel_accounts")
+        .select(
+          "id, display_name, phone_number, provider, status, status_reason, last_verified_at",
+        ),
+      db
+        .from("payment_gateway_settings")
+        .select("provider_id, display_label, mode, enabled")
+        .eq("enabled", true),
+      readHost(),
+    ]);
 
-  const statsError: string | null = statsRes.error ? String(statsRes.error.message ?? statsRes.error) : null;
+  const statsError: string | null = statsRes.error
+    ? String(statsRes.error.message ?? statsRes.error)
+    : null;
   const stats: Stats = statsRes.error || !statsRes.data ? EMPTY_STATS : (statsRes.data as Stats);
 
   // --- Providers ------------------------------------------------------------
@@ -134,7 +152,9 @@ export async function getMonitoringSnapshotInternal(): Promise<MonitoringSnapsho
   const healthById = new Map<string, AiHealthRow>();
   for (const h of (aiHealth.data ?? []) as AiHealthRow[]) healthById.set(h.provider_id, h);
 
-  const aiProviders: ProviderHealth[] = ((aiRows.data ?? []) as Array<{ id: string; name: string; kind: string }>).map((p) => {
+  const aiProviders: ProviderHealth[] = (
+    (aiRows.data ?? []) as Array<{ id: string; name: string; kind: string }>
+  ).map((p) => {
     const h = healthById.get(p.id);
     return {
       id: p.id,
@@ -150,8 +170,13 @@ export async function getMonitoringSnapshotInternal(): Promise<MonitoringSnapsho
 
   const whatsappProviders: ProviderHealth[] = (
     (accounts.data ?? []) as Array<{
-      id: string; display_name: string | null; phone_number: string | null; provider: string;
-      status: string; status_reason: string | null; last_verified_at: string | null;
+      id: string;
+      display_name: string | null;
+      phone_number: string | null;
+      provider: string;
+      status: string;
+      status_reason: string | null;
+      last_verified_at: string | null;
     }>
   ).map((a) => ({
     id: a.id,
@@ -166,7 +191,11 @@ export async function getMonitoringSnapshotInternal(): Promise<MonitoringSnapsho
 
   // Gateways have no health probe, so their status is honestly "unknown".
   const paymentProviders: ProviderHealth[] = (
-    (gateways.data ?? []) as Array<{ provider_id: string; display_label: string | null; mode: string | null }>
+    (gateways.data ?? []) as Array<{
+      provider_id: string;
+      display_label: string | null;
+      mode: string | null;
+    }>
   ).map((g) => ({
     id: g.provider_id,
     name: g.display_label ?? g.provider_id,
@@ -195,34 +224,48 @@ export async function getMonitoringSnapshotInternal(): Promise<MonitoringSnapsho
   for (const [label, failed] of queueLabels) {
     if (failed > 0) {
       incidents.push({
-        id: `queue-${label}`, severity: "degraded", source: label,
-        message: `${failed} failed job${failed === 1 ? "" : "s"} waiting for retry`, at,
+        id: `queue-${label}`,
+        severity: "degraded",
+        source: label,
+        message: `${failed} failed job${failed === 1 ? "" : "s"} waiting for retry`,
+        at,
       });
     }
   }
   for (const p of [...aiProviders, ...whatsappProviders]) {
     if (p.status === "down") {
       incidents.push({
-        id: `provider-${p.id}`, severity: "down", source: p.name,
-        message: p.message ?? `${p.kind} provider is down`, at,
+        id: `provider-${p.id}`,
+        severity: "down",
+        source: p.name,
+        message: p.message ?? `${p.kind} provider is down`,
+        at,
       });
     }
   }
   if (requests >= 20 && errorRatePct > 5) {
     incidents.push({
-      id: "api-error-rate", severity: errorRatePct > 25 ? "down" : "degraded", source: "API",
-      message: `${errorRatePct}% of the last ${requests} requests returned 5xx`, at,
+      id: "api-error-rate",
+      severity: errorRatePct > 25 ? "down" : "degraded",
+      source: "API",
+      message: `${errorRatePct}% of the last ${requests} requests returned 5xx`,
+      at,
     });
   }
   if (statsError) {
     incidents.push({
-      id: "stats-unavailable", severity: "unknown", source: "Monitoring",
-      message: `Platform statistics could not be read: ${statsError}`, at,
+      id: "stats-unavailable",
+      severity: "unknown",
+      source: "Monitoring",
+      message: `Platform statistics could not be read: ${statsError}`,
+      at,
     });
   }
 
   const worst = incidents.reduce<SystemStatus>(
-    (acc, i) => (rank[i.severity] > rank[acc] ? i.severity : acc), "healthy");
+    (acc, i) => (rank[i.severity] > rank[acc] ? i.severity : acc),
+    "healthy",
+  );
   // A single failed queue or provider degrades the platform; it does not take it down.
   const systemStatus: SystemStatus = statsError ? "unknown" : worst === "down" ? "degraded" : worst;
 

@@ -34,7 +34,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useWhatsAppHealth } from "@/hooks/use-whatsapp-health";
 import { listChannelAccounts } from "@/lib/messaging/accounts.functions";
-import { getWhatsAppWebhookStats, type WebhookAccountStats } from "@/lib/messaging/webhook-stats.functions";
+import {
+  getWhatsAppWebhookStats,
+  type WebhookAccountStats,
+} from "@/lib/messaging/webhook-stats.functions";
 import type { HealthStatus } from "@/lib/messaging/health.functions";
 
 type AccountRow = {
@@ -49,7 +52,10 @@ type AccountRow = {
   last_verified_at: string | null;
 };
 
-const STATUS_META: Record<HealthStatus, { icon: typeof CheckCircle2; className: string; label: string }> = {
+const STATUS_META: Record<
+  HealthStatus,
+  { icon: typeof CheckCircle2; className: string; label: string }
+> = {
   ok: { icon: CheckCircle2, className: "text-emerald-600", label: "Healthy" },
   warn: { icon: AlertTriangle, className: "text-amber-600", label: "Needs attention" },
   error: { icon: XCircle, className: "text-destructive", label: "Action required" },
@@ -115,7 +121,8 @@ export function WhatsAppIntegrationStatus() {
   const lastWebhookOverall = useMemo(() => {
     let latest: string | null = null;
     for (const s of statsQuery.data?.accounts ?? []) {
-      if (s.last_received_at && (!latest || s.last_received_at > latest)) latest = s.last_received_at;
+      if (s.last_received_at && (!latest || s.last_received_at > latest))
+        latest = s.last_received_at;
     }
     return latest;
   }, [statsQuery.data]);
@@ -144,11 +151,22 @@ export function WhatsAppIntegrationStatus() {
             <Phone className="w-4 h-4" /> Integration status
           </h3>
           <p className="text-xs text-muted-foreground">
-            Connected WhatsApp Cloud accounts, the last webhook received, and the current health rollup.
+            Connected WhatsApp Cloud accounts, the last webhook received, and the current health
+            rollup.
           </p>
         </div>
-        <Button size="sm" variant="outline" className="gap-1.5" onClick={refreshAll} disabled={refreshing || !workspaceId}>
-          {refreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          onClick={refreshAll}
+          disabled={refreshing || !workspaceId}
+        >
+          {refreshing ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
           Refresh
         </Button>
       </div>
@@ -159,7 +177,9 @@ export function WhatsAppIntegrationStatus() {
             <OverallIcon className={`w-4 h-4 ${STATUS_META[overall].className}`} />
             {accounts.length} account{accounts.length === 1 ? "" : "s"} connected
             <Badge
-              variant={overall === "error" ? "destructive" : overall === "ok" ? "outline" : "secondary"}
+              variant={
+                overall === "error" ? "destructive" : overall === "ok" ? "outline" : "secondary"
+              }
               className="text-[11px]"
             >
               {health.isFetching && !health.data ? "Checking" : STATUS_META[overall].label}
@@ -170,11 +190,11 @@ export function WhatsAppIntegrationStatus() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-0.5">
               <p className="text-[11px] uppercase text-muted-foreground">Last webhook received</p>
-              <p className="text-sm font-medium">
-                {lastSeen ? lastSeen.rel : "Never"}
-              </p>
+              <p className="text-sm font-medium">{lastSeen ? lastSeen.rel : "Never"}</p>
               <p className="text-xs text-muted-foreground">
-                {lastSeen ? lastSeen.abs : "Meta has not delivered a single envelope to this workspace yet."}
+                {lastSeen
+                  ? lastSeen.abs
+                  : "Meta has not delivered a single envelope to this workspace yet."}
               </p>
             </div>
             <div className="space-y-0.5 min-w-0">
@@ -222,7 +242,9 @@ export function WhatsAppIntegrationStatus() {
                   <li key={a.id} className="py-3 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <HIcon className={`w-3.5 h-3.5 ${STATUS_META[hs].className}`} />
-                      <span className="text-sm font-medium">{a.display_name ?? "WhatsApp account"}</span>
+                      <span className="text-sm font-medium">
+                        {a.display_name ?? "WhatsApp account"}
+                      </span>
                       {a.phone_number && (
                         <span className="text-xs text-muted-foreground">{a.phone_number}</span>
                       )}
@@ -232,9 +254,16 @@ export function WhatsAppIntegrationStatus() {
                       >
                         {a.status ?? "unknown"}
                       </Badge>
-                      {a.is_default && <Badge variant="secondary" className="text-[11px]">Default</Badge>}
+                      {a.is_default && (
+                        <Badge variant="secondary" className="text-[11px]">
+                          Default
+                        </Badge>
+                      )}
                       {h && h.failing > 0 && (
-                        <Badge variant={hs === "error" ? "destructive" : "secondary"} className="text-[11px]">
+                        <Badge
+                          variant={hs === "error" ? "destructive" : "secondary"}
+                          className="text-[11px]"
+                        >
                           {h.failing} check{h.failing === 1 ? "" : "s"} failing
                         </Badge>
                       )}
@@ -246,7 +275,8 @@ export function WhatsAppIntegrationStatus() {
                         Last webhook: {seen ? `${seen.rel} (${seen.abs})` : "never"}
                       </span>
                       <span>
-                        7d envelopes: {s?.total ?? 0} · processed {s?.processed ?? 0} · failed {s?.failed ?? 0}
+                        7d envelopes: {s?.total ?? 0} · processed {s?.processed ?? 0} · failed{" "}
+                        {s?.failed ?? 0}
                         {s?.signature_invalid ? ` · bad signature ${s.signature_invalid}` : ""}
                       </span>
                       {a.phone_number_id && <span>Phone ID: {a.phone_number_id}</span>}
@@ -257,7 +287,9 @@ export function WhatsAppIntegrationStatus() {
                       <p className="text-xs text-foreground/80 break-words">{h.firstProblem}</p>
                     )}
                     {s?.last_error && (
-                      <p className="text-xs text-destructive break-words">Last error: {s.last_error}</p>
+                      <p className="text-xs text-destructive break-words">
+                        Last error: {s.last_error}
+                      </p>
                     )}
                     {a.status_reason && (
                       <p className="text-xs text-muted-foreground break-words">{a.status_reason}</p>

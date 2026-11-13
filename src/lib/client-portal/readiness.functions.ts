@@ -185,11 +185,7 @@ export const getClientPortalReadiness = createServerFn({ method: "POST" })
 
     // ---------- Support & KB ----------
     const kbCat = await safeCount(supabase, "kb_categories");
-    const kbArts = await safeCount(
-      supabase,
-      "kb_articles",
-      (q) => q.eq("status", "published"),
-    );
+    const kbArts = await safeCount(supabase, "kb_articles", (q) => q.eq("status", "published"));
     push({
       id: "kb-published",
       category: "Support & KB",
@@ -203,12 +199,13 @@ export const getClientPortalReadiness = createServerFn({ method: "POST" })
       category: "Support & KB",
       label: "Searchable KB embeddings",
       status: kbChunks.count > 0 ? "pass" : "info",
-      detail: kbChunks.count > 0 ? `${kbChunks.count} vector chunks` : "Run KB indexing for semantic search",
+      detail:
+        kbChunks.count > 0
+          ? `${kbChunks.count} vector chunks`
+          : "Run KB indexing for semantic search",
     });
-    const tickets = await safeCount(
-      supabase,
-      "conversations",
-      (q) => q.ilike("subject", "%ticket%"),
+    const tickets = await safeCount(supabase, "conversations", (q) =>
+      q.ilike("subject", "%ticket%"),
     );
     push({
       id: "support-tickets",
@@ -253,11 +250,7 @@ export const getClientPortalReadiness = createServerFn({ method: "POST" })
       status: notifs.error ? "fail" : "pass",
       detail: notifs.error ? notifs.error : `${notifs.count} notification(s)`,
     });
-    const outbox = await safeCount(
-      supabase,
-      "message_outbox",
-      (q) => q.eq("status", "failed"),
-    );
+    const outbox = await safeCount(supabase, "message_outbox", (q) => q.eq("status", "failed"));
     push({
       id: "notif-outbox",
       category: "Notifications",
@@ -314,19 +307,18 @@ export const getClientPortalReadiness = createServerFn({ method: "POST" })
       status: appts.error ? "fail" : "pass",
       detail: "Customer can view, reschedule and cancel booking_appointments",
     });
-    const wfTemplates = await safeCount(
-      supabase,
-      "workflow_templates",
-      (q) => q.ilike("category", "%portal%"),
+    const wfTemplates = await safeCount(supabase, "workflow_templates", (q) =>
+      q.ilike("category", "%portal%"),
     );
     push({
       id: "int-workflows",
       category: "Integrations",
       label: "Workflow automation triggers",
       status: "info",
-      detail: wfTemplates.count > 0
-        ? `${wfTemplates.count} portal-tagged workflow template(s)`
-        : "Portal events (message, ticket, invoice) can trigger workflows",
+      detail:
+        wfTemplates.count > 0
+          ? `${wfTemplates.count} portal-tagged workflow template(s)`
+          : "Portal events (message, ticket, invoice) can trigger workflows",
     });
 
     // ---------- Aggregate ----------
@@ -339,9 +331,8 @@ export const getClientPortalReadiness = createServerFn({ method: "POST" })
       byCat[c.category] = b;
     }
     const scored = totals.pass + totals.warn + totals.fail;
-    const score = scored === 0
-      ? 100
-      : Math.round(((totals.pass + totals.warn * 0.5) / scored) * 100);
+    const score =
+      scored === 0 ? 100 : Math.round(((totals.pass + totals.warn * 0.5) / scored) * 100);
 
     return {
       score,

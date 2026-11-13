@@ -21,7 +21,10 @@ export const Route = createFileRoute("/api/public/health/ready")({
             { auth: { persistSession: false, autoRefreshToken: false } },
           );
           const t0 = Date.now();
-          const { error } = await sbAny(supabase).from("plans").select("id", { head: true, count: "exact" }).limit(1);
+          const { error } = await sbAny(supabase)
+            .from("plans")
+            .select("id", { head: true, count: "exact" })
+            .limit(1);
           checks.database = error
             ? { ok: false, error: error.message }
             : { ok: true, latency_ms: Date.now() - t0 };

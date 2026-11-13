@@ -46,9 +46,7 @@ export function selectHost(params: {
   }
 
   if (strategy === "priority") {
-    return [...eligible].sort(
-      (a, b) => (a.priority ?? 999) - (b.priority ?? 999),
-    )[0].host_id;
+    return [...eligible].sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999))[0].host_id;
   }
 
   if (strategy === "random") {
@@ -57,9 +55,7 @@ export function selectHost(params: {
 
   if (strategy === "collective") {
     // Primary owner = highest priority host; attendees table records the rest.
-    return [...eligible].sort(
-      (a, b) => (a.priority ?? 999) - (b.priority ?? 999),
-    )[0].host_id;
+    return [...eligible].sort((a, b) => (a.priority ?? 999) - (b.priority ?? 999))[0].host_id;
   }
 
   // round_robin (default): lowest 7-day load wins.
@@ -68,7 +64,8 @@ export function selectHost(params: {
     const la = loads.get(a.host_id) ?? 0;
     const lb = loads.get(b.host_id) ?? 0;
     if (la !== lb) return la - lb;
-    if ((a.priority ?? 999) !== (b.priority ?? 999)) return (a.priority ?? 999) - (b.priority ?? 999);
+    if ((a.priority ?? 999) !== (b.priority ?? 999))
+      return (a.priority ?? 999) - (b.priority ?? 999);
     return a.created_at.localeCompare(b.created_at);
   })[0].host_id;
 }

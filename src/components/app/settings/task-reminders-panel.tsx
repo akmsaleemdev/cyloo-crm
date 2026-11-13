@@ -11,7 +11,11 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { isTaskReminderSoundEnabled, playTaskReminderSound, setTaskReminderSoundEnabled } from "@/lib/tasks/reminder-sound";
+import {
+  isTaskReminderSoundEnabled,
+  playTaskReminderSound,
+  setTaskReminderSoundEnabled,
+} from "@/lib/tasks/reminder-sound";
 
 const LEAD_CHOICES: Array<{ value: number; label: string }> = [
   { value: 0, label: "At due time" },
@@ -48,14 +52,12 @@ export function TaskRemindersPanel() {
     setEmail(!!settings.email_enabled);
     setNotifyOverdue(!!settings.notify_overdue);
     setOverdueRepeat(Number(settings.overdue_repeat_minutes ?? 0));
-    setLeadMinutes(
-      Array.isArray(settings.lead_minutes) ? settings.lead_minutes : [1440, 60, 0]
-    );
+    setLeadMinutes(Array.isArray(settings.lead_minutes) ? settings.lead_minutes : [1440, 60, 0]);
   }, [settings]);
 
   const toggleLead = (v: number) => {
     setLeadMinutes((prev) =>
-      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].sort((a, b) => b - a)
+      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v].sort((a, b) => b - a),
     );
   };
 
@@ -79,12 +81,15 @@ export function TaskRemindersPanel() {
     try {
       const res = await runNow.mutateAsync();
       toast.success(
-        `Scanned ${res.tasks_scanned} CRM and ${res.project_tasks_scanned} project tasks · ${res.notifications_created} app alerts · ${res.emails_sent} emails sent${res.emails_skipped ? ` · ${res.emails_skipped} emails skipped` : ""}`
+        `Scanned ${res.tasks_scanned} CRM and ${res.project_tasks_scanned} project tasks · ${res.notifications_created} app alerts · ${res.emails_sent} emails sent${res.emails_skipped ? ` · ${res.emails_skipped} emails skipped` : ""}`,
       );
       if (res.errors.length) {
-        toast.error(`${res.errors.length} reminder delivery error${res.errors.length === 1 ? "" : "s"}`, {
-          description: res.errors[0],
-        });
+        toast.error(
+          `${res.errors.length} reminder delivery error${res.errors.length === 1 ? "" : "s"}`,
+          {
+            description: res.errors[0],
+          },
+        );
       }
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Run failed");
@@ -104,8 +109,17 @@ export function TaskRemindersPanel() {
             organization timezone. Runs every 5 minutes.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={handleRunNow} disabled={runNow.isPending || !enabled}>
-          {runNow.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRunNow}
+          disabled={runNow.isPending || !enabled}
+        >
+          {runNow.isPending ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
           Run scan now
         </Button>
       </div>
@@ -132,7 +146,9 @@ export function TaskRemindersPanel() {
                 onClick={() => toggleLead(c.value)}
                 disabled={!enabled}
                 className={`text-sm px-3 py-2 rounded-control border transition-colors text-left ${
-                  on ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted border-border"
+                  on
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "hover:bg-muted border-border"
                 } ${!enabled ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {c.label}
@@ -151,7 +167,8 @@ export function TaskRemindersPanel() {
           <div>
             <div className="text-sm font-medium">Notify when a task is overdue</div>
             <div className="text-xs text-muted-foreground">
-              Alerts at 15 min, 1 h, 4 h and 1 day past due (unless you set a repeat interval below).
+              Alerts at 15 min, 1 h, 4 h and 1 day past due (unless you set a repeat interval
+              below).
             </div>
           </div>
           <Switch checked={notifyOverdue} onCheckedChange={setNotifyOverdue} disabled={!enabled} />
@@ -190,26 +207,57 @@ export function TaskRemindersPanel() {
         <div className="rounded-control border p-4 flex items-center justify-between gap-4">
           <div>
             <div className="text-sm font-medium">Email reminder</div>
-            <div className="text-xs text-muted-foreground">Sends before and at the due time to your profile email through the task workspace's connected Resend account.</div>
+            <div className="text-xs text-muted-foreground">
+              Sends before and at the due time to your profile email through the task workspace's
+              connected Resend account.
+            </div>
             {settings?.email_available === false && (
               <div className="text-xs text-amber-700 dark:text-amber-400 mt-1">
                 Email reminders need a database update. Other reminder settings can still be saved.
               </div>
             )}
           </div>
-          <Switch checked={email} onCheckedChange={setEmail} disabled={!enabled || isLoading || settings?.email_available === false} aria-label="Email task reminders" />
+          <Switch
+            checked={email}
+            onCheckedChange={setEmail}
+            disabled={!enabled || isLoading || settings?.email_available === false}
+            aria-label="Email task reminders"
+          />
         </div>
         <div className="rounded-control border p-4 flex items-center justify-between gap-4">
           <div>
             <div className="text-sm font-medium">Play a reminder sound in this browser</div>
-            <div className="text-xs text-muted-foreground">Rings when a task reminder arrives while the app is open.</div>
+            <div className="text-xs text-muted-foreground">
+              Rings when a task reminder arrives while the app is open.
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={() => playTaskReminderSound(true)}>Preview</Button>
-            <Switch checked={sound} onCheckedChange={(value) => { setSound(value); setTaskReminderSoundEnabled(value); }} disabled={!enabled || !inapp} aria-label="Play task reminder sound" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => playTaskReminderSound(true)}
+            >
+              Preview
+            </Button>
+            <Switch
+              checked={sound}
+              onCheckedChange={(value) => {
+                setSound(value);
+                setTaskReminderSoundEnabled(value);
+              }}
+              disabled={!enabled || !inapp}
+              aria-label="Play task reminder sound"
+            />
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">Choose and preview a ringtone in <Link to="/settings/sounds" className="text-primary underline-offset-2 hover:underline">Notification sounds</Link>.</p>
+        <p className="text-xs text-muted-foreground">
+          Choose and preview a ringtone in{" "}
+          <Link to="/settings/sounds" className="text-primary underline-offset-2 hover:underline">
+            Notification sounds
+          </Link>
+          .
+        </p>
       </div>
 
       <div className="flex justify-end">

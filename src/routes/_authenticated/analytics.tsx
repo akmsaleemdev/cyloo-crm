@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { formatRate, formatSeconds, useAnalyticsSummary } from "@/hooks/use-analytics-summary";
-import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   component: AnalyticsPage,
@@ -25,14 +35,20 @@ function AnalyticsPage() {
       <AppTopbar title="Analytics" subtitle="Delivery, engagement, and team performance" />
       <main className="p-6 space-y-6 max-w-7xl w-full mx-auto">
         {isError && (
-          <div role="alert" className="rounded-control border border-destructive/40 bg-destructive/5 p-4 text-sm">
+          <div
+            role="alert"
+            className="rounded-control border border-destructive/40 bg-destructive/5 p-4 text-sm"
+          >
             Couldn&apos;t load analytics: {error instanceof Error ? error.message : "unknown error"}
           </div>
         )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((s) => (
-            <div key={s.l} className="rounded-control border border-border bg-surface p-4 shadow-sm">
+            <div
+              key={s.l}
+              className="rounded-control border border-border bg-surface p-4 shadow-sm"
+            >
               <div className="text-xs text-muted-foreground">{s.l}</div>
               <div className="text-2xl font-display font-semibold mt-1">{isLoading ? "" : s.v}</div>
             </div>
@@ -41,7 +57,8 @@ function AnalyticsPage() {
 
         {empty && (
           <div className="rounded-control border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
-            No messages in the last {DAYS} days. Charts fill in as conversations flow through your inbox.
+            No messages in the last {DAYS} days. Charts fill in as conversations flow through your
+            inbox.
           </div>
         )}
 
@@ -60,9 +77,26 @@ function AnalyticsPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="sent" stroke="var(--color-accent)" strokeWidth={2} fill="url(#g)" />
+                  <YAxis
+                    stroke="var(--color-muted-foreground)"
+                    fontSize={11}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-surface-elevated)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="sent"
+                    stroke="var(--color-accent)"
+                    strokeWidth={2}
+                    fill="url(#g)"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -76,8 +110,19 @@ function AnalyticsPage() {
                 <BarChart data={rows}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                   <XAxis dataKey="day" stroke="var(--color-muted-foreground)" fontSize={11} />
-                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} allowDecimals={false} />
-                  <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
+                  <YAxis
+                    stroke="var(--color-muted-foreground)"
+                    fontSize={11}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-surface-elevated)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: 8,
+                      fontSize: 12,
+                    }}
+                  />
                   <Bar dataKey="delivered" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="read" fill="var(--color-accent)" radius={[4, 4, 0, 0]} />
                 </BarChart>

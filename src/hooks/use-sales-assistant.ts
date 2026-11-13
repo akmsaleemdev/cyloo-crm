@@ -1,9 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  aiDealSummary, aiDealRisk, aiNextBestAction, aiFollowUpSuggestions,
-  aiDraftMessage, aiProposalSuggestions, aiCoaching, aiDealProbability,
-  aiRevenuePrediction, aiPipelineHealth, aiLeadPriority, aiGenerateCrmNote,
+  aiDealSummary,
+  aiDealRisk,
+  aiNextBestAction,
+  aiFollowUpSuggestions,
+  aiDraftMessage,
+  aiProposalSuggestions,
+  aiCoaching,
+  aiDealProbability,
+  aiRevenuePrediction,
+  aiPipelineHealth,
+  aiLeadPriority,
+  aiGenerateCrmNote,
   aiSalesRecommendations,
 } from "@/lib/ai/sales-assistant.functions";
 
@@ -140,8 +149,12 @@ export function useLeadPriority() {
 export function useDraftMessage() {
   const fn = useServerFn(aiDraftMessage);
   return useMutation({
-    mutationFn: (data: { dealId: string; channel: "email" | "whatsapp"; intent: string; tone?: "friendly" | "professional" | "urgent" | "casual" | "formal" }) =>
-      fn({ data: { ...data, tone: data.tone ?? "professional" } }),
+    mutationFn: (data: {
+      dealId: string;
+      channel: "email" | "whatsapp";
+      intent: string;
+      tone?: "friendly" | "professional" | "urgent" | "casual" | "formal";
+    }) => fn({ data: { ...data, tone: data.tone ?? "professional" } }),
   });
 }
 

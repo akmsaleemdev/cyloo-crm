@@ -59,4 +59,3 @@ describe("Security: Cron Token Authentication", () => {
     expect(hasTimingSafe).toBe(true);
   });
 });
-

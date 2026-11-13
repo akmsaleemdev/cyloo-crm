@@ -51,10 +51,22 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 
 await shot(page, iconSvg, 64, 64, join(ROOT, "public", "favicon.png"), { pad: 4, bg: "#ffffff" });
-await shot(page, iconSvg, 192, 192, join(ROOT, "public", "icon-192.png"), { pad: 24, bg: "#ffffff" });
-await shot(page, iconSvg, 512, 512, join(ROOT, "public", "icon-512.png"), { pad: 64, bg: "#ffffff" });
-await shot(page, iconSvg, 180, 180, join(ROOT, "public", "apple-touch-icon.png"), { pad: 22, bg: "#ffffff" });
-await shot(page, logoSvg, 1200, 630, join(ROOT, "public", "og-image.png"), { pad: 60, bg: "#ffffff" });
+await shot(page, iconSvg, 192, 192, join(ROOT, "public", "icon-192.png"), {
+  pad: 24,
+  bg: "#ffffff",
+});
+await shot(page, iconSvg, 512, 512, join(ROOT, "public", "icon-512.png"), {
+  pad: 64,
+  bg: "#ffffff",
+});
+await shot(page, iconSvg, 180, 180, join(ROOT, "public", "apple-touch-icon.png"), {
+  pad: 22,
+  bg: "#ffffff",
+});
+await shot(page, logoSvg, 1200, 630, join(ROOT, "public", "og-image.png"), {
+  pad: 60,
+  bg: "#ffffff",
+});
 
 await browser.close();
 console.log("CYLOO PNG assets generated.");

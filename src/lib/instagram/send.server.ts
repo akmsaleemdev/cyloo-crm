@@ -32,8 +32,7 @@ export async function sendInstagramMessage(
   const message: Record<string, unknown> = {};
   if (input.media) {
     // Instagram supports image / video / audio attachments by public URL.
-    const type =
-      input.media.kind === "document" ? "file" : input.media.kind;
+    const type = input.media.kind === "document" ? "file" : input.media.kind;
     message.attachment = {
       type,
       payload: { url: input.media.url, is_reusable: true },

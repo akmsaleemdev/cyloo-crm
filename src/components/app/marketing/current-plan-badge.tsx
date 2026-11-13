@@ -6,11 +6,7 @@
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck } from "lucide-react";
 
-import {
-  planStatusDetail,
-  planStatusLabel,
-  type MyPlanSummary,
-} from "@/lib/billing/public-plans";
+import { planStatusDetail, planStatusLabel, type MyPlanSummary } from "@/lib/billing/public-plans";
 
 /** Banner shown above the plan cards. */
 export function CurrentPlanBanner({ subscription }: { subscription: MyPlanSummary | null }) {
@@ -22,7 +18,8 @@ export function CurrentPlanBanner({ subscription }: { subscription: MyPlanSummar
     <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-none border-t border-border bg-muted/50 px-4 py-2 text-sm">
       <BadgeCheck className="w-4 h-4 text-accent shrink-0" aria-hidden />
       <span className="text-foreground">
-        You're on <strong className="font-semibold">{subscription.plan_name ?? "your current plan"}</strong>
+        You're on{" "}
+        <strong className="font-semibold">{subscription.plan_name ?? "your current plan"}</strong>
       </span>
       <span
         className={`rounded-full px-2 py-0.5 text-[11px] uppercase ${

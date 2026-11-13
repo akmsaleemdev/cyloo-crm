@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
-import { router } from 'expo-router';
-import { Screen } from '@/components/Screen';
-import { Input } from '@/components/Input';
-import { Button } from '@/components/Button';
-import { useAuth } from '@/auth/AuthProvider';
-import { useTheme } from '@/theme/ThemeProvider';
+import { useState } from "react";
+import { View, Text, KeyboardAvoidingView, Platform, Pressable } from "react-native";
+import { router } from "expo-router";
+import { Screen } from "@/components/Screen";
+import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+import { useAuth } from "@/auth/AuthProvider";
+import { useTheme } from "@/theme/ThemeProvider";
 
-type Mode = 'password' | 'magic';
+type Mode = "password" | "magic";
 
 export default function SignIn() {
   const t = useTheme();
-  const { signInWithPassword, signInWithOtp, verifyOtp, registerDeviceTrust, updatePrefs } = useAuth();
-  const [mode, setMode] = useState<Mode>('password');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [otp, setOtp] = useState('');
+  const { signInWithPassword, signInWithOtp, verifyOtp, registerDeviceTrust, updatePrefs } =
+    useAuth();
+  const [mode, setMode] = useState<Mode>("password");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string>();
@@ -31,7 +32,7 @@ export default function SignIn() {
     } else {
       updatePrefs({ rememberDevice: false });
     }
-    router.replace('/(tabs)/inbox');
+    router.replace("/(tabs)/inbox");
   }
 
   async function submitPassword() {
@@ -63,15 +64,20 @@ export default function SignIn() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'center', gap: t.spacing.lg }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <View style={{ flex: 1, justifyContent: "center", gap: t.spacing.lg }}>
           <View>
             <Text style={[t.typography.h1, { color: t.colors.foreground }]}>Welcome back</Text>
-            <Text style={{ color: t.colors.mutedFg, marginTop: 4 }}>Sign in to your CYLOO workspace</Text>
+            <Text style={{ color: t.colors.mutedFg, marginTop: 4 }}>
+              Sign in to your CYLOO workspace
+            </Text>
           </View>
 
-          <View style={{ flexDirection: 'row', gap: t.spacing.sm }}>
-            {(['password', 'magic'] as Mode[]).map((m) => (
+          <View style={{ flexDirection: "row", gap: t.spacing.sm }}>
+            {(["password", "magic"] as Mode[]).map((m) => (
               <Pressable
                 key={m}
                 onPress={() => {
@@ -84,11 +90,16 @@ export default function SignIn() {
                   paddingVertical: 10,
                   borderRadius: t.radius.md,
                   backgroundColor: mode === m ? t.colors.foreground : t.colors.muted,
-                  alignItems: 'center',
+                  alignItems: "center",
                 }}
               >
-                <Text style={{ color: mode === m ? t.colors.background : t.colors.mutedFg, fontWeight: '600' }}>
-                  {m === 'password' ? 'Password' : 'Magic link'}
+                <Text
+                  style={{
+                    color: mode === m ? t.colors.background : t.colors.mutedFg,
+                    fontWeight: "600",
+                  }}
+                >
+                  {m === "password" ? "Password" : "Magic link"}
                 </Text>
               </Pressable>
             ))}
@@ -103,7 +114,7 @@ export default function SignIn() {
             keyboardType="email-address"
           />
 
-          {mode === 'password' ? (
+          {mode === "password" ? (
             <>
               <Input
                 label="Password"
@@ -125,7 +136,7 @@ export default function SignIn() {
               />
               <Button title="Verify code" onPress={submitOtp} loading={loading} />
               <Pressable onPress={requestMagicLink}>
-                <Text style={{ color: t.colors.mutedFg, textAlign: 'center' }}>Resend code</Text>
+                <Text style={{ color: t.colors.mutedFg, textAlign: "center" }}>Resend code</Text>
               </Pressable>
             </>
           ) : (
@@ -134,7 +145,7 @@ export default function SignIn() {
 
           <Pressable
             onPress={() => setRemember((v) => !v)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
           >
             <View
               style={{
@@ -143,12 +154,16 @@ export default function SignIn() {
                 borderRadius: 6,
                 borderWidth: 1,
                 borderColor: t.colors.border,
-                backgroundColor: remember ? t.colors.primary : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
+                backgroundColor: remember ? t.colors.primary : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {remember ? <Text style={{ color: t.colors.primaryFg, fontSize: 12, fontWeight: '700' }}>✓</Text> : null}
+              {remember ? (
+                <Text style={{ color: t.colors.primaryFg, fontSize: 12, fontWeight: "700" }}>
+                  ✓
+                </Text>
+              ) : null}
             </View>
             <Text style={{ color: t.colors.foreground }}>Remember this device</Text>
           </Pressable>

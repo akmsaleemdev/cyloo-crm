@@ -4,13 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
 
-export type CustomFieldEntity =
-  | "contact"
-  | "company"
-  | "lead"
-  | "customer"
-  | "deal"
-  | "task";
+export type CustomFieldEntity = "contact" | "company" | "lead" | "customer" | "deal" | "task";
 
 export type CustomFieldType =
   | "text"
@@ -121,8 +115,13 @@ export function useCustomFieldsRealtime() {
       .channel(`custom-fields-rt:${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "custom_field_definitions", filter: `workspace_id=eq.${workspaceId}` },
-        () => qc.invalidateQueries({ queryKey: ["custom-fields", workspaceId] })
+        {
+          event: "*",
+          schema: "public",
+          table: "custom_field_definitions",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
+        () => qc.invalidateQueries({ queryKey: ["custom-fields", workspaceId] }),
       )
       .subscribe();
     return () => {

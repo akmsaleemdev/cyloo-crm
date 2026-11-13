@@ -29,10 +29,13 @@ const REQUIRED_SCOPES = ["pages_manage_posts", "pages_read_engagement"];
 const REQUIRED_IG_SCOPES = ["instagram_basic", "instagram_content_publish"];
 
 async function assertAdmin(supabase: unknown, workspaceId: string, userId: string) {
-  const { data: isAdmin } = await sbAny(supabase).rpc("is_workspace_admin" as never, {
-    _workspace_id: workspaceId,
-    _user_id: userId,
-  } as never);
+  const { data: isAdmin } = await sbAny(supabase).rpc(
+    "is_workspace_admin" as never,
+    {
+      _workspace_id: workspaceId,
+      _user_id: userId,
+    } as never,
+  );
   if (!isAdmin) throw new Error("Only workspace owners and admins can manage connected channels");
 }
 
@@ -46,7 +49,9 @@ export const listMetaGrants = createServerFn({ method: "POST" })
     const db = sbAny(supabaseAdmin);
     const { data: rows, error } = await db
       .from("social_channels")
-      .select("id, platform, name, username, external_id, avatar_url, status, access_token, token_expires_at")
+      .select(
+        "id, platform, name, username, external_id, avatar_url, status, access_token, token_expires_at",
+      )
       .eq("workspace_id", data.workspaceId)
       .in("platform", ["facebook", "instagram"])
       .order("platform", { ascending: true });
@@ -101,7 +106,12 @@ export const listMetaGrants = createServerFn({ method: "POST" })
         url.searchParams.set("access_token", appToken);
         const res = await fetch(url.toString());
         const json = (await res.json()) as {
-          data?: { is_valid?: boolean; scopes?: string[]; expires_at?: number; error?: { message?: string } };
+          data?: {
+            is_valid?: boolean;
+            scopes?: string[];
+            expires_at?: number;
+            error?: { message?: string };
+          };
           error?: { message?: string };
         };
         const d = json.data;
@@ -112,9 +122,11 @@ export const listMetaGrants = createServerFn({ method: "POST" })
           grant.scopes = d.scopes ?? [];
           const required = grant.platform === "facebook" ? REQUIRED_SCOPES : REQUIRED_IG_SCOPES;
           grant.missingScopes = required.filter((s) => !grant.scopes.includes(s));
-          if (d.expires_at && d.expires_at > 0) grant.expiresAt = new Date(d.expires_at * 1000).toISOString();
+          if (d.expires_at && d.expires_at > 0)
+            grant.expiresAt = new Date(d.expires_at * 1000).toISOString();
           if (d.error?.message) grant.error = d.error.message;
-          if (!grant.valid && !grant.error) grant.error = "Meta reports this token as no longer valid.";
+          if (!grant.valid && !grant.error)
+            grant.error = "Meta reports this token as no longer valid.";
         }
       } catch (e) {
         grant.error = e instanceof Error ? e.message : "Grant check failed.";

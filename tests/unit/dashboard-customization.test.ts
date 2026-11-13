@@ -43,14 +43,12 @@ describe("Dashboard Preferences & Customization Engine", () => {
   });
 
   it("should save and restore custom widget order and visibility", () => {
-    const customized: DashboardWidgetConfig[] = DEFAULT_DASHBOARD_WIDGETS.map(
-      (w, idx) => ({
-        ...w,
-        order: DEFAULT_DASHBOARD_WIDGETS.length - idx,
-        visible: idx !== 0, // Hide the first widget
-        size: idx === 1 ? "full" : w.size,
-      }),
-    ).reverse();
+    const customized: DashboardWidgetConfig[] = DEFAULT_DASHBOARD_WIDGETS.map((w, idx) => ({
+      ...w,
+      order: DEFAULT_DASHBOARD_WIDGETS.length - idx,
+      visible: idx !== 0, // Hide the first widget
+      size: idx === 1 ? "full" : w.size,
+    })).reverse();
 
     saveDashboardPreferences(testWorkspaceId, customized);
 
@@ -63,9 +61,10 @@ describe("Dashboard Preferences & Customization Engine", () => {
   });
 
   it("should reset preferences to system defaults", () => {
-    const customized: DashboardWidgetConfig[] = DEFAULT_DASHBOARD_WIDGETS.map(
-      (w) => ({ ...w, visible: false }),
-    );
+    const customized: DashboardWidgetConfig[] = DEFAULT_DASHBOARD_WIDGETS.map((w) => ({
+      ...w,
+      visible: false,
+    }));
     saveDashboardPreferences(testWorkspaceId, customized);
 
     const reset = resetDashboardPreferences(testWorkspaceId);
@@ -88,4 +87,3 @@ describe("Motion System Animation Standards", () => {
     expect(MOTION_EASINGS.spring.stiffness).toBeGreaterThan(100);
   });
 });
-

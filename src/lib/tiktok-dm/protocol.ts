@@ -67,9 +67,11 @@ export function verifyTikTokSignature(args: {
   const expected = createHmac("sha256", args.secret).update(`${t}.${args.rawBody}`).digest("hex");
   const a = Buffer.from(expected);
   const b = Buffer.from(s);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false, reason: "bad signature" };
+  if (a.length !== b.length || !timingSafeEqual(a, b))
+    return { ok: false, reason: "bad signature" };
   const now = args.nowSeconds ?? Math.floor(Date.now() / 1000);
-  if (Math.abs(now - t) > SIGNATURE_TOLERANCE_SECONDS) return { ok: false, reason: "stale signature" };
+  if (Math.abs(now - t) > SIGNATURE_TOLERANCE_SECONDS)
+    return { ok: false, reason: "stale signature" };
   return { ok: true };
 }
 

@@ -21,7 +21,9 @@ export function normalizeTemplateVariables(raw: unknown): string[] {
       const o = v as Record<string, unknown>;
       const key = o["name"] ?? o["index"] ?? o["key"] ?? o["placeholder"] ?? o["param"];
       if (typeof key === "string" || typeof key === "number") {
-        const s = String(key).trim().replace(/^\{\{\s*|\s*\}\}$/g, "");
+        const s = String(key)
+          .trim()
+          .replace(/^\{\{\s*|\s*\}\}$/g, "");
         if (s) out.push(s);
       }
     }

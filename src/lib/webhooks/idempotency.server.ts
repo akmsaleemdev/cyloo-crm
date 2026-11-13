@@ -16,12 +16,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export type WebhookProvider =
-  | "messenger"
-  | "instagram"
-  | "telegram"
-  | "email"
-  | "sms"
-  | "integration";
+  "messenger" | "instagram" | "telegram" | "email" | "sms" | "integration";
 
 /* ------------------------------ signatures ------------------------------ */
 

@@ -8,20 +8,52 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import {
-  Copy, Ban, Plus, AlertCircle, Loader2, Eye, EyeOff, ShieldAlert, Pencil, RefreshCw, Search, MoreHorizontal,
+  Copy,
+  Ban,
+  Plus,
+  AlertCircle,
+  Loader2,
+  Eye,
+  EyeOff,
+  ShieldAlert,
+  Pencil,
+  RefreshCw,
+  Search,
+  MoreHorizontal,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,7 +65,12 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
 import {
-  listApiKeys, createApiKey, revokeApiKey, updateApiKey, rotateApiKey, getApiKeyStats,
+  listApiKeys,
+  createApiKey,
+  revokeApiKey,
+  updateApiKey,
+  rotateApiKey,
+  getApiKeyStats,
 } from "@/lib/developer/api-keys.functions";
 import { useActiveOrganization } from "@/hooks/use-organization";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -219,14 +256,17 @@ export function ApiKeysManager() {
 
   const keysQ = useQuery({
     queryKey: ["developer", "api-keys", organizationId],
-    queryFn: () => listFn({ data: { organizationId: organizationId! } }) as Promise<{ keys: any[] }>,
+    queryFn: () =>
+      listFn({ data: { organizationId: organizationId! } }) as Promise<{ keys: any[] }>,
     enabled: !!organizationId,
   });
 
   const statsQ = useQuery({
     queryKey: ["developer", "api-key-stats", organizationId, editKey?.id],
     queryFn: () =>
-      stats({ data: { organizationId: organizationId!, id: editKey!.id, days: 7 } }) as Promise<any>,
+      stats({
+        data: { organizationId: organizationId!, id: editKey!.id, days: 7 },
+      }) as Promise<any>,
     enabled: !!organizationId && !!editKey?.id,
   });
 
@@ -272,7 +312,8 @@ export function ApiKeysManager() {
     if (scopes.length === 0) {
       const info: ApiKeyErrorInfo = {
         title: "Select at least one permission",
-        detail: "A key with no scopes cannot call any endpoint. Grant at least one permission below.",
+        detail:
+          "A key with no scopes cannot call any endpoint. Grant at least one permission below.",
         field: "scopes",
         raw: "empty scopes",
       };
@@ -284,7 +325,8 @@ export function ApiKeysManager() {
     if (days !== null && (!Number.isInteger(days) || days < 1 || days > 3650)) {
       const info: ApiKeyErrorInfo = {
         title: "Expiry isn't valid",
-        detail: "Enter a whole number of days between 1 and 3650, or leave it empty for a key that never expires.",
+        detail:
+          "Enter a whole number of days between 1 and 3650, or leave it empty for a key that never expires.",
         field: "expiresInDays",
         raw: `invalid expiresInDays: ${expiresInDays}`,
       };
@@ -308,14 +350,22 @@ export function ApiKeysManager() {
       setRevealed(res.secret);
       setSecretVisible(false);
       setCopied(false);
-      setName(""); setScopes([]); setExpiresInDays(""); setDescription(""); setIpAllowlist("");
-      toast.success("API key created", { description: "Copy the secret now — it won't be shown again." });
+      setName("");
+      setScopes([]);
+      setExpiresInDays("");
+      setDescription("");
+      setIpAllowlist("");
+      toast.success("API key created", {
+        description: "Copy the secret now — it won't be shown again.",
+      });
       await qc.invalidateQueries({ queryKey: ["developer", "api-keys"] });
     } catch (e) {
       const info = describeApiKeyError(e, "create");
       setCreateError(info);
       toast.error(info.title, { description: info.detail });
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   function openEdit(k: any) {
@@ -364,7 +414,8 @@ export function ApiKeysManager() {
       if (!Number.isInteger(n) || n < 1 || n > 3650) {
         const info: ApiKeyErrorInfo = {
           title: "Expiry isn't valid",
-          detail: "Enter a whole number of days between 1 and 3650, 0 to remove the expiry, or leave it empty to keep it unchanged.",
+          detail:
+            "Enter a whole number of days between 1 and 3650, 0 to remove the expiry, or leave it empty to keep it unchanged.",
           field: "expiresInDays",
           raw: `invalid expiresInDays: ${editExpiry}`,
         };
@@ -387,7 +438,9 @@ export function ApiKeysManager() {
           ...(expiresInDays === undefined ? {} : { expiresInDays }),
         },
       });
-      toast.success("Key updated", { description: `Changes to “${editName.trim()}” are live immediately.` });
+      toast.success("Key updated", {
+        description: `Changes to “${editName.trim()}” are live immediately.`,
+      });
       setEditKey(null);
       await qc.invalidateQueries({ queryKey: ["developer", "api-keys"] });
     } catch (e) {
@@ -475,154 +528,210 @@ export function ApiKeysManager() {
           <div className="min-w-0">
             <CardTitle className="text-base">API keys</CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Keys are scoped to <span className="font-medium text-foreground">{org?.name ?? "your organization"}</span>. Use with{" "}
-              <code className="text-[11px]">Authorization: Bearer wdf_live_</code>
+              Keys are scoped to{" "}
+              <span className="font-medium text-foreground">
+                {org?.name ?? "your organization"}
+              </span>
+              . Use with <code className="text-[11px]">Authorization: Bearer wdf_live_</code>
             </p>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <DeveloperOrgSwitcher />
-          <Dialog
-            open={dialogOpen}
-            onOpenChange={(o) => {
-              if (!o && revealed && !copied) { setConfirmClose(true); return; }
-              setDialogOpen(o);
-              if (!o) { setRevealed(null); setCreateError(null); setSecretVisible(false); setCopied(false); }
-            }}
-          >
-            {isAuthorized && (
-              <DialogTrigger asChild>
-                <Button size="sm" disabled={!organizationId}>
-                  <Plus className="w-3.5 h-3.5 mr-1.5" />New key
-                </Button>
-              </DialogTrigger>
-            )}
-            <DialogContent>
-              {revealed ? (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>{revealedTitle}</DialogTitle>
-                    <DialogDescription>
-                      This is the only time you'll see it. Store it somewhere safe.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Alert>
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Treat this like a password</AlertTitle>
-                    <AlertDescription>
-                      Anyone with this secret can call your workspace API with the scopes you granted.
-                      Make sure nobody can see your screen before revealing it.
-                    </AlertDescription>
-                  </Alert>
-                  <div className="rounded-control border border-border bg-muted/50 p-3 font-mono text-xs break-all">
-                    {secretVisible ? revealed : "•".repeat(Math.min(revealed.length, 48))}
-                  </div>
-                  <DialogFooter>
-                    <Button
-                      variant="outline"
-                      onClick={() => (secretVisible ? setSecretVisible(false) : setConfirmReveal(true))}
-                    >
-                      {secretVisible
-                        ? <><EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide</>
-                        : <><Eye className="w-3.5 h-3.5 mr-1.5" /> Reveal</>}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        navigator.clipboard.writeText(revealed);
-                        setCopied(true);
-                        toast.success("Copied", { description: "Store the key in your secret manager now." });
-                      }}
-                    >
-                      <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
-                    </Button>
-                    <Button onClick={() => (copied ? setDialogOpen(false) : setConfirmClose(true))}>Done</Button>
-                  </DialogFooter>
-                </>
-              ) : (
-                <>
-                  <DialogHeader>
-                    <DialogTitle>Create API key</DialogTitle>
-                    <DialogDescription>Scoped keys for server-to-server access.</DialogDescription>
-                  </DialogHeader>
-                  <ScrollArea type="hover" viewportClassName="max-h-[65vh] [&>div]:!block">
-                    <div className="space-y-3 pr-1">
-                      {createError && (
-                        <Alert variant="destructive" role="alert">
-                          <AlertCircle className="h-4 w-4" />
-                          <AlertTitle>{createError.title}</AlertTitle>
-                          <AlertDescription className="break-words">{createError.detail}</AlertDescription>
-                        </Alert>
-                      )}
-                      <div>
-                        <Label htmlFor="key-name">Name</Label>
-                        <Input
-                          id="key-name"
-                          value={name}
-                          onChange={(e) => { setName(e.target.value); if (createError?.field === "name") setCreateError(null); }}
-                          placeholder="Production server"
-                          aria-invalid={createError?.field === "name"}
-                          aria-describedby={createError?.field === "name" ? "key-name-error" : undefined}
-                          className={createError?.field === "name" ? "border-destructive focus-visible:ring-destructive" : undefined}
-                        />
-                        {createError?.field === "name" && (
-                          <p id="key-name-error" className="mt-1 text-xs text-destructive">{createError.detail}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="key-desc">Description — optional</Label>
-                        <Textarea
-                          id="key-desc"
-                          value={description}
-                          onChange={(e) => setDescription(e.target.value)}
-                          placeholder="What this key is used for, and who owns it."
-                          rows={2}
-                        />
-                      </div>
-                      <ScopePicker
-                        scopes={scopes}
-                        setScopes={setScopes}
-                        onChange={() => setCreateError((e) => (e?.field === "scopes" ? null : e))}
-                        error={createError?.field === "scopes" ? createError.detail : null}
-                      />
-                      <div>
-                        <Label htmlFor="key-exp">Expires in (days) — optional</Label>
-                        <Input
-                          id="key-exp"
-                          type="number"
-                          min={1}
-                          max={3650}
-                          value={expiresInDays}
-                          onChange={(e) => { setExpiresInDays(e.target.value); if (createError?.field === "expiresInDays") setCreateError(null); }}
-                          placeholder="Leave empty for no expiry"
-                          aria-invalid={createError?.field === "expiresInDays"}
-                          aria-describedby={createError?.field === "expiresInDays" ? "key-exp-error" : undefined}
-                          className={createError?.field === "expiresInDays" ? "border-destructive focus-visible:ring-destructive" : undefined}
-                        />
-                        {createError?.field === "expiresInDays" && (
-                          <p id="key-exp-error" className="mt-1 text-xs text-destructive">{createError.detail}</p>
-                        )}
-                      </div>
-                      <div>
-                        <Label htmlFor="key-ips">IP allowlist — optional</Label>
-                        <Textarea
-                          id="key-ips"
-                          value={ipAllowlist}
-                          onChange={(e) => setIpAllowlist(e.target.value)}
-                          placeholder="One IP or CIDR per line. Leave empty to allow all."
-                          rows={2}
-                          className="font-mono text-xs"
-                        />
-                      </div>
-                    </div>
-                  </ScrollArea>
-                  <DialogFooter>
-                    <Button variant="ghost" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCreate} disabled={busy}>{busy ? "Creating" : "Create key"}</Button>
-                  </DialogFooter>
-                </>
+            <Dialog
+              open={dialogOpen}
+              onOpenChange={(o) => {
+                if (!o && revealed && !copied) {
+                  setConfirmClose(true);
+                  return;
+                }
+                setDialogOpen(o);
+                if (!o) {
+                  setRevealed(null);
+                  setCreateError(null);
+                  setSecretVisible(false);
+                  setCopied(false);
+                }
+              }}
+            >
+              {isAuthorized && (
+                <DialogTrigger asChild>
+                  <Button size="sm" disabled={!organizationId}>
+                    <Plus className="w-3.5 h-3.5 mr-1.5" />
+                    New key
+                  </Button>
+                </DialogTrigger>
               )}
-            </DialogContent>
-          </Dialog>
+              <DialogContent>
+                {revealed ? (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>{revealedTitle}</DialogTitle>
+                      <DialogDescription>
+                        This is the only time you'll see it. Store it somewhere safe.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Alert>
+                      <ShieldAlert className="h-4 w-4" />
+                      <AlertTitle>Treat this like a password</AlertTitle>
+                      <AlertDescription>
+                        Anyone with this secret can call your workspace API with the scopes you
+                        granted. Make sure nobody can see your screen before revealing it.
+                      </AlertDescription>
+                    </Alert>
+                    <div className="rounded-control border border-border bg-muted/50 p-3 font-mono text-xs break-all">
+                      {secretVisible ? revealed : "•".repeat(Math.min(revealed.length, 48))}
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          secretVisible ? setSecretVisible(false) : setConfirmReveal(true)
+                        }
+                      >
+                        {secretVisible ? (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 mr-1.5" /> Hide
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3.5 h-3.5 mr-1.5" /> Reveal
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          navigator.clipboard.writeText(revealed);
+                          setCopied(true);
+                          toast.success("Copied", {
+                            description: "Store the key in your secret manager now.",
+                          });
+                        }}
+                      >
+                        <Copy className="w-3.5 h-3.5 mr-1.5" /> Copy
+                      </Button>
+                      <Button
+                        onClick={() => (copied ? setDialogOpen(false) : setConfirmClose(true))}
+                      >
+                        Done
+                      </Button>
+                    </DialogFooter>
+                  </>
+                ) : (
+                  <>
+                    <DialogHeader>
+                      <DialogTitle>Create API key</DialogTitle>
+                      <DialogDescription>
+                        Scoped keys for server-to-server access.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea type="hover" viewportClassName="max-h-[65vh] [&>div]:!block">
+                      <div className="space-y-3 pr-1">
+                        {createError && (
+                          <Alert variant="destructive" role="alert">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>{createError.title}</AlertTitle>
+                            <AlertDescription className="break-words">
+                              {createError.detail}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        <div>
+                          <Label htmlFor="key-name">Name</Label>
+                          <Input
+                            id="key-name"
+                            value={name}
+                            onChange={(e) => {
+                              setName(e.target.value);
+                              if (createError?.field === "name") setCreateError(null);
+                            }}
+                            placeholder="Production server"
+                            aria-invalid={createError?.field === "name"}
+                            aria-describedby={
+                              createError?.field === "name" ? "key-name-error" : undefined
+                            }
+                            className={
+                              createError?.field === "name"
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : undefined
+                            }
+                          />
+                          {createError?.field === "name" && (
+                            <p id="key-name-error" className="mt-1 text-xs text-destructive">
+                              {createError.detail}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label htmlFor="key-desc">Description — optional</Label>
+                          <Textarea
+                            id="key-desc"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="What this key is used for, and who owns it."
+                            rows={2}
+                          />
+                        </div>
+                        <ScopePicker
+                          scopes={scopes}
+                          setScopes={setScopes}
+                          onChange={() => setCreateError((e) => (e?.field === "scopes" ? null : e))}
+                          error={createError?.field === "scopes" ? createError.detail : null}
+                        />
+                        <div>
+                          <Label htmlFor="key-exp">Expires in (days) — optional</Label>
+                          <Input
+                            id="key-exp"
+                            type="number"
+                            min={1}
+                            max={3650}
+                            value={expiresInDays}
+                            onChange={(e) => {
+                              setExpiresInDays(e.target.value);
+                              if (createError?.field === "expiresInDays") setCreateError(null);
+                            }}
+                            placeholder="Leave empty for no expiry"
+                            aria-invalid={createError?.field === "expiresInDays"}
+                            aria-describedby={
+                              createError?.field === "expiresInDays" ? "key-exp-error" : undefined
+                            }
+                            className={
+                              createError?.field === "expiresInDays"
+                                ? "border-destructive focus-visible:ring-destructive"
+                                : undefined
+                            }
+                          />
+                          {createError?.field === "expiresInDays" && (
+                            <p id="key-exp-error" className="mt-1 text-xs text-destructive">
+                              {createError.detail}
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          <Label htmlFor="key-ips">IP allowlist — optional</Label>
+                          <Textarea
+                            id="key-ips"
+                            value={ipAllowlist}
+                            onChange={(e) => setIpAllowlist(e.target.value)}
+                            placeholder="One IP or CIDR per line. Leave empty to allow all."
+                            rows={2}
+                            className="font-mono text-xs"
+                          />
+                        </div>
+                      </div>
+                    </ScrollArea>
+                    <DialogFooter>
+                      <Button variant="ghost" onClick={() => setDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleCreate} disabled={busy}>
+                        {busy ? "Creating" : "Create key"}
+                      </Button>
+                    </DialogFooter>
+                  </>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
 
@@ -665,24 +774,32 @@ export function ApiKeysManager() {
             </TableHeader>
             <TableBody>
               {keysQ.isLoading && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                  Loading
-                </TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                    Loading
+                  </TableCell>
+                </TableRow>
               )}
               {keysQ.isError && (
-                <TableRow><TableCell colSpan={7} className="text-center text-destructive py-10">
-                  {(keysQ.error as Error).message}
-                </TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-destructive py-10">
+                    {(keysQ.error as Error).message}
+                  </TableCell>
+                </TableRow>
               )}
               {!keysQ.isLoading && !keysQ.isError && allKeys.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                  No API keys yet. Create your first key to start integrating.
-                </TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                    No API keys yet. Create your first key to start integrating.
+                  </TableCell>
+                </TableRow>
               )}
               {!keysQ.isLoading && !keysQ.isError && allKeys.length > 0 && keys.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-10">
-                  No keys match your search or filter.
-                </TableCell></TableRow>
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-10">
+                    No keys match your search or filter.
+                  </TableCell>
+                </TableRow>
               )}
               {keys.map((k: any) => {
                 const revoked = !!k.revoked_at;
@@ -701,13 +818,31 @@ export function ApiKeysManager() {
                       )}
                     </TableCell>
                     <TableCell className="font-mono text-xs">{k.prefix}</TableCell>
-                    <TableCell className="text-xs max-w-xs">{(k.scopes ?? []).join(", ") || <span className="text-muted-foreground">full access</span>}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{k.last_used_at ? new Date(k.last_used_at).toLocaleString() : "Never"}</TableCell>
-                    <TableCell className="text-xs">{k.expires_at ? new Date(k.expires_at).toLocaleDateString() : <span className="text-muted-foreground">Never</span>}</TableCell>
+                    <TableCell className="text-xs max-w-xs">
+                      {(k.scopes ?? []).join(", ") || (
+                        <span className="text-muted-foreground">full access</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {k.last_used_at ? new Date(k.last_used_at).toLocaleString() : "Never"}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {k.expires_at ? (
+                        new Date(k.expires_at).toLocaleDateString()
+                      ) : (
+                        <span className="text-muted-foreground">Never</span>
+                      )}
+                    </TableCell>
                     <TableCell>
-                      {revoked ? <Badge variant="destructive">Revoked</Badge>
-                        : expired ? <Badge variant="secondary">Expired</Badge>
-                        : <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10">Active</Badge>}
+                      {revoked ? (
+                        <Badge variant="destructive">Revoked</Badge>
+                      ) : expired ? (
+                        <Badge variant="secondary">Expired</Badge>
+                      ) : (
+                        <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/10">
+                          Active
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end gap-1">
@@ -724,18 +859,24 @@ export function ApiKeysManager() {
                                 onClick={() => openEdit(k)}
                                 aria-label={`Edit ${k.name}`}
                               >
-                                <Pencil className="w-3.5 h-3.5 " />Edit
+                                <Pencil className="w-3.5 h-3.5 " />
+                                Edit
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => { setRowError(null); setConfirmRotateKey(k); }}
+                                onClick={() => {
+                                  setRowError(null);
+                                  setConfirmRotateKey(k);
+                                }}
                                 disabled={rotatingId === k.id}
                                 aria-label={`Rotate ${k.name}`}
                               >
-                                {rotatingId === k.id
-                                  ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                                  : <RefreshCw className="w-3.5 h-3.5 " />}
+                                {rotatingId === k.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                                ) : (
+                                  <RefreshCw className="w-3.5 h-3.5 " />
+                                )}
                                 {rotatingId === k.id ? "Rotating" : "Rotate"}
                               </Button>
                               <Button
@@ -745,16 +886,21 @@ export function ApiKeysManager() {
                                 disabled={revokingId === k.id}
                                 aria-label={`Revoke ${k.name}`}
                               >
-                                {revokingId === k.id
-                                  ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                                  : <Ban className="w-3.5 h-3.5 " />}
+                                {revokingId === k.id ? (
+                                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                                ) : (
+                                  <Ban className="w-3.5 h-3.5 " />
+                                )}
                                 {revokingId === k.id ? "Revoking" : "Revoke"}
                               </Button>
                             </div>
                           )
                         )}
                         {rowError?.id === k.id && (
-                          <p role="alert" className="text-[11px] text-destructive text-right max-w-[16rem] break-words">
+                          <p
+                            role="alert"
+                            className="text-[11px] text-destructive text-right max-w-[16rem] break-words"
+                          >
                             {rowError!.info.title}: {rowError!.info.detail}
                           </p>
                         )}
@@ -769,14 +915,19 @@ export function ApiKeysManager() {
       </Card>
 
       {/* Edit an existing key */}
-      <Dialog open={!!editKey} onOpenChange={(o) => { if (!o && !savingEdit) setEditKey(null); }}>
+      <Dialog
+        open={!!editKey}
+        onOpenChange={(o) => {
+          if (!o && !savingEdit) setEditKey(null);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit “{editKey?.name}”</DialogTitle>
             <DialogDescription>
               Changes apply immediately to every request made with{" "}
-              <span className="font-mono">{editKey?.prefix}</span>. The secret itself never changes —
-              use Rotate for that.
+              <span className="font-mono">{editKey?.prefix}</span>. The secret itself never changes
+              — use Rotate for that.
             </DialogDescription>
           </DialogHeader>
           <ScrollArea type="hover" viewportClassName="max-h-[60vh] [&>div]:!block">
@@ -789,19 +940,46 @@ export function ApiKeysManager() {
                 </Alert>
               )}
               <div className="rounded border border-border p-3 text-[11px] text-muted-foreground grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div><span className="block text-foreground font-medium">{statsQ.data?.total ?? "—"}</span>Requests (7d)</div>
-                <div><span className="block text-foreground font-medium">{statsQ.data?.errors ?? "—"}</span>Errors</div>
-                <div><span className="block text-foreground font-medium">{statsQ.data ? `${statsQ.data.avgLatencyMs}ms` : "—"}</span>Avg latency</div>
-                <div><span className="block text-foreground font-medium">{statsQ.data ? `${statsQ.data.p95LatencyMs}ms` : "—"}</span>p95 latency</div>
+                <div>
+                  <span className="block text-foreground font-medium">
+                    {statsQ.data?.total ?? "—"}
+                  </span>
+                  Requests (7d)
+                </div>
+                <div>
+                  <span className="block text-foreground font-medium">
+                    {statsQ.data?.errors ?? "—"}
+                  </span>
+                  Errors
+                </div>
+                <div>
+                  <span className="block text-foreground font-medium">
+                    {statsQ.data ? `${statsQ.data.avgLatencyMs}ms` : "—"}
+                  </span>
+                  Avg latency
+                </div>
+                <div>
+                  <span className="block text-foreground font-medium">
+                    {statsQ.data ? `${statsQ.data.p95LatencyMs}ms` : "—"}
+                  </span>
+                  p95 latency
+                </div>
               </div>
               <div>
                 <Label htmlFor="edit-name">Name</Label>
                 <Input
                   id="edit-name"
                   value={editName}
-                  onChange={(e) => { setEditName(e.target.value); if (editError?.field === "name") setEditError(null); }}
+                  onChange={(e) => {
+                    setEditName(e.target.value);
+                    if (editError?.field === "name") setEditError(null);
+                  }}
                   aria-invalid={editError?.field === "name"}
-                  className={editError?.field === "name" ? "border-destructive focus-visible:ring-destructive" : undefined}
+                  className={
+                    editError?.field === "name"
+                      ? "border-destructive focus-visible:ring-destructive"
+                      : undefined
+                  }
                 />
               </div>
               <div>
@@ -827,17 +1005,25 @@ export function ApiKeysManager() {
                   min={0}
                   max={3650}
                   value={editExpiry}
-                  onChange={(e) => { setEditExpiry(e.target.value); if (editError?.field === "expiresInDays") setEditError(null); }}
+                  onChange={(e) => {
+                    setEditExpiry(e.target.value);
+                    if (editError?.field === "expiresInDays") setEditError(null);
+                  }}
                   placeholder={
                     editKey?.expires_at
                       ? `Currently ${new Date(editKey.expires_at).toLocaleDateString()} — days from now, 0 to remove`
                       : "No expiry — enter days from now to add one"
                   }
                   aria-invalid={editError?.field === "expiresInDays"}
-                  className={editError?.field === "expiresInDays" ? "border-destructive focus-visible:ring-destructive" : undefined}
+                  className={
+                    editError?.field === "expiresInDays"
+                      ? "border-destructive focus-visible:ring-destructive"
+                      : undefined
+                  }
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Leave empty to keep the current expiry, enter days from now to reset it, or 0 to remove it.
+                  Leave empty to keep the current expiry, enter days from now to reset it, or 0 to
+                  remove it.
                 </p>
               </div>
               <div>
@@ -854,7 +1040,9 @@ export function ApiKeysManager() {
             </div>
           </ScrollArea>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditKey(null)} disabled={savingEdit}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setEditKey(null)} disabled={savingEdit}>
+              Cancel
+            </Button>
             <Button onClick={handleSaveEdit} disabled={savingEdit}>
               {savingEdit ? "Saving" : "Save changes"}
             </Button>
@@ -910,7 +1098,9 @@ export function ApiKeysManager() {
       {/* Confirm rotating a key */}
       <AlertDialog
         open={!!confirmRotateKey}
-        onOpenChange={(o) => { if (!o && !rotatingId) setConfirmRotateKey(null); }}
+        onOpenChange={(o) => {
+          if (!o && !rotatingId) setConfirmRotateKey(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -918,13 +1108,17 @@ export function ApiKeysManager() {
             <AlertDialogDescription>
               A new secret is issued with the same name, scopes and expiry, and the current key{" "}
               <span className="font-mono">{confirmRotateKey?.prefix}</span> is revoked immediately.
-              Anything still using the old secret will start failing with 401 until you deploy the new one.
+              Anything still using the old secret will start failing with 401 until you deploy the
+              new one.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={!!rotatingId}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); handleRotate(confirmRotateKey); }}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRotate(confirmRotateKey);
+              }}
               disabled={!!rotatingId}
             >
               {rotatingId ? "Rotating" : "Rotate key"}
@@ -936,7 +1130,9 @@ export function ApiKeysManager() {
       {/* Confirm revoking a key */}
       <AlertDialog
         open={!!confirmRevokeKey}
-        onOpenChange={(o) => { if (!o && !revokingId) setConfirmRevokeKey(null); }}
+        onOpenChange={(o) => {
+          if (!o && !revokingId) setConfirmRevokeKey(null);
+        }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -953,7 +1149,10 @@ export function ApiKeysManager() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={!!revokingId}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); handleRevoke(confirmRevokeKey); }}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRevoke(confirmRevokeKey);
+              }}
               disabled={!!revokingId}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

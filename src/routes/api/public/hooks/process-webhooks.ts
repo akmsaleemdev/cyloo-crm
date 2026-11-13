@@ -19,11 +19,12 @@ export const Route = createFileRoute("/api/public/hooks/process-webhooks")({
       POST: async ({ request }) => {
         const denied = guardCronRequest(request);
         if (denied) return denied;
-const { drainWebhookEvents } = await import("@/lib/messaging/webhook.server");
+        const { drainWebhookEvents } = await import("@/lib/messaging/webhook.server");
         const workerId = `web-${Math.random().toString(36).slice(2, 8)}-${Date.now()}`;
         const stats = await drainWebhookEvents(workerId, 50);
         return new Response(JSON.stringify(stats), {
-          status: 200, headers: { "content-type": "application/json" },
+          status: 200,
+          headers: { "content-type": "application/json" },
         });
       },
     },

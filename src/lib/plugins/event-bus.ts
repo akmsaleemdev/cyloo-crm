@@ -15,7 +15,7 @@ type Handler<T = unknown> = (payload: T) => void | Promise<void>;
 type Filter<T = unknown> = (payload: T) => T | Promise<T> | null | Promise<null>;
 export type Middleware<C = unknown> = (ctx: C, next: () => Promise<void>) => void | Promise<void>;
 
-type Kind = 'listen' | 'filter' | 'middleware';
+type Kind = "listen" | "filter" | "middleware";
 type Subscription = {
   id: number;
   slug: string;
@@ -32,13 +32,13 @@ class EventBus {
 
   // ---------- subscription ----------
   on<T = unknown>(slug: string, event: BusEventName, fn: Handler<T>, priority = 10) {
-    return this.add(slug, event, 'listen', fn, priority);
+    return this.add(slug, event, "listen", fn, priority);
   }
   filter<T = unknown>(slug: string, event: BusEventName, fn: Filter<T>, priority = 10) {
-    return this.add(slug, event, 'filter', fn, priority);
+    return this.add(slug, event, "filter", fn, priority);
   }
   use<C = unknown>(slug: string, event: BusEventName, fn: Middleware<C>, priority = 10) {
-    return this.add(slug, event, 'middleware', fn, priority);
+    return this.add(slug, event, "middleware", fn, priority);
   }
 
   private add(slug: string, event: BusEventName, kind: Kind, fn: any, priority: number) {
@@ -60,20 +60,28 @@ class EventBus {
   /** Revoke every subscription owned by a plugin. */
   revokePlugin(slug: string) {
     for (const [k, list] of this.subs) {
-      this.subs.set(k, list.filter((s) => s.slug !== slug));
+      this.subs.set(
+        k,
+        list.filter((s) => s.slug !== slug),
+      );
     }
   }
 
   // ---------- emit ----------
   async emit<T = unknown>(event: BusEventName, payload: T): Promise<void> {
-    this.record(event, 'listen');
+    this.record(event, "listen");
     const list = this.subs.get(event);
     if (!list?.length) return;
     await Promise.allSettled(
-      list.filter((s) => s.kind === 'listen').map(async (s) => {
-        try { await s.fn(payload); }
-        catch (err) { console.error(`[event-bus] ${event} listener ${s.slug} failed:`, err); }
-      }),
+      list
+        .filter((s) => s.kind === "listen")
+        .map(async (s) => {
+          try {
+            await s.fn(payload);
+          } catch (err) {
+            console.error(`[event-bus] ${event} listener ${s.slug} failed:`, err);
+          }
+        }),
     );
   }
 
@@ -85,11 +93,11 @@ class EventBus {
   }
 
   async emitFiltered<T>(event: BusEventName, payload: T): Promise<T | null> {
-    this.record(event, 'filter');
+    this.record(event, "filter");
     const list = this.subs.get(event);
     if (!list?.length) return payload;
     let value: any = payload;
-    for (const s of list.filter((s) => s.kind === 'filter')) {
+    for (const s of list.filter((s) => s.kind === "filter")) {
       try {
         value = await s.fn(value);
         if (value === null) return null;
@@ -106,16 +114,19 @@ class EventBus {
    * call for timing, retries, auditing, etc.
    */
   async runPipeline<C>(event: BusEventName, ctx: C, core: () => Promise<void> | void): Promise<C> {
-    this.record(event, 'middleware');
-    const chain = (this.subs.get(event) ?? []).filter((s) => s.kind === 'middleware');
+    this.record(event, "middleware");
+    const chain = (this.subs.get(event) ?? []).filter((s) => s.kind === "middleware");
     let i = -1;
     const dispatch = async (idx: number): Promise<void> => {
       if (idx <= i) throw new Error(`[event-bus] next() called multiple times in ${event}`);
       i = idx;
       const sub = chain[idx];
       if (!sub) return void (await core());
-      try { await sub.fn(ctx, () => dispatch(idx + 1)); }
-      catch (err) { console.error(`[event-bus] ${event} middleware ${sub.slug} failed:`, err); }
+      try {
+        await sub.fn(ctx, () => dispatch(idx + 1));
+      } catch (err) {
+        console.error(`[event-bus] ${event} middleware ${sub.slug} failed:`, err);
+      }
     };
     await dispatch(0);
     return ctx;
@@ -132,17 +143,21 @@ class EventBus {
     let total = 0;
     for (const [k, list] of this.subs) {
       byEvent[k] = { listen: 0, filter: 0, middleware: 0 };
-      for (const s of list) { byEvent[k][s.kind]++; total++; }
+      for (const s of list) {
+        byEvent[k][s.kind]++;
+        total++;
+      }
     }
     return { events: byEvent, total, recent: this.history.slice(-50) };
   }
 
   listSubscriptions(slug?: string) {
-    const out: Array<Omit<Subscription, 'fn'>> = [];
+    const out: Array<Omit<Subscription, "fn">> = [];
     for (const list of this.subs.values()) {
-      for (const s of list) if (!slug || s.slug === slug) {
-        out.push({ id: s.id, slug: s.slug, event: s.event, kind: s.kind, priority: s.priority });
-      }
+      for (const s of list)
+        if (!slug || s.slug === slug) {
+          out.push({ id: s.id, slug: s.slug, event: s.event, kind: s.kind, priority: s.priority });
+        }
     }
     return out;
   }

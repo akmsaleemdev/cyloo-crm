@@ -64,7 +64,12 @@ function planFor(
   const renames: ConvertedPlaceholder[] = [];
   for (const [from, to] of templateTokenRenameMap(text)) {
     if (from === String(to)) continue;
-    renames.push({ scope, from, to: String(to), ...(buttonIndex === undefined ? {} : { buttonIndex }) });
+    renames.push({
+      scope,
+      from,
+      to: String(to),
+      ...(buttonIndex === undefined ? {} : { buttonIndex }),
+    });
   }
   return { next, renames };
 }
@@ -124,11 +129,18 @@ export function describeConversion(plan: TemplateConversionPlan): string {
 export function applyConversionToComponents<T>(components: T[], plan: TemplateConversionPlan): T[] {
   if (!plan.changed) return components;
   return components.map((component) => {
-    const c = component as unknown as { type?: string; text?: string; buttons?: Array<{ type?: string; url?: string }> };
+    const c = component as unknown as {
+      type?: string;
+      text?: string;
+      buttons?: Array<{ type?: string; url?: string }>;
+    };
     const type = String(c?.type ?? "").toUpperCase();
-    if (type === "HEADER" && plan.header !== undefined) return { ...c, text: plan.header } as unknown as T;
-    if (type === "BODY" && plan.body !== undefined) return { ...c, text: plan.body } as unknown as T;
-    if (type === "FOOTER" && plan.footer !== undefined) return { ...c, text: plan.footer } as unknown as T;
+    if (type === "HEADER" && plan.header !== undefined)
+      return { ...c, text: plan.header } as unknown as T;
+    if (type === "BODY" && plan.body !== undefined)
+      return { ...c, text: plan.body } as unknown as T;
+    if (type === "FOOTER" && plan.footer !== undefined)
+      return { ...c, text: plan.footer } as unknown as T;
     if (type === "BUTTONS" && Array.isArray(c.buttons)) {
       const buttons = c.buttons.map((b, i) =>
         plan.buttonUrls[i] !== undefined ? { ...b, url: plan.buttonUrls[i] } : b,
@@ -163,7 +175,12 @@ export function buildConversionPreview(
   plan: TemplateConversionPlan,
 ): ConversionFieldPreview[] {
   const fields: ConversionFieldPreview[] = [];
-  const push = (scope: ConvertScope, before: string | null | undefined, after: string | undefined, buttonIndex?: number) => {
+  const push = (
+    scope: ConvertScope,
+    before: string | null | undefined,
+    after: string | undefined,
+    buttonIndex?: number,
+  ) => {
     if (after === undefined) return;
     fields.push({
       scope,

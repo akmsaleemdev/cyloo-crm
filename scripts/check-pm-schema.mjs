@@ -10,12 +10,14 @@ const entries = Object.fromEntries(
 );
 
 const url = entries.VITE_SUPABASE_URL || entries.SUPABASE_URL;
-const key = process.argv[3] === "server"
-  ? entries.SUPABASE_PUBLISHABLE_KEY
-  : entries.VITE_SUPABASE_PUBLISHABLE_KEY || entries.SUPABASE_PUBLISHABLE_KEY;
+const key =
+  process.argv[3] === "server"
+    ? entries.SUPABASE_PUBLISHABLE_KEY
+    : entries.VITE_SUPABASE_PUBLISHABLE_KEY || entries.SUPABASE_PUBLISHABLE_KEY;
 if (!url || !key) throw new Error("Missing Supabase URL or publishable key in .env");
-const configuredProject = readFileSync("supabase/config.toml", "utf8")
-  .match(/^project_id\s*=\s*"([^"]+)"/m)?.[1];
+const configuredProject = readFileSync("supabase/config.toml", "utf8").match(
+  /^project_id\s*=\s*"([^"]+)"/m,
+)?.[1];
 
 const tables = {};
 for (const table of ["pm_projects", "pm_tasks", "pm_project_members"]) {
@@ -25,14 +27,21 @@ for (const table of ["pm_projects", "pm_tasks", "pm_project_members"]) {
   const result = await response.json().catch(() => ({}));
   tables[table] = { status: response.status, code: result.code, message: result.message };
 }
-console.log(JSON.stringify({
-  envFile,
-  keySource: process.argv[3] === "server" ? "server" : "browser",
-  matchesConfigProject: !!configuredProject && new URL(url).hostname.includes(configuredProject),
-  keyKind: key.startsWith("sb_publishable_") ? "publishable" : key.startsWith("eyJ") ? "legacy-jwt" : "other",
-  keyLength: key.length,
-  publishableKeysMatch: !entries.VITE_SUPABASE_PUBLISHABLE_KEY || !entries.SUPABASE_PUBLISHABLE_KEY
-    ? null
-    : entries.VITE_SUPABASE_PUBLISHABLE_KEY === entries.SUPABASE_PUBLISHABLE_KEY,
-  tables,
-}));
+console.log(
+  JSON.stringify({
+    envFile,
+    keySource: process.argv[3] === "server" ? "server" : "browser",
+    matchesConfigProject: !!configuredProject && new URL(url).hostname.includes(configuredProject),
+    keyKind: key.startsWith("sb_publishable_")
+      ? "publishable"
+      : key.startsWith("eyJ")
+        ? "legacy-jwt"
+        : "other",
+    keyLength: key.length,
+    publishableKeysMatch:
+      !entries.VITE_SUPABASE_PUBLISHABLE_KEY || !entries.SUPABASE_PUBLISHABLE_KEY
+        ? null
+        : entries.VITE_SUPABASE_PUBLISHABLE_KEY === entries.SUPABASE_PUBLISHABLE_KEY,
+    tables,
+  }),
+);

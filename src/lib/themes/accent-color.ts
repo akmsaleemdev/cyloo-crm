@@ -6,20 +6,19 @@
  * same source of truth.
  */
 
-export const DEFAULT_ACCENT = '#25D366';
+export const DEFAULT_ACCENT = "#25D366";
 
 export type AccentPreset = { label: string; value: string };
 
 /** Curated accents offered in pickers across the app. */
 export const ACCENT_PRESETS: AccentPreset[] = [
-  { label: 'Brand', value: DEFAULT_ACCENT },
-  { label: 'Sky', value: '#0ea5e9' },
-  { label: 'Emerald', value: '#22c55e' },
-  { label: 'Amber', value: '#f97316' },
-  { label: 'Violet', value: '#7c3aed' },
-  { label: 'Slate', value: '#303030' },
+  { label: "Brand", value: DEFAULT_ACCENT },
+  { label: "Sky", value: "#0ea5e9" },
+  { label: "Emerald", value: "#22c55e" },
+  { label: "Amber", value: "#f97316" },
+  { label: "Violet", value: "#7c3aed" },
+  { label: "Slate", value: "#303030" },
 ];
-
 
 /**
  * Accents verified against `evaluateAccentContrast()` — each one clears
@@ -28,33 +27,37 @@ export const ACCENT_PRESETS: AccentPreset[] = [
  * be saved without tripping the accessibility guard.
  */
 export const ACCESSIBLE_ACCENT_PRESETS: AccentPreset[] = [
-  { label: 'Royal', value: '#2563eb' },
-  { label: 'Ocean', value: '#0369a1' },
-  { label: 'Aqua', value: '#0e7490' },
-  { label: 'Teal', value: '#0f766e' },
-  { label: 'Jade', value: '#047857' },
-  { label: 'Forest', value: '#15803d' },
-  { label: 'Moss', value: '#4d7c0f' },
-  { label: 'Bronze', value: '#a16207' },
-  { label: 'Copper', value: '#b45309' },
-  { label: 'Rust', value: '#c2410c' },
-  { label: 'Crimson', value: '#be123c' },
-  { label: 'Coral', value: '#e11d48' },
-  { label: 'Magenta', value: '#a21caf' },
-  { label: 'Fuchsia', value: '#c026d3' },
+  { label: "Royal", value: "#2563eb" },
+  { label: "Ocean", value: "#0369a1" },
+  { label: "Aqua", value: "#0e7490" },
+  { label: "Teal", value: "#0f766e" },
+  { label: "Jade", value: "#047857" },
+  { label: "Forest", value: "#15803d" },
+  { label: "Moss", value: "#4d7c0f" },
+  { label: "Bronze", value: "#a16207" },
+  { label: "Copper", value: "#b45309" },
+  { label: "Rust", value: "#c2410c" },
+  { label: "Crimson", value: "#be123c" },
+  { label: "Coral", value: "#e11d48" },
+  { label: "Magenta", value: "#a21caf" },
+  { label: "Fuchsia", value: "#c026d3" },
 ];
-
-
 
 const HEX = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 export function isValidAccent(value: string | null | undefined): value is string {
-  return typeof value === 'string' && HEX.test(value.trim());
+  return typeof value === "string" && HEX.test(value.trim());
 }
 
 function expand(hex: string): [number, number, number] {
-  const h = hex.trim().replace('#', '');
-  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const h = hex.trim().replace("#", "");
+  const full =
+    h.length === 3
+      ? h
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : h;
   return [
     parseInt(full.slice(0, 2), 16),
     parseInt(full.slice(2, 4), 16),
@@ -106,16 +109,15 @@ export function contrastRatio(a: string, b: string): number {
  */
 export function accentForeground(hex?: string): string {
   void hex;
-  return '#ffffff';
+  return "#ffffff";
 }
 
-
 export type AccentContrastIssue = {
-  id: 'on-accent' | 'on-light' | 'on-dark';
+  id: "on-accent" | "on-light" | "on-dark";
   label: string;
   ratio: number;
   required: number;
-  severity: 'fail' | 'warn';
+  severity: "fail" | "warn";
 };
 
 export type AccentContrastReport = {
@@ -131,8 +133,8 @@ export type AccentContrastReport = {
   safe: boolean;
 };
 
-const LIGHT_SURFACE = '#ffffff';
-const DARK_SURFACE = '#0a0a0a';
+const LIGHT_SURFACE = "#ffffff";
+const DARK_SURFACE = "#0a0a0a";
 
 /**
  * Accessibility check for a candidate accent. Filled surfaces must clear
@@ -157,25 +159,25 @@ export function evaluateAccentContrast(hex: string): AccentContrastReport {
   const onLight = contrastRatio(accentReadable(value, false), LIGHT_SURFACE);
   const onDark = contrastRatio(accentReadable(value, true), DARK_SURFACE);
 
-
   const issues: AccentContrastIssue[] = [];
   const check = (
-    id: AccentContrastIssue['id'],
+    id: AccentContrastIssue["id"],
     label: string,
     ratio: number,
     required: number,
     warnBelow: number,
   ) => {
-    if (ratio < required) issues.push({ id, label, ratio, required, severity: 'fail' });
-    else if (ratio < warnBelow) issues.push({ id, label, ratio, required: warnBelow, severity: 'warn' });
+    if (ratio < required) issues.push({ id, label, ratio, required, severity: "fail" });
+    else if (ratio < warnBelow)
+      issues.push({ id, label, ratio, required: warnBelow, severity: "warn" });
   };
 
   // Warnings only fire just above the hard minimum (15% headroom) — the app
   // paints AA-corrected variants, so demanding AAA (7:1) flagged practically
   // every usable brand colour as "tight".
-  check('on-accent', 'Text on accent buttons and badges', onAccent, 4.5, 4.5 * 1.1);
-  check('on-light', 'Accent text and icons on light backgrounds', onLight, 3, 3 * 1.1);
-  check('on-dark', 'Accent text and icons on dark backgrounds', onDark, 3, 3 * 1.1);
+  check("on-accent", "Text on accent buttons and badges", onAccent, 4.5, 4.5 * 1.1);
+  check("on-light", "Accent text and icons on light backgrounds", onLight, 3, 3 * 1.1);
+  check("on-dark", "Accent text and icons on dark backgrounds", onDark, 3, 3 * 1.1);
 
   return {
     valid: true,
@@ -183,7 +185,7 @@ export function evaluateAccentContrast(hex: string): AccentContrastReport {
     onLight,
     onDark,
     issues,
-    safe: !issues.some((i) => i.severity === 'fail'),
+    safe: !issues.some((i) => i.severity === "fail"),
   };
 }
 
@@ -195,7 +197,7 @@ export function evaluateAccentContrast(hex: string): AccentContrastReport {
 export function describeAccentFailures(report: AccentContrastReport): string[] {
   if (!report.valid) return [`Enter a valid hex colour, e.g. ${DEFAULT_ACCENT}.`];
   return report.issues
-    .filter((i) => i.severity === 'fail')
+    .filter((i) => i.severity === "fail")
     .map(
       (i) =>
         `${i.label}: ${i.ratio.toFixed(2)}:1 — needs ${i.required.toFixed(1)}:1 (short by ${(i.required - i.ratio).toFixed(2)})`,
@@ -208,8 +210,11 @@ export function describeAccentFailures(report: AccentContrastReport): string[] {
 
 function toHsl(hex: string): { h: number; s: number; l: number } {
   const [r255, g255, b255] = expand(hex);
-  const r = r255 / 255, g = g255 / 255, b = b255 / 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const r = r255 / 255,
+    g = g255 / 255,
+    b = b255 / 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
   const d = max - min;
   const l = (max + min) / 2;
   let h = 0;
@@ -229,13 +234,21 @@ function toHex(h: number, s: number, l: number): string {
   const c = (1 - Math.abs(2 * l - 1)) * s;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = l - c / 2;
-  const seg = Math.floor(((h % 360) + 360) % 360 / 60);
+  const seg = Math.floor((((h % 360) + 360) % 360) / 60);
   const [r, g, b] = (
     [
-      [c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x],
+      [c, x, 0],
+      [x, c, 0],
+      [0, c, x],
+      [0, x, c],
+      [x, 0, c],
+      [c, 0, x],
     ] as const
   )[seg];
-  const px = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  const px = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
   return `#${px(r)}${px(g)}${px(b)}`;
 }
 
@@ -245,7 +258,7 @@ export type AccentSuggestion = {
   /** Foreground (text/icon) colour that pairs with it on filled surfaces. */
   foreground: string;
   /** Plain-language relation to the colour the admin picked. */
-  relation: 'darker' | 'lighter' | 'richer' | 'softer';
+  relation: "darker" | "lighter" | "richer" | "softer";
   label: string;
   report: AccentContrastReport;
 };
@@ -265,7 +278,7 @@ export function suggestAccentPairings(hex: string, limit = 4): AccentSuggestion[
 
   const consider = (
     candidate: string,
-    relation: AccentSuggestion['relation'],
+    relation: AccentSuggestion["relation"],
     label: string,
     distance: number,
   ) => {
@@ -288,13 +301,33 @@ export function suggestAccentPairings(hex: string, limit = 4): AccentSuggestion[
 
   for (let step = 2; step <= 60; step += 2) {
     const d = step / 100;
-    consider(toHex(base.h, base.s, Math.max(0.04, base.l - d)), 'darker', 'Darker shade, same hue', step);
-    consider(toHex(base.h, base.s, Math.min(0.96, base.l + d)), 'lighter', 'Lighter shade, same hue', step);
+    consider(
+      toHex(base.h, base.s, Math.max(0.04, base.l - d)),
+      "darker",
+      "Darker shade, same hue",
+      step,
+    );
+    consider(
+      toHex(base.h, base.s, Math.min(0.96, base.l + d)),
+      "lighter",
+      "Lighter shade, same hue",
+      step,
+    );
   }
   for (let step = 5; step <= 40; step += 5) {
     const d = step / 100;
-    consider(toHex(base.h, Math.min(1, base.s + d), Math.max(0.04, base.l - d / 2)), 'richer', 'More saturated, same hue', 60 + step);
-    consider(toHex(base.h, Math.max(0, base.s - d), Math.max(0.04, base.l - d / 2)), 'softer', 'Muted, same hue', 60 + step);
+    consider(
+      toHex(base.h, Math.min(1, base.s + d), Math.max(0.04, base.l - d / 2)),
+      "richer",
+      "More saturated, same hue",
+      60 + step,
+    );
+    consider(
+      toHex(base.h, Math.max(0, base.s - d), Math.max(0.04, base.l - d / 2)),
+      "softer",
+      "Muted, same hue",
+      60 + step,
+    );
   }
 
   // Prefer candidates with zero warnings, then the closest to the original.
@@ -303,13 +336,16 @@ export function suggestAccentPairings(hex: string, limit = 4): AccentSuggestion[
   if (sorted.length) return strip(sorted.slice(0, limit));
 
   // Nothing in this hue works (e.g. pure yellow); fall back to verified presets.
-  return ACCESSIBLE_ACCENT_PRESETS.map((p) => ({ preset: p, report: evaluateAccentContrast(p.value) }))
+  return ACCESSIBLE_ACCENT_PRESETS.map((p) => ({
+    preset: p,
+    report: evaluateAccentContrast(p.value),
+  }))
     .filter(({ report }) => report.safe)
     .slice(0, limit)
     .map(({ preset, report }) => ({
       value: preset.value,
       foreground: accentForeground(preset.value),
-      relation: 'softer' as const,
+      relation: "softer" as const,
       label: `${preset.label} — verified alternative`,
       report,
     }));
@@ -338,7 +374,7 @@ export function readableAgainst(hex: string, against: string, target = 4.5): str
     const candidate = toHex(base.h, base.s, l);
     if (contrastRatio(candidate, against) >= target) return candidate;
   }
-  return towardsDark ? '#000000' : '#ffffff';
+  return towardsDark ? "#000000" : "#ffffff";
 }
 
 /** Accent variant used as a solid fill behind `accentForeground()` text. */
@@ -353,13 +389,15 @@ export function accentReadable(hex: string, dark: boolean, target = 4.5): string
 }
 
 /** Dark base the hero gradient is mixed into (mirrors `--hero-base`). */
-const HERO_BASE = '#12211c';
+const HERO_BASE = "#12211c";
 
 function mixHex(a: string, b: string, weight: number): string {
   const [r1, g1, b1] = expand(a);
   const [r2, g2, b2] = expand(b);
   const px = (x: number, y: number) =>
-    Math.round(x * weight + y * (1 - weight)).toString(16).padStart(2, '0');
+    Math.round(x * weight + y * (1 - weight))
+      .toString(16)
+      .padStart(2, "0");
   return `#${px(r1, r2)}${px(g1, g2)}${px(b1, b2)}`;
 }
 
@@ -373,7 +411,6 @@ export function heroAccent(hex: string, target = 5.5): string {
   const lightestStop = mixHex(hex.trim(), HERO_BASE, 0.36);
   return readableAgainst(hex, lightestStop, target);
 }
-
 
 /** A translucent tint of the accent, safe for badges and soft backgrounds. */
 export function accentTint(hex: string, alpha = 0.12): string {
@@ -392,13 +429,12 @@ export function accentTokens(accent: string, isDark: boolean): Record<string, st
   const strong = accentStrong(value);
   const foreground = accentForeground(strong);
   return {
-    '--accent': value,
-    '--accent-foreground': foreground,
-    '--primary': strong,
-    '--primary-foreground': foreground,
-    '--accent-strong': strong,
-    '--accent-readable': accentReadable(value, isDark),
-    '--hero-accent': heroAccent(value),
+    "--accent": value,
+    "--accent-foreground": foreground,
+    "--primary": strong,
+    "--primary-foreground": foreground,
+    "--accent-strong": strong,
+    "--accent-readable": accentReadable(value, isDark),
+    "--hero-accent": heroAccent(value),
   };
 }
-

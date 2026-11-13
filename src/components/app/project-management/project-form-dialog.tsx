@@ -124,7 +124,11 @@ export function ProjectFormDialog({
         let logoUrl = draft.logoUrl || null;
         if (logoFile) {
           setUploading(true);
-          logoUrl = await uploadBrandingAsset(logoFile, { kind: "workspace", workspaceId }, `projects/${current.id}`);
+          logoUrl = await uploadBrandingAsset(
+            logoFile,
+            { kind: "workspace", workspaceId },
+            `projects/${current.id}`,
+          );
         }
         try {
           await update.mutateAsync({
@@ -139,17 +143,28 @@ export function ProjectFormDialog({
           throw error;
         }
         if (
-          current.logo_url?.startsWith(`/api/public/branding/workspace/${workspaceId}/projects/${current.id}/`)
-          && current.logo_url !== logoUrl
-        ) void removeBrandingAsset(current.logo_url);
+          current.logo_url?.startsWith(
+            `/api/public/branding/workspace/${workspaceId}/projects/${current.id}/`,
+          ) &&
+          current.logo_url !== logoUrl
+        )
+          void removeBrandingAsset(current.logo_url);
       } else {
         const created = await create.mutateAsync({ workspace_id: workspaceId, ...fields });
         if (logoFile) {
           try {
             setUploading(true);
-            const logoUrl = await uploadBrandingAsset(logoFile, { kind: "workspace", workspaceId }, `projects/${created.id}`);
+            const logoUrl = await uploadBrandingAsset(
+              logoFile,
+              { kind: "workspace", workspaceId },
+              `projects/${created.id}`,
+            );
             try {
-              await update.mutateAsync({ id: created.id, workspace_id: workspaceId, logo_url: logoUrl });
+              await update.mutateAsync({
+                id: created.id,
+                workspace_id: workspaceId,
+                logo_url: logoUrl,
+              });
             } catch (error) {
               void removeBrandingAsset(logoUrl);
               throw error;
@@ -188,7 +203,11 @@ export function ProjectFormDialog({
             <div className="flex items-center gap-3">
               <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-control border bg-muted/50">
                 {logoPreview || draft.logoUrl ? (
-                  <img src={logoPreview || draft.logoUrl} alt="Project logo preview" className="h-full w-full object-contain" />
+                  <img
+                    src={logoPreview || draft.logoUrl}
+                    alt="Project logo preview"
+                    className="h-full w-full object-contain"
+                  />
                 ) : (
                   <ImagePlus className="h-5 w-5 text-muted-foreground" />
                 )}
@@ -218,12 +237,18 @@ export function ProjectFormDialog({
                 }}
               />
               {(logoFile || draft.logoUrl) && (
-                <Button type="button" size="icon" variant="ghost" aria-label="Remove project logo" disabled={pending}
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  aria-label="Remove project logo"
+                  disabled={pending}
                   onClick={() => {
                     setLogoFile(null);
                     if (logoInputRef.current) logoInputRef.current.value = "";
                     setDraft((d) => ({ ...d, logoUrl: "" }));
-                  }}>
+                  }}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               )}
@@ -310,7 +335,10 @@ export function ProjectFormDialog({
                 />
               ))}
               <span className="mx-0.5 h-6 w-px bg-border" aria-hidden="true" />
-              <label className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-input bg-background text-muted-foreground hover:text-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2" title="Choose custom color">
+              <label
+                className="relative grid h-9 w-9 cursor-pointer place-items-center rounded-full border border-input bg-background text-muted-foreground hover:text-foreground focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                title="Choose custom color"
+              >
                 <Palette className="h-4 w-4" aria-hidden="true" />
                 <input
                   type="color"

@@ -4,13 +4,7 @@ import { RefreshCw, RotateCcw, Trash2, ShieldCheck, ShieldAlert } from "lucide-r
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   clearTelegramWebhookEvents,
   listTelegramWebhookEvents,

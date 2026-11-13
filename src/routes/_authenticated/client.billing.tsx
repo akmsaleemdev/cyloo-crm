@@ -2,10 +2,16 @@ import { createFileRoute, Link, Outlet, useLocation } from "@tanstack/react-rout
 import { Receipt, ShoppingBag, FileText, Repeat, Wallet, CalendarClock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/client/billing")({
-  head: () => ({ meta: [
-    { title: "Billing — Customer portal" },
-    { name: "description", content: "Orders, invoices, receipts, quotes, subscriptions, payments and upcoming charges." },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Billing — Customer portal" },
+      {
+        name: "description",
+        content:
+          "Orders, invoices, receipts, quotes, subscriptions, payments and upcoming charges.",
+      },
+    ],
+  }),
   component: BillingLayout,
 });
 
@@ -25,7 +31,9 @@ function BillingLayout() {
     <div className="space-y-5">
       <header>
         <h2 className="font-display text-2xl font-semibold">Billing</h2>
-        <p className="text-sm text-muted-foreground">Everything about your orders, invoices, quotes, and payments.</p>
+        <p className="text-sm text-muted-foreground">
+          Everything about your orders, invoices, quotes, and payments.
+        </p>
       </header>
       <div className="flex flex-wrap gap-1.5 border-b border-border pb-2 overflow-x-auto">
         {TABS.map((t) => {
@@ -36,7 +44,9 @@ function BillingLayout() {
               key={t.to}
               to={t.to as "/client/billing"}
               className={`inline-flex items-center gap-1.5 rounded-control px-3 h-9 text-sm border whitespace-nowrap ${
-                active ? "bg-accent/10 text-accent border-accent/30 font-medium" : "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface"
+                active
+                  ? "bg-accent/10 text-accent border-accent/30 font-medium"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-surface"
               }`}
             >
               <Icon className="w-3.5 h-3.5" /> {t.label}

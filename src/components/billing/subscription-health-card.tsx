@@ -86,11 +86,21 @@ export function SubscriptionHealthCard({ compact = false }: { compact?: boolean 
 }
 
 function describe(sub: Sub | null): StatusMeta {
-  if (!sub) return { label: "None", tone: "outline", icon: <AlertTriangle className="h-3 w-3" aria-hidden /> };
+  if (!sub)
+    return {
+      label: "None",
+      tone: "outline",
+      icon: <AlertTriangle className="h-3 w-3" aria-hidden />,
+    };
   const now = Date.now();
 
   if (sub.suspended_at) {
-    return { label: "Suspended", tone: "destructive", icon: <ShieldAlert className="h-3 w-3" aria-hidden />, detail: "Access is restricted until payment is received." };
+    return {
+      label: "Suspended",
+      tone: "destructive",
+      icon: <ShieldAlert className="h-3 w-3" aria-hidden />,
+      detail: "Access is restricted until payment is received.",
+    };
   }
   if (sub.grace_period_ends_at && new Date(sub.grace_period_ends_at).getTime() > now) {
     return {
@@ -109,18 +119,43 @@ function describe(sub: Sub | null): StatusMeta {
     };
   }
   if (sub.status === "past_due") {
-    return { label: "Past due", tone: "destructive", icon: <AlertTriangle className="h-3 w-3" aria-hidden />, detail: "A recent payment failed. We'll retry automatically." };
+    return {
+      label: "Past due",
+      tone: "destructive",
+      icon: <AlertTriangle className="h-3 w-3" aria-hidden />,
+      detail: "A recent payment failed. We'll retry automatically.",
+    };
   }
   if (sub.status === "paused") {
-    return { label: "Paused", tone: "secondary", icon: <Pause className="h-3 w-3" aria-hidden />, detail: "Subscription is paused." };
+    return {
+      label: "Paused",
+      tone: "secondary",
+      icon: <Pause className="h-3 w-3" aria-hidden />,
+      detail: "Subscription is paused.",
+    };
   }
   if (sub.status === "canceled") {
-    return { label: "Canceled", tone: "outline", icon: <AlertTriangle className="h-3 w-3" aria-hidden /> };
+    return {
+      label: "Canceled",
+      tone: "outline",
+      icon: <AlertTriangle className="h-3 w-3" aria-hidden />,
+    };
   }
   if (sub.status === "active") {
-    const renew = sub.current_period_end ? `Renews in ${formatDistanceToNowStrict(new Date(sub.current_period_end))}` : undefined;
+    const renew = sub.current_period_end
+      ? `Renews in ${formatDistanceToNowStrict(new Date(sub.current_period_end))}`
+      : undefined;
     const detail = sub.cancel_at_period_end ? "Cancels at period end." : renew;
-    return { label: "Active", tone: "default", icon: <CheckCircle2 className="h-3 w-3" aria-hidden />, detail };
+    return {
+      label: "Active",
+      tone: "default",
+      icon: <CheckCircle2 className="h-3 w-3" aria-hidden />,
+      detail,
+    };
   }
-  return { label: sub.status ?? "Unknown", tone: "outline", icon: <AlertTriangle className="h-3 w-3" aria-hidden /> };
+  return {
+    label: sub.status ?? "Unknown",
+    tone: "outline",
+    icon: <AlertTriangle className="h-3 w-3" aria-hidden />,
+  };
 }

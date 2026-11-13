@@ -10,10 +10,7 @@ const ROOT = process.cwd();
 const scanDirs = [join(ROOT, "src")];
 const exts = new Set([".ts", ".tsx", ".jsx", ".js", ".css", ".mdx"]);
 
-const patterns = [
-  /\bhover:bg-accent\b(?!-)/,
-  /\bhover:bg-\[var\(\s*--accent\s*\)\]/,
-];
+const patterns = [/\bhover:bg-accent\b(?!-)/, /\bhover:bg-\[var\(\s*--accent\s*\)\]/];
 
 const errors = [];
 

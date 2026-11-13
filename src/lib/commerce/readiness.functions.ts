@@ -92,9 +92,10 @@ export const getCommerceReadiness = createServerFn({ method: "POST" })
       category: "WhatsApp",
       label: "WhatsApp Catalog configured",
       status: waCatalog > 0 ? "pass" : "info",
-      detail: waCatalog > 0
-        ? `WhatsApp Business catalog connected (${waSyncLogs} sync events)`
-        : "Configure Meta catalog to enable in-chat product sharing",
+      detail:
+        waCatalog > 0
+          ? `WhatsApp Business catalog connected (${waSyncLogs} sync events)`
+          : "Configure Meta catalog to enable in-chat product sharing",
     });
 
     const waCollections = await count(supabase, "wa_catalog_collections");
@@ -146,7 +147,9 @@ export const getCommerceReadiness = createServerFn({ method: "POST" })
 
     // ---------- Payment Links ----------
     const paymentLinks = await count(supabase, "commerce_payment_links");
-    const paidLinks = await count(supabase, "commerce_payment_links", (q) => q.eq("status", "paid"));
+    const paidLinks = await count(supabase, "commerce_payment_links", (q) =>
+      q.eq("status", "paid"),
+    );
     push({
       id: "payment_links",
       category: "Payments",
@@ -166,7 +169,9 @@ export const getCommerceReadiness = createServerFn({ method: "POST" })
 
     // ---------- Orders / CRM ----------
     const orders = await count(supabase, "commerce_orders");
-    const paidOrders = await count(supabase, "commerce_orders", (q) => q.eq("payment_status", "paid"));
+    const paidOrders = await count(supabase, "commerce_orders", (q) =>
+      q.eq("payment_status", "paid"),
+    );
     push({
       id: "orders",
       category: "Orders",
@@ -175,15 +180,21 @@ export const getCommerceReadiness = createServerFn({ method: "POST" })
       detail: `${orders} orders · ${paidOrders} paid`,
     });
 
-    const linkedOrders = await count(supabase, "commerce_orders", (q) => q.not("contact_id", "is", null));
+    const linkedOrders = await count(supabase, "commerce_orders", (q) =>
+      q.not("contact_id", "is", null),
+    );
     push({
       id: "orders_crm_link",
       category: "Orders",
       label: "CRM linkage",
       status:
-        orders === 0 ? "info" :
-        linkedOrders / Math.max(orders, 1) >= 0.8 ? "pass" :
-        linkedOrders / Math.max(orders, 1) >= 0.4 ? "warn" : "fail",
+        orders === 0
+          ? "info"
+          : linkedOrders / Math.max(orders, 1) >= 0.8
+            ? "pass"
+            : linkedOrders / Math.max(orders, 1) >= 0.4
+              ? "warn"
+              : "fail",
       detail: `${linkedOrders}/${orders} orders linked to contacts`,
     });
 
@@ -209,7 +220,9 @@ export const getCommerceReadiness = createServerFn({ method: "POST" })
 
     // ---------- Promotions ----------
     const promos = await count(supabase, "commerce_promotions");
-    const activePromos = await count(supabase, "commerce_promotions", (q) => q.eq("is_active", true));
+    const activePromos = await count(supabase, "commerce_promotions", (q) =>
+      q.eq("is_active", true),
+    );
     push({
       id: "promotions",
       category: "Promotions",

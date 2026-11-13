@@ -15,7 +15,13 @@ type SuccessStateProps = {
  * completions (post-onboarding, wizard finish). Everything smaller uses
  * inline "saved" checks or toasts.
  */
-export function SuccessState({ title, description, action, secondary, className }: SuccessStateProps) {
+export function SuccessState({
+  title,
+  description,
+  action,
+  secondary,
+  className,
+}: SuccessStateProps) {
   return (
     <div
       role="status"

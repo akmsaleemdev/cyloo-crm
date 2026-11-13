@@ -23,7 +23,11 @@ export function LoadingState({
   const spinnerSize = { sm: "md", md: "lg", lg: "xl" } as const;
   return (
     <div
-      className={cn("flex flex-col items-center justify-center text-center", paddings[size], className)}
+      className={cn(
+        "flex flex-col items-center justify-center text-center",
+        paddings[size],
+        className,
+      )}
       role="status"
       aria-busy="true"
     >

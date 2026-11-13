@@ -3,7 +3,7 @@
  * and cross-checked via `has_role` RLS on every server query. The mobile UI
  * mirrors the same hierarchy for feature gating.
  */
-export type WorkspaceRole = 'owner' | 'admin' | 'agent' | 'user' | 'superadmin';
+export type WorkspaceRole = "owner" | "admin" | "agent" | "user" | "superadmin";
 
 export const ROLE_RANK: Record<WorkspaceRole, number> = {
   user: 1,
@@ -20,11 +20,11 @@ export function hasRole(role: WorkspaceRole | null | undefined, min: WorkspaceRo
 
 /** Feature gates for dashboard tiles + settings surfaces. */
 export const CAN = {
-  viewSalesAnalytics: (r: WorkspaceRole | null) => hasRole(r, 'agent'),
-  viewConversationAnalytics: (r: WorkspaceRole | null) => hasRole(r, 'agent'),
-  viewPerformance: (r: WorkspaceRole | null) => hasRole(r, 'agent'),
-  viewQuickReports: (r: WorkspaceRole | null) => hasRole(r, 'admin'),
-  manageWorkspace: (r: WorkspaceRole | null) => hasRole(r, 'admin'),
+  viewSalesAnalytics: (r: WorkspaceRole | null) => hasRole(r, "agent"),
+  viewConversationAnalytics: (r: WorkspaceRole | null) => hasRole(r, "agent"),
+  viewPerformance: (r: WorkspaceRole | null) => hasRole(r, "agent"),
+  viewQuickReports: (r: WorkspaceRole | null) => hasRole(r, "admin"),
+  manageWorkspace: (r: WorkspaceRole | null) => hasRole(r, "admin"),
   viewOwnTasks: (_r: WorkspaceRole | null) => true,
   viewOwnAppointments: (_r: WorkspaceRole | null) => true,
 } as const;

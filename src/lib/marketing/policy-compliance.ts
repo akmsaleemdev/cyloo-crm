@@ -28,17 +28,57 @@ export type CampaignPolicyInput = {
 };
 
 const BANNED_PATTERNS: Array<{ code: string; re: RegExp; title: string; detail: string }> = [
-  { code: "P-DRUGS", re: /\b(cocaine|heroin|meth|opioid)\b/i, title: "Prohibited substance reference", detail: "WhatsApp prohibits promotion of drugs and controlled substances." },
-  { code: "P-WEAPONS", re: /\b(firearms?|ammunition|handgun|rifle)\b/i, title: "Prohibited weapons reference", detail: "Weapons and ammunition content is not allowed." },
-  { code: "P-ADULT", re: /\b(porn|escort|adult\s?services?)\b/i, title: "Prohibited adult content", detail: "Adult products/services violate WhatsApp Commerce policy." },
-  { code: "P-GAMBLING", re: /\b(casino|betting|lottery|jackpot)\b/i, title: "Regulated gambling content", detail: "Gambling content requires special approval; likely blocked." },
+  {
+    code: "P-DRUGS",
+    re: /\b(cocaine|heroin|meth|opioid)\b/i,
+    title: "Prohibited substance reference",
+    detail: "WhatsApp prohibits promotion of drugs and controlled substances.",
+  },
+  {
+    code: "P-WEAPONS",
+    re: /\b(firearms?|ammunition|handgun|rifle)\b/i,
+    title: "Prohibited weapons reference",
+    detail: "Weapons and ammunition content is not allowed.",
+  },
+  {
+    code: "P-ADULT",
+    re: /\b(porn|escort|adult\s?services?)\b/i,
+    title: "Prohibited adult content",
+    detail: "Adult products/services violate WhatsApp Commerce policy.",
+  },
+  {
+    code: "P-GAMBLING",
+    re: /\b(casino|betting|lottery|jackpot)\b/i,
+    title: "Regulated gambling content",
+    detail: "Gambling content requires special approval; likely blocked.",
+  },
 ];
 
 const SPAMMY_SIGNALS: Array<{ code: string; re: RegExp; title: string; detail: string }> = [
-  { code: "S-CAPS", re: /\b[A-Z]{6,}\b/, title: "Excessive capitalization", detail: "All-caps words look spammy and hurt deliverability." },
-  { code: "S-URGENCY", re: /!!!+|urgent!?|act now|hurry|last chance/i, title: "High-pressure urgency", detail: "Aggressive urgency triggers spam heuristics and user blocks." },
-  { code: "S-CLICKBAIT", re: /\bfree money\b|guaranteed.*(win|prize)|100%\s?free/i, title: "Clickbait language", detail: "Overpromising phrases increase block/report rate." },
-  { code: "S-EMOJI", re: /(\p{Emoji_Presentation}\s*){8,}/u, title: "Excessive emoji", detail: "Long emoji runs reduce readability and trust." },
+  {
+    code: "S-CAPS",
+    re: /\b[A-Z]{6,}\b/,
+    title: "Excessive capitalization",
+    detail: "All-caps words look spammy and hurt deliverability.",
+  },
+  {
+    code: "S-URGENCY",
+    re: /!!!+|urgent!?|act now|hurry|last chance/i,
+    title: "High-pressure urgency",
+    detail: "Aggressive urgency triggers spam heuristics and user blocks.",
+  },
+  {
+    code: "S-CLICKBAIT",
+    re: /\bfree money\b|guaranteed.*(win|prize)|100%\s?free/i,
+    title: "Clickbait language",
+    detail: "Overpromising phrases increase block/report rate.",
+  },
+  {
+    code: "S-EMOJI",
+    re: /(\p{Emoji_Presentation}\s*){8,}/u,
+    title: "Excessive emoji",
+    detail: "Long emoji runs reduce readability and trust.",
+  },
 ];
 
 export function checkCampaignPolicy(input: CampaignPolicyInput): PolicyFinding[] {
@@ -59,7 +99,8 @@ export function checkCampaignPolicy(input: CampaignPolicyInput): PolicyFinding[]
       code: "C-CONSENT-MISSING",
       severity: "error",
       title: "Audience contains unconsented contacts",
-      detail: "Remove suppressed/unsubscribed contacts before dispatch — required for GDPR and WhatsApp policy.",
+      detail:
+        "Remove suppressed/unsubscribed contacts before dispatch — required for GDPR and WhatsApp policy.",
     });
   }
 
@@ -77,7 +118,8 @@ export function checkCampaignPolicy(input: CampaignPolicyInput): PolicyFinding[]
       code: "C-OPTOUT",
       severity: "warning",
       title: "No visible opt-out",
-      detail: "Include an unsubscribe path (e.g. STOP keyword or quick reply) to keep block rate low.",
+      detail:
+        "Include an unsubscribe path (e.g. STOP keyword or quick reply) to keep block rate low.",
     });
   }
 
@@ -95,7 +137,8 @@ export function checkCampaignPolicy(input: CampaignPolicyInput): PolicyFinding[]
       code: "C-RATE",
       severity: "warning",
       title: "Rate above safe threshold",
-      detail: "Very high burst rates can trigger Meta quality-rating downgrades. Consider spreading dispatch.",
+      detail:
+        "Very high burst rates can trigger Meta quality-rating downgrades. Consider spreading dispatch.",
     });
   }
 
@@ -109,10 +152,12 @@ export function checkCampaignPolicy(input: CampaignPolicyInput): PolicyFinding[]
   }
 
   for (const p of BANNED_PATTERNS) {
-    if (p.re.test(body)) findings.push({ code: p.code, severity: "error", title: p.title, detail: p.detail });
+    if (p.re.test(body))
+      findings.push({ code: p.code, severity: "error", title: p.title, detail: p.detail });
   }
   for (const s of SPAMMY_SIGNALS) {
-    if (s.re.test(body)) findings.push({ code: s.code, severity: "warning", title: s.title, detail: s.detail });
+    if (s.re.test(body))
+      findings.push({ code: s.code, severity: "warning", title: s.title, detail: s.detail });
   }
 
   if (body.length > 1024) {
@@ -132,6 +177,7 @@ export function summarizePolicy(findings: PolicyFinding[]) {
   const warnings = findings.filter((f) => f.severity === "warning").length;
   const infos = findings.filter((f) => f.severity === "info").length;
   const score = Math.max(0, 100 - errors * 25 - warnings * 8 - infos * 2);
-  const status: "blocked" | "review" | "ready" = errors > 0 ? "blocked" : warnings > 0 ? "review" : "ready";
+  const status: "blocked" | "review" | "ready" =
+    errors > 0 ? "blocked" : warnings > 0 ? "review" : "ready";
   return { errors, warnings, infos, score, status };
 }

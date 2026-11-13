@@ -98,9 +98,12 @@ export function validateTemplateButtonPhone(rawPhone: string | undefined | null)
   if (digits.startsWith("0")) {
     return "A country code cannot start with 0. Drop the national trunk prefix (e.g. +44 20 , not +044 ).";
   }
-  if (digits.length < 7) return `Too short — ${digits.length} digits. A full international number has 8–15 digits.`;
-  if (digits.length > 15) return `Too long — ${digits.length} digits. E.164 numbers are at most 15 digits.`;
-  if (!E164_RE.test(raw)) return "This is not a valid international phone number. Use E.164 format, e.g. +14155551234.";
+  if (digits.length < 7)
+    return `Too short — ${digits.length} digits. A full international number has 8–15 digits.`;
+  if (digits.length > 15)
+    return `Too long — ${digits.length} digits. E.164 numbers are at most 15 digits.`;
+  if (!E164_RE.test(raw))
+    return "This is not a valid international phone number. Use E.164 format, e.g. +14155551234.";
   return null;
 }
 
@@ -180,8 +183,6 @@ export function normalizeTemplateComponentPhones(components: unknown): {
 
   return { components: changes.length > 0 ? next : list, changes };
 }
-
-
 
 /* ------------------------------------------------------------------ *
  * URL buttons: query-string and fragment placeholders
@@ -321,9 +322,7 @@ export function analyzeTemplateButtonUrl(rawUrl: string | undefined | null): Tem
   }
 
   const carrier = params.find((p) => p.variable !== null) ?? null;
-  const base = carrier
-    ? url.slice(0, Math.max(0, url.lastIndexOf(carrier.value)))
-    : url;
+  const base = carrier ? url.slice(0, Math.max(0, url.lastIndexOf(carrier.value))) : url;
 
   return {
     url,
@@ -354,7 +353,8 @@ export function describeTemplateUrlParam(param: TemplateUrlParam): string {
 export function validateTemplateButtonUrl(rawUrl: string | undefined | null): string | null {
   const url = normalizeTemplateUrlVariables(rawUrl);
   if (!url) return "A URL button needs a link. Add a full URL starting with https://";
-  if (url.length > MAX_URL_LENGTH) return `The link is too long (${url.length} characters, max ${MAX_URL_LENGTH}).`;
+  if (url.length > MAX_URL_LENGTH)
+    return `The link is too long (${url.length} characters, max ${MAX_URL_LENGTH}).`;
   if (/\s/.test(url)) return "The link contains spaces. Remove them or percent-encode them as %20.";
 
   const variables = url.match(VARIABLE_RE) ?? [];
@@ -397,7 +397,6 @@ export function validateTemplateButtonUrl(rawUrl: string | undefined | null): st
   return null;
 }
 
-
 /**
  * Walk template components and return every invalid call-to-action button —
  * URL *and* phone — each tagged with the exact Meta parameter path so the
@@ -434,7 +433,10 @@ export function findTemplateButtonIssues(components: unknown): TemplateButtonIss
 export const findTemplateUrlIssues = findTemplateButtonIssues;
 
 /** First issue formatted the way Meta would have reported it, plus a fix hint. */
-export function formatTemplateButtonIssue(issue: TemplateButtonIssue): { title: string; description: string } {
+export function formatTemplateButtonIssue(issue: TemplateButtonIssue): {
+  title: string;
+  description: string;
+} {
   const title =
     issue.field === "phone_number"
       ? `Param ${issue.path} is not a valid phone number`
@@ -459,4 +461,3 @@ export function assertValidTemplateButtons(components: unknown): void {
 }
 
 export const assertValidTemplateUrls = assertValidTemplateButtons;
-

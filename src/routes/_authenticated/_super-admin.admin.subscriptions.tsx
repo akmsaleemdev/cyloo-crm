@@ -6,9 +6,16 @@ export const Route = createFileRoute("/_authenticated/_super-admin/admin/subscri
   head: () => ({
     meta: [
       { title: "Super Admin — Subscriptions" },
-      { name: "description", content: "Platform-wide subscription ledger with MRR, trial state, renewals, and lifecycle actions for every tenant." },
+      {
+        name: "description",
+        content:
+          "Platform-wide subscription ledger with MRR, trial state, renewals, and lifecycle actions for every tenant.",
+      },
       { property: "og:title", content: "Super Admin — Subscriptions" },
-      { property: "og:description", content: "Platform-wide subscription ledger and lifecycle management." },
+      {
+        property: "og:description",
+        content: "Platform-wide subscription ledger and lifecycle management.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },

@@ -61,7 +61,7 @@ export function useLiveChatAccounts(workspaceId: string | undefined) {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      return (((data ?? []) as unknown) as BotRow[]).map((b) => {
+      return ((data ?? []) as unknown as BotRow[]).map((b) => {
         // A bot only serves the widget while it is explicitly active: draft,
         // paused and archived bots must read as disabled, otherwise the
         // Live Chat Bots toggle (which writes `status`) appears to do nothing.

@@ -29,7 +29,8 @@ export const Route = createFileRoute("/_authenticated/crm")({
         { property: "og:title", content: `CRM — Contacts, Leads & Messaging | ${name}` },
         {
           property: "og:description",
-          content: "Manage contacts, qualify leads and reply to conversations from a single CRM tab.",
+          content:
+            "Manage contacts, qualify leads and reply to conversations from a single CRM tab.",
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
@@ -103,8 +104,9 @@ function CrmMessaging() {
         first_name: (c.subject || "Social lead").slice(0, 80),
         source: "social",
         status: "new",
-        notes: `Captured from ${c.channel} conversation${c.last_message_preview ? `: ${c.last_message_preview.slice(0, 200)}` : ""
-          }`,
+        notes: `Captured from ${c.channel} conversation${
+          c.last_message_preview ? `: ${c.last_message_preview.slice(0, 200)}` : ""
+        }`,
       });
       // Lead-to-quote: every captured social lead gets a draft quote with a
       // ready public link, so sales can reply with pricing immediately.

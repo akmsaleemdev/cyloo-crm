@@ -41,9 +41,21 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     label: "CRM",
     description: "Contacts, companies and deals.",
     scopes: [
-      { scope: "contacts:read", label: "Read contacts", description: "List and fetch contacts and companies." },
-      { scope: "contacts:write", label: "Write contacts", description: "Create, update and delete contacts and companies." },
-      { scope: "deals:read", label: "Read deals", description: "List and fetch deals in the sales pipeline." },
+      {
+        scope: "contacts:read",
+        label: "Read contacts",
+        description: "List and fetch contacts and companies.",
+      },
+      {
+        scope: "contacts:write",
+        label: "Write contacts",
+        description: "Create, update and delete contacts and companies.",
+      },
+      {
+        scope: "deals:read",
+        label: "Read deals",
+        description: "List and fetch deals in the sales pipeline.",
+      },
       { scope: "deals:write", label: "Write deals", description: "Create and update deals." },
     ],
   },
@@ -52,10 +64,26 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     label: "Messaging",
     description: "Conversations and outbound messages.",
     scopes: [
-      { scope: "conversations:read", label: "Read conversations", description: "List conversations and their metadata." },
-      { scope: "conversations:write", label: "Write conversations", description: "Assign, tag, close and reopen conversations." },
-      { scope: "messages:read", label: "Read messages", description: "Read message history in conversations." },
-      { scope: "messages:write", label: "Send messages", description: "Send outbound messages, including WhatsApp templates." },
+      {
+        scope: "conversations:read",
+        label: "Read conversations",
+        description: "List conversations and their metadata.",
+      },
+      {
+        scope: "conversations:write",
+        label: "Write conversations",
+        description: "Assign, tag, close and reopen conversations.",
+      },
+      {
+        scope: "messages:read",
+        label: "Read messages",
+        description: "Read message history in conversations.",
+      },
+      {
+        scope: "messages:write",
+        label: "Send messages",
+        description: "Send outbound messages, including WhatsApp templates.",
+      },
     ],
   },
   {
@@ -63,8 +91,16 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     label: "Marketing",
     description: "Campaigns and broadcast sending.",
     scopes: [
-      { scope: "campaigns:read", label: "Read campaigns", description: "List campaigns and their delivery stats." },
-      { scope: "campaigns:write", label: "Write campaigns", description: "Create, schedule and stop campaigns." },
+      {
+        scope: "campaigns:read",
+        label: "Read campaigns",
+        description: "List campaigns and their delivery stats.",
+      },
+      {
+        scope: "campaigns:write",
+        label: "Write campaigns",
+        description: "Create, schedule and stop campaigns.",
+      },
     ],
   },
   {
@@ -72,8 +108,16 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
     label: "Platform",
     description: "Analytics and webhook subscriptions.",
     scopes: [
-      { scope: "analytics:read", label: "Read analytics", description: "Read reporting and usage metrics." },
-      { scope: "webhooks:manage", label: "Manage webhooks", description: "Create and delete outbound webhook subscriptions." },
+      {
+        scope: "analytics:read",
+        label: "Read analytics",
+        description: "Read reporting and usage metrics.",
+      },
+      {
+        scope: "webhooks:manage",
+        label: "Manage webhooks",
+        description: "Create and delete outbound webhook subscriptions.",
+      },
     ],
   },
 ];
@@ -101,7 +145,10 @@ export function hasScope(granted: readonly string[], required: ApiScope): boolea
 }
 
 /** Scopes in `required` that `granted` does not satisfy. */
-export function missingScopes(granted: readonly string[], required: readonly ApiScope[]): ApiScope[] {
+export function missingScopes(
+  granted: readonly string[],
+  required: readonly ApiScope[],
+): ApiScope[] {
   return required.filter((s) => !hasScope(granted, s));
 }
 

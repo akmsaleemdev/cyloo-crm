@@ -33,26 +33,19 @@ describe("RLS Policy Argument Order", () => {
   });
 
   it("should enable RLS on enterprise tables that have policies", () => {
-    const enterpriseFile = migrationFiles.find((f) =>
-      f.includes("enterprise_core_modules"),
-    );
+    const enterpriseFile = migrationFiles.find((f) => f.includes("enterprise_core_modules"));
     expect(enterpriseFile).toBeDefined();
 
     if (enterpriseFile) {
       const sql = readFileSync(enterpriseFile, "utf-8");
-      const policyMatches = sql.matchAll(
-        /CREATE\s+POLICY\s+\S+\s+ON\s+(?:public\.)?(\w+)/gi,
-      );
+      const policyMatches = sql.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+(?:public\.)?(\w+)/gi);
       for (const match of policyMatches) {
         const tableName = match[1];
         const rlsEnabled = new RegExp(
           `ALTER\\s+TABLE\\s+(?:public\\.)?${tableName}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
           "i",
         ).test(sql);
-        expect(
-          rlsEnabled,
-          `Table "${tableName}" has policies but RLS is not enabled`,
-        ).toBe(true);
+        expect(rlsEnabled, `Table "${tableName}" has policies but RLS is not enabled`).toBe(true);
       }
     }
   });
@@ -60,18 +53,12 @@ describe("RLS Policy Argument Order", () => {
   it("should use USING clause for SELECT policies", () => {
     for (const file of migrationFiles) {
       const sql = readFileSync(file, "utf-8");
-      const selectPolicies = sql.matchAll(
-        /CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+SELECT/gi,
-      );
+      const selectPolicies = sql.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+SELECT/gi);
       for (const match of selectPolicies) {
-        const policyText = sql.slice(
-          match.index!,
-          sql.indexOf(";", match.index!) + 1,
+        const policyText = sql.slice(match.index!, sql.indexOf(";", match.index!) + 1);
+        expect(policyText.toUpperCase(), `SELECT policy should use USING clause`).toContain(
+          "USING",
         );
-        expect(
-          policyText.toUpperCase(),
-          `SELECT policy should use USING clause`,
-        ).toContain("USING");
       }
     }
   });
@@ -79,18 +66,12 @@ describe("RLS Policy Argument Order", () => {
   it("should use WITH CHECK clause for INSERT policies", () => {
     for (const file of migrationFiles) {
       const sql = readFileSync(file, "utf-8");
-      const insertPolicies = sql.matchAll(
-        /CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+INSERT/gi,
-      );
+      const insertPolicies = sql.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+INSERT/gi);
       for (const match of insertPolicies) {
-        const policyText = sql.slice(
-          match.index!,
-          sql.indexOf(";", match.index!) + 1,
+        const policyText = sql.slice(match.index!, sql.indexOf(";", match.index!) + 1);
+        expect(policyText.toUpperCase(), `INSERT policy should use WITH CHECK clause`).toContain(
+          "WITH CHECK",
         );
-        expect(
-          policyText.toUpperCase(),
-          `INSERT policy should use WITH CHECK clause`,
-        ).toContain("WITH CHECK");
       }
     }
   });
@@ -109,10 +90,7 @@ describe("RLS Policy Argument Order", () => {
           `REVOKE\\s+ALL\\s+ON\\s+(?:TABLE\\s+)?(?:public\\.)?${tableName}\\s+FROM\\s+anon`,
           "i",
         ).test(sql);
-        expect(
-          revokeAnon,
-          `Table "${tableName}" should REVOKE ALL FROM anon`,
-        ).toBe(true);
+        expect(revokeAnon, `Table "${tableName}" should REVOKE ALL FROM anon`).toBe(true);
       }
     }
   });
@@ -123,9 +101,7 @@ describe("RLS Policy Argument Order", () => {
       if (!file.includes("enterprise_core_modules")) continue;
 
       const selectPolicies = [
-        ...sql.matchAll(
-          /CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+SELECT[^;]+;/gi,
-        ),
+        ...sql.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+\S+\s+FOR\s+SELECT[^;]+;/gi),
       ];
       for (const match of selectPolicies) {
         const policyText = match[0];

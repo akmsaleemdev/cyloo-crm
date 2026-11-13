@@ -55,7 +55,13 @@ export function decodeState(raw: string): MetaOAuthState | null {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as MetaOAuthState;
-    if (!parsed.workspaceId || !parsed.userId || !Number.isFinite(parsed.exp) || parsed.exp < Date.now()) return null;
+    if (
+      !parsed.workspaceId ||
+      !parsed.userId ||
+      !Number.isFinite(parsed.exp) ||
+      parsed.exp < Date.now()
+    )
+      return null;
     parsed.returnTo = safeOAuthReturnTo(parsed.returnTo);
     return parsed;
   } catch {

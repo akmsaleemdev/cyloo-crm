@@ -191,14 +191,29 @@ export const syncStatistics = createServerFn({ method: "POST" })
       items_succeeded: number;
       items_failed: number;
     }>;
-    const summary: Record<string, {
-      total: number; success: number; partial: number; failed: number;
-      processed: number; succeeded: number; itemFailed: number; avgMs: number;
-    }> = {};
+    const summary: Record<
+      string,
+      {
+        total: number;
+        success: number;
+        partial: number;
+        failed: number;
+        processed: number;
+        succeeded: number;
+        itemFailed: number;
+        avgMs: number;
+      }
+    > = {};
     for (const r of list) {
       const s = (summary[r.kind] ??= {
-        total: 0, success: 0, partial: 0, failed: 0,
-        processed: 0, succeeded: 0, itemFailed: 0, avgMs: 0,
+        total: 0,
+        success: 0,
+        partial: 0,
+        failed: 0,
+        processed: 0,
+        succeeded: 0,
+        itemFailed: 0,
+        avgMs: 0,
       });
       s.total += 1;
       if (r.status === "success") s.success += 1;

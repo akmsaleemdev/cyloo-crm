@@ -7,7 +7,11 @@
  * (widget_config.channel = "tiktok", pinned to this account or to all
  * accounts) wins; otherwise a Channels-tab deployment on "tiktok".
  */
-import { findDeployedBot, dispatchChannelBot, type DispatchBot } from "@/lib/chatbots/channel-dispatch.server";
+import {
+  findDeployedBot,
+  dispatchChannelBot,
+  type DispatchBot,
+} from "@/lib/chatbots/channel-dispatch.server";
 import type { Admin } from "@/lib/social-inbox/platforms.server";
 import { sbAny } from "@/lib/supabase/untyped";
 import { sendTikTokDmText, validAccessToken, type TikTokBusinessAccountRow } from "./client.server";
@@ -27,11 +31,17 @@ export async function findTikTokBot(
     .eq("status", "active")
     .contains("widget_config", { channel: "tiktok" })
     .order("updated_at", { ascending: false });
-  const bots = (data ?? []) as Array<DispatchBot & { widget_config: { tiktok_account_id?: string | null } | null }>;
+  const bots = (data ?? []) as Array<
+    DispatchBot & { widget_config: { tiktok_account_id?: string | null } | null }
+  >;
   const pinned = bots.find((b) => b.widget_config?.tiktok_account_id === account.id);
   const anyAccount = bots.find((b) => !b.widget_config?.tiktok_account_id);
   if (pinned ?? anyAccount) return (pinned ?? anyAccount)!;
-  return findDeployedBot(admin, { workspaceId: account.workspace_id, channel: "tiktok", accountId: account.id });
+  return findDeployedBot(admin, {
+    workspaceId: account.workspace_id,
+    channel: "tiktok",
+    accountId: account.id,
+  });
 }
 
 export async function runTikTokChatbot(
@@ -60,7 +70,9 @@ export async function runTikTokChatbot(
 
   const { data } = await admin
     .from("tiktok_business_accounts")
-    .select("id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status")
+    .select(
+      "id, workspace_id, business_id, username, display_name, access_token, refresh_token, expires_at, refresh_expires_at, status",
+    )
     .eq("id", account.id)
     .maybeSingle();
   const row = data as TikTokBusinessAccountRow | null;

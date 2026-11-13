@@ -16,17 +16,11 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
   );
 }
 
-export function SkeletonText({
-  lines = 3,
-  className,
-}: { lines?: number; className?: string }) {
+export function SkeletonText({ lines = 3, className }: { lines?: number; className?: string }) {
   return (
     <div className={cn("space-y-2", className)}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className={cn("h-3", i === lines - 1 ? "w-2/3" : "w-full")}
-        />
+        <Skeleton key={i} className={cn("h-3", i === lines - 1 ? "w-2/3" : "w-full")} />
       ))}
     </div>
   );
@@ -34,10 +28,7 @@ export function SkeletonText({
 
 export function SkeletonCircle({ size = 40, className }: { size?: number; className?: string }) {
   return (
-    <Skeleton
-      className={cn("rounded-full", className)}
-      style={{ width: size, height: size }}
-    />
+    <Skeleton className={cn("rounded-full", className)} style={{ width: size, height: size }} />
   );
 }
 
@@ -61,7 +52,10 @@ export function SkeletonCard({ className }: { className?: string }) {
 
 export function SkeletonTableRow({ cols = 5 }: { cols?: number }) {
   return (
-    <div className="grid gap-3 py-3 border-b border-border/60" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+    <div
+      className="grid gap-3 py-3 border-b border-border/60"
+      style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    >
       {Array.from({ length: cols }).map((_, i) => (
         <Skeleton key={i} className={cn("h-3", i === 0 ? "w-3/4" : "w-1/2")} />
       ))}

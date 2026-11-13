@@ -704,9 +704,7 @@ function PreviewDialog({
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="rounded-control border border-border p-3">
                 <div className="text-[11px] text-muted-foreground">Clones</div>
-                <div className="text-lg font-semibold ">
-                  {t.usage_count.toLocaleString()}
-                </div>
+                <div className="text-lg font-semibold ">{t.usage_count.toLocaleString()}</div>
               </div>
               <div className="rounded-control border border-border p-3">
                 <div className="text-[11px] text-muted-foreground">Version</div>

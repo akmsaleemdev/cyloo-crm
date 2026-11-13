@@ -55,15 +55,17 @@ export async function createHarnessMembers(specs: MemberSpec[]) {
     if (orgIns.error) throw new Error(`org_member_${spec.label}: ${orgIns.error.message}`);
 
     if (spec.workspace_id) {
-      const wsIns = await sbAny(admin).from("workspace_members").upsert(
-        {
-          workspace_id: spec.workspace_id,
-          user_id: userId,
-          role: spec.workspace_role ?? "viewer",
-          status: "active",
-        },
-        { onConflict: "workspace_id,user_id" },
-      );
+      const wsIns = await sbAny(admin)
+        .from("workspace_members")
+        .upsert(
+          {
+            workspace_id: spec.workspace_id,
+            user_id: userId,
+            role: spec.workspace_role ?? "viewer",
+            status: "active",
+          },
+          { onConflict: "workspace_id,user_id" },
+        );
       if (wsIns.error) throw new Error(`ws_member_${spec.label}: ${wsIns.error.message}`);
     }
 

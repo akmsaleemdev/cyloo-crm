@@ -51,51 +51,63 @@ export function MediaUploader({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [dragActive, setDragActive] = useState(false);
 
-  const handleFiles = useCallback(async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const arr = Array.from(files);
-    for (const file of arr) {
-      if (file.size > maxSizeBytes) {
-        toast.error(`${file.name} is too large (max ${formatBytes(maxSizeBytes)})`);
-        continue;
+  const handleFiles = useCallback(
+    async (files: FileList | null) => {
+      if (!files || files.length === 0) return;
+      const arr = Array.from(files);
+      for (const file of arr) {
+        if (file.size > maxSizeBytes) {
+          toast.error(`${file.name} is too large (max ${formatBytes(maxSizeBytes)})`);
+          continue;
+        }
+        const taskId = crypto.randomUUID();
+        setTasks((t) => [
+          ...t,
+          { id: taskId, name: file.name, size: file.size, progress: 0, status: "uploading" },
+        ]);
+        try {
+          const media = await uploadMedia({
+            workspaceId,
+            messageId,
+            file,
+            expiresAt,
+            onProgress: (loaded, total) => {
+              setTasks((t) =>
+                t.map((x) =>
+                  x.id === taskId ? { ...x, progress: total ? loaded / total : 0 } : x,
+                ),
+              );
+            },
+          });
+          setTasks((t) =>
+            t.map((x) => (x.id === taskId ? { ...x, progress: 1, status: "done" } : x)),
+          );
+          onUploaded(media);
+          // Auto-hide finished tasks after a moment.
+          setTimeout(() => setTasks((t) => t.filter((x) => x.id !== taskId)), 2500);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          setTasks((t) =>
+            t.map((x) => (x.id === taskId ? { ...x, status: "error", error: message } : x)),
+          );
+          toast.error(`Upload failed: ${message}`);
+        }
       }
-      const taskId = crypto.randomUUID();
-      setTasks((t) => [...t, { id: taskId, name: file.name, size: file.size, progress: 0, status: "uploading" }]);
-      try {
-        const media = await uploadMedia({
-          workspaceId,
-          messageId,
-          file,
-          expiresAt,
-          onProgress: (loaded, total) => {
-            setTasks((t) => t.map((x) => (x.id === taskId ? { ...x, progress: total ? loaded / total : 0 } : x)));
-          },
-        });
-        setTasks((t) => t.map((x) => (x.id === taskId ? { ...x, progress: 1, status: "done" } : x)));
-        onUploaded(media);
-        // Auto-hide finished tasks after a moment.
-        setTimeout(() => setTasks((t) => t.filter((x) => x.id !== taskId)), 2500);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        setTasks((t) => t.map((x) => (x.id === taskId ? { ...x, status: "error", error: message } : x)));
-        toast.error(`Upload failed: ${message}`);
-      }
-    }
-  }, [expiresAt, maxSizeBytes, messageId, onUploaded, workspaceId]);
+    },
+    [expiresAt, maxSizeBytes, messageId, onUploaded, workspaceId],
+  );
 
   return (
-    <div
-      className={cn(
-        "space-y-2",
-        className,
-      )}
-    >
+    <div className={cn("space-y-2", className)}>
       <div
         role="button"
         tabIndex={0}
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && inputRef.current?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
         onDragLeave={() => setDragActive(false)}
         onDrop={(e) => {
           e.preventDefault();
@@ -122,7 +134,10 @@ export function MediaUploader({
       {tasks.length > 0 && (
         <ul className="space-y-2">
           {tasks.map((t) => (
-            <li key={t.id} className="flex items-center gap-3 rounded-control border bg-card p-2 text-xs">
+            <li
+              key={t.id}
+              className="flex items-center gap-3 rounded-control border bg-card p-2 text-xs"
+            >
               {t.status === "uploading" ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
               ) : t.status === "error" ? (
@@ -135,7 +150,9 @@ export function MediaUploader({
                   <span className="truncate">{t.name}</span>
                   <span className="shrink-0 text-muted-foreground">{formatBytes(t.size)}</span>
                 </div>
-                {t.status === "uploading" && <Progress value={t.progress * 100} className="mt-1 h-1" />}
+                {t.status === "uploading" && (
+                  <Progress value={t.progress * 100} className="mt-1 h-1" />
+                )}
                 {t.status === "error" && <div className="mt-0.5 text-destructive">{t.error}</div>}
               </div>
               <Button

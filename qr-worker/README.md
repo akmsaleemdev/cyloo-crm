@@ -2,7 +2,7 @@
 
 Stateful companion service that holds the long-lived WhatsApp (Baileys) sockets
 CYLOO's serverless backend cannot host. It implements
-[`docs/whatsapp-qr-worker-contract.md`](../docs/whatsapp-qr-worker-contract.md)
+the HTTP contract below
 in both directions:
 
 - **App → worker**: `POST /sessions`, `GET /sessions/:id/qr`, `DELETE /sessions/:id`,
@@ -12,7 +12,7 @@ in both directions:
 
 ## 1. Generate the three shared secrets
 
-Run locally and keep the output — the *same* values go on both sides:
+Run locally and keep the output — the _same_ values go on both sides:
 
 ```bash
 openssl rand -hex 32   # WA_QR_WORKER_TOKEN
@@ -26,7 +26,7 @@ openssl rand -hex 32   # WA_QR_WEBHOOK_SECRET
 # on the server
 cd ~/apps
 git clone <your repo> cyloo && cd cyloo/qr-worker
-npm install --omit=dev
+npm ci --omit=dev
 cp .env.example .env && nano .env      # paste the three secrets
 mkdir -p data/auth logs
 npx pm2 start ecosystem.config.cjs && npx pm2 save && npx pm2 startup
@@ -34,7 +34,7 @@ npx pm2 start ecosystem.config.cjs && npx pm2 save && npx pm2 startup
 
 Notes:
 
-- Node 20+ is required. In cPanel's *Setup Node.js App* pick the same version.
+- Node 22.12+ is required. PM2 loads an ignored local `.env` when present; AWS/Docker should inject these variables through its secret store instead.
 - Keep `instances: 1`. Baileys sockets are stateful and cannot be clustered.
 - `data/auth` holds WhatsApp credentials — back it up, never delete it while
   sessions are connected, and exclude it from public web roots.
@@ -52,7 +52,7 @@ ProxyPassReverse / http://127.0.0.1:8787/
 
 Verify: `curl https://wa.yourdomain.com/health` → `{"ok":true,...}`.
 `/health` is the only unauthenticated route; everything else returns 401
-without a valid token *and* signature.
+without a valid token _and_ signature.
 
 ### Docker alternative
 
@@ -66,12 +66,12 @@ docker run -d --name wa-qr --env-file .env -p 8787:8787 \
 
 Add these project secrets in CYLOO (Backend → Secrets):
 
-| Secret | Value |
-| --- | --- |
-| `WA_QR_WORKER_URL` | `https://wa.yourdomain.com` |
-| `WA_QR_WORKER_TOKEN` | same as the worker's |
-| `WA_QR_WORKER_SIGNING_SECRET` | same as the worker's |
-| `WA_QR_WEBHOOK_SECRET` | same as the worker's |
+| Secret                        | Value                       |
+| ----------------------------- | --------------------------- |
+| `WA_QR_WORKER_URL`            | `https://wa.yourdomain.com` |
+| `WA_QR_WORKER_TOKEN`          | same as the worker's        |
+| `WA_QR_WORKER_SIGNING_SECRET` | same as the worker's        |
+| `WA_QR_WEBHOOK_SECRET`        | same as the worker's        |
 
 Then open **Admin → WhatsApp Status** and run the health check, or start a QR
 session from the WhatsApp panel — a QR code appears within a few seconds.

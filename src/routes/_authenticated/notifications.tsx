@@ -10,19 +10,43 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
 import {
-  useNotifications, useMarkRead, useMarkAllRead, useArchiveNotification,
-  useUnarchiveNotification, useDeleteNotification,
-  useCreateNotification, useUnreadCount,
-  type NotificationRow, type NotificationCategory, type NotificationStatus,
+  useNotifications,
+  useMarkRead,
+  useMarkAllRead,
+  useArchiveNotification,
+  useUnarchiveNotification,
+  useDeleteNotification,
+  useCreateNotification,
+  useUnreadCount,
+  type NotificationRow,
+  type NotificationCategory,
+  type NotificationStatus,
 } from "@/hooks/use-notifications";
 import { iconForCategory } from "@/components/app/notification-center";
 import { notificationActionUrl, selectNotificationTenant } from "@/lib/notifications/action-url";
-import { notificationSection, NOTIFICATION_SECTIONS, type NotificationSection } from "@/lib/notifications/presentation";
+import {
+  notificationSection,
+  NOTIFICATION_SECTIONS,
+  type NotificationSection,
+} from "@/lib/notifications/presentation";
 import { useOrganizations } from "@/hooks/use-organization";
 import { useWorkspaces } from "@/hooks/use-workspace";
 import { AppTopbar } from "@/components/app/app-topbar";
@@ -77,25 +101,32 @@ function NotificationsPage() {
     if (tab !== "all") list = list.filter((n) => n.status === tab);
     if (query.trim()) {
       const q = query.toLowerCase();
-      list = list.filter((n) =>
-        n.title.toLowerCase().includes(q) || (n.body ?? "").toLowerCase().includes(q),
+      list = list.filter(
+        (n) => n.title.toLowerCase().includes(q) || (n.body ?? "").toLowerCase().includes(q),
       );
     }
     return list;
   }, [all, tab, section, query]);
 
-  const counts = useMemo(() => ({
-    unread: all.filter((n) => n.status === "unread").length,
-    read: all.filter((n) => n.status === "read").length,
-    archived: all.filter((n) => n.status === "archived").length,
-    all: all.length,
-  }), [all]);
+  const counts = useMemo(
+    () => ({
+      unread: all.filter((n) => n.status === "unread").length,
+      read: all.filter((n) => n.status === "read").length,
+      archived: all.filter((n) => n.status === "archived").length,
+      all: all.length,
+    }),
+    [all],
+  );
 
   return (
     <>
       <AppTopbar
         title="Notifications"
-        subtitle={unread > 0 ? `${unread} unread · Realtime updates enabled` : "All caught up · Realtime updates enabled"}
+        subtitle={
+          unread > 0
+            ? `${unread} unread · Realtime updates enabled`
+            : "All caught up · Realtime updates enabled"
+        }
         actions={
           <div className="flex gap-2">
             <TestNotificationButton />
@@ -106,35 +137,63 @@ function NotificationsPage() {
         }
       />
       <main className="container mx-auto max-w-7xl p-6 space-y-6">
+        <div className="flex flex-wrap gap-2 items-center">
+          <Input
+            placeholder="Search notifications"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="max-w-xs"
+          />
+          <Select
+            value={section}
+            onValueChange={(v) => setSection(v as NotificationSection | "All")}
+          >
+            <SelectTrigger className="w-52">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All sections</SelectItem>
+              {NOTIFICATION_SECTIONS.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div className="flex flex-wrap gap-2 items-center">
-        <Input
-          placeholder="Search notifications"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="max-w-xs"
-        />
-        <Select value={section} onValueChange={(v) => setSection(v as NotificationSection | "All")}>
-          <SelectTrigger className="w-52"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">All sections</SelectItem>
-            {NOTIFICATION_SECTIONS.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-        <TabsList>
-          <TabsTrigger value="unread">Unread <Badge variant="secondary" className="ml-2">{counts.unread}</Badge></TabsTrigger>
-          <TabsTrigger value="read">Read <Badge variant="secondary" className="ml-2">{counts.read}</Badge></TabsTrigger>
-          <TabsTrigger value="archived">Archived <Badge variant="secondary" className="ml-2">{counts.archived}</Badge></TabsTrigger>
-          <TabsTrigger value="all">All <Badge variant="secondary" className="ml-2">{counts.all}</Badge></TabsTrigger>
-        </TabsList>
-        <TabsContent value={tab} className="mt-4">
-          <NotificationList items={filtered} />
-        </TabsContent>
-      </Tabs>
-    </main>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+          <TabsList>
+            <TabsTrigger value="unread">
+              Unread{" "}
+              <Badge variant="secondary" className="ml-2">
+                {counts.unread}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="read">
+              Read{" "}
+              <Badge variant="secondary" className="ml-2">
+                {counts.read}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="archived">
+              Archived{" "}
+              <Badge variant="secondary" className="ml-2">
+                {counts.archived}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="all">
+              All{" "}
+              <Badge variant="secondary" className="ml-2">
+                {counts.all}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value={tab} className="mt-4">
+            <NotificationList items={filtered} />
+          </TabsContent>
+        </Tabs>
+      </main>
     </>
   );
 }
@@ -165,14 +224,22 @@ function NotificationList({ items }: { items: NotificationRow[] }) {
         const Icon = meta.icon;
         const unread = n.status === "unread";
         return (
-          <li key={n.id} className={cn("flex gap-4 p-4 hover:bg-muted/40 transition-colors", unread && "bg-accent/[0.04]")}>
-            <div className={cn(
-              "grid h-10 w-10 shrink-0 place-items-center rounded-control",
-              meta.tone === "success" && "bg-success/15 text-success",
-              meta.tone === "warn" && "bg-warning/15 text-warning",
-              meta.tone === "info" && "bg-accent/15 text-accent",
-              meta.tone === "danger" && "bg-destructive/15 text-destructive",
-            )}>
+          <li
+            key={n.id}
+            className={cn(
+              "flex gap-4 p-4 hover:bg-muted/40 transition-colors",
+              unread && "bg-accent/[0.04]",
+            )}
+          >
+            <div
+              className={cn(
+                "grid h-10 w-10 shrink-0 place-items-center rounded-control",
+                meta.tone === "success" && "bg-success/15 text-success",
+                meta.tone === "warn" && "bg-warning/15 text-warning",
+                meta.tone === "info" && "bg-accent/15 text-accent",
+                meta.tone === "danger" && "bg-destructive/15 text-destructive",
+              )}
+            >
               <Icon className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -180,7 +247,9 @@ function NotificationList({ items }: { items: NotificationRow[] }) {
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="truncate font-medium">{n.title}</span>
                   {n.category && (
-                    <Badge variant="outline" className="text-[11px] uppercase">{n.category}</Badge>
+                    <Badge variant="outline" className="text-[11px] uppercase">
+                      {n.category}
+                    </Badge>
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -191,10 +260,15 @@ function NotificationList({ items }: { items: NotificationRow[] }) {
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {notificationActionUrl(n) && (
                   <Button asChild size="sm" variant="outline">
-                    <a href={notificationActionUrl(n)!} onClick={() => {
-                      selectNotificationTenant(n, organizations, workspaces);
-                      if (unread) markRead.mutate(n.id);
-                    }}>Open</a>
+                    <a
+                      href={notificationActionUrl(n)!}
+                      onClick={() => {
+                        selectNotificationTenant(n, organizations, workspaces);
+                        if (unread) markRead.mutate(n.id);
+                      }}
+                    >
+                      Open
+                    </a>
                   </Button>
                 )}
                 {unread && (
@@ -211,8 +285,12 @@ function NotificationList({ items }: { items: NotificationRow[] }) {
                     <ArchiveRestore className="h-3.5 w-3.5 " /> Restore
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive"
-                  onClick={() => del.mutate(n.id)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => del.mutate(n.id)}
+                >
                   <Trash2 className="h-3.5 w-3.5 " /> Delete
                 </Button>
               </div>
@@ -235,11 +313,21 @@ function TestNotificationButton() {
 
   const submit = async () => {
     if (!title.trim()) return toast.error("Title required");
-    if (actionUrl.trim() && !notificationActionUrl({ action_url: actionUrl.trim(), data: {}, organization_id: null })) {
+    if (
+      actionUrl.trim() &&
+      !notificationActionUrl({ action_url: actionUrl.trim(), data: {}, organization_id: null })
+    ) {
       return toast.error("Use an app path or an HTTPS URL");
     }
-    await create.mutateAsync({ title: title.trim(), body: body.trim() || undefined, category, action_url: actionUrl.trim() || undefined });
-    setTitle(""); setBody(""); setActionUrl("");
+    await create.mutateAsync({
+      title: title.trim(),
+      body: body.trim() || undefined,
+      category,
+      action_url: actionUrl.trim() || undefined,
+    });
+    setTitle("");
+    setBody("");
+    setActionUrl("");
     setOpen(false);
     toast.success("Notification sent");
   };
@@ -247,34 +335,54 @@ function TestNotificationButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline"><Plus className="h-4 w-4" /> Send test</Button>
+        <Button variant="outline">
+          <Plus className="h-4 w-4" /> Send test
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Send a test notification</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>Send a test notification</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
           <div>
             <Label>Category</Label>
             <Select value={category} onValueChange={(v) => setCategory(v as NotificationCategory)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New comment on deal" />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="New comment on deal"
+            />
           </div>
           <div>
             <Label>Body</Label>
-            <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={3}
-              placeholder="Sarah replied on Acme Corp — Q4 renewal" />
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              rows={3}
+              placeholder="Sarah replied on Acme Corp — Q4 renewal"
+            />
           </div>
           <div>
             <Label>Open link (optional)</Label>
-            <Input value={actionUrl} onChange={(e) => setActionUrl(e.target.value)} placeholder="/projects/tasks" />
+            <Input
+              value={actionUrl}
+              onChange={(e) => setActionUrl(e.target.value)}
+              placeholder="/projects/tasks"
+            />
           </div>
         </div>
         <DialogFooter>

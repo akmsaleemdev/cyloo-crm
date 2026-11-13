@@ -8,24 +8,33 @@
  */
 
 export type PluginPermission =
-  | 'read:contacts' | 'write:contacts'
-  | 'read:conversations' | 'write:conversations'
-  | 'read:deals' | 'write:deals'
-  | 'read:tickets' | 'write:tickets'
-  | 'read:campaigns' | 'write:campaigns'
-  | 'read:analytics'
-  | 'ui:nav' | 'ui:inbox-sidebar' | 'ui:contact-panel' | 'ui:deal-panel' | 'ui:settings'
-  | 'webhook:outbound'
-  | 'ai:chat';
+  | "read:contacts"
+  | "write:contacts"
+  | "read:conversations"
+  | "write:conversations"
+  | "read:deals"
+  | "write:deals"
+  | "read:tickets"
+  | "write:tickets"
+  | "read:campaigns"
+  | "write:campaigns"
+  | "read:analytics"
+  | "ui:nav"
+  | "ui:inbox-sidebar"
+  | "ui:contact-panel"
+  | "ui:deal-panel"
+  | "ui:settings"
+  | "webhook:outbound"
+  | "ai:chat";
 
 export type ExtensionPoint =
-  | 'nav.item'
-  | 'inbox.sidebar'
-  | 'contact.panel'
-  | 'deal.panel'
-  | 'ticket.panel'
-  | 'settings.section'
-  | 'command.palette';
+  | "nav.item"
+  | "inbox.sidebar"
+  | "contact.panel"
+  | "deal.panel"
+  | "ticket.panel"
+  | "settings.section"
+  | "command.palette";
 
 export type PluginManifest = {
   slug: string;
@@ -41,23 +50,33 @@ export type ExtensionRegistration = {
   id: string;
   title: string;
   icon?: string;
-  path?: string;   // where to navigate (deep link)
+  path?: string; // where to navigate (deep link)
   render?: string; // named renderer id — resolved by host UI
 };
 
 export type HookName =
-  | 'conversation.created' | 'conversation.assigned' | 'message.sent'
-  | 'contact.created' | 'contact.updated'
-  | 'deal.created' | 'deal.stage_changed' | 'deal.won' | 'deal.lost'
-  | 'ticket.created' | 'ticket.resolved'
-  | 'workflow.step';
+  | "conversation.created"
+  | "conversation.assigned"
+  | "message.sent"
+  | "contact.created"
+  | "contact.updated"
+  | "deal.created"
+  | "deal.stage_changed"
+  | "deal.won"
+  | "deal.lost"
+  | "ticket.created"
+  | "ticket.resolved"
+  | "workflow.step";
 
 type HookHandler = (payload: unknown) => void | Promise<void>;
 
 class PluginRegistry {
   private manifests = new Map<string, PluginManifest>();
   private grants = new Map<string, Set<PluginPermission>>();
-  private extensions = new Map<ExtensionPoint, Array<ExtensionRegistration & { pluginSlug: string }>>();
+  private extensions = new Map<
+    ExtensionPoint,
+    Array<ExtensionRegistration & { pluginSlug: string }>
+  >();
   private hooks = new Map<HookName, Array<{ pluginSlug: string; fn: HookHandler }>>();
 
   register(manifest: PluginManifest, grantedPermissions: PluginPermission[]) {
@@ -102,9 +121,15 @@ class PluginRegistry {
     this.manifests.delete(slug);
     this.grants.delete(slug);
     for (const [k, list] of this.extensions)
-      this.extensions.set(k, list.filter((e) => e.pluginSlug !== slug));
+      this.extensions.set(
+        k,
+        list.filter((e) => e.pluginSlug !== slug),
+      );
     for (const [k, list] of this.hooks)
-      this.hooks.set(k, list.filter((e) => e.pluginSlug !== slug));
+      this.hooks.set(
+        k,
+        list.filter((e) => e.pluginSlug !== slug),
+      );
   }
 
   list() {

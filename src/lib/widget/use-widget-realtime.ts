@@ -39,9 +39,7 @@ export function useWidgetRealtime(
       .channel(`widget:${sessionId}:${visitorId}`, { config: { private: true } })
       .on("broadcast", { event: "widget_update" }, (payload) => {
         const kind = (payload?.payload as { kind?: WidgetUpdateKind } | undefined)?.kind;
-        handlerRef.current(
-          kind === "status" || kind === "typing" ? kind : "message",
-        );
+        handlerRef.current(kind === "status" || kind === "typing" ? kind : "message");
       })
 
       .subscribe((status) => {

@@ -20,9 +20,15 @@ export type IPAllowlistRow = {
 };
 
 export type RetentionResource =
-  | "messages" | "conversations" | "media" | "audit_logs"
-  | "webhook_events" | "login_history" | "activities"
-  | "notifications" | "error_logs";
+  | "messages"
+  | "conversations"
+  | "media"
+  | "audit_logs"
+  | "webhook_events"
+  | "login_history"
+  | "activities"
+  | "notifications"
+  | "error_logs";
 
 export type RetentionPolicyRow = {
   id: string;
@@ -86,7 +92,11 @@ export function useUpsertIPAllowlist() {
   return useMutation({
     mutationFn: async (row: Partial<IPAllowlistRow> & { label: string; cidr: string }) => {
       const payload = { ...row, workspace_id: ws!.id };
-      const { data, error } = await sbAny(db).from("ip_allowlists").upsert(payload).select().single();
+      const { data, error } = await sbAny(db)
+        .from("ip_allowlists")
+        .upsert(payload)
+        .select()
+        .single();
       if (error) throw error;
       return data as IPAllowlistRow;
     },
@@ -127,7 +137,11 @@ export function useUpsertRetentionPolicy() {
   const qc = useQueryClient();
   const { data: ws } = useCurrentWorkspace();
   return useMutation({
-    mutationFn: async (row: { resource: RetentionResource; retention_days: number; is_active?: boolean }) => {
+    mutationFn: async (row: {
+      resource: RetentionResource;
+      retention_days: number;
+      is_active?: boolean;
+    }) => {
       const { data, error } = await db
         .from("data_retention_policies")
         .upsert({ ...row, workspace_id: ws!.id }, { onConflict: "workspace_id,resource" })
@@ -185,7 +199,11 @@ export function useCreateGdprRequest() {
 export function useUpdateGdprRequestStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (params: { id: string; status: GdprRequestRow["status"]; notes?: string }) => {
+    mutationFn: async (params: {
+      id: string;
+      status: GdprRequestRow["status"];
+      notes?: string;
+    }) => {
       const patch: Record<string, unknown> = { status: params.status };
       if (params.notes !== undefined) patch.notes = params.notes;
       if (params.status === "completed") patch.completed_at = new Date().toISOString();
@@ -261,8 +279,12 @@ export function useWebhookSigningSecrets() {
         .order("activated_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as Array<{
-        id: string; secret_prefix: string; is_primary: boolean;
-        activated_at: string; retired_at: string | null; created_at: string;
+        id: string;
+        secret_prefix: string;
+        is_primary: boolean;
+        activated_at: string;
+        retired_at: string | null;
+        created_at: string;
       }>;
     },
   });
@@ -278,7 +300,9 @@ export function useRotateWebhookSecret() {
       crypto.getRandomValues(bytes);
       const secret = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
       const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
-      const hash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+      const hash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join(
+        "",
+      );
 
       // Retire previous primaries.
       await db
@@ -287,12 +311,14 @@ export function useRotateWebhookSecret() {
         .eq("workspace_id", ws!.id)
         .eq("is_primary", true);
 
-      const { error } = await sbAny(db).from("webhook_signing_secrets").insert({
-        workspace_id: ws!.id,
-        secret_hash: hash,
-        secret_prefix: secret.slice(0, 8),
-        is_primary: true,
-      });
+      const { error } = await sbAny(db)
+        .from("webhook_signing_secrets")
+        .insert({
+          workspace_id: ws!.id,
+          secret_hash: hash,
+          secret_prefix: secret.slice(0, 8),
+          is_primary: true,
+        });
       if (error) throw error;
       await logSecurityEvent({
         workspaceId: ws!.id,

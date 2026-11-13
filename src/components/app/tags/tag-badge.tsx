@@ -19,7 +19,7 @@ export function TagBadge({ tag, onRemove, className, size = "sm" }: Props) {
       className={cn(
         "gap-1 border-transparent font-medium",
         size === "sm" ? "text-xs py-0.5" : "text-sm",
-        className
+        className,
       )}
       style={{
         backgroundColor: `${color}1a`,

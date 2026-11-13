@@ -2,7 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { DripSequenceEditor } from "@/components/app/campaigns/drip-sequence-editor";
 import { AppTopbar } from "@/components/app/app-topbar";
-import { Zap, Plus, Play, Pause, FileEdit, Loader2, Archive, Trash2, ArchiveRestore } from "lucide-react";
+import {
+  Zap,
+  Plus,
+  Play,
+  Pause,
+  FileEdit,
+  Loader2,
+  Archive,
+  Trash2,
+  ArchiveRestore,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -34,7 +44,13 @@ const statusClass = {
 
 const statusIcon = { active: Play, paused: Pause, draft: FileEdit, archived: FileEdit } as const;
 
-function SequenceActions({ seq, onDelete }: { seq: DripSequenceRow; onDelete: (seq: DripSequenceRow) => void }) {
+function SequenceActions({
+  seq,
+  onDelete,
+}: {
+  seq: DripSequenceRow;
+  onDelete: (seq: DripSequenceRow) => void;
+}) {
   const upsert = useUpsertDripSequence();
   const toggle = (status: "active" | "paused" | "draft" | "archived") => {
     upsert.mutate(
@@ -80,10 +96,20 @@ function SequenceActions({ seq, onDelete }: { seq: DripSequenceRow; onDelete: (s
       )}
       {seq.status === "archived" && (
         <>
-          <Button size="sm" variant="outline" onClick={() => toggle("draft")} disabled={upsert.isPending}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => toggle("draft")}
+            disabled={upsert.isPending}
+          >
             <ArchiveRestore className="w-3.5 h-3.5 " /> Restore
           </Button>
-          <Button size="sm" variant="ghost" className="text-destructive" onClick={() => onDelete(seq)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-destructive"
+            onClick={() => onDelete(seq)}
+          >
             <Trash2 className="w-3.5 h-3.5 " /> Delete
           </Button>
         </>
@@ -105,7 +131,10 @@ function DripPage() {
     create.mutate(
       { preset },
       {
-        onSuccess: (seq) => { toast.success(`Created "${seq.name}" as a draft sequence`); setEditingId(seq.id); },
+        onSuccess: (seq) => {
+          toast.success(`Created "${seq.name}" as a draft sequence`);
+          setEditingId(seq.id);
+        },
         onError: (e: unknown) =>
           toast.error(e instanceof Error ? e.message : "Could not create the sequence"),
       },
@@ -186,7 +215,9 @@ function DripPage() {
                     {s.status}
                   </span>
                   <SequenceActions seq={s} onDelete={setDeleteTarget} />
-                  <Button size="sm" variant="outline" onClick={() => setEditingId(s.id)}>Edit sequence</Button>
+                  <Button size="sm" variant="outline" onClick={() => setEditingId(s.id)}>
+                    Edit sequence
+                  </Button>
                 </div>
               );
             })}
@@ -196,7 +227,9 @@ function DripPage() {
       <DripSequenceEditor id={editingId} onClose={() => setEditingId(null)} />
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
         title={`Delete “${deleteTarget?.name ?? "sequence"}”?`}
         description="This permanently removes the archived sequence and its saved steps and enrollment history. Active enrollments prevent deletion."
         confirmLabel="Delete sequence"

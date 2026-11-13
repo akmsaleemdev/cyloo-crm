@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bot, Loader2, Plus, Trash2, Power, PowerOff, Instagram as InstagramIcon, Sparkles } from "lucide-react";
+import {
+  Bot,
+  Loader2,
+  Plus,
+  Trash2,
+  Power,
+  PowerOff,
+  Instagram as InstagramIcon,
+  Sparkles,
+} from "lucide-react";
 import { InstagramChatbotTestDialog } from "./instagram-chatbot-test-dialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -65,7 +74,9 @@ export function InstagramChatbotsPanel() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chatbots")
-        .select("id,name,description,status,greeting,welcome_message,fallback_message,total_messages,total_sessions,handoff_enabled,widget_config,updated_at")
+        .select(
+          "id,name,description,status,greeting,welcome_message,fallback_message,total_messages,total_sessions,handoff_enabled,widget_config,updated_at",
+        )
         .eq("workspace_id", workspaceId!)
         .contains("widget_config", { channel: "instagram" })
         .order("updated_at", { ascending: false });
@@ -94,7 +105,10 @@ export function InstagramChatbotsPanel() {
   const toggleStatus = useMutation({
     mutationFn: async (bot: ChatbotRow) => {
       const next = bot.status === "active" ? "paused" : "active";
-      const { error } = await sbAny(supabase).from("chatbots").update({ status: next }).eq("id", bot.id);
+      const { error } = await sbAny(supabase)
+        .from("chatbots")
+        .update({ status: next })
+        .eq("id", bot.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -156,7 +170,8 @@ export function InstagramChatbotsPanel() {
           <Bot className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
           <div className="font-medium text-sm">No Instagram chatbots yet</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Click <span className="font-medium text-foreground">Add Chatbot</span> to create your first one.
+            Click <span className="font-medium text-foreground">Add Chatbot</span> to create your
+            first one.
           </div>
         </div>
       ) : (
@@ -166,7 +181,10 @@ export function InstagramChatbotsPanel() {
             const acct = (accounts.data ?? []).find((a) => a.id === cfg.instagram_account_id);
             const isActive = bot.status === "active";
             return (
-              <div key={bot.id} className="rounded-control border border-border bg-card p-4 flex items-start justify-between gap-4">
+              <div
+                key={bot.id}
+                className="rounded-control border border-border bg-card p-4 flex items-start justify-between gap-4"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="font-medium text-sm truncate">{bot.name}</div>
@@ -175,13 +193,15 @@ export function InstagramChatbotsPanel() {
                     </Badge>
                     {acct && (
                       <Badge variant="outline" className="text-[11px] gap-1">
-                        <InstagramIcon className="w-3 h-3" />
-                        @{acct.username ?? acct.name ?? "account"}
+                        <InstagramIcon className="w-3 h-3" />@
+                        {acct.username ?? acct.name ?? "account"}
                       </Badge>
                     )}
                   </div>
                   {bot.description && (
-                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{bot.description}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {bot.description}
+                    </div>
                   )}
                   {(() => {
                     const a = analytics.data?.[bot.id];
@@ -193,7 +213,10 @@ export function InstagramChatbotsPanel() {
                         <KpiCell label="Messages" value={String(messages)} />
                         <KpiCell label="Reply rate" value={formatReplyRate(a?.replyRate ?? null)} />
                         <KpiCell label="Handoffs" value={String(a?.handoffCount ?? 0)} />
-                        <KpiCell label="Last active" value={formatRelativeTime(a?.lastActiveAt ?? null)} />
+                        <KpiCell
+                          label="Last active"
+                          value={formatRelativeTime(a?.lastActiveAt ?? null)}
+                        />
                       </div>
                     );
                   })()}
@@ -289,21 +312,23 @@ function AddChatbotDialog({
       if (!workspaceId) throw new Error("No workspace");
       if (!name.trim()) throw new Error("Name is required");
       if (!accountId) throw new Error("Select an Instagram account");
-      const { error } = await sbAny(supabase).from("chatbots").insert({
-        workspace_id: workspaceId,
-        name: name.trim(),
-        description: description.trim() || null,
-        greeting: greeting.trim() || null,
-        welcome_message: greeting.trim() || null,
-        fallback_message: fallback.trim() || null,
-        handoff_enabled: handoff,
-        status: "active",
-        widget_config: {
-          channel: "instagram",
-          instagram_account_id: accountId,
-          handoff_message: handoffMessage.trim() || null,
-        },
-      });
+      const { error } = await sbAny(supabase)
+        .from("chatbots")
+        .insert({
+          workspace_id: workspaceId,
+          name: name.trim(),
+          description: description.trim() || null,
+          greeting: greeting.trim() || null,
+          welcome_message: greeting.trim() || null,
+          fallback_message: fallback.trim() || null,
+          handoff_enabled: handoff,
+          status: "active",
+          widget_config: {
+            channel: "instagram",
+            instagram_account_id: accountId,
+            handoff_message: handoffMessage.trim() || null,
+          },
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -343,11 +368,19 @@ function AddChatbotDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Support Bot" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Support Bot"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Description</Label>
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Handles DMs after hours" />
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Handles DMs after hours"
+            />
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -378,13 +411,17 @@ function AddChatbotDialog({
           <label className="flex items-center justify-between rounded-control border border-border p-3">
             <div>
               <div className="text-sm font-medium">Human handoff</div>
-              <div className="text-xs text-muted-foreground">Escalate to an agent when the bot can't help.</div>
+              <div className="text-xs text-muted-foreground">
+                Escalate to an agent when the bot can't help.
+              </div>
             </div>
             <Switch checked={handoff} onCheckedChange={setHandoff} />
           </label>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => create.mutate()} disabled={create.isPending}>
             {create.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Create chatbot

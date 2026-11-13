@@ -12,7 +12,7 @@ function generateToken(workspaceId: string) {
       uid: workspaceId.replace(/-/g, "").slice(0, 24),
       role: "user",
       iat: Math.floor(Date.now() / 1000),
-    })
+    }),
   ).replace(/=+$/, "");
   const rand = crypto.getRandomValues(new Uint8Array(32));
   const sig = btoa(String.fromCharCode(...rand))
@@ -23,11 +23,31 @@ function generateToken(workspaceId: string) {
 }
 
 const PARAMS: Array<{ name: string; required: boolean; type: string; desc: string }> = [
-  { name: "sendTo", required: true, type: "string", desc: "Recipient's WhatsApp phone number in E.164 format (e.g. +1234567890)" },
-  { name: "templetName", required: true, type: "string", desc: "Exact name of your approved Meta template" },
-  { name: "exampleArr", required: false, type: "array", desc: "Array of variable values to fill template placeholders in order" },
+  {
+    name: "sendTo",
+    required: true,
+    type: "string",
+    desc: "Recipient's WhatsApp phone number in E.164 format (e.g. +1234567890)",
+  },
+  {
+    name: "templetName",
+    required: true,
+    type: "string",
+    desc: "Exact name of your approved Meta template",
+  },
+  {
+    name: "exampleArr",
+    required: false,
+    type: "array",
+    desc: "Array of variable values to fill template placeholders in order",
+  },
   { name: "token", required: true, type: "string", desc: "Your API token for authentication" },
-  { name: "mediaUri", required: false, type: "string", desc: "Optional public URL of a media file (image, video, document) for media templates" },
+  {
+    name: "mediaUri",
+    required: false,
+    type: "string",
+    desc: "Optional public URL of a media file (image, video, document) for media templates",
+  },
 ];
 
 export function WhatsAppTemplateApiPanel() {
@@ -73,12 +93,16 @@ export function WhatsAppTemplateApiPanel() {
 
   const masked = useMemo(
     () => (token ? `${token.slice(0, 12)}${"•".repeat(24)}${token.slice(-8)}` : ""),
-    [token]
+    [token],
   );
 
   const exampleArr = useMemo(
-    () => exampleArrStr.split(",").map((s) => s.trim()).filter(Boolean),
-    [exampleArrStr]
+    () =>
+      exampleArrStr
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    [exampleArrStr],
   );
 
   const requestBody = useMemo(() => {
@@ -122,7 +146,8 @@ const data = await res.json();`;
           <FileText className="w-5 h-5 text-primary" /> Template API
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Send pre-approved Meta template messages to any WhatsApp number. Templates must be approved by Meta before use.
+          Send pre-approved Meta template messages to any WhatsApp number. Templates must be
+          approved by Meta before use.
         </p>
       </div>
 
@@ -133,7 +158,10 @@ const data = await res.json();`;
             <Key className="w-4 h-4 text-primary" />
             <h3 className="font-medium text-sm">Your API Key</h3>
           </div>
-          <button onClick={regenerate} className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-control border border-border hover:bg-muted">
+          <button
+            onClick={regenerate}
+            className="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-control border border-border hover:bg-muted"
+          >
             <RefreshCw className="w-3 h-3" /> Regenerate
           </button>
         </div>
@@ -141,38 +169,71 @@ const data = await res.json();`;
           <code className="flex-1 text-xs font-mono bg-muted rounded-control px-3 py-2 truncate">
             {reveal ? token : masked}
           </code>
-          <button onClick={() => setReveal((v) => !v)} className="p-2 rounded-control border border-border hover:bg-muted">
+          <button
+            onClick={() => setReveal((v) => !v)}
+            className="p-2 rounded-control border border-border hover:bg-muted"
+          >
             {reveal ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
-          <button onClick={() => copy(token, "API key")} className="p-2 rounded-control border border-border hover:bg-muted">
-            {copied === "API key" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+          <button
+            onClick={() => copy(token, "API key")}
+            className="p-2 rounded-control border border-border hover:bg-muted"
+          >
+            {copied === "API key" ? (
+              <Check className="w-4 h-4 text-emerald-500" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
           </button>
         </div>
         <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-          <Info className="w-3 h-3" /> Keep this token secret. Anyone with it can send templates from your workspace.
+          <Info className="w-3 h-3" /> Keep this token secret. Anyone with it can send templates
+          from your workspace.
         </p>
       </section>
 
       {/* Send Message Builder */}
       <section className="rounded-control border border-border bg-card p-4 space-y-3">
         <h3 className="font-medium text-sm">Send Message</h3>
-        <p className="text-xs text-muted-foreground">Send a pre-approved Meta template to any WhatsApp number.</p>
+        <p className="text-xs text-muted-foreground">
+          Send a pre-approved Meta template to any WhatsApp number.
+        </p>
         <div className="grid md:grid-cols-2 gap-3">
           <Field label="sendTo *">
-            <input value={sendTo} onChange={(e) => setSendTo(e.target.value)} maxLength={20} placeholder="+1234567890"
-              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono" />
+            <input
+              value={sendTo}
+              onChange={(e) => setSendTo(e.target.value)}
+              maxLength={20}
+              placeholder="+1234567890"
+              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono"
+            />
           </Field>
           <Field label="templetName *">
-            <input value={templetName} onChange={(e) => setTempletName(e.target.value)} maxLength={100} placeholder="hello_world"
-              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono" />
+            <input
+              value={templetName}
+              onChange={(e) => setTempletName(e.target.value)}
+              maxLength={100}
+              placeholder="hello_world"
+              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono"
+            />
           </Field>
           <Field label="exampleArr (comma-separated)">
-            <input value={exampleArrStr} onChange={(e) => setExampleArrStr(e.target.value)} maxLength={500} placeholder="John, 12345"
-              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono" />
+            <input
+              value={exampleArrStr}
+              onChange={(e) => setExampleArrStr(e.target.value)}
+              maxLength={500}
+              placeholder="John, 12345"
+              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono"
+            />
           </Field>
           <Field label="mediaUri (optional)">
-            <input value={mediaUri} onChange={(e) => setMediaUri(e.target.value)} maxLength={2048} placeholder="https://example.com/image.jpg"
-              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono" />
+            <input
+              value={mediaUri}
+              onChange={(e) => setMediaUri(e.target.value)}
+              maxLength={2048}
+              placeholder="https://example.com/image.jpg"
+              className="w-full text-sm rounded-control border border-border bg-background px-3 py-2 font-mono"
+            />
           </Field>
         </div>
       </section>
@@ -181,10 +242,21 @@ const data = await res.json();`;
       <section className="space-y-3">
         <Step number={1} title="API Endpoint" desc="POST request URL">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">POST</span>
-            <code className="flex-1 text-xs font-mono bg-muted rounded-control px-3 py-2 truncate">{ENDPOINT}</code>
-            <button onClick={() => copy(ENDPOINT, "Endpoint")} className="p-2 rounded-control border border-border hover:bg-muted">
-              {copied === "Endpoint" ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+            <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+              POST
+            </span>
+            <code className="flex-1 text-xs font-mono bg-muted rounded-control px-3 py-2 truncate">
+              {ENDPOINT}
+            </code>
+            <button
+              onClick={() => copy(ENDPOINT, "Endpoint")}
+              className="p-2 rounded-control border border-border hover:bg-muted"
+            >
+              {copied === "Endpoint" ? (
+                <Check className="w-4 h-4 text-emerald-500" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
             </button>
           </div>
         </Step>
@@ -205,7 +277,9 @@ const data = await res.json();`;
                     <td className="py-2 pr-3 font-mono">
                       <div className="flex flex-col gap-0.5">
                         <span>{p.name}</span>
-                        <span className={`text-[11px] font-semibold uppercase ${p.required ? "text-red-600" : "text-muted-foreground"}`}>
+                        <span
+                          className={`text-[11px] font-semibold uppercase ${p.required ? "text-red-600" : "text-muted-foreground"}`}
+                        >
                           {p.required ? "required" : "optional"}
                         </span>
                       </div>
@@ -220,15 +294,27 @@ const data = await res.json();`;
         </Step>
 
         <Step number={3} title="HTTP Request" desc="Full request as it goes over the wire">
-          <CodeBlock code={httpExample} onCopy={() => copy(httpExample, "HTTP")} copied={copied === "HTTP"} />
+          <CodeBlock
+            code={httpExample}
+            onCopy={() => copy(httpExample, "HTTP")}
+            copied={copied === "HTTP"}
+          />
         </Step>
 
         <Step number={4} title="cURL Example" desc="Ready-to-run request">
-          <CodeBlock code={curlExample} onCopy={() => copy(curlExample, "cURL")} copied={copied === "cURL"} />
+          <CodeBlock
+            code={curlExample}
+            onCopy={() => copy(curlExample, "cURL")}
+            copied={copied === "cURL"}
+          />
         </Step>
 
         <Step number={5} title="Node.js Example" desc="Using native fetch">
-          <CodeBlock code={nodeExample} onCopy={() => copy(nodeExample, "Node")} copied={copied === "Node"} />
+          <CodeBlock
+            code={nodeExample}
+            onCopy={() => copy(nodeExample, "Node")}
+            copied={copied === "Node"}
+          />
         </Step>
       </section>
 
@@ -241,10 +327,12 @@ const data = await res.json();`;
           <div className="rounded-control border border-emerald-500/30 bg-emerald-500/5 p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold">Success</span>
-              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">200 OK</span>
+              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                200 OK
+              </span>
             </div>
             <pre className="text-xs font-mono bg-background rounded-control p-2 overflow-x-auto">
-{`{
+              {`{
   "success": true,
   "metaResponse": {
     "message_id": "message_id_here",
@@ -256,10 +344,12 @@ const data = await res.json();`;
           <div className="rounded-control border border-red-500/30 bg-red-500/5 p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold">Error</span>
-              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-red-500/10 text-red-600 border border-red-500/20">4xx / 5xx</span>
+              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-control bg-red-500/10 text-red-600 border border-red-500/20">
+                4xx / 5xx
+              </span>
             </div>
             <pre className="text-xs font-mono bg-background rounded-control p-2 overflow-x-auto">
-{`{
+              {`{
   "success": false,
   "message": "<REASON>"
 }`}
@@ -271,7 +361,17 @@ const data = await res.json();`;
   );
 }
 
-function Step({ number, title, desc, children }: { number: number; title: string; desc: string; children: React.ReactNode }) {
+function Step({
+  number,
+  title,
+  desc,
+  children,
+}: {
+  number: number;
+  title: string;
+  desc: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-control border border-border bg-card p-4">
       <div className="flex items-start gap-3">
@@ -297,14 +397,29 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function CodeBlock({ code, onCopy, copied }: { code: string; onCopy: () => void; copied: boolean }) {
+function CodeBlock({
+  code,
+  onCopy,
+  copied,
+}: {
+  code: string;
+  onCopy: () => void;
+  copied: boolean;
+}) {
   return (
     <div className="relative">
       <pre className="text-xs font-mono bg-muted rounded-control px-3 py-3 overflow-x-auto max-h-96 whitespace-pre">
-{code}
+        {code}
       </pre>
-      <button onClick={onCopy} className="absolute top-2 right-2 p-1.5 rounded-control border border-border bg-background hover:bg-muted">
-        {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+      <button
+        onClick={onCopy}
+        className="absolute top-2 right-2 p-1.5 rounded-control border border-border bg-background hover:bg-muted"
+      >
+        {copied ? (
+          <Check className="w-3.5 h-3.5 text-emerald-500" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" />
+        )}
       </button>
     </div>
   );

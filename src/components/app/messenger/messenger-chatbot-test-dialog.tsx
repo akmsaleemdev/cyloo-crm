@@ -1,10 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Bot, Send, MessageCircle, Sparkles, Loader2, RefreshCw, User2, PlugZap, History, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  Bot,
+  Send,
+  MessageCircle,
+  Sparkles,
+  Loader2,
+  RefreshCw,
+  User2,
+  PlugZap,
+  History,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -68,7 +86,13 @@ export function MessengerChatbotTestDialog({
     if (!open || !bot) return;
     setTurns(
       bot.welcome_message || bot.greeting
-        ? [{ role: "assistant", content: bot.welcome_message ?? bot.greeting ?? "", ts: Date.now() }]
+        ? [
+            {
+              role: "assistant",
+              content: bot.welcome_message ?? bot.greeting ?? "",
+              ts: Date.now(),
+            },
+          ]
         : [],
     );
     setInput("");
@@ -90,7 +114,13 @@ export function MessengerChatbotTestDialog({
         .limit(20);
       if (convErr) throw convErr;
       const convIds = (convs ?? []).map((c) => c.id);
-      if (convIds.length === 0) return [] as Array<{ id: string; body: string; created_at: string; conversation_id: string }>;
+      if (convIds.length === 0)
+        return [] as Array<{
+          id: string;
+          body: string;
+          created_at: string;
+          conversation_id: string;
+        }>;
       const { data: msgs, error: msgErr } = await supabase
         .from("messages")
         .select("id, body, created_at, conversation_id, direction, message_type")
@@ -122,7 +152,10 @@ export function MessengerChatbotTestDialog({
         setConn({ state: "ok", expiresAt: res.expiresAt ?? null });
         toast.success("Page token is valid");
       } else {
-        setConn({ state: "error", reason: res.reason ?? (res.expired ? "Token expired" : "Verification failed") });
+        setConn({
+          state: "error",
+          reason: res.reason ?? (res.expired ? "Token expired" : "Verification failed"),
+        });
         toast.error(res.reason ?? "Verification failed");
       }
     } catch (e: unknown) {
@@ -188,7 +221,13 @@ export function MessengerChatbotTestDialog({
   const reset = () => {
     setTurns(
       bot.welcome_message || bot.greeting
-        ? [{ role: "assistant", content: bot.welcome_message ?? bot.greeting ?? "", ts: Date.now() }]
+        ? [
+            {
+              role: "assistant",
+              content: bot.welcome_message ?? bot.greeting ?? "",
+              ts: Date.now(),
+            },
+          ]
         : [],
     );
     setInput("");
@@ -224,7 +263,10 @@ export function MessengerChatbotTestDialog({
                 </div>
               )}
               {turns.map((t, i) => (
-                <div key={i} className={`flex items-end gap-2 ${t.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  key={i}
+                  className={`flex items-end gap-2 ${t.role === "user" ? "justify-end" : "justify-start"}`}
+                >
                   {t.role === "assistant" && (
                     <div className="w-6 h-6 rounded-control bg-[#0084ff] text-white flex items-center justify-center shrink-0">
                       <Bot className="w-3.5 h-3.5" />
@@ -232,7 +274,9 @@ export function MessengerChatbotTestDialog({
                   )}
                   <div
                     className={`max-w-[75%] rounded-control px-3 py-2 text-sm whitespace-pre-wrap break-words ${
-                      t.role === "user" ? "bg-primary text-primary-foreground" : "bg-background border border-border"
+                      t.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-background border border-border"
                     }`}
                   >
                     {t.content.replace("[[handoff]]", "").trim() || t.content}
@@ -245,7 +289,9 @@ export function MessengerChatbotTestDialog({
                       <div className="mt-1 text-[11px] text-muted-foreground/80 flex flex-wrap gap-2">
                         {t.meta.model && <span>{t.meta.model}</span>}
                         {typeof t.meta.latencyMs === "number" && <span>{t.meta.latencyMs}ms</span>}
-                        {typeof t.meta.tokens === "number" && t.meta.tokens > 0 && <span>{t.meta.tokens} tok</span>}
+                        {typeof t.meta.tokens === "number" && t.meta.tokens > 0 && (
+                          <span>{t.meta.tokens} tok</span>
+                        )}
                       </div>
                     )}
                   </div>
@@ -289,8 +335,16 @@ export function MessengerChatbotTestDialog({
                 <Button size="sm" variant="ghost" onClick={reset} disabled={pending}>
                   <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Reset
                 </Button>
-                <Button size="sm" onClick={() => void send(input)} disabled={pending || !input.trim()}>
-                  {pending ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Send className="w-3.5 h-3.5 mr-1.5" />}
+                <Button
+                  size="sm"
+                  onClick={() => void send(input)}
+                  disabled={pending || !input.trim()}
+                >
+                  {pending ? (
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5 mr-1.5" />
+                  )}
                   Send
                 </Button>
               </div>
@@ -320,7 +374,11 @@ export function MessengerChatbotTestDialog({
                   <span>
                     Page token valid
                     {conn.expiresAt && (
-                      <> · expires {formatDistanceToNow(new Date(conn.expiresAt), { addSuffix: true })}</>
+                      <>
+                        {" "}
+                        · expires{" "}
+                        {formatDistanceToNow(new Date(conn.expiresAt), { addSuffix: true })}
+                      </>
                     )}
                   </span>
                 </div>
@@ -343,7 +401,9 @@ export function MessengerChatbotTestDialog({
                 <button
                   onClick={() => setTab("samples")}
                   className={`text-[11px] uppercase px-1.5 py-0.5 rounded-control ${
-                    tab === "samples" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                    tab === "samples"
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   Samples
@@ -351,7 +411,9 @@ export function MessengerChatbotTestDialog({
                 <button
                   onClick={() => setTab("history")}
                   className={`text-[11px] uppercase px-1.5 py-0.5 rounded-control inline-flex items-center gap-1 ${
-                    tab === "history" ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                    tab === "history"
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <History className="w-3 h-3" /> Replay
@@ -383,11 +445,13 @@ export function MessengerChatbotTestDialog({
                       <Loader2 className="w-3 h-3 animate-spin" /> Loading history
                     </div>
                   )}
-                  {messengerAccountId && !history.isLoading && (history.data ?? []).length === 0 && (
-                    <div className="text-[11px] text-muted-foreground">
-                      No inbound messages on this Page yet.
-                    </div>
-                  )}
+                  {messengerAccountId &&
+                    !history.isLoading &&
+                    (history.data ?? []).length === 0 && (
+                      <div className="text-[11px] text-muted-foreground">
+                        No inbound messages on this Page yet.
+                      </div>
+                    )}
                   {(history.data ?? []).map((m) => (
                     <button
                       key={m.id}
@@ -414,10 +478,10 @@ export function MessengerChatbotTestDialog({
             </div>
 
             <div className="text-[11px] text-muted-foreground leading-relaxed border-t border-border pt-3">
-              This console runs the same prompt config the live bot uses, against the AI Gateway. No message is delivered to Messenger.
+              This console runs the same prompt config the live bot uses, against the AI Gateway. No
+              message is delivered to Messenger.
             </div>
           </div>
-
         </div>
       </DialogContent>
     </Dialog>

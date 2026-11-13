@@ -1,19 +1,39 @@
 import { useEffect, useState, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextarea } from "@/shared/components/rich-textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  useCreateDeal, useUpdateDeal, usePipelines, useStages,
-  useContactsLite, useCompaniesLite,
-  DEAL_PRIORITIES, DEAL_STATUSES, CURRENCIES,
-  type DealInput, type DealRow,
+  useCreateDeal,
+  useUpdateDeal,
+  usePipelines,
+  useStages,
+  useContactsLite,
+  useCompaniesLite,
+  DEAL_PRIORITIES,
+  DEAL_STATUSES,
+  CURRENCIES,
+  type DealInput,
+  type DealRow,
 } from "@/hooks/use-deals";
 import { useWorkspaceMembers } from "@/hooks/use-workspace";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
@@ -29,7 +49,11 @@ type Props = {
 };
 
 /** `fallbackCurrency` is required: a default of "USD" here silently overrode the tenant's. */
-function baseline(initial: DealRow | null | undefined, defaults: DealInput | undefined, fallbackCurrency: string): DealInput {
+function baseline(
+  initial: DealRow | null | undefined,
+  defaults: DealInput | undefined,
+  fallbackCurrency: string,
+): DealInput {
   if (initial) {
     return {
       title: initial.title,
@@ -83,7 +107,8 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
   const set = <K extends keyof DealInput>(k: K, v: DealInput[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const pipelineId = form.pipeline_id ?? pipelines?.find((p) => p.is_default)?.id ?? pipelines?.[0]?.id ?? null;
+  const pipelineId =
+    form.pipeline_id ?? pipelines?.find((p) => p.is_default)?.id ?? pipelines?.[0]?.id ?? null;
   const { data: stages } = useStages(pipelineId);
 
   // Auto-set pipeline when creating new & pipelines load
@@ -113,7 +138,11 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
     if (!(form.tags ?? []).includes(t)) set("tags", [...(form.tags ?? []), t]);
     setTagInput("");
   };
-  const removeTag = (t: string) => set("tags", (form.tags ?? []).filter((x) => x !== t));
+  const removeTag = (t: string) =>
+    set(
+      "tags",
+      (form.tags ?? []).filter((x) => x !== t),
+    );
 
   const busy = create.isPending || update.isPending;
 
@@ -143,7 +172,9 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit deal" : "New deal"}</DialogTitle>
           <DialogDescription>
-            {isEdit ? "Update deal details, owner, stage, or value." : "Create a new opportunity in your sales pipeline."}
+            {isEdit
+              ? "Update deal details, owner, stage, or value."
+              : "Create a new opportunity in your sales pipeline."}
           </DialogDescription>
         </DialogHeader>
 
@@ -181,11 +212,18 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
             </div>
             <div>
               <Label>Currency</Label>
-              <Select value={form.currency ?? tenantCurrency} onValueChange={(v) => set("currency", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.currency ?? tenantCurrency}
+                onValueChange={(v) => set("currency", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {CURRENCIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -206,10 +244,14 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
                 value={form.pipeline_id ?? undefined}
                 onValueChange={(v) => setForm((s) => ({ ...s, pipeline_id: v, stage_id: null }))}
               >
-                <SelectTrigger><SelectValue placeholder="Select pipeline" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select pipeline" />
+                </SelectTrigger>
                 <SelectContent>
                   {(pipelines ?? []).map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -229,10 +271,14 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
                 }}
                 disabled={!stages?.length}
               >
-                <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select stage" />
+                </SelectTrigger>
                 <SelectContent>
                   {(stages ?? []).map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -253,19 +299,37 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <Label>Priority</Label>
-              <Select value={form.priority ?? "normal"} onValueChange={(v) => set("priority", v as DealInput["priority"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.priority ?? "normal"}
+                onValueChange={(v) => set("priority", v as DealInput["priority"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {DEAL_PRIORITIES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  {DEAL_PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>Status</Label>
-              <Select value={form.status ?? "open"} onValueChange={(v) => set("status", v as DealInput["status"])}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.status ?? "open"}
+                onValueChange={(v) => set("status", v as DealInput["status"])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {DEAL_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  {DEAL_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -275,7 +339,9 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
                 value={form.owner_id ?? "__none__"}
                 onValueChange={(v) => set("owner_id", v === "__none__" ? null : v)}
               >
-                <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Unassigned" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Unassigned</SelectItem>
                   {(members ?? []).map((m) => (
@@ -295,12 +361,18 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
                 value={form.contact_id ?? "__none__"}
                 onValueChange={(v) => set("contact_id", v === "__none__" ? null : v)}
               >
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">None</SelectItem>
                   {contactOptions.slice(0, 200).map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.full_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || c.email || c.phone || c.id.slice(0, 6)}
+                      {c.full_name ||
+                        [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+                        c.email ||
+                        c.phone ||
+                        c.id.slice(0, 6)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -312,11 +384,15 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
                 value={form.company_id ?? "__none__"}
                 onValueChange={(v) => set("company_id", v === "__none__" ? null : v)}
               >
-                <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="None" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">None</SelectItem>
                   {companyOptions.slice(0, 200).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -338,10 +414,17 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
               <Input
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTag();
+                  }
+                }}
                 placeholder="Add a tag and press Enter"
               />
-              <Button type="button" variant="outline" onClick={addTag}>Add</Button>
+              <Button type="button" variant="outline" onClick={addTag}>
+                Add
+              </Button>
             </div>
             {(form.tags ?? []).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
@@ -359,7 +442,9 @@ export function DealFormDialog({ open, onOpenChange, initial, defaults }: Props)
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={busy}>
+            Cancel
+          </Button>
           <Button onClick={submit} disabled={busy}>
             {busy && <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />}
             {isEdit ? "Save changes" : "Create deal"}

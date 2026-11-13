@@ -13,9 +13,20 @@ const COMPANY_SIZE_VALUES = COMPANY_SIZES.map((s) => s.value) as [string, ...str
 
 /** Free-mail domains are rejected — the form asks for a work email. */
 const FREE_EMAIL_DOMAINS = new Set([
-  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "live.com",
-  "aol.com", "icloud.com", "me.com", "proton.me", "protonmail.com",
-  "mail.com", "gmx.com", "yandex.com", "zoho.com",
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "outlook.com",
+  "live.com",
+  "aol.com",
+  "icloud.com",
+  "me.com",
+  "proton.me",
+  "protonmail.com",
+  "mail.com",
+  "gmx.com",
+  "yandex.com",
+  "zoho.com",
 ]);
 
 export const leadCaptureSchema = z

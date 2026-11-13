@@ -31,10 +31,7 @@ const SCOPE_DESCRIPTIONS: Record<string, string> = {
 
 export const Route = createFileRoute("/_authenticated/oauth/consent")({
   head: () => ({
-    meta: [
-      { title: "Authorize application" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Authorize application" }, { name: "robots", content: "noindex" }],
   }),
   validateSearch: (s: Record<string, unknown>) => s,
   component: ConsentPage,
@@ -76,11 +73,15 @@ function ConsentPage() {
 
   const approve = useMutation({
     mutationFn: () => approveFn({ data: params }),
-    onSuccess: (r: any) => { if (r?.redirect_to) window.location.href = r.redirect_to; },
+    onSuccess: (r: any) => {
+      if (r?.redirect_to) window.location.href = r.redirect_to;
+    },
   });
   const deny = useMutation({
     mutationFn: () => denyFn({ data: { redirect_uri: params.redirect_uri, state: params.state } }),
-    onSuccess: (r: any) => { if (r?.redirect_to) window.location.href = r.redirect_to; },
+    onSuccess: (r: any) => {
+      if (r?.redirect_to) window.location.href = r.redirect_to;
+    },
   });
 
   if (details.isLoading) {
@@ -103,7 +104,9 @@ function ConsentPage() {
           <CardContent className="text-sm text-muted-foreground">
             {(details.error as Error).message}
             <div className="mt-4">
-              <Button variant="outline" onClick={() => navigate({ to: "/" })}>Go home</Button>
+              <Button variant="outline" onClick={() => navigate({ to: "/" })}>
+                Go home
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -120,7 +123,9 @@ function ConsentPage() {
         <CardHeader className="text-center space-y-3">
           <div className="flex justify-center">
             <Avatar className="w-16 h-16">
-              {d.client.logo_url ? <AvatarImage src={d.client.logo_url} alt={d.client.name} /> : null}
+              {d.client.logo_url ? (
+                <AvatarImage src={d.client.logo_url} alt={d.client.name} />
+              ) : null}
               <AvatarFallback className="text-xl">
                 {d.client.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -128,7 +133,9 @@ function ConsentPage() {
           </div>
           <div>
             <CardTitle className="text-xl">{d.client.name}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">wants to access your <Brand /> account</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              wants to access your <Brand /> account
+            </p>
           </div>
           <div className="flex justify-center gap-2 flex-wrap">
             {d.client.approved && (
@@ -155,32 +162,47 @@ function ConsentPage() {
             </ul>
           </div>
           <div className="rounded-control bg-muted/50 p-3 text-xs text-muted-foreground">
-            Redirects to <code className="font-mono">{new URL(params.redirect_uri).host}</code>.
-            You can revoke access at any time from Settings → Connected apps.
+            Redirects to <code className="font-mono">{new URL(params.redirect_uri).host}</code>. You
+            can revoke access at any time from Settings → Connected apps.
           </div>
           {(d.client.privacy_url || d.client.tos_url) && (
             <div className="flex gap-3 justify-center text-xs">
               {d.client.privacy_url && (
-                <a href={d.client.privacy_url} target="_blank" rel="noreferrer"
-                   className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+                <a
+                  href={d.client.privacy_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                >
                   Privacy <ExternalLink className="w-3 h-3" />
                 </a>
               )}
               {d.client.tos_url && (
-                <a href={d.client.tos_url} target="_blank" rel="noreferrer"
-                   className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+                <a
+                  href={d.client.tos_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                >
                   Terms <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
           )}
           <div className="flex gap-3">
-            <Button variant="outline" className="flex-1" disabled={approve.isPending || deny.isPending}
-                    onClick={() => deny.mutate()}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={approve.isPending || deny.isPending}
+              onClick={() => deny.mutate()}
+            >
               Cancel
             </Button>
-            <Button className="flex-1" disabled={approve.isPending || deny.isPending}
-                    onClick={() => approve.mutate()}>
+            <Button
+              className="flex-1"
+              disabled={approve.isPending || deny.isPending}
+              onClick={() => approve.mutate()}
+            >
               {approve.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Authorize"}
             </Button>
           </div>

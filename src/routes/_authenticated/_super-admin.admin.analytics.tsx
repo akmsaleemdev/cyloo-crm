@@ -3,27 +3,63 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Building2, Users, UserCheck, UserPlus, DollarSign, TrendingUp, HardDrive, Sparkles,
-  MessageSquare, Megaphone, Workflow, Cable, TrendingDown, Download, RefreshCw, Loader2,
+  Building2,
+  Users,
+  UserCheck,
+  UserPlus,
+  DollarSign,
+  TrendingUp,
+  HardDrive,
+  Sparkles,
+  MessageSquare,
+  Megaphone,
+  Workflow,
+  Cable,
+  TrendingDown,
+  Download,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 import {
-  ResponsiveContainer, AreaChart, Area, LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, Tooltip, CartesianGrid, Legend,
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
 } from "recharts";
 import { AdminPageShell } from "@/components/admin/admin-page-shell";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  getPlatformOverview, getGrowthTrends, getTopTenants, getChurnTrend, exportAnalyticsCsv,
+  getPlatformOverview,
+  getGrowthTrends,
+  getTopTenants,
+  getChurnTrend,
+  exportAnalyticsCsv,
   type TopTenant,
 } from "@/lib/admin/analytics.functions";
 import { toast } from "sonner";
 import { useCurrencyFormatter, useTenantCurrency } from "@/hooks/use-currency";
 
 export const Route = createFileRoute("/_authenticated/_super-admin/admin/analytics")({
-  head: () => ({ meta: [{ title: "Super Admin — Platform Analytics" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Super Admin — Platform Analytics" }, { name: "robots", content: "noindex" }],
+  }),
   component: AnalyticsPage,
 });
 
@@ -33,7 +69,11 @@ const nf = new Intl.NumberFormat("en-US");
  * so it keeps a USD formatter. Platform revenue (MRR/ARR) follows the currency
  * set in Super Admin instead, which is what these two used to get wrong.
  */
-const usdSmall = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+const usdSmall = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 2,
+});
 
 function formatBytes(n: number) {
   if (!n) return "0 B";
@@ -88,15 +128,36 @@ function AnalyticsPage() {
     const d = overview.data?.deltas;
     if (!t || !d) return [];
     return [
-      { label: "Organizations", value: nf.format(t.organizations), delta: d.organizationsPct ?? undefined, icon: Building2 },
+      {
+        label: "Organizations",
+        value: nf.format(t.organizations),
+        delta: d.organizationsPct ?? undefined,
+        icon: Building2,
+      },
       { label: "Users", value: nf.format(t.users), delta: d.usersPct ?? undefined, icon: Users },
       { label: "Active users (30d)", value: nf.format(t.activeUsers30d), icon: UserCheck },
       { label: "New signups (7d)", value: nf.format(t.newSignups7d), icon: UserPlus },
-      { label: "MRR", value: cf(t.mrrCents / 100), delta: d.mrrPct ?? undefined, icon: DollarSign, accent: true },
+      {
+        label: "MRR",
+        value: cf(t.mrrCents / 100),
+        delta: d.mrrPct ?? undefined,
+        icon: DollarSign,
+        accent: true,
+      },
       { label: "ARR", value: cf(t.arrCents / 100), icon: TrendingUp, accent: true },
       { label: "Storage", value: formatBytes(t.storageBytes), icon: HardDrive },
-      { label: "AI cost (30d)", value: usdSmall.format(t.aiCostUsd), delta: d.aiCostPct ?? undefined, icon: Sparkles },
-      { label: "WhatsApp msgs (30d)", value: nf.format(t.whatsappMessages30d), delta: d.messagesPct ?? undefined, icon: MessageSquare },
+      {
+        label: "AI cost (30d)",
+        value: usdSmall.format(t.aiCostUsd),
+        delta: d.aiCostPct ?? undefined,
+        icon: Sparkles,
+      },
+      {
+        label: "WhatsApp msgs (30d)",
+        value: nf.format(t.whatsappMessages30d),
+        delta: d.messagesPct ?? undefined,
+        icon: MessageSquare,
+      },
       { label: "Campaigns (30d)", value: nf.format(t.campaigns30d), icon: Megaphone },
       { label: "Workflow runs (30d)", value: nf.format(t.workflowExecutions30d), icon: Workflow },
       { label: "API requests (30d)", value: nf.format(t.apiRequests30d), icon: Cable },
@@ -119,8 +180,13 @@ function AnalyticsPage() {
       description="Business intelligence across every tenant, workspace, and integration. All series refresh in real time."
       actions={
         <div className="flex items-center gap-2">
-          <Select value={String(range)} onValueChange={(v) => setRange(Number(v) as 30 | 60 | 90 | 180 | 365)}>
-            <SelectTrigger className="h-9 w-[130px]"><SelectValue /></SelectTrigger>
+          <Select
+            value={String(range)}
+            onValueChange={(v) => setRange(Number(v) as 30 | 60 | 90 | 180 | 365)}
+          >
+            <SelectTrigger className="h-9 w-[130px]">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="30">Last 30 days</SelectItem>
               <SelectItem value="60">Last 60 days</SelectItem>
@@ -152,7 +218,10 @@ function AnalyticsPage() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {overview.isLoading
           ? Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="h-24 rounded-control border border-border bg-surface animate-pulse" />
+              <div
+                key={i}
+                className="h-24 rounded-control border border-border bg-surface animate-pulse"
+              />
             ))
           : kpis.map((k) => (
               <div
@@ -163,7 +232,9 @@ function AnalyticsPage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">{k.label}</span>
-                  <k.icon className={`w-4 h-4 ${k.accent ? "text-accent" : "text-muted-foreground"}`} />
+                  <k.icon
+                    className={`w-4 h-4 ${k.accent ? "text-accent" : "text-muted-foreground"}`}
+                  />
                 </div>
                 <div className="mt-2 text-2xl font-display font-semibold">{k.value}</div>
                 {k.delta !== undefined && (
@@ -172,7 +243,11 @@ function AnalyticsPage() {
                       k.delta >= 0 ? "text-emerald-600" : "text-red-600"
                     }`}
                   >
-                    {k.delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                    {k.delta >= 0 ? (
+                      <TrendingUp className="w-3 h-3" />
+                    ) : (
+                      <TrendingDown className="w-3 h-3" />
+                    )}
                     {k.delta >= 0 ? "+" : ""}
                     {k.delta.toFixed(1)}% vs prior
                   </div>
@@ -209,12 +284,34 @@ function AnalyticsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
+                <Tooltip
+                  contentStyle={{
+                    background: "hsl(var(--surface))",
+                    border: "1px solid hsl(var(--border))",
+                    fontSize: 12,
+                  }}
+                />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area type="monotone" dataKey="organizations" stroke="hsl(var(--accent))" fill="url(#gOrgs)" name="New orgs" />
-                <Area type="monotone" dataKey="users" stroke="hsl(var(--primary))" fill="url(#gUsers)" name="New users" />
+                <Area
+                  type="monotone"
+                  dataKey="organizations"
+                  stroke="hsl(var(--accent))"
+                  fill="url(#gOrgs)"
+                  name="New orgs"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="users"
+                  stroke="hsl(var(--primary))"
+                  fill="url(#gUsers)"
+                  name="New users"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -229,7 +326,11 @@ function AnalyticsPage() {
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={(growth.data ?? []).map((p) => ({ ...p, mrr: p.mrrCents / 100 }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11 }}
+                  stroke="hsl(var(--muted-foreground))"
+                />
                 <YAxis
                   tick={{ fontSize: 11 }}
                   stroke="hsl(var(--muted-foreground))"
@@ -237,9 +338,20 @@ function AnalyticsPage() {
                 />
                 <Tooltip
                   formatter={(v) => cfSmall(v as number)}
-                  contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }}
+                  contentStyle={{
+                    background: "hsl(var(--surface))",
+                    border: "1px solid hsl(var(--border))",
+                    fontSize: 12,
+                  }}
                 />
-                <Line type="monotone" dataKey="mrr" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name={`MRR (${platformCurrency})`} />
+                <Line
+                  type="monotone"
+                  dataKey="mrr"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={2}
+                  dot={false}
+                  name={`MRR (${platformCurrency})`}
+                />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -247,29 +359,62 @@ function AnalyticsPage() {
 
         <TabsContent value="usage">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="WhatsApp messages" loading={growth.isLoading} onExport={() => handleExport("growth")}>
+            <ChartCard
+              title="WhatsApp messages"
+              loading={growth.isLoading}
+              onExport={() => handleExport("growth")}
+            >
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={growth.data ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
                   <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--surface))",
+                      border: "1px solid hsl(var(--border))",
+                      fontSize: 12,
+                    }}
+                  />
                   <Bar dataKey="messages" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-            <ChartCard title="Workflow executions" loading={growth.isLoading} onExport={() => handleExport("growth")}>
+            <ChartCard
+              title="Workflow executions"
+              loading={growth.isLoading}
+              onExport={() => handleExport("growth")}
+            >
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={growth.data ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
                   <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--surface))",
+                      border: "1px solid hsl(var(--border))",
+                      fontSize: 12,
+                    }}
+                  />
                   <Bar dataKey="workflowRuns" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-            <ChartCard title="AI spend (USD)" loading={growth.isLoading} onExport={() => handleExport("growth")} className="lg:col-span-2">
+            <ChartCard
+              title="AI spend (USD)"
+              loading={growth.isLoading}
+              onExport={() => handleExport("growth")}
+              className="lg:col-span-2"
+            >
               <ResponsiveContainer width="100%" height={260}>
                 <AreaChart data={growth.data ?? []}>
                   <defs>
@@ -279,10 +424,31 @@ function AnalyticsPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => usdSmall.format(v as number)} />
-                  <Tooltip formatter={(v) => usdSmall.format(v as number)} contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
-                  <Area type="monotone" dataKey="aiCostUsd" stroke="hsl(var(--accent))" fill="url(#gAi)" name="AI cost" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => usdSmall.format(v as number)}
+                  />
+                  <Tooltip
+                    formatter={(v) => usdSmall.format(v as number)}
+                    contentStyle={{
+                      background: "hsl(var(--surface))",
+                      border: "1px solid hsl(var(--border))",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="aiCostUsd"
+                    stroke="hsl(var(--accent))"
+                    fill="url(#gAi)"
+                    name="AI cost"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </ChartCard>
@@ -299,14 +465,21 @@ function AnalyticsPage() {
                     key={m}
                     onClick={() => setTenantMetric(m)}
                     className={`px-2 py-1 rounded-control border capitalize transition-colors ${
-                      tenantMetric === m ? "border-accent bg-accent/10 text-accent" : "border-border hover:bg-muted"
+                      tenantMetric === m
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-border hover:bg-muted"
                     }`}
                   >
                     {m === "ai" ? "AI spend" : m === "mrr" ? "MRR" : m}
                   </button>
                 ))}
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleExport("top_tenants")} className="gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleExport("top_tenants")}
+                className="gap-1.5"
+              >
                 <Download className="w-4 h-4" /> Export CSV
               </Button>
             </div>
@@ -325,33 +498,60 @@ function AnalyticsPage() {
                 </thead>
                 <tbody>
                   {tenants.isLoading ? (
-                    <tr><td colSpan={7} className="p-6 text-center text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin inline" />Loading</td></tr>
+                    <tr>
+                      <td colSpan={7} className="p-6 text-center text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin inline" />
+                        Loading
+                      </td>
+                    </tr>
                   ) : (tenants.data ?? []).length === 0 ? (
-                    <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">No tenants yet.</td></tr>
+                    <tr>
+                      <td colSpan={7} className="p-10 text-center text-muted-foreground">
+                        No tenants yet.
+                      </td>
+                    </tr>
                   ) : (
                     (tenants.data as TopTenant[]).map((t, i) => (
-                      <tr key={t.organizationId} className="border-b border-border last:border-0 hover:bg-muted/40">
+                      <tr
+                        key={t.organizationId}
+                        className="border-b border-border last:border-0 hover:bg-muted/40"
+                      >
                         <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                         <td className="px-4 py-3">
                           <div className="font-medium">{t.name}</div>
-                          {t.slug && <div className="text-[11px] text-muted-foreground">{t.slug}</div>}
+                          {t.slug && (
+                            <div className="text-[11px] text-muted-foreground">{t.slug}</div>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {t.plan ? (
-                            <Badge variant="outline" className="text-[11px]">{t.plan}</Badge>
+                            <Badge variant="outline" className="text-[11px]">
+                              {t.plan}
+                            </Badge>
                           ) : (
                             <span className="text-xs text-muted-foreground">—</span>
                           )}
                           {t.status && (
-                            <Badge className="ml-1 text-[11px] capitalize" variant={t.status === "active" ? "default" : "secondary"}>
+                            <Badge
+                              className="ml-1 text-[11px] capitalize"
+                              variant={t.status === "active" ? "default" : "secondary"}
+                            >
                               {t.status}
                             </Badge>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-xs">{cf(t.mrrCents / 100)}</td>
-                        <td className="px-4 py-3 text-right font-mono text-xs">{nf.format(t.users)}</td>
-                        <td className="px-4 py-3 text-right font-mono text-xs">{nf.format(t.messages30d)}</td>
-                        <td className="px-4 py-3 text-right font-mono text-xs">{usdSmall.format(t.aiCostUsd)}</td>
+                        <td className="px-4 py-3 text-right font-mono text-xs">
+                          {cf(t.mrrCents / 100)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-xs">
+                          {nf.format(t.users)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-xs">
+                          {nf.format(t.messages30d)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-xs">
+                          {usdSmall.format(t.aiCostUsd)}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -382,14 +582,59 @@ function AnalyticsPage() {
               <ResponsiveContainer width="100%" height={280}>
                 <LineChart data={churn.data ?? []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis yAxisId="left" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" tickFormatter={(v) => `${v}%`} />
-                  <Tooltip contentStyle={{ background: "hsl(var(--surface))", border: "1px solid hsl(var(--border))", fontSize: 12 }} />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis
+                    yAxisId="left"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis
+                    yAxisId="right"
+                    orientation="right"
+                    tick={{ fontSize: 11 }}
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={(v) => `${v}%`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "hsl(var(--surface))",
+                      border: "1px solid hsl(var(--border))",
+                      fontSize: 12,
+                    }}
+                  />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
-                  <Line yAxisId="left" type="monotone" dataKey="new" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} name="New" />
-                  <Line yAxisId="left" type="monotone" dataKey="churned" stroke="#dc2626" strokeWidth={2} dot={false} name="Churned" />
-                  <Line yAxisId="right" type="monotone" dataKey="churnRatePct" stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" strokeWidth={1.5} dot={false} name="Churn %" />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="new"
+                    stroke="hsl(var(--accent))"
+                    strokeWidth={2}
+                    dot={false}
+                    name="New"
+                  />
+                  <Line
+                    yAxisId="left"
+                    type="monotone"
+                    dataKey="churned"
+                    stroke="#dc2626"
+                    strokeWidth={2}
+                    dot={false}
+                    name="Churned"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="churnRatePct"
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeDasharray="4 4"
+                    strokeWidth={1.5}
+                    dot={false}
+                    name="Churn %"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>

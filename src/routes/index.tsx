@@ -8,7 +8,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { docsUrl } from "@/lib/docs/links";
 import { SHOW_RESOURCE_LINKS } from "@/lib/docs/visibility";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import {
   MessagesSquare,
   Sparkles,
@@ -104,13 +104,13 @@ import {
   usePublicPlans,
 } from "@/lib/billing/public-plans";
 
-import platformStackImg from "@/assets/marketing/platform-stack-illustration.png";
-import featureAnalyticsImg from "@/assets/marketing/feature-analytics-new.png";
-import featureAutomationsImg from "@/assets/marketing/feature-automations-new.png";
-import featureBroadcastImg from "@/assets/marketing/feature-broadcast-new.png";
-import featureHelpdeskImg from "@/assets/marketing/feature-helpdesk-new.png";
-import featureAiStudioImg from "@/assets/marketing/feature-ai-studio.png";
-import featureSharedInboxImg from "@/assets/marketing/feature-shared-inbox.png";
+import platformStackImg from "@/assets/marketing/cyloo-platform.svg";
+import featureAnalyticsImg from "@/assets/marketing/cyloo-analytics.svg";
+import featureAutomationsImg from "@/assets/marketing/cyloo-automations.svg";
+import featureBroadcastImg from "@/assets/marketing/cyloo-campaigns.svg";
+import featureHelpdeskImg from "@/assets/marketing/cyloo-inbox.svg";
+import featureAiStudioImg from "@/assets/marketing/cyloo-platform.svg";
+import featureSharedInboxImg from "@/assets/marketing/cyloo-inbox.svg";
 import stepperInboxImg from "@/assets/marketing/stepper-inbox.jpg";
 import stepperFlowImg from "@/assets/marketing/stepper-flow.jpg";
 import stepperCampaignImg from "@/assets/marketing/stepper-campaign.jpg";
@@ -167,33 +167,35 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div className="landing-shadows min-h-dvh overflow-x-clip bg-background">
-      <Nav />
-      <main>
-        <Hero />
-        <StackReplacement />
-        <ChannelStrip />
-        <Features />
-        <IndustryUseCases />
-        <UnifiedInboxSpotlight />
-        <CRMSalesSpotlight />
-        <AutomationBotsSpotlight />
-        <MarketingCampaignsSpotlight />
-        <PlatformEcosystemSpotlight />
-        <WorkspaceManagementSpotlight />
-        <PlatformOverviewBento />
-        <Stepper />
-        <Roles />
-        <Security />
-        <Integrations />
-        <CTA />
-        <Pricing />
-        <FaqSection />
-        <MarketingSection />
-      </main>
-      <Footer />
-      <WhatsAppFloatingCta message="Hi! I'm on the {site} site and would like a quick walkthrough." />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="landing-shadows min-h-dvh overflow-x-clip bg-background">
+        <Nav />
+        <main>
+          <Hero />
+          <StackReplacement />
+          <ChannelStrip />
+          <Features />
+          <IndustryUseCases />
+          <UnifiedInboxSpotlight />
+          <CRMSalesSpotlight />
+          <AutomationBotsSpotlight />
+          <MarketingCampaignsSpotlight />
+          <PlatformEcosystemSpotlight />
+          <WorkspaceManagementSpotlight />
+          <PlatformOverviewBento />
+          <Stepper />
+          <Roles />
+          <Security />
+          <Integrations />
+          <CTA />
+          <Pricing />
+          <FaqSection />
+          <MarketingSection />
+        </main>
+        <Footer />
+        <WhatsAppFloatingCta message="Hi! I'm on the {site} site and would like a quick walkthrough." />
+      </div>
+    </MotionConfig>
   );
 }
 
@@ -324,10 +326,7 @@ function Hero() {
             transition={{ duration: 0.4, delay: 0.05 }}
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-xs">
-              <PlatformMark
-                alt=""
-                className="size-3.5 shrink-0 object-contain hidden sm:inline"
-              />
+              <PlatformMark alt="" className="size-3.5 shrink-0 object-contain hidden sm:inline" />
               WhatsApp, Messenger &amp; Instagram APIs · Self-hosted &amp; Cloud
             </span>
           </motion.div>
@@ -377,17 +376,14 @@ function Hero() {
               size="xl"
               className="w-full md:w-auto hover:bg-muted/60 transition-all bg-background!"
             >
-              <a
-                href="#workflow"
-                {...ctaAttrs("see-the-product", "hero")}
-              >
+              <a href="#workflow" {...ctaAttrs("see-the-product", "hero")}>
                 <Play className="size-4" /> See the product
               </a>
             </Button>
           </motion.div>
         </motion.div>
 
-        {/* Monday.com-Inspired Interactive Product Board Showcase */}
+        {/* CYLOO workflow preview */}
         <HeroInteractiveShowcase />
 
         <div className="mt-14 flex flex-wrap items-center justify-center gap-5 lg:mt-20">
@@ -417,7 +413,7 @@ function Hero() {
           ))}
         </div>
 
-        {/* Monday.com-Inspired Social Proof & Performance Trust Band */}
+        {/* CYLOO capabilities */}
         <TrustMetricsBand />
       </div>
     </section>
@@ -425,39 +421,39 @@ function Hero() {
 }
 
 /* ============================================================ */
-/* Monday.com-Inspired Social Proof & Performance Trust Band   */
+/* CYLOO capabilities                                           */
 /* ============================================================ */
 function TrustMetricsBand() {
   const metrics = [
     {
-      value: "99.9%",
-      label: "Uptime SLA",
-      sub: "Enterprise-grade reliability",
-      badgeColor: "#00C875",
+      value: "Inbox",
+      label: "Team conversations",
+      sub: "Keep replies and ownership together",
+      badgeColor: "var(--primary)",
     },
     {
-      value: "10M+",
-      label: "Messages Handled",
-      sub: "Official Meta Cloud APIs",
-      badgeColor: "#0073EA",
+      value: "Sales",
+      label: "Customer pipelines",
+      sub: "Track deals and the next follow-up",
+      badgeColor: "var(--primary)",
     },
     {
-      value: "150+",
-      label: "Countries Reached",
-      sub: "Sub-120ms global delivery",
-      badgeColor: "#A25DDC",
+      value: "Flows",
+      label: "Workflow automation",
+      sub: "Connect triggers to team actions",
+      badgeColor: "var(--primary)",
     },
     {
-      value: "$0",
-      label: "Seat Tax",
-      sub: "Unlimited team teammates",
-      badgeColor: "#FDAB3D",
+      value: "AI",
+      label: "Provider choice",
+      sub: "Use your configured AI services",
+      badgeColor: "var(--primary)",
     },
     {
-      value: "< 2 min",
-      label: "Instant Setup",
-      sub: "Plug & play integrations",
-      badgeColor: "#3ECE90",
+      value: "Deploy",
+      label: "Hosting choice",
+      sub: "Configure CYLOO on your infrastructure",
+      badgeColor: "var(--primary)",
     },
   ];
 
@@ -478,9 +474,7 @@ function TrustMetricsBand() {
                 {m.value}
               </span>
             </div>
-            <span className="mt-1 text-xs font-semibold text-foreground/90">
-              {m.label}
-            </span>
+            <span className="mt-1 text-xs font-semibold text-foreground/90">{m.label}</span>
             <span className="mt-0.5 text-[11px] text-muted-foreground group-hover:text-foreground/70 transition-colors">
               {m.sub}
             </span>
@@ -7932,7 +7926,10 @@ function Pricing() {
                   } ${currentPlan ? "ring-2 ring-inset ring-[#25D366]/60" : ""}`}
                 >
                   {p.highlight && (
-                    <div aria-hidden className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary" />
+                    <div
+                      aria-hidden
+                      className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-accent to-primary"
+                    />
                   )}
                   <div className="mb-8 rounded-control border border-border bg-muted/50 p-6 sm:min-h-[18.25rem]">
                     <div className="flex min-h-7 items-start justify-between gap-3">
@@ -8148,7 +8145,8 @@ function MarketingSection() {
             </Link>
 
             <p className="mt-4 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
-              Production-ready multi-tenant CRM, AI automations, omnichannel inbox, and enterprise SLA support.
+              Production-ready multi-tenant CRM, AI automations, omnichannel inbox, and enterprise
+              SLA support.
             </p>
           </div>
         </div>
@@ -8215,7 +8213,11 @@ function Footer() {
         <div className="row-bleed-marketing px-0 border-y border-white/5 ">
           <div className="grid gap-8 md:gap-y-0 lg:gap-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
             <div className="min-w-0 border-b lg:border-b-0 md:border-r border-white/5 px-8 py-12 lg:px-12">
-              <Link to="/" className="flex min-w-0 items-center gap-2.5 cursor-pointer" aria-label="CYLOO Home">
+              <Link
+                to="/"
+                className="flex min-w-0 items-center gap-2.5 cursor-pointer"
+                aria-label="CYLOO Home"
+              >
                 <PlatformLogo alt="CYLOO" className="h-8 w-auto shrink-0 object-contain" />
               </Link>
               <p className="mt-4 max-w-xs text-sm text-background/70 dark:text-foreground/70">

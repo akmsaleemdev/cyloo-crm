@@ -15,7 +15,6 @@ export type TenantBreadcrumbKind =
   | "workflow.open"
   | "workflow.not_found"
   | "workflow.lookup_failed"
-
   | "workflow.no_membership"
   | "workflow.tenant_realigned"
   | "workflow.redirect"

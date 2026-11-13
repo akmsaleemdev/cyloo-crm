@@ -82,9 +82,7 @@ export function reportTenantOutcome(
       probe,
       requestId,
       path:
-        typeof window !== "undefined"
-          ? window.location.pathname + window.location.search
-          : null,
+        typeof window !== "undefined" ? window.location.pathname + window.location.search : null,
       breadcrumbs: readTenantBreadcrumbs()
         .slice(-15)
         .map((c) => ({ at: c.at, kind: c.kind, message: c.message })),
@@ -95,4 +93,3 @@ export function reportTenantOutcome(
 
   return requestId;
 }
-

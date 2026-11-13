@@ -23,7 +23,13 @@ export interface MergeFieldPickerProps {
   getNextIndex?: () => number;
 }
 
-export function MergeFieldPicker({ onInsert, size = "sm", label = "Merge field", className, getNextIndex }: MergeFieldPickerProps) {
+export function MergeFieldPicker({
+  onInsert,
+  size = "sm",
+  label = "Merge field",
+  className,
+  getNextIndex,
+}: MergeFieldPickerProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement>(null);
@@ -36,13 +42,22 @@ export function MergeFieldPicker({ onInsert, size = "sm", label = "Merge field",
       f.key.toLowerCase().includes(query.toLowerCase()),
   );
 
-  const grouped = filtered.reduce<Record<MergeField["group"], MergeField[]>>((acc, f) => {
-    (acc[f.group] ||= []).push(f);
-    return acc;
-  }, {} as Record<MergeField["group"], MergeField[]>);
+  const grouped = filtered.reduce<Record<MergeField["group"], MergeField[]>>(
+    (acc, f) => {
+      (acc[f.group] ||= []).push(f);
+      return acc;
+    },
+    {} as Record<MergeField["group"], MergeField[]>,
+  );
 
   return (
-    <Popover open={open} onOpenChange={(v) => { setOpen(v); if (v) setTimeout(() => searchRef.current?.focus(), 30); }}>
+    <Popover
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (v) setTimeout(() => searchRef.current?.focus(), 30);
+      }}
+    >
       <PopoverTrigger asChild>
         <Button type="button" size={size} variant="outline" className={className}>
           <Braces className="w-3.5 h-3.5 mr-1.5" /> {label}
@@ -70,7 +85,10 @@ export function MergeFieldPicker({ onInsert, size = "sm", label = "Merge field",
                   <button
                     type="button"
                     key={f.key}
-                    onClick={() => { onInsert(token); setOpen(false); }}
+                    onClick={() => {
+                      onInsert(token);
+                      setOpen(false);
+                    }}
                     className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-muted text-sm group"
                   >
                     <f.icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -85,7 +103,9 @@ export function MergeFieldPicker({ onInsert, size = "sm", label = "Merge field",
             </div>
           ))}
           {filtered.length === 0 && (
-            <div className="px-3 py-6 text-center text-sm text-muted-foreground">No fields match.</div>
+            <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+              No fields match.
+            </div>
           )}
         </div>
       </PopoverContent>

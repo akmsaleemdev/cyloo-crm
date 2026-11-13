@@ -19,14 +19,25 @@ const KIND_STYLES: Record<string, string> = {
   ai: "from-fuchsia-500/20 to-fuchsia-500/5 border-fuchsia-500/40 text-fuchsia-600",
 };
 
-export const CustomNode = React.memo(function CustomNode({ data, selected }: NodeProps<WFNodeData>) {
+export const CustomNode = React.memo(function CustomNode({
+  data,
+  selected,
+}: NodeProps<WFNodeData>) {
   const def = NODE_REGISTRY_BY_TYPE[data.type];
-  const Icon = (def?.icon && (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[def.icon]) || Icons.Box;
+  const Icon =
+    (def?.icon &&
+      (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[
+        def.icon
+      ]) ||
+    Icons.Box;
   const kind = def?.kind ?? "action";
   const isTrigger = kind === "trigger";
   const tone = KIND_STYLES[kind];
 
-  const accent = tone.split(" ").filter((c) => c.startsWith("from-")).join(" ");
+  const accent = tone
+    .split(" ")
+    .filter((c) => c.startsWith("from-"))
+    .join(" ");
 
   return (
     <div
@@ -44,7 +55,9 @@ export const CustomNode = React.memo(function CustomNode({ data, selected }: Nod
           {nodeChannel(data.type) ? (
             <ChannelIcon channel={nodeChannel(data.type)} boxed className="h-9 w-9 shrink-0" />
           ) : (
-            <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-control border bg-gradient-to-br ${tone}`}>
+            <div
+              className={`grid h-9 w-9 shrink-0 place-items-center rounded-control border bg-gradient-to-br ${tone}`}
+            >
               <Icon className="h-4 w-4" />
             </div>
           )}
@@ -52,7 +65,9 @@ export const CustomNode = React.memo(function CustomNode({ data, selected }: Nod
             <div className="text-[11px] font-semibold uppercase  text-muted-foreground">
               {def?.category ?? kind}
             </div>
-            <div className="truncate text-sm font-semibold leading-snug">{data.label || def?.label || data.type}</div>
+            <div className="truncate text-sm font-semibold leading-snug">
+              {data.label || def?.label || data.type}
+            </div>
           </div>
         </div>
         {def?.inputs?.slice(0, 2).map((f) => {

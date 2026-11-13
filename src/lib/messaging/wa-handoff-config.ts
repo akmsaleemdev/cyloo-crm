@@ -91,9 +91,7 @@ export function selectWaHandoffAgent(
   let pool = agents.filter((a) => a.presence === "online");
 
   if (settings.respect_max_concurrent) {
-    pool = pool.filter(
-      (a) => (a.current_load ?? 0) < Math.max(1, a.max_concurrent ?? 1),
-    );
+    pool = pool.filter((a) => (a.current_load ?? 0) < Math.max(1, a.max_concurrent ?? 1));
   }
   if (settings.match_language && lang) {
     const withLang = pool.filter((a) => {
@@ -138,4 +136,3 @@ export function selectWaHandoffAgent(
 
   return { agent: sorted[0] ?? null, eligible, cooledDown };
 }
-

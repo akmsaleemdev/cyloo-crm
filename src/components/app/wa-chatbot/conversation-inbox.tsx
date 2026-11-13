@@ -6,7 +6,6 @@ import {
   Bot,
   ChevronDown,
   ListPlus,
-
   Loader2,
   MessageSquareDashed,
   Search,
@@ -27,7 +26,6 @@ import {
   getWaHandoffOverview,
   routeWaConversationToAgent,
 } from "@/lib/messaging/wa-handoff.functions";
-
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,10 +70,7 @@ type Instance = { id: string; phone_number: string | null; display_name?: string
 function contactName(c: WaConversation["contact"]): string {
   if (!c) return "Unknown";
   return (
-    c.display_name ||
-    [c.first_name, c.last_name].filter(Boolean).join(" ") ||
-    c.phone ||
-    "Unknown"
+    c.display_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || c.phone || "Unknown"
   );
 }
 
@@ -217,7 +212,6 @@ export function WaConversationInbox({ instances }: { instances: Instance[] }) {
   const assignFn = useServerFn(assignWaHandoff);
   const overviewFn = useServerFn(getWaHandoffOverview);
 
-
   /** Agent pool for the "Assign to" menu (also powers the queue counter). */
   const { data: overview } = useQuery({
     enabled: !!workspaceId,
@@ -261,7 +255,6 @@ export function WaConversationInbox({ instances }: { instances: Instance[] }) {
   });
 
   const busy = route.isPending || assign.isPending;
-
 
   const botPaused = selected?.metadata?.["wa_bot_paused"] === true;
   const sessionId =
@@ -404,9 +397,7 @@ export function WaConversationInbox({ instances }: { instances: Instance[] }) {
                             (overview?.agents ?? []).map((a) => (
                               <DropdownMenuItem
                                 key={a.userId}
-                                onSelect={() =>
-                                  assign.mutate({ type: "agent", agentId: a.userId })
-                                }
+                                onSelect={() => assign.mutate({ type: "agent", agentId: a.userId })}
                               >
                                 <User className="h-3.5 w-3.5" />
                                 <span className="truncate">{a.name}</span>
@@ -432,14 +423,20 @@ export function WaConversationInbox({ instances }: { instances: Instance[] }) {
                       onCheckedChange={(v) => pause.mutate(!v)}
                     />
                   </div>
-
                 </div>
 
-                <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-2 max-h-[380px]">
+                <div
+                  ref={scrollRef}
+                  className="flex-1 overflow-y-auto px-4 py-4 space-y-2 max-h-[380px]"
+                >
                   {messagesLoading ? (
-                    <div className="text-center text-sm text-muted-foreground">Loading messages</div>
+                    <div className="text-center text-sm text-muted-foreground">
+                      Loading messages
+                    </div>
                   ) : messages.length === 0 ? (
-                    <div className="text-center text-sm text-muted-foreground">No messages yet.</div>
+                    <div className="text-center text-sm text-muted-foreground">
+                      No messages yet.
+                    </div>
                   ) : (
                     messages.map((m) => {
                       const outbound = m.direction === "outbound";

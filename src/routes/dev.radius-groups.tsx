@@ -37,10 +37,7 @@ function RadiusGroupsFixture() {
 
       <section className="space-y-2">
         <p className="text-xs text-muted-foreground">Segmented button group</p>
-        <div
-          data-testid="button-group"
-          className="inline-flex items-center gap-1"
-        >
+        <div data-testid="button-group" className="inline-flex items-center gap-1">
           <Button variant="outline" data-testid="btn-group-1">
             Day
           </Button>
@@ -87,11 +84,7 @@ function RadiusGroupsFixture() {
               </PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink
-                href="#"
-                isActive
-                data-testid="pagination-link-active"
-              >
+              <PaginationLink href="#" isActive data-testid="pagination-link-active">
                 2
               </PaginationLink>
             </PaginationItem>

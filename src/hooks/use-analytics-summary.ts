@@ -112,7 +112,12 @@ function weighted(pairs: Array<[avg: number | null, n: number]>): number | null 
 }
 
 export function summarizeAnalytics(rows: AnalyticsDay[]): AnalyticsTotals {
-  let messages = 0, sent = 0, delivered = 0, read = 0, conversations = 0, csatCount = 0;
+  let messages = 0,
+    sent = 0,
+    delivered = 0,
+    read = 0,
+    conversations = 0,
+    csatCount = 0;
   for (const r of rows) {
     messages += r.messages;
     sent += r.sent;
@@ -139,14 +144,22 @@ export function summarizeAnalytics(rows: AnalyticsDay[]): AnalyticsTotals {
 /** Display label for an `inbox_channel` enum value. `voice`/`other` fold into "Other". */
 export function channelLabel(channel: string): string {
   switch (channel) {
-    case "whatsapp": return "WhatsApp";
-    case "instagram": return "Instagram";
-    case "messenger": return "Messenger";
-    case "telegram": return "Telegram";
-    case "email": return "Email";
-    case "sms": return "SMS";
-    case "webchat": return "Live Chat";
-    default: return "Other";
+    case "whatsapp":
+      return "WhatsApp";
+    case "instagram":
+      return "Instagram";
+    case "messenger":
+      return "Messenger";
+    case "telegram":
+      return "Telegram";
+    case "email":
+      return "Email";
+    case "sms":
+      return "SMS";
+    case "webchat":
+      return "Live Chat";
+    default:
+      return "Other";
   }
 }
 

@@ -5,7 +5,9 @@ import { NotificationsBroadcaster } from "@/components/admin/comms/notifications
 import { SystemTemplatesManager } from "@/components/admin/comms/system-templates-manager";
 
 export const Route = createFileRoute("/_authenticated/_super-admin/admin/communications")({
-  head: () => ({ meta: [{ title: "Super Admin — Communications" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Super Admin — Communications" }, { name: "robots", content: "noindex" }],
+  }),
   component: CommunicationsPage,
 });
 

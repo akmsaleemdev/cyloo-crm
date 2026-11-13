@@ -1,12 +1,17 @@
 /**
  * Template-specific audit logging.
  *
- * Records template lifecycle events (create, edit, delete, sync) to the 
+ * Records template lifecycle events (create, edit, delete, sync) to the
  * centralized security audit trail.
  */
 import { recordServerAuditEvent } from "@/lib/security/audit.server";
 
-export type TemplateAuditEvent = "template.create" | "template.update" | "template.delete" | "template.sync" | "template.delete_failure";
+export type TemplateAuditEvent =
+  | "template.create"
+  | "template.update"
+  | "template.delete"
+  | "template.sync"
+  | "template.delete_failure";
 
 interface AuditParams {
   workspaceId: string;
@@ -17,10 +22,7 @@ interface AuditParams {
   data?: Record<string, any>;
 }
 
-export async function auditTemplateAction(
-  type: TemplateAuditEvent,
-  params: AuditParams
-) {
+export async function auditTemplateAction(type: TemplateAuditEvent, params: AuditParams) {
   await recordServerAuditEvent({
     eventType: type,
     severity: type === "template.delete_failure" ? "warning" : "info",

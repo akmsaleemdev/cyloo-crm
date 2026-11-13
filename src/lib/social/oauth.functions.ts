@@ -20,15 +20,21 @@ export const startSocialConnect = createServerFn({ method: "POST" })
   .validator((v: unknown) => input.parse(v))
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await sbAny(context.supabase).rpc("is_workspace_admin" as never, {
-      _workspace_id: data.workspaceId,
-      _user_id: context.userId,
-    } as never);
+    const { data: isAdmin } = await sbAny(context.supabase).rpc(
+      "is_workspace_admin" as never,
+      {
+        _workspace_id: data.workspaceId,
+        _user_id: context.userId,
+      } as never,
+    );
     if (!isAdmin) throw new Error("Only workspace owners and admins can connect channels");
 
     const mod = await import("./oauth.server");
     const creds = mod.oauthCreds(data.platform);
-    const redirectUri = mod.callbackUri(oauthOrigin(data.origin, new URL(getRequest().url).origin), data.platform);
+    const redirectUri = mod.callbackUri(
+      oauthOrigin(data.origin, new URL(getRequest().url).origin),
+      data.platform,
+    );
     const base = {
       platform: data.platform,
       workspaceId: data.workspaceId,

@@ -1,6 +1,19 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageSquare, Loader2, Plus, Trash2, Power, PowerOff, Instagram as InstagramIcon, FlaskConical, Activity, ArrowUp, ArrowDown, Layers } from "lucide-react";
+import {
+  MessageSquare,
+  Loader2,
+  Plus,
+  Trash2,
+  Power,
+  PowerOff,
+  Instagram as InstagramIcon,
+  FlaskConical,
+  Activity,
+  ArrowUp,
+  ArrowDown,
+  Layers,
+} from "lucide-react";
 import { InstagramCommentTestDialog } from "./instagram-comment-test-dialog";
 import { InstagramCommentActivityDialog } from "./instagram-comment-activity-dialog";
 import { toast } from "sonner";
@@ -49,7 +62,6 @@ type CommentTriggerConfig = {
   conflict_mode?: "stop_on_match" | "run_all";
 };
 
-
 type AutomationRow = {
   id: string;
   name: string;
@@ -91,7 +103,6 @@ export function InstagramCommentAutomationsPanel() {
     },
   });
 
-
   const accounts = useQuery({
     queryKey: ["ig-accounts-lite", workspaceId],
     enabled: !!workspaceId,
@@ -109,7 +120,10 @@ export function InstagramCommentAutomationsPanel() {
   const toggleStatus = useMutation({
     mutationFn: async (row: AutomationRow) => {
       const next = row.status === "active" ? "paused" : "active";
-      const { error } = await sbAny(supabase).from("automations").update({ status: next }).eq("id", row.id);
+      const { error } = await sbAny(supabase)
+        .from("automations")
+        .update({ status: next })
+        .eq("id", row.id);
       if (error) throw error;
       return next;
     },
@@ -138,7 +152,13 @@ export function InstagramCommentAutomationsPanel() {
   });
 
   const setConflictMode = useMutation({
-    mutationFn: async ({ row, mode }: { row: AutomationRow; mode: "stop_on_match" | "run_all" }) => {
+    mutationFn: async ({
+      row,
+      mode,
+    }: {
+      row: AutomationRow;
+      mode: "stop_on_match" | "run_all";
+    }) => {
       const nextConfig = { ...(row.trigger_config ?? {}), conflict_mode: mode };
       const { error } = await supabase
         .from("automations")
@@ -149,11 +169,12 @@ export function InstagramCommentAutomationsPanel() {
     },
     onSuccess: (mode) => {
       qc.invalidateQueries({ queryKey: ["ig-comment-flows", workspaceId] });
-      toast.success(mode === "stop_on_match" ? "Will stop after this match" : "Will run alongside others");
+      toast.success(
+        mode === "stop_on_match" ? "Will stop after this match" : "Will run alongside others",
+      );
     },
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : "Failed to update"),
   });
-
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
@@ -194,7 +215,8 @@ export function InstagramCommentAutomationsPanel() {
       {connectedAccounts.length === 0 && !accounts.isLoading && (
         <div className="rounded-control border border-dashed border-border p-4 text-sm text-muted-foreground flex items-center gap-3">
           <InstagramIcon className="w-4 h-4 shrink-0" />
-          Connect an Instagram Business account first, then come back to create a comment automation.
+          Connect an Instagram Business account first, then come back to create a comment
+          automation.
         </div>
       )}
 
@@ -207,7 +229,8 @@ export function InstagramCommentAutomationsPanel() {
           <MessageSquare className="w-8 h-8 mx-auto text-muted-foreground mb-3" />
           <div className="font-medium text-sm">No comment automations yet</div>
           <div className="text-xs text-muted-foreground mt-1">
-            Click <span className="font-medium text-foreground">New Automation</span> to trigger flows on Instagram comments.
+            Click <span className="font-medium text-foreground">New Automation</span> to trigger
+            flows on Instagram comments.
           </div>
         </div>
       ) : (
@@ -220,7 +243,10 @@ export function InstagramCommentAutomationsPanel() {
             const priority = cfg.priority ?? 100;
             const conflictMode = cfg.conflict_mode ?? "stop_on_match";
             return (
-              <div key={row.id} className="rounded-control border border-border bg-card p-4 flex items-start justify-between gap-4">
+              <div
+                key={row.id}
+                className="rounded-control border border-border bg-card p-4 flex items-start justify-between gap-4"
+              >
                 <div className="flex flex-col items-center gap-0.5 pt-0.5">
                   <Button
                     size="icon"
@@ -247,18 +273,23 @@ export function InstagramCommentAutomationsPanel() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <div className="font-medium text-sm truncate">{row.name}</div>
-                    <Badge variant={isActive ? "default" : "secondary"} className="text-[11px] capitalize">
+                    <Badge
+                      variant={isActive ? "default" : "secondary"}
+                      className="text-[11px] capitalize"
+                    >
                       {isActive ? "Active" : row.status === "paused" ? "Paused" : row.status}
                     </Badge>
 
                     {acct && (
                       <Badge variant="outline" className="text-[11px] gap-1">
-                        <InstagramIcon className="w-3 h-3" />
-                        @{acct.username ?? acct.name ?? "account"}
+                        <InstagramIcon className="w-3 h-3" />@
+                        {acct.username ?? acct.name ?? "account"}
                       </Badge>
                     )}
                     <Badge variant="outline" className="text-[11px]">
-                      {cfg.post_scope === "specific" ? `${cfg.post_ids?.length ?? 0} posts` : "All posts"}
+                      {cfg.post_scope === "specific"
+                        ? `${cfg.post_ids?.length ?? 0} posts`
+                        : "All posts"}
                     </Badge>
                     <button
                       type="button"
@@ -272,19 +303,28 @@ export function InstagramCommentAutomationsPanel() {
                       title="Click to toggle conflict rule"
                       className="inline-flex"
                     >
-                      <Badge variant="outline" className="text-[11px] gap-1 cursor-pointer hover:bg-accent">
+                      <Badge
+                        variant="outline"
+                        className="text-[11px] gap-1 cursor-pointer hover:bg-accent"
+                      >
                         <Layers className="w-3 h-3" />
-                        {conflictMode === "stop_on_match" ? "Stop on match" : "Run alongside others"}
+                        {conflictMode === "stop_on_match"
+                          ? "Stop on match"
+                          : "Run alongside others"}
                       </Badge>
                     </button>
                   </div>
                   {row.description && (
-                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{row.description}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                      {row.description}
+                    </div>
                   )}
                   {keywords.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {keywords.slice(0, 6).map((k) => (
-                        <Badge key={k} variant="secondary" className="text-[11px]">{k}</Badge>
+                        <Badge key={k} variant="secondary" className="text-[11px]">
+                          {k}
+                        </Badge>
                       ))}
                     </div>
                   )}
@@ -406,8 +446,9 @@ function AddAutomationDialog({
   const [likeComment, setLikeComment] = useState(true);
   const [hideNegative, setHideNegative] = useState(false);
   const [priority, setPriority] = useState<number>(100);
-  const [conflictMode, setConflictModeLocal] = useState<"stop_on_match" | "run_all">("stop_on_match");
-
+  const [conflictMode, setConflictModeLocal] = useState<"stop_on_match" | "run_all">(
+    "stop_on_match",
+  );
 
   const create = useMutation({
     mutationFn: async () => {
@@ -443,7 +484,6 @@ function AddAutomationDialog({
         conflict_mode: conflictMode,
       };
 
-
       const steps = [
         ...(replyMessage.trim()
           ? [{ type: "instagram_reply_comment", config: { message: replyMessage.trim() } }]
@@ -454,15 +494,17 @@ function AddAutomationDialog({
         ...(likeComment ? [{ type: "instagram_like_comment" }] : []),
       ];
 
-      const { error } = await sbAny(supabase).from("automations").insert({
-        workspace_id: workspaceId,
-        name: name.trim(),
-        description: description.trim() || null,
-        trigger_type: "instagram_comment",
-        trigger_config: JSON.parse(JSON.stringify(trigger_config)),
-        steps: JSON.parse(JSON.stringify(steps)),
-        status: "active",
-      });
+      const { error } = await sbAny(supabase)
+        .from("automations")
+        .insert({
+          workspace_id: workspaceId,
+          name: name.trim(),
+          description: description.trim() || null,
+          trigger_type: "instagram_comment",
+          trigger_config: JSON.parse(JSON.stringify(trigger_config)),
+          steps: JSON.parse(JSON.stringify(steps)),
+          status: "active",
+        });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -505,18 +547,31 @@ function AddAutomationDialog({
           </div>
           <div className="space-y-1.5">
             <Label>Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Launch giveaway replies" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Launch giveaway replies"
+            />
           </div>
           <div className="space-y-1.5">
             <Label>Description</Label>
-            <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional" />
+            <Input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Applies to</Label>
-              <Select value={postScope} onValueChange={(v) => setPostScope(v as "all" | "specific")}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={postScope}
+                onValueChange={(v) => setPostScope(v as "all" | "specific")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All posts</SelectItem>
                   <SelectItem value="specific">Specific posts</SelectItem>
@@ -525,8 +580,13 @@ function AddAutomationDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Keyword match</Label>
-              <Select value={matchMode} onValueChange={(v) => setMatchMode(v as "any" | "all" | "exact")}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={matchMode}
+                onValueChange={(v) => setMatchMode(v as "any" | "all" | "exact")}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any">Any keyword</SelectItem>
                   <SelectItem value="all">All keywords</SelectItem>
@@ -555,18 +615,26 @@ function AddAutomationDialog({
               onChange={(e) => setKeywords(e.target.value)}
               placeholder="link, price, info (leave empty to match every comment)"
             />
-            <p className="text-[11px] text-muted-foreground">Comma-separated. Empty matches all comments.</p>
+            <p className="text-[11px] text-muted-foreground">
+              Comma-separated. Empty matches all comments.
+            </p>
           </div>
 
           <div className="space-y-1.5">
             <Label>Public reply</Label>
-            <Textarea rows={2} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} />
+            <Textarea
+              rows={2}
+              value={replyMessage}
+              onChange={(e) => setReplyMessage(e.target.value)}
+            />
           </div>
 
           <label className="flex items-center justify-between rounded-control border border-border p-3">
             <div>
               <div className="text-sm font-medium">Send DM</div>
-              <div className="text-xs text-muted-foreground">Also message the commenter privately.</div>
+              <div className="text-xs text-muted-foreground">
+                Also message the commenter privately.
+              </div>
             </div>
             <Switch checked={sendDm} onCheckedChange={setSendDm} />
           </label>
@@ -589,7 +657,9 @@ function AddAutomationDialog({
           <label className="flex items-center justify-between rounded-control border border-border p-3">
             <div>
               <div className="text-sm font-medium">Hide negative comments</div>
-              <div className="text-xs text-muted-foreground">Auto-hide comments detected as toxic.</div>
+              <div className="text-xs text-muted-foreground">
+                Auto-hide comments detected as toxic.
+              </div>
             </div>
             <Switch checked={hideNegative} onCheckedChange={setHideNegative} />
           </label>
@@ -609,7 +679,9 @@ function AddAutomationDialog({
                   value={priority}
                   onChange={(e) => setPriority(parseInt(e.target.value || "100", 10))}
                 />
-                <p className="text-[11px] text-muted-foreground">Lower number runs first when several match.</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Lower number runs first when several match.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label>On match</Label>
@@ -617,9 +689,13 @@ function AddAutomationDialog({
                   value={conflictMode}
                   onValueChange={(v) => setConflictModeLocal(v as "stop_on_match" | "run_all")}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="stop_on_match">Stop — don't run lower-priority ones</SelectItem>
+                    <SelectItem value="stop_on_match">
+                      Stop — don't run lower-priority ones
+                    </SelectItem>
                     <SelectItem value="run_all">Run alongside other matches</SelectItem>
                   </SelectContent>
                 </Select>
@@ -629,7 +705,9 @@ function AddAutomationDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button onClick={() => create.mutate()} disabled={create.isPending}>
             {create.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
             Create automation

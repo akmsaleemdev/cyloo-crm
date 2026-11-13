@@ -8,7 +8,12 @@
 import { useMemo, useState } from "react";
 import { ArrowRightLeft, Users, ListOrdered, Sparkles } from "lucide-react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,12 +23,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useCurrentWorkspace, useWorkspaceMembers } from "@/hooks/use-workspace";
 import {
-  useDepartments, useAgentAvailability,
-  useTransferToAgent, useTransferToDepartment,
+  useDepartments,
+  useAgentAvailability,
+  useTransferToAgent,
+  useTransferToDepartment,
 } from "@/hooks/use-handoff";
 import type { HandoffPriority, AgentPresence } from "@/lib/handoff/handoff.functions";
 
@@ -54,9 +67,17 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
   const transferDept = useTransferToDepartment(conversationId);
 
   const availById = useMemo(() => {
-    const map = new Map<string, { presence: AgentPresence; skills: string[]; load: number; max: number }>();
+    const map = new Map<
+      string,
+      { presence: AgentPresence; skills: string[]; load: number; max: number }
+    >();
     for (const a of availabilityQ.data ?? []) {
-      map.set(a.user_id, { presence: a.presence, skills: a.skills, load: a.current_load, max: a.max_concurrent });
+      map.set(a.user_id, {
+        presence: a.presence,
+        skills: a.skills,
+        load: a.current_load,
+        max: a.max_concurrent,
+      });
     }
     return map;
   }, [availabilityQ.data]);
@@ -64,14 +85,15 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
   const filteredMembers = useMemo(() => {
     const rows = membersQ.data ?? [];
     const q = agentSearch.toLowerCase();
-    return rows.filter((m) =>
-      !q
-      || m.display_name?.toLowerCase().includes(q)
-      || m.email?.toLowerCase().includes(q)
+    return rows.filter(
+      (m) => !q || m.display_name?.toLowerCase().includes(q) || m.email?.toLowerCase().includes(q),
     );
   }, [membersQ.data, agentSearch]);
 
-  const skills = skillsInput.split(",").map((s) => s.trim()).filter(Boolean);
+  const skills = skillsInput
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   async function submit() {
     try {
@@ -82,22 +104,35 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
           departmentId: selectedDept,
           priority,
           requiredSkills: skills,
-          reason, note,
+          reason,
+          note,
         });
       } else return;
       onOpenChange(false);
       reset();
-    } catch { /* toast handled */ }
+    } catch {
+      /* toast handled */
+    }
   }
 
   function reset() {
-    setSelectedAgent(null); setSelectedDept(null);
-    setPriority("normal"); setSkillsInput("");
-    setReason(""); setNote(""); setAgentSearch("");
+    setSelectedAgent(null);
+    setSelectedDept(null);
+    setPriority("normal");
+    setSkillsInput("");
+    setReason("");
+    setNote("");
+    setAgentSearch("");
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) reset();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -111,8 +146,12 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as "agent" | "department")}>
           <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="agent" className="gap-2"><Users className="h-3.5 w-3.5" /> Agent</TabsTrigger>
-            <TabsTrigger value="department" className="gap-2"><ListOrdered className="h-3.5 w-3.5" /> Department</TabsTrigger>
+            <TabsTrigger value="agent" className="gap-2">
+              <Users className="h-3.5 w-3.5" /> Agent
+            </TabsTrigger>
+            <TabsTrigger value="department" className="gap-2">
+              <ListOrdered className="h-3.5 w-3.5" /> Department
+            </TabsTrigger>
           </TabsList>
 
           {/* ==== Agent tab ==== */}
@@ -144,32 +183,43 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
                             aria-hidden
                             className={cn(
                               "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full ring-2 ring-background",
-                              av?.presence === "online" ? "bg-emerald-500"
-                              : av?.presence === "busy" ? "bg-red-500"
-                              : av?.presence === "away" ? "bg-amber-500"
-                              : "bg-muted-foreground/40",
+                              av?.presence === "online"
+                                ? "bg-emerald-500"
+                                : av?.presence === "busy"
+                                  ? "bg-red-500"
+                                  : av?.presence === "away"
+                                    ? "bg-amber-500"
+                                    : "bg-muted-foreground/40",
                             )}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate">{m.display_name ?? m.email}</div>
+                          <div className="text-sm font-medium truncate">
+                            {m.display_name ?? m.email}
+                          </div>
                           <div className="text-xs text-muted-foreground truncate flex items-center gap-2">
                             <span className="capitalize">{av?.presence ?? "offline"}</span>
                             {av && av.max > 0 ? (
-                              <span>• {av.load}/{av.max} active</span>
+                              <span>
+                                • {av.load}/{av.max} active
+                              </span>
                             ) : null}
                             {av?.skills?.length ? (
                               <span>• {av.skills.slice(0, 3).join(", ")}</span>
                             ) : null}
                           </div>
                         </div>
-                        <Badge variant="outline" className="capitalize">{m.role}</Badge>
+                        <Badge variant="outline" className="capitalize">
+                          {m.role}
+                        </Badge>
                       </button>
                     </li>
                   );
                 })}
                 {filteredMembers.length === 0 ? (
-                  <li className="py-8 text-center text-sm text-muted-foreground">No agents found.</li>
+                  <li className="py-8 text-center text-sm text-muted-foreground">
+                    No agents found.
+                  </li>
                 ) : null}
               </ul>
             </ScrollArea>
@@ -180,16 +230,20 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
             <div className="grid gap-2">
               <Label>Department</Label>
               <Select value={selectedDept ?? undefined} onValueChange={setSelectedDept}>
-                <SelectTrigger><SelectValue placeholder="Choose a department" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a department" />
+                </SelectTrigger>
                 <SelectContent>
-                  {(departmentsQ.data ?? []).filter((d) => d.is_active).map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
-                        {d.name}
-                      </span>
-                    </SelectItem>
-                  ))}
+                  {(departmentsQ.data ?? [])
+                    .filter((d) => d.is_active)
+                    .map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full" style={{ background: d.color }} />
+                          {d.name}
+                        </span>
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -197,7 +251,9 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
               <div>
                 <Label>Priority</Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as HandoffPriority)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="normal">Normal</SelectItem>
@@ -224,7 +280,11 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
 
         <div className="grid gap-2">
           <Label>Reason (optional)</Label>
-          <Input placeholder="Needs billing expertise" value={reason} onChange={(e) => setReason(e.target.value)} />
+          <Input
+            placeholder="Needs billing expertise"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
         </div>
         <div className="grid gap-2">
           <Label>Private note (optional)</Label>
@@ -237,13 +297,16 @@ export function HandoffDialog({ conversationId, open, onOpenChange, defaultTab =
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button
             onClick={submit}
             disabled={
               (tab === "agent" && !selectedAgent) ||
               (tab === "department" && !selectedDept) ||
-              transferAgent.isPending || transferDept.isPending
+              transferAgent.isPending ||
+              transferDept.isPending
             }
           >
             Transfer

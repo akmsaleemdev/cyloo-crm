@@ -14,7 +14,10 @@ export const Route = createFileRoute("/_authenticated/whatsapp-templates/create"
 function CreateMetaTemplatePage() {
   return (
     <>
-      <AppTopbar title="Create Meta Template" subtitle="Upload media, save a draft, or submit to WhatsApp for review" />
+      <AppTopbar
+        title="Create Meta Template"
+        subtitle="Upload media, save a draft, or submit to WhatsApp for review"
+      />
       <main className="p-6 max-w-7xl w-full mx-auto">
         <WhatsAppTemplatesPanel createOnMount />
       </main>

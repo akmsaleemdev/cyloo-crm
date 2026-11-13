@@ -79,7 +79,8 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
       .select("organization_id")
       .eq("id", s.workspace_id)
       .maybeSingle();
-    if (workspaceError) result.errors.push(`ws ${s.workspace_id} organization: ${workspaceError.message}`);
+    if (workspaceError)
+      result.errors.push(`ws ${s.workspace_id} organization: ${workspaceError.message}`);
     const organizationId: string | null = workspace?.organization_id ?? null;
     const offsets = (s.lead_days ?? [0]).filter((n) => Number.isInteger(n) && n >= 0 && n <= 60);
     if (!offsets.length) continue;
@@ -176,18 +177,18 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
         if (memberError) {
           result.errors.push(`ws ${s.workspace_id} recipients: ${memberError.message}`);
         }
-        const activeRecipientIds = memberError ? [] : (activeMembers ?? []).map((member: { user_id: string }) => member.user_id);
+        const activeRecipientIds = memberError
+          ? []
+          : (activeMembers ?? []).map((member: { user_id: string }) => member.user_id);
         if (activeRecipientIds.length) {
-          const { error: logErr } = await admin
-            .from("birthday_reminder_log")
-            .insert({
-              workspace_id: s.workspace_id,
-              contact_id: c.id,
-              owner_id: c.owner_id,
-              reminder_date: t.date,
-              lead_offset_days: t.offset,
-              channel: "inapp",
-            });
+          const { error: logErr } = await admin.from("birthday_reminder_log").insert({
+            workspace_id: s.workspace_id,
+            contact_id: c.id,
+            owner_id: c.owner_id,
+            reminder_date: t.date,
+            lead_offset_days: t.offset,
+            channel: "inapp",
+          });
           if (logErr) {
             // 23505 = unique_violation: already sent, skip silently.
             if (!String(logErr.message).includes("duplicate")) {
@@ -232,16 +233,14 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
       // 4. Email to owner (if enabled, we have an owner email, and template exists)
       if (s.email_enabled && ownerEmail) {
         try {
-          const { error: logErr } = await admin
-            .from("birthday_reminder_log")
-            .insert({
-              workspace_id: s.workspace_id,
-              contact_id: c.id,
-              owner_id: c.owner_id,
-              reminder_date: t.date,
-              lead_offset_days: t.offset,
-              channel: "email",
-            });
+          const { error: logErr } = await admin.from("birthday_reminder_log").insert({
+            workspace_id: s.workspace_id,
+            contact_id: c.id,
+            owner_id: c.owner_id,
+            reminder_date: t.date,
+            lead_offset_days: t.offset,
+            channel: "email",
+          });
           if (logErr) {
             if (!String(logErr.message).includes("duplicate")) {
               result.errors.push(`log email ${c.id}: ${logErr.message}`);

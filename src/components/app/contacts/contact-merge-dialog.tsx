@@ -1,10 +1,23 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useMergeContacts, type ContactRow, contactDisplayName, primaryEmail, primaryPhone } from "@/hooks/use-contacts";
+import {
+  useMergeContacts,
+  type ContactRow,
+  contactDisplayName,
+  primaryEmail,
+  primaryPhone,
+} from "@/hooks/use-contacts";
 
 export function ContactMergeDialog({
   open,
@@ -30,24 +43,39 @@ export function ContactMergeDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v && merge.isPending) return; onOpenChange(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v && merge.isPending) return;
+        onOpenChange(v);
+      }}
+    >
       <DialogContent
-        onEscapeKeyDown={(e) => { if (merge.isPending) e.preventDefault(); }}
-        onPointerDownOutside={(e) => { if (merge.isPending) e.preventDefault(); }}
-        onInteractOutside={(e) => { if (merge.isPending) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => {
+          if (merge.isPending) e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          if (merge.isPending) e.preventDefault();
+        }}
+        onInteractOutside={(e) => {
+          if (merge.isPending) e.preventDefault();
+        }}
       >
-
         <DialogHeader>
           <DialogTitle>Merge {contacts.length} contacts</DialogTitle>
           <DialogDescription>
-            The primary keeps its main identity. Phones, emails, tags, notes, and custom fields from the
-            others are combined into it; the duplicates are archived (soft-deleted).
+            The primary keeps its main identity. Phones, emails, tags, notes, and custom fields from
+            the others are combined into it; the duplicates are archived (soft-deleted).
           </DialogDescription>
         </DialogHeader>
 
         <RadioGroup value={primaryId} onValueChange={setPrimaryId} className="space-y-2 mt-2">
           {contacts.map((c) => (
-            <label key={c.id} htmlFor={`merge-${c.id}`} className="flex items-start gap-3 border rounded-control p-3 cursor-pointer hover:bg-muted/40">
+            <label
+              key={c.id}
+              htmlFor={`merge-${c.id}`}
+              className="flex items-start gap-3 border rounded-control p-3 cursor-pointer hover:bg-muted/40"
+            >
               <RadioGroupItem id={`merge-${c.id}`} value={c.id} className="mt-1" />
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{contactDisplayName(c)}</p>
@@ -60,8 +88,12 @@ export function ContactMergeDialog({
         </RadioGroup>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={merge.isPending}>Cancel</Button>
-          <Button onClick={run} disabled={merge.isPending || !primaryId}>Merge</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={merge.isPending}>
+            Cancel
+          </Button>
+          <Button onClick={run} disabled={merge.isPending || !primaryId}>
+            Merge
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

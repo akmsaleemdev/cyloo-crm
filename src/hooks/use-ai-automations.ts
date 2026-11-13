@@ -46,7 +46,12 @@ export function useUpdateAutomationConfig(workspaceId: string | undefined) {
 
 export function useSuggestions(
   workspaceId: string | undefined,
-  opts: { status?: "pending" | "approved" | "applied" | "rejected" | "failed" | "all"; entityType?: string; entityId?: string; limit?: number } = {},
+  opts: {
+    status?: "pending" | "approved" | "applied" | "rejected" | "failed" | "all";
+    entityType?: string;
+    entityId?: string;
+    limit?: number;
+  } = {},
 ) {
   const fn = useServerFn(listSuggestions);
   const qc = useQueryClient();
@@ -58,11 +63,18 @@ export function useSuggestions(
       .channel(`ai-sug:${workspaceId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "ai_automation_suggestions", filter: `workspace_id=eq.${workspaceId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "ai_automation_suggestions",
+          filter: `workspace_id=eq.${workspaceId}`,
+        },
         () => qc.invalidateQueries({ queryKey: ["ai-automation-suggestions", workspaceId] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [workspaceId, qc]);
 
   return useQuery({

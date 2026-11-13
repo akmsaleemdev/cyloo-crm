@@ -1257,7 +1257,7 @@ export function MessageComposer({
       .slice(0, 3);
   })();
 
-  const useExistingContact = (c: ContactSearchResult) => {
+  const selectExistingContact = (c: ContactSearchResult) => {
     const displayName =
       c.display_name ||
       c.name ||
@@ -2192,7 +2192,7 @@ export function MessageComposer({
                           size="sm"
                           variant="secondary"
                           className="h-7 px-2 text-xs"
-                          onClick={() => useExistingContact(c)}
+                          onClick={() => selectExistingContact(c)}
                         >
                           Link
                         </Button>

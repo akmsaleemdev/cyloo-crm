@@ -20,7 +20,11 @@ function AppointmentsListPage() {
   const now = Date.now();
   const all = q.data ?? [];
   const filtered = all.filter((a) => {
-    const isPast = new Date(a.end_at).getTime() < now || a.status === "completed" || a.status === "cancelled" || a.status === "no_show";
+    const isPast =
+      new Date(a.end_at).getTime() < now ||
+      a.status === "completed" ||
+      a.status === "cancelled" ||
+      a.status === "no_show";
     return tab === "past" ? isPast : !isPast;
   });
 
@@ -32,7 +36,9 @@ function AppointmentsListPage() {
           <p className="text-sm text-muted-foreground">Manage your scheduled meetings.</p>
         </div>
         <Link to="/client/appointments/preferences">
-          <Button variant="outline" size="sm"><Settings2 className="w-3.5 h-3.5 " /> Reminder preferences</Button>
+          <Button variant="outline" size="sm">
+            <Settings2 className="w-3.5 h-3.5 " /> Reminder preferences
+          </Button>
         </Link>
       </header>
 
@@ -49,7 +55,9 @@ function AppointmentsListPage() {
       </div>
 
       {q.isLoading ? (
-        <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Loading</div>
+        <div className="p-8 flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="w-4 h-4 animate-spin" /> Loading
+        </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-control border border-border bg-surface p-10 text-center">
           <CalendarClock className="w-8 h-8 mx-auto text-muted-foreground/50" />
@@ -63,26 +71,53 @@ function AppointmentsListPage() {
             return (
               <li key={a.id}>
                 <Link
-                  to="/client/appointments/$id" params={{ id: a.id }}
+                  to="/client/appointments/$id"
+                  params={{ id: a.id }}
                   className="group flex items-center gap-4 rounded-control border border-border bg-surface p-4 hover:border-border-strong transition-colors"
                 >
                   <div className="w-14 shrink-0 rounded-control bg-accent/10 text-accent flex flex-col items-center justify-center py-2">
-                    <span className="text-[11px] uppercase font-medium">{start.toLocaleString(undefined, { month: "short" })}</span>
+                    <span className="text-[11px] uppercase font-medium">
+                      {start.toLocaleString(undefined, { month: "short" })}
+                    </span>
                     <span className="text-lg font-semibold leading-none">{start.getDate()}</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium truncate">{a.customer_name || "Meeting"}</p>
-                      <Badge variant={a.status === "cancelled" || a.status === "no_show" ? "destructive" : a.status === "completed" ? "outline" : "default"} className="capitalize">{a.status}</Badge>
+                      <Badge
+                        variant={
+                          a.status === "cancelled" || a.status === "no_show"
+                            ? "destructive"
+                            : a.status === "completed"
+                              ? "outline"
+                              : "default"
+                        }
+                        className="capitalize"
+                      >
+                        {a.status}
+                      </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3 flex-wrap">
-                      <span>{start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} – {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
-                      {a.location_kind === "video" ? <span className="inline-flex items-center gap-1"><Video className="w-3 h-3" /> Video</span>
-                        : a.location_kind === "in_person" ? <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3" /> In person</span>
-                        : a.location_kind && <span className="capitalize">{a.location_kind}</span>}
+                      <span>
+                        {start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} –{" "}
+                        {end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      {a.location_kind === "video" ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Video className="w-3 h-3" /> Video
+                        </span>
+                      ) : a.location_kind === "in_person" ? (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="w-3 h-3" /> In person
+                        </span>
+                      ) : (
+                        a.location_kind && <span className="capitalize">{a.location_kind}</span>
+                      )}
                     </p>
                   </div>
-                  {tab === "past" && a.status === "completed" && <Star className="w-4 h-4 text-muted-foreground/40 group-hover:text-amber-500" />}
+                  {tab === "past" && a.status === "completed" && (
+                    <Star className="w-4 h-4 text-muted-foreground/40 group-hover:text-amber-500" />
+                  )}
                   <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-accent" />
                 </Link>
               </li>

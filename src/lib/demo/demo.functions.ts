@@ -43,7 +43,9 @@ export const provisionDemoAccounts = createServerFn({ method: "POST" })
           perPage: 200,
         });
         if (listErr) throw listErr;
-        const existing = list.users.find((u) => u.email?.toLowerCase() === acct.email.toLowerCase());
+        const existing = list.users.find(
+          (u) => u.email?.toLowerCase() === acct.email.toLowerCase(),
+        );
 
         let userId: string;
         let created = false;

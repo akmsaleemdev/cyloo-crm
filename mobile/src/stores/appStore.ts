@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { kv } from '@/lib/storage';
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { kv } from "@/lib/storage";
 
 type WorkspaceId = string;
-export type ThemeMode = 'system' | 'light' | 'dark';
+export type ThemeMode = "system" | "light" | "dark";
 
 interface AppState {
   activeWorkspace: WorkspaceId | null;
@@ -30,14 +30,14 @@ export const useAppStore = create<AppState>()(
       activeWorkspace: null,
       unreadInbox: 0,
       networkOnline: true,
-      themeMode: 'system',
-      language: 'en',
+      themeMode: "system",
+      language: "en",
       setActiveWorkspace: (id) => set({ activeWorkspace: id }),
       setUnreadInbox: (n) => set({ unreadInbox: n }),
       setNetworkOnline: (b) => set({ networkOnline: b }),
       setThemeMode: (m) => set({ themeMode: m }),
       setLanguage: (l) => set({ language: l }),
     }),
-    { name: 'cyloo-app', storage: createJSONStorage(() => mmkvStorage) },
+    { name: "cyloo-app", storage: createJSONStorage(() => mmkvStorage) },
   ),
 );

@@ -14,7 +14,6 @@ import { sanitizeRecord } from "@/lib/api/bulk-writable-columns";
 import { findForeignReferences } from "@/lib/api/tenant-refs.server";
 import { sbAny } from "@/lib/supabase/untyped";
 
-
 const RESOURCE_CONFIG: Record<string, { table: string; read: ApiScope; write: ApiScope }> = {
   contacts: { table: "contacts", read: "contacts:read", write: "contacts:write" },
   companies: { table: "companies", read: "contacts:read", write: "contacts:write" },
@@ -23,13 +22,11 @@ const RESOURCE_CONFIG: Record<string, { table: string; read: ApiScope; write: Ap
 // Allow-list + sanitizer live in a dedicated module so security regression
 // tests can import them without server-only route dependencies.
 
-
 const BulkSchema = z.object({
   resource: z.enum(["contacts", "companies", "deals"]),
   operation: z.enum(["create", "update", "delete"]),
   records: z.array(z.record(z.string(), z.unknown())).min(1).max(500),
 });
-
 
 export const Route = createFileRoute("/api/public/v1/bulk")({
   server: {
@@ -41,12 +38,20 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
           const body = await parseJson<unknown>(req);
           const parsed = BulkSchema.safeParse(body);
           if (!parsed.success) {
-            return jsonError("validation_error", "Invalid bulk payload", { issues: parsed.error.issues }, ctx.requestId);
+            return jsonError(
+              "validation_error",
+              "Invalid bulk payload",
+              { issues: parsed.error.issues },
+              ctx.requestId,
+            );
           }
           const cfg = RESOURCE_CONFIG[parsed.data.resource];
-          const requiredScope = parsed.data.operation === "create" || parsed.data.operation === "update" || parsed.data.operation === "delete"
-            ? cfg.write
-            : cfg.read;
+          const requiredScope =
+            parsed.data.operation === "create" ||
+            parsed.data.operation === "update" ||
+            parsed.data.operation === "delete"
+              ? cfg.write
+              : cfg.read;
           if (!hasScope(ctx.scopes, requiredScope)) {
             return jsonError("forbidden", `Missing scope: ${requiredScope}`, {}, ctx.requestId);
           }
@@ -57,7 +62,11 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
           if (operation === "create") {
             const rows: Record<string, unknown>[] = [];
             for (let i = 0; i < records.length; i++) {
-              const { row, rejected } = sanitizeRecord(parsed.data.resource, records[i] as Record<string, unknown>, { allowId: false });
+              const { row, rejected } = sanitizeRecord(
+                parsed.data.resource,
+                records[i] as Record<string, unknown>,
+                { allowId: false },
+              );
               if (rejected.length) {
                 return jsonError(
                   "validation_error",
@@ -78,24 +87,43 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
                 );
               }
               rows.push({ ...row, organization_id: ctx.organizationId });
-
             }
-            const { data, error } = await sbAny(ctx.supabase).from(cfg.table).insert(rows).select("id");
+            const { data, error } = await sbAny(ctx.supabase)
+              .from(cfg.table)
+              .insert(rows)
+              .select("id");
             if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-            (data ?? []).forEach((row: any, i: number) => results.push({ index: i, ok: true, id: row.id }));
+            (data ?? []).forEach((row: any, i: number) =>
+              results.push({ index: i, ok: true, id: row.id }),
+            );
           } else if (operation === "update") {
             for (let i = 0; i < records.length; i++) {
               const rec = records[i] as Record<string, unknown>;
               const id = rec.id as string | undefined;
-              if (!id) { results.push({ index: i, ok: false, error: "missing id" }); continue; }
-              const { row, rejected } = sanitizeRecord(parsed.data.resource, rec, { allowId: true });
+              if (!id) {
+                results.push({ index: i, ok: false, error: "missing id" });
+                continue;
+              }
+              const { row, rejected } = sanitizeRecord(parsed.data.resource, rec, {
+                allowId: true,
+              });
               if (rejected.length) {
-                results.push({ index: i, ok: false, id, error: `fields not writable: ${rejected.join(", ")}` });
+                results.push({
+                  index: i,
+                  ok: false,
+                  id,
+                  error: `fields not writable: ${rejected.join(", ")}`,
+                });
                 continue;
               }
               const foreignUpd = await findForeignReferences(ctx.supabase, ctx.organizationId, row);
               if (foreignUpd.length) {
-                results.push({ index: i, ok: false, id, error: `references outside organization: ${foreignUpd.join(", ")}` });
+                results.push({
+                  index: i,
+                  ok: false,
+                  id,
+                  error: `references outside organization: ${foreignUpd.join(", ")}`,
+                });
                 continue;
               }
               if (Object.keys(row).length === 0) {
@@ -110,7 +138,6 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
                 .eq("id", id);
               results.push({ index: i, ok: !error, id, error: error?.message });
             }
-
           } else if (operation === "delete") {
             const ids = records.map((r) => (r as any).id).filter(Boolean) as string[];
             const { error } = await ctx.supabase
@@ -124,7 +151,10 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
 
           const succeeded = results.filter((r) => r.ok).length;
           return jsonOk(
-            { results, summary: { total: records.length, succeeded, failed: records.length - succeeded } },
+            {
+              results,
+              summary: { total: records.length, succeeded, failed: records.length - succeeded },
+            },
             { status: 207, requestId: ctx.requestId },
           );
         },

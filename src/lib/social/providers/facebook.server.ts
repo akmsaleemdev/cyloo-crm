@@ -45,17 +45,29 @@ function resolveToken(cipher: string): string {
   return cipher;
 }
 
-async function graphPost(path: string, body: URLSearchParams | FormData | string, contentType?: string) {
+async function graphPost(
+  path: string,
+  body: URLSearchParams | FormData | string,
+  contentType?: string,
+) {
   const headers: Record<string, string> = {};
   if (contentType) headers["Content-Type"] = contentType;
   const res = await fetch(`${GRAPH}${path}`, { method: "POST", headers, body });
   const text = await res.text();
   const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   if (!res.ok || json.error) {
-    const err = new Error((json.error as { message?: string })?.message ?? `Facebook error ${res.status}`);
-    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaCode = (json.error as { code?: number })?.code;
-    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaSubcode = (json.error as { error_subcode?: number })?.error_subcode;
-    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaType = (json.error as { type?: string })?.type;
+    const err = new Error(
+      (json.error as { message?: string })?.message ?? `Facebook error ${res.status}`,
+    );
+    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaCode = (
+      json.error as { code?: number }
+    )?.code;
+    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaSubcode = (
+      json.error as { error_subcode?: number }
+    )?.error_subcode;
+    (err as Error & { metaCode?: number; metaSubcode?: number; metaType?: string }).metaType = (
+      json.error as { type?: string }
+    )?.type;
     throw err;
   }
   return json;
@@ -70,13 +82,26 @@ function isAuthError(code?: number, subcode?: number, type?: string): boolean {
 
 export { isAuthError };
 
-async function uploadPhotoToPage(pageId: string, token: string, url: string, published = false): Promise<string> {
-  const body = new URLSearchParams({ url, access_token: token, published: published ? "true" : "false" });
+async function uploadPhotoToPage(
+  pageId: string,
+  token: string,
+  url: string,
+  published = false,
+): Promise<string> {
+  const body = new URLSearchParams({
+    url,
+    access_token: token,
+    published: published ? "true" : "false",
+  });
   const json = await graphPost(`/${pageId}/photos`, body);
   return (json.id as string) ?? "";
 }
 
-async function uploadVideoResumable(pageId: string, token: string, videoUrl: string): Promise<string> {
+async function uploadVideoResumable(
+  pageId: string,
+  token: string,
+  videoUrl: string,
+): Promise<string> {
   // 1. Fetch video bytes.
   const fetchRes = await fetch(videoUrl);
   if (!fetchRes.ok) throw new Error(`Could not fetch video from ${videoUrl}: ${fetchRes.status}`);
@@ -91,7 +116,8 @@ async function uploadVideoResumable(pageId: string, token: string, videoUrl: str
   );
   const uploadSessionId = (start as Record<string, unknown>).upload_session_id as string;
   const videoId = (start as Record<string, unknown>).video_id as string;
-  if (!uploadSessionId || !videoId) throw new Error("Facebook video upload start did not return a session");
+  if (!uploadSessionId || !videoId)
+    throw new Error("Facebook video upload start did not return a session");
 
   // 3. Transfer whole file in one chunk (suitable for short-form content under a few hundred MB).
   const chunkForm = new FormData();
@@ -111,7 +137,10 @@ async function uploadVideoResumable(pageId: string, token: string, videoUrl: str
   return videoId;
 }
 
-async function publishFeedPost(input: FacebookPublishInput, token: string): Promise<FacebookPublishResult> {
+async function publishFeedPost(
+  input: FacebookPublishInput,
+  token: string,
+): Promise<FacebookPublishResult> {
   const { pageId, caption, mediaKind, mediaUrls, linkUrl } = input;
 
   if (mediaKind === "image" && mediaUrls[0]) {
@@ -127,7 +156,9 @@ async function publishFeedPost(input: FacebookPublishInput, token: string): Prom
   }
 
   if (mediaKind === "carousel" && mediaUrls.length) {
-    const mediaIds = await Promise.all(mediaUrls.map((url) => uploadPhotoToPage(pageId, token, url, false)));
+    const mediaIds = await Promise.all(
+      mediaUrls.map((url) => uploadPhotoToPage(pageId, token, url, false)),
+    );
     const body = new URLSearchParams({
       message: caption,
       attached_media: JSON.stringify(mediaIds.map((id) => ({ media_fbid: id }))),
@@ -146,7 +177,10 @@ async function publishFeedPost(input: FacebookPublishInput, token: string): Prom
   return { externalId: id, permalink: `https://facebook.com/${id}` };
 }
 
-async function publishPoll(input: FacebookPublishInput, token: string): Promise<FacebookPublishResult> {
+async function publishPoll(
+  input: FacebookPublishInput,
+  token: string,
+): Promise<FacebookPublishResult> {
   const { pageId, caption, pollOptions, allowMultiVote } = input;
   const options = (pollOptions ?? []).filter(Boolean).slice(0, 4);
   if (options.length < 2) throw new Error("Polls need at least 2 options");
@@ -167,7 +201,10 @@ async function publishPoll(input: FacebookPublishInput, token: string): Promise<
   return { externalId: id, permalink: `https://facebook.com/${id}` };
 }
 
-async function publishReel(input: FacebookPublishInput, token: string): Promise<FacebookPublishResult> {
+async function publishReel(
+  input: FacebookPublishInput,
+  token: string,
+): Promise<FacebookPublishResult> {
   const { pageId, caption, mediaUrls } = input;
   if (!mediaUrls[0]) throw new Error("Reels require a video URL");
   const videoId = await uploadVideoResumable(pageId, token, mediaUrls[0]);
@@ -179,11 +216,14 @@ async function publishReel(input: FacebookPublishInput, token: string): Promise<
     reels_parameters: JSON.stringify({}), // required marker for reels
   });
   const json = await graphPost(`/${pageId}/video_reels`, body);
-  const id = json.id as string ?? videoId;
+  const id = (json.id as string) ?? videoId;
   return { externalId: id, permalink: `https://facebook.com/reel/${id}` };
 }
 
-async function publishStory(input: FacebookPublishInput, token: string): Promise<FacebookPublishResult> {
+async function publishStory(
+  input: FacebookPublishInput,
+  token: string,
+): Promise<FacebookPublishResult> {
   const { pageId, caption, mediaKind, mediaUrls } = input;
   if (!mediaUrls[0]) throw new Error("Stories require an image or video URL");
 
@@ -206,7 +246,9 @@ async function postFirstComment(postId: string, token: string, text: string) {
   await graphPost(`/${postId}/comments`, body);
 }
 
-export async function publishToFacebook(input: FacebookPublishInput): Promise<FacebookPublishResult> {
+export async function publishToFacebook(
+  input: FacebookPublishInput,
+): Promise<FacebookPublishResult> {
   const token = resolveToken(input.accessTokenCipher);
   let result: FacebookPublishResult;
 

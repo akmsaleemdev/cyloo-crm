@@ -6,9 +6,16 @@ export const Route = createFileRoute("/_authenticated/_super-admin/admin/ai-prov
   head: () => ({
     meta: [
       { title: "Super Admin — AI Providers" },
-      { name: "description", content: "Cross-tenant AI provider registry: credentials status, model inventory, health probes, and 30-day usage." },
+      {
+        name: "description",
+        content:
+          "Cross-tenant AI provider registry: credentials status, model inventory, health probes, and 30-day usage.",
+      },
       { property: "og:title", content: "Super Admin — AI Providers" },
-      { property: "og:description", content: "Cross-tenant AI provider registry with health and usage monitoring." },
+      {
+        property: "og:description",
+        content: "Cross-tenant AI provider registry with health and usage monitoring.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },

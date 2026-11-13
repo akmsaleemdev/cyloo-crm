@@ -288,9 +288,7 @@ function SubmissionDetail({ submission }: { submission: SubmissionRow }) {
         </div>
 
         <div>
-          <div className="text-[11px] uppercase text-muted-foreground mb-2">
-            Response fields
-          </div>
+          <div className="text-[11px] uppercase text-muted-foreground mb-2">Response fields</div>
           {entries.length === 0 ? (
             <div className="text-xs text-muted-foreground italic">No response data captured.</div>
           ) : (

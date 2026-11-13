@@ -10,12 +10,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription";
 import {
-  listDepartments, upsertDepartment, deleteDepartment, setDepartmentMembers,
-  listAgentAvailability, setMyAvailability, heartbeat,
-  getBusinessHours, upsertBusinessHours, isWithinBusinessHours,
-  transferToAgent, transferToDepartment, takeOver, resumeAi,
-  listQueue, claimFromQueue, listHandoffHistory,
-  type HandoffPriority, type AgentPresence,
+  listDepartments,
+  upsertDepartment,
+  deleteDepartment,
+  setDepartmentMembers,
+  listAgentAvailability,
+  setMyAvailability,
+  heartbeat,
+  getBusinessHours,
+  upsertBusinessHours,
+  isWithinBusinessHours,
+  transferToAgent,
+  transferToDepartment,
+  takeOver,
+  resumeAi,
+  listQueue,
+  claimFromQueue,
+  listHandoffHistory,
+  type HandoffPriority,
+  type AgentPresence,
 } from "@/lib/handoff/handoff.functions";
 
 // ==================== Departments ====================
@@ -35,9 +48,13 @@ export function useUpsertDepartment() {
   const fn = useServerFn(upsertDepartment);
   return useMutation({
     mutationFn: (input: {
-      id?: string; workspaceId: string; name: string;
-      description?: string | null; color?: string;
-      fallbackAgentId?: string | null; isActive?: boolean;
+      id?: string;
+      workspaceId: string;
+      name: string;
+      description?: string | null;
+      color?: string;
+      fallbackAgentId?: string | null;
+      isActive?: boolean;
     }) => fn({ data: input }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["handoff", "departments"] });
@@ -62,7 +79,8 @@ export function useSetDepartmentMembers() {
   const qc = useQueryClient();
   const fn = useServerFn(setDepartmentMembers);
   return useMutation({
-    mutationFn: (input: { workspaceId: string; departmentId: string; userIds: string[] }) => fn({ data: input }),
+    mutationFn: (input: { workspaceId: string; departmentId: string; userIds: string[] }) =>
+      fn({ data: input }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["handoff", "departments"] }),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -90,10 +108,8 @@ export function useAgentAvailability() {
         filter: active?.id ? `workspace_id=eq.${active.id}` : undefined,
       },
     ],
-    onChange: () =>
-      qc.invalidateQueries({ queryKey: ["handoff", "availability", active?.id] }),
+    onChange: () => qc.invalidateQueries({ queryKey: ["handoff", "availability", active?.id] }),
   });
-
 
   return q;
 }
@@ -103,8 +119,13 @@ export function useSetMyAvailability() {
   const { active } = useCurrentWorkspace();
   const fn = useServerFn(setMyAvailability);
   return useMutation({
-    mutationFn: (input: { presence?: AgentPresence; statusMessage?: string | null; skills?: string[]; maxConcurrent?: number; autoAwayMinutes?: number; }) =>
-      fn({ data: { workspaceId: active!.id, ...input } }),
+    mutationFn: (input: {
+      presence?: AgentPresence;
+      statusMessage?: string | null;
+      skills?: string[];
+      maxConcurrent?: number;
+      autoAwayMinutes?: number;
+    }) => fn({ data: { workspaceId: active!.id, ...input } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["handoff", "availability"] }),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -116,7 +137,9 @@ export function useAgentHeartbeat() {
   const fn = useServerFn(heartbeat);
   useEffect(() => {
     if (!active?.id) return;
-    const tick = () => { fn({ data: { workspaceId: active.id } }).catch(() => {}); };
+    const tick = () => {
+      fn({ data: { workspaceId: active.id } }).catch(() => {});
+    };
     tick();
     const t = setInterval(tick, 60_000);
     return () => clearInterval(t);
@@ -141,7 +164,10 @@ export function useUpsertBusinessHours() {
   return useMutation({
     mutationFn: (input: {
       timezone?: string;
-      weeklySchedule?: Record<"mon"|"tue"|"wed"|"thu"|"fri"|"sat"|"sun", { open: string; close: string; enabled: boolean }>;
+      weeklySchedule?: Record<
+        "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
+        { open: string; close: string; enabled: boolean }
+      >;
       holidays?: Array<{ date: string; label: string }>;
       offlineMessage?: string;
     }) => fn({ data: { workspaceId: active!.id, ...input } }),
@@ -180,7 +206,10 @@ export function useTransferToAgent(conversationId: string) {
   return useMutation({
     mutationFn: (input: { toUserId: string; note?: string; reason?: string }) =>
       fn({ data: { conversationId, ...input } }),
-    onSuccess: () => { invalidate(); toast.success("Transferred to agent"); },
+    onSuccess: () => {
+      invalidate();
+      toast.success("Transferred to agent");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }
@@ -189,14 +218,21 @@ export function useTransferToDepartment(conversationId: string) {
   const fn = useServerFn(transferToDepartment);
   const invalidate = useInvalidateConversation(conversationId);
   return useMutation({
-    mutationFn: (input: { departmentId: string; priority?: HandoffPriority; requiredSkills?: string[]; reason?: string; note?: string }) =>
-      fn({ data: { conversationId, ...input } }),
+    mutationFn: (input: {
+      departmentId: string;
+      priority?: HandoffPriority;
+      requiredSkills?: string[];
+      reason?: string;
+      note?: string;
+    }) => fn({ data: { conversationId, ...input } }),
     onSuccess: (r) => {
       invalidate();
       toast.success(
-        r.mode === "assigned" ? "Assigned to available agent"
-        : r.mode === "fallback" ? "Assigned to fallback agent"
-        : "Added to department queue"
+        r.mode === "assigned"
+          ? "Assigned to available agent"
+          : r.mode === "fallback"
+            ? "Assigned to fallback agent"
+            : "Added to department queue",
       );
     },
     onError: (e: Error) => toast.error(e.message),
@@ -208,7 +244,10 @@ export function useTakeOver(conversationId: string) {
   const invalidate = useInvalidateConversation(conversationId);
   return useMutation({
     mutationFn: () => fn({ data: { conversationId } }),
-    onSuccess: () => { invalidate(); toast.success("You've taken over — AI paused"); },
+    onSuccess: () => {
+      invalidate();
+      toast.success("You've taken over — AI paused");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }
@@ -218,13 +257,18 @@ export function useResumeAi(conversationId: string) {
   const invalidate = useInvalidateConversation(conversationId);
   return useMutation({
     mutationFn: (input?: { note?: string }) => fn({ data: { conversationId, ...(input ?? {}) } }),
-    onSuccess: () => { invalidate(); toast.success("AI resumed"); },
+    onSuccess: () => {
+      invalidate();
+      toast.success("AI resumed");
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 }
 
 // ==================== Queue ====================
-export function useHandoffQueue(status: "waiting"|"assigned"|"cancelled"|"expired" = "waiting") {
+export function useHandoffQueue(
+  status: "waiting" | "assigned" | "cancelled" | "expired" = "waiting",
+) {
   const { active } = useCurrentWorkspace();
   const fn = useServerFn(listQueue);
   const qc = useQueryClient();
@@ -244,8 +288,7 @@ export function useHandoffQueue(status: "waiting"|"assigned"|"cancelled"|"expire
         filter: active?.id ? `workspace_id=eq.${active.id}` : undefined,
       },
     ],
-    onChange: () =>
-      qc.invalidateQueries({ queryKey: ["handoff", "queue", active?.id] }),
+    onChange: () => qc.invalidateQueries({ queryKey: ["handoff", "queue", active?.id] }),
   });
 
   return q;

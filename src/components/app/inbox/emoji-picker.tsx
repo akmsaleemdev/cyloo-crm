@@ -85,9 +85,7 @@ export function EmojiPicker({ onSelect }: { onSelect: (emoji: string) => void })
     if (!term) return CATEGORIES;
     return CATEGORIES.map((c) => ({
       ...c,
-      emojis: c.emojis.filter((e) =>
-        e.keywords.some((k) => k.includes(term)) || e.char === term,
-      ),
+      emojis: c.emojis.filter((e) => e.keywords.some((k) => k.includes(term)) || e.char === term),
     })).filter((c) => c.emojis.length > 0);
   }, [q]);
 
@@ -105,9 +103,7 @@ export function EmojiPicker({ onSelect }: { onSelect: (emoji: string) => void })
       <ScrollArea className="h-64">
         <div className="p-2 space-y-3">
           {filtered.length === 0 && (
-            <div className="text-xs text-muted-foreground text-center py-4">
-              No emoji found.
-            </div>
+            <div className="text-xs text-muted-foreground text-center py-4">No emoji found.</div>
           )}
           {filtered.map((cat) => (
             <div key={cat.name}>

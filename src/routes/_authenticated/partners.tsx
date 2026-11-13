@@ -171,9 +171,7 @@ export function PartnersPage() {
   };
 
   const handleApproveDeal = (id: string) => {
-    setDealRegs((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: "approved_locked" } : d))
-    );
+    setDealRegs((prev) => prev.map((d) => (d.id === id ? { ...d, status: "approved_locked" } : d)));
     toast.success("Deal registration approved with exclusive conflict-lock protection.");
   };
 
@@ -185,13 +183,19 @@ export function PartnersPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">Partner Relationship Management (PRM)</h1>
-              <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Partner Relationship Management (PRM)
+              </h1>
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/10 text-primary border-primary/20"
+              >
                 Module 7 • Hub 1
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              Channel distribution, broker enablement, deal registration conflict locks, and co-op MDF tracking.
+              Channel distribution, broker enablement, deal registration conflict locks, and co-op
+              MDF tracking.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -281,7 +285,9 @@ export function PartnersPage() {
           <Card>
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-muted-foreground">Registered Deal Pipeline</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Registered Deal Pipeline
+                </p>
                 <p className="text-2xl font-bold mt-1">AED 2.56M</p>
               </div>
               <div className="p-2.5 rounded-full bg-emerald-500/10 text-emerald-600">
@@ -320,7 +326,9 @@ export function PartnersPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <TabsList>
               <TabsTrigger value="partners">Partner Directory ({partners.length})</TabsTrigger>
-              <TabsTrigger value="deal_regs">Deal Registration Locks ({dealRegs.length})</TabsTrigger>
+              <TabsTrigger value="deal_regs">
+                Deal Registration Locks ({dealRegs.length})
+              </TabsTrigger>
               <TabsTrigger value="mdf">Co-Op Marketing (MDF)</TabsTrigger>
             </TabsList>
             <div className="relative w-full sm:w-64">
@@ -367,8 +375,8 @@ export function PartnersPage() {
                             p.tier === "Platinum"
                               ? "bg-purple-500/10 text-purple-600 border-purple-500/20"
                               : p.tier === "Gold"
-                              ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                              : "bg-muted text-muted-foreground"
+                                ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {p.tier}
@@ -473,14 +481,18 @@ export function PartnersPage() {
               <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle className="text-base">Recent Co-Op Campaign Claims</CardTitle>
-                  <CardDescription>Verified expense receipts and proof of execution</CardDescription>
+                  <CardDescription>
+                    Verified expense receipts and proof of execution
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <div className="p-3 rounded-lg border flex items-center justify-between">
                       <div>
                         <div className="font-medium text-sm">GITEX Dubai 2026 Co-Branded Booth</div>
-                        <div className="text-xs text-muted-foreground">Gulf Cloud Solutions • AED 45,000</div>
+                        <div className="text-xs text-muted-foreground">
+                          Gulf Cloud Solutions • AED 45,000
+                        </div>
                       </div>
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
                         Reimbursed
@@ -488,8 +500,12 @@ export function PartnersPage() {
                     </div>
                     <div className="p-3 rounded-lg border flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-sm">Riyadh B2B Executive Dinner & AI Workshop</div>
-                        <div className="text-xs text-muted-foreground">Al-Riyadh Digital Systems • SAR 28,000</div>
+                        <div className="font-medium text-sm">
+                          Riyadh B2B Executive Dinner & AI Workshop
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Al-Riyadh Digital Systems • SAR 28,000
+                        </div>
                       </div>
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs">
                         Approved
@@ -505,4 +521,3 @@ export function PartnersPage() {
     </div>
   );
 }
-

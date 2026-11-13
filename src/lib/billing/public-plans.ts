@@ -96,7 +96,7 @@ export function planBullets(plan: PublicPlan, max = 6): string[] {
     "messages_per_month" in l
       ? unlimited(l.messages_per_month)
         ? "Unlimited messages"
-        : count(l.messages_per_month, "message")?.concat(" / month") ?? null
+        : (count(l.messages_per_month, "message")?.concat(" / month") ?? null)
       : null,
   );
   // Prefer "agents" over "seats" — they describe the same thing on most plans.
@@ -158,15 +158,31 @@ export function usePublicPlans(initialInterval: BillingInterval = "month") {
       if (yearly.interval !== "year" || !yearly.monthly_plan_code) continue;
       const monthly = all.find((p) => p.code === yearly.monthly_plan_code);
       if (!monthly || monthly.price_cents <= 0) continue;
-      best = Math.max(best, Math.round((1 - yearly.price_cents / (monthly.price_cents * 12)) * 100));
+      best = Math.max(
+        best,
+        Math.round((1 - yearly.price_cents / (monthly.price_cents * 12)) * 100),
+      );
     }
     return best > 0 ? best : 20;
   }, [all]);
 
   const hasYearly = useMemo(() => all.some((p) => p.interval === "year"), [all]);
-  const maxTrialDays = useMemo(() => all.reduce((m, p) => Math.max(m, p.trial_days ?? 0), 0), [all]);
+  const maxTrialDays = useMemo(
+    () => all.reduce((m, p) => Math.max(m, p.trial_days ?? 0), 0),
+    [all],
+  );
 
-  return { plans, all, interval, setInterval, savingsPct, hasYearly, maxTrialDays, isLoading, isError };
+  return {
+    plans,
+    all,
+    interval,
+    setInterval,
+    savingsPct,
+    hasYearly,
+    maxTrialDays,
+    isLoading,
+    isError,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -229,9 +245,7 @@ export function comparisonGroups(plans: PublicPlan[]): ComparisonGroup[] {
 
   const limitRows: ComparisonRow[] = LIMIT_ROWS.map(({ key, label, suffix }) => ({
     label,
-    values: plans.map((_, i) =>
-      limitCell(limits[i]?.[key] ?? features[i]?.[key], suffix ?? ""),
-    ),
+    values: plans.map((_, i) => limitCell(limits[i]?.[key] ?? features[i]?.[key], suffix ?? "")),
   })).filter((r) => r.values.some((v) => v !== false));
 
   const featureRows: ComparisonRow[] = FEATURE_ROWS.map(({ key, label }) => ({

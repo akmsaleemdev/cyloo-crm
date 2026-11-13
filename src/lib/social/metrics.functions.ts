@@ -33,15 +33,20 @@ export const refreshSocialMetrics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => input.parse(v))
   .handler(async ({ data, context }) => {
-    const { data: isMember } = await sbAny(context.supabase).rpc("is_workspace_member" as never, {
-      _workspace_id: data.workspaceId,
-      _user_id: context.userId,
-    } as never);
+    const { data: isMember } = await sbAny(context.supabase).rpc(
+      "is_workspace_member" as never,
+      {
+        _workspace_id: data.workspaceId,
+        _user_id: context.userId,
+      } as never,
+    );
     if (!isMember) throw new Error("You are not a member of this workspace");
 
     const { data: rows, error } = await sbAny(context.supabase)
       .from("social_post_targets")
-      .select("id, post_id, channel_id, external_post_id, status, social_channels!inner(id, platform)")
+      .select(
+        "id, post_id, channel_id, external_post_id, status, social_channels!inner(id, platform)",
+      )
       .eq("status", "published")
       .not("external_post_id", "is", null);
     if (error) throw new Error(error.message);
@@ -59,10 +64,14 @@ export const refreshSocialMetrics = createServerFn({ method: "POST" })
       .eq("workspace_id", data.workspaceId)
       .in("id", channelIds);
     const tokens = new Map<string, string | null>(
-      ((tokenRows ?? []) as { id: string; access_token: string | null }[]).map((r) => [r.id, r.access_token]),
+      ((tokenRows ?? []) as { id: string; access_token: string | null }[]).map((r) => [
+        r.id,
+        r.access_token,
+      ]),
     );
 
-    const { fetchXMetrics, fetchThreadsMetrics, fetchInstagramMetrics } = await import("./metrics.server");
+    const { fetchXMetrics, fetchThreadsMetrics, fetchInstagramMetrics } =
+      await import("./metrics.server");
 
     const results: MetricRefreshResult[] = [];
     for (const target of targets) {

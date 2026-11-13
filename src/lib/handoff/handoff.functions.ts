@@ -40,15 +40,19 @@ export const listDepartments = createServerFn({ method: "GET" })
 
 export const upsertDepartment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    id: z.string().uuid().optional(),
-    workspaceId: z.string().uuid(),
-    name: z.string().min(1).max(60),
-    description: z.string().max(400).nullable().optional(),
-    color: z.string().optional(),
-    fallbackAgentId: z.string().uuid().nullable().optional(),
-    isActive: z.boolean().optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        id: z.string().uuid().optional(),
+        workspaceId: z.string().uuid(),
+        name: z.string().min(1).max(60),
+        description: z.string().max(400).nullable().optional(),
+        color: z.string().optional(),
+        fallbackAgentId: z.string().uuid().nullable().optional(),
+        isActive: z.boolean().optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const patch: Record<string, unknown> = {
       workspace_id: data.workspaceId,
@@ -63,7 +67,8 @@ export const upsertDepartment = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("departments" as never)
       .upsert(patch as never, { onConflict: "id" })
-      .select("*").single();
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as unknown as Department;
   });
@@ -73,22 +78,29 @@ export const deleteDepartment = createServerFn({ method: "POST" })
   .validator((v: unknown) => z.object({ id: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
-      .from("departments" as never).delete().eq("id", data.id);
+      .from("departments" as never)
+      .delete()
+      .eq("id", data.id);
     if (error) throw new Error(error.message);
     return { deleted: true as const };
   });
 
 export const setDepartmentMembers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    departmentId: z.string().uuid(),
-    userIds: z.array(z.string().uuid()),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        departmentId: z.string().uuid(),
+        userIds: z.array(z.string().uuid()),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     await context.supabase
       .from("department_members" as never)
-      .delete().eq("department_id", data.departmentId);
+      .delete()
+      .eq("department_id", data.departmentId);
     if (data.userIds.length) {
       const rows = data.userIds.map((uid) => ({
         department_id: data.departmentId,
@@ -96,7 +108,8 @@ export const setDepartmentMembers = createServerFn({ method: "POST" })
         workspace_id: data.workspaceId,
       }));
       const { error } = await context.supabase
-        .from("department_members" as never).insert(rows as never);
+        .from("department_members" as never)
+        .insert(rows as never);
       if (error) throw new Error(error.message);
     }
     return { ok: true as const };
@@ -118,14 +131,18 @@ export const listAgentAvailability = createServerFn({ method: "GET" })
 
 export const setMyAvailability = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    presence: PresenceEnum.optional(),
-    statusMessage: z.string().max(120).nullable().optional(),
-    skills: z.array(z.string()).max(50).optional(),
-    maxConcurrent: z.number().int().min(1).max(200).optional(),
-    autoAwayMinutes: z.number().int().min(1).max(240).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        presence: PresenceEnum.optional(),
+        statusMessage: z.string().max(120).nullable().optional(),
+        skills: z.array(z.string()).max(50).optional(),
+        maxConcurrent: z.number().int().min(1).max(200).optional(),
+        autoAwayMinutes: z.number().int().min(1).max(240).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const patch: Record<string, unknown> = {
       workspace_id: data.workspaceId,
@@ -141,7 +158,8 @@ export const setMyAvailability = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("agent_availability" as never)
       .upsert(patch as never, { onConflict: "workspace_id,user_id" })
-      .select("*").single();
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as unknown as AgentAvailability;
   });
@@ -166,19 +184,26 @@ export const getBusinessHours = createServerFn({ method: "GET" })
   .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: row } = await context.supabase
-      .from("business_hours" as never).select("*").eq("workspace_id", data.workspaceId).maybeSingle();
+      .from("business_hours" as never)
+      .select("*")
+      .eq("workspace_id", data.workspaceId)
+      .maybeSingle();
     return (row ?? null) as unknown as BusinessHours | null;
   });
 
 export const upsertBusinessHours = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    timezone: z.string().optional(),
-    weeklySchedule: z.record(DayEnum, DayHours).optional(),
-    holidays: z.array(z.object({ date: z.string(), label: z.string() })).optional(),
-    offlineMessage: z.string().max(500).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        timezone: z.string().optional(),
+        weeklySchedule: z.record(DayEnum, DayHours).optional(),
+        holidays: z.array(z.object({ date: z.string(), label: z.string() })).optional(),
+        offlineMessage: z.string().max(500).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const patch: Record<string, unknown> = {
       workspace_id: data.workspaceId,
@@ -191,7 +216,8 @@ export const upsertBusinessHours = createServerFn({ method: "POST" })
     const { data: row, error } = await context.supabase
       .from("business_hours" as never)
       .upsert(patch as never, { onConflict: "workspace_id" })
-      .select("*").single();
+      .select("*")
+      .single();
     if (error) throw new Error(error.message);
     return row as unknown as BusinessHours;
   });
@@ -202,25 +228,37 @@ async function logEvent(
   supabase: import("@supabase/supabase-js").SupabaseClient,
   row: Record<string, unknown>,
 ) {
-  await sbAny(supabase).from("handoff_events" as never).insert(row as never);
+  await sbAny(supabase)
+    .from("handoff_events" as never)
+    .insert(row as never);
 }
 
 /** Transfer conversation to a specific agent. */
 export const transferToAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    conversationId: z.string().uuid(),
-    toUserId: z.string().uuid(),
-    note: z.string().max(500).optional(),
-    reason: z.string().max(200).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+        toUserId: z.string().uuid(),
+        note: z.string().max(500).optional(),
+        reason: z.string().max(200).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: conv, error: cErr } = await context.supabase
       .from("conversations" as never)
       .select("id, workspace_id, assigned_to, department_id")
-      .eq("id", data.conversationId).single();
+      .eq("id", data.conversationId)
+      .single();
     if (cErr || !conv) throw new Error(cErr?.message ?? "Conversation not found");
-    const c = conv as { id: string; workspace_id: string; assigned_to: string | null; department_id: string | null };
+    const c = conv as {
+      id: string;
+      workspace_id: string;
+      assigned_to: string | null;
+      department_id: string | null;
+    };
 
     const { error: uErr } = await context.supabase
       .from("conversations" as never)
@@ -249,26 +287,37 @@ export const transferToAgent = createServerFn({ method: "POST" })
 /** Transfer conversation to a department (queued if no agents online). */
 export const transferToDepartment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    conversationId: z.string().uuid(),
-    departmentId: z.string().uuid(),
-    priority: PriorityEnum.optional(),
-    requiredSkills: z.array(z.string()).optional(),
-    reason: z.string().max(200).optional(),
-    note: z.string().max(500).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+        departmentId: z.string().uuid(),
+        priority: PriorityEnum.optional(),
+        requiredSkills: z.array(z.string()).optional(),
+        reason: z.string().max(200).optional(),
+        note: z.string().max(500).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: conv } = await context.supabase
       .from("conversations" as never)
       .select("id, workspace_id, assigned_to, department_id")
-      .eq("id", data.conversationId).single();
+      .eq("id", data.conversationId)
+      .single();
     if (!conv) throw new Error("Conversation not found");
-    const c = conv as { id: string; workspace_id: string; assigned_to: string | null; department_id: string | null };
+    const c = conv as {
+      id: string;
+      workspace_id: string;
+      assigned_to: string | null;
+      department_id: string | null;
+    };
 
     const { data: dept } = await context.supabase
       .from("departments" as never)
       .select("id, fallback_agent_id")
-      .eq("id", data.departmentId).single();
+      .eq("id", data.departmentId)
+      .single();
     if (!dept) throw new Error("Department not found");
     const d = dept as { id: string; fallback_agent_id: string | null };
 
@@ -287,25 +336,35 @@ export const transferToDepartment = createServerFn({ method: "POST" })
         .select("user_id, presence, current_load, max_concurrent, skills")
         .eq("workspace_id", c.workspace_id)
         .in("user_id", memberIds);
-      const eligible = ((avail ?? []) as Array<{
-        user_id: string; presence: AgentPresence;
-        current_load: number; max_concurrent: number; skills: string[];
-      }>)
+      const eligible = (
+        (avail ?? []) as Array<{
+          user_id: string;
+          presence: AgentPresence;
+          current_load: number;
+          max_concurrent: number;
+          skills: string[];
+        }>
+      )
         .filter((a) => a.presence === "online" && a.current_load < a.max_concurrent)
-        .filter((a) => !data.requiredSkills?.length
-          || data.requiredSkills.every((s) => a.skills.includes(s)))
+        .filter(
+          (a) =>
+            !data.requiredSkills?.length || data.requiredSkills.every((s) => a.skills.includes(s)),
+        )
         .sort((a, b) => a.current_load - b.current_load);
       assigned = eligible[0]?.user_id ?? null;
     }
 
     if (assigned) {
-      await sbAny(context.supabase).from("conversations" as never).update({
-        assigned_to: assigned,
-        department_id: data.departmentId,
-        assigned_at: new Date().toISOString(),
-        handoff_state: "human",
-        ai_enabled: false,
-      } as never).eq("id", c.id);
+      await sbAny(context.supabase)
+        .from("conversations" as never)
+        .update({
+          assigned_to: assigned,
+          department_id: data.departmentId,
+          assigned_at: new Date().toISOString(),
+          handoff_state: "human",
+          ai_enabled: false,
+        } as never)
+        .eq("id", c.id);
       await logEvent(context.supabase, {
         workspace_id: c.workspace_id,
         conversation_id: c.id,
@@ -323,13 +382,16 @@ export const transferToDepartment = createServerFn({ method: "POST" })
 
     // Try fallback agent
     if (d.fallback_agent_id) {
-      await sbAny(context.supabase).from("conversations" as never).update({
-        assigned_to: d.fallback_agent_id,
-        department_id: data.departmentId,
-        assigned_at: new Date().toISOString(),
-        handoff_state: "human",
-        ai_enabled: false,
-      } as never).eq("id", c.id);
+      await sbAny(context.supabase)
+        .from("conversations" as never)
+        .update({
+          assigned_to: d.fallback_agent_id,
+          department_id: data.departmentId,
+          assigned_at: new Date().toISOString(),
+          handoff_state: "human",
+          ai_enabled: false,
+        } as never)
+        .eq("id", c.id);
       await logEvent(context.supabase, {
         workspace_id: c.workspace_id,
         conversation_id: c.id,
@@ -344,20 +406,28 @@ export const transferToDepartment = createServerFn({ method: "POST" })
     }
 
     // Otherwise queue
-    await sbAny(context.supabase).from("handoff_queue" as never).upsert({
-      workspace_id: c.workspace_id,
-      conversation_id: c.id,
-      target_department_id: data.departmentId,
-      requested_by: context.userId,
-      priority: data.priority ?? "normal",
-      required_skills: data.requiredSkills ?? [],
-      reason: data.reason ?? null,
-      status: "waiting",
-    } as never, { onConflict: "conversation_id,status" });
-    await sbAny(context.supabase).from("conversations" as never).update({
-      department_id: data.departmentId,
-      handoff_state: "queued",
-    } as never).eq("id", c.id);
+    await sbAny(context.supabase)
+      .from("handoff_queue" as never)
+      .upsert(
+        {
+          workspace_id: c.workspace_id,
+          conversation_id: c.id,
+          target_department_id: data.departmentId,
+          requested_by: context.userId,
+          priority: data.priority ?? "normal",
+          required_skills: data.requiredSkills ?? [],
+          reason: data.reason ?? null,
+          status: "waiting",
+        } as never,
+        { onConflict: "conversation_id,status" },
+      );
+    await sbAny(context.supabase)
+      .from("conversations" as never)
+      .update({
+        department_id: data.departmentId,
+        handoff_state: "queued",
+      } as never)
+      .eq("id", c.id);
     await logEvent(context.supabase, {
       workspace_id: c.workspace_id,
       conversation_id: c.id,
@@ -374,22 +444,30 @@ export const transferToDepartment = createServerFn({ method: "POST" })
 /** Agent claims (takes over) a conversation, disabling AI. */
 export const takeOver = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    conversationId: z.string().uuid(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: conv } = await context.supabase
       .from("conversations" as never)
       .select("workspace_id, assigned_to")
-      .eq("id", data.conversationId).single();
+      .eq("id", data.conversationId)
+      .single();
     if (!conv) throw new Error("Conversation not found");
     const c = conv as { workspace_id: string; assigned_to: string | null };
-    await sbAny(context.supabase).from("conversations" as never).update({
-      assigned_to: context.userId,
-      assigned_at: new Date().toISOString(),
-      handoff_state: "human",
-      ai_enabled: false,
-    } as never).eq("id", data.conversationId);
+    await sbAny(context.supabase)
+      .from("conversations" as never)
+      .update({
+        assigned_to: context.userId,
+        assigned_at: new Date().toISOString(),
+        handoff_state: "human",
+        ai_enabled: false,
+      } as never)
+      .eq("id", data.conversationId);
     await logEvent(context.supabase, {
       workspace_id: c.workspace_id,
       conversation_id: data.conversationId,
@@ -399,30 +477,44 @@ export const takeOver = createServerFn({ method: "POST" })
       actor_id: context.userId,
     });
     // Also clear the queue entry if any
-    await sbAny(context.supabase).from("handoff_queue" as never)
-      .update({ status: "assigned", assigned_to: context.userId, assigned_at: new Date().toISOString() } as never)
-      .eq("conversation_id", data.conversationId).eq("status", "waiting");
+    await sbAny(context.supabase)
+      .from("handoff_queue" as never)
+      .update({
+        status: "assigned",
+        assigned_to: context.userId,
+        assigned_at: new Date().toISOString(),
+      } as never)
+      .eq("conversation_id", data.conversationId)
+      .eq("status", "waiting");
     return { ok: true as const };
   });
 
 /** Hand back to AI (resume automated handling). */
 export const resumeAi = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    conversationId: z.string().uuid(),
-    note: z.string().max(500).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+        note: z.string().max(500).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: conv } = await context.supabase
       .from("conversations" as never)
       .select("workspace_id, assigned_to")
-      .eq("id", data.conversationId).single();
+      .eq("id", data.conversationId)
+      .single();
     if (!conv) throw new Error("Conversation not found");
     const c = conv as { workspace_id: string; assigned_to: string | null };
-    await sbAny(context.supabase).from("conversations" as never).update({
-      handoff_state: "ai",
-      ai_enabled: true,
-    } as never).eq("id", data.conversationId);
+    await sbAny(context.supabase)
+      .from("conversations" as never)
+      .update({
+        handoff_state: "ai",
+        ai_enabled: true,
+      } as never)
+      .eq("id", data.conversationId);
     await logEvent(context.supabase, {
       workspace_id: c.workspace_id,
       conversation_id: data.conversationId,
@@ -438,10 +530,14 @@ export const resumeAi = createServerFn({ method: "POST" })
 
 export const listQueue = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    workspaceId: z.string().uuid(),
-    status: z.enum(["waiting", "assigned", "cancelled", "expired"]).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        status: z.enum(["waiting", "assigned", "cancelled", "expired"]).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("handoff_queue" as never)
@@ -460,23 +556,32 @@ export const claimFromQueue = createServerFn({ method: "POST" })
   .validator((v: unknown) => z.object({ queueId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: item } = await context.supabase
-      .from("handoff_queue" as never).select("*").eq("id", data.queueId).single();
+      .from("handoff_queue" as never)
+      .select("*")
+      .eq("id", data.queueId)
+      .single();
     if (!item) throw new Error("Queue item not found");
     const q = item as HandoffQueueItem;
     if (q.status !== "waiting") throw new Error("Already claimed");
 
-    await sbAny(context.supabase).from("handoff_queue" as never).update({
-      status: "assigned",
-      assigned_to: context.userId,
-      assigned_at: new Date().toISOString(),
-    } as never).eq("id", data.queueId);
+    await sbAny(context.supabase)
+      .from("handoff_queue" as never)
+      .update({
+        status: "assigned",
+        assigned_to: context.userId,
+        assigned_at: new Date().toISOString(),
+      } as never)
+      .eq("id", data.queueId);
 
-    await sbAny(context.supabase).from("conversations" as never).update({
-      assigned_to: context.userId,
-      assigned_at: new Date().toISOString(),
-      handoff_state: "human",
-      ai_enabled: false,
-    } as never).eq("id", q.conversation_id);
+    await sbAny(context.supabase)
+      .from("conversations" as never)
+      .update({
+        assigned_to: context.userId,
+        assigned_at: new Date().toISOString(),
+        handoff_state: "human",
+        ai_enabled: false,
+      } as never)
+      .eq("id", q.conversation_id);
 
     await logEvent(context.supabase, {
       workspace_id: q.workspace_id,
@@ -493,10 +598,14 @@ export const claimFromQueue = createServerFn({ method: "POST" })
 
 export const listHandoffHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) => z.object({
-    conversationId: z.string().uuid(),
-    limit: z.number().int().min(1).max(200).optional(),
-  }).parse(v))
+  .validator((v: unknown) =>
+    z
+      .object({
+        conversationId: z.string().uuid(),
+        limit: z.number().int().min(1).max(200).optional(),
+      })
+      .parse(v),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("handoff_events" as never)
@@ -515,10 +624,15 @@ export const isWithinBusinessHours = createServerFn({ method: "GET" })
   .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
     const { data: row } = await context.supabase
-      .from("business_hours" as never).select("*")
-      .eq("workspace_id", data.workspaceId).maybeSingle();
+      .from("business_hours" as never)
+      .select("*")
+      .eq("workspace_id", data.workspaceId)
+      .maybeSingle();
     if (!row) return { open: true, offlineMessage: "" };
-    return { open: computeOpen(row as unknown as BusinessHours), offlineMessage: (row as unknown as BusinessHours).offline_message };
+    return {
+      open: computeOpen(row as unknown as BusinessHours),
+      offlineMessage: (row as unknown as BusinessHours).offline_message,
+    };
   });
 
 function computeOpen(bh: BusinessHours): boolean {
@@ -526,13 +640,24 @@ function computeOpen(bh: BusinessHours): boolean {
     const tz = bh.timezone || "UTC";
     const now = new Date();
     const parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: tz, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false,
+      timeZone: tz,
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
     }).formatToParts(now);
-    const wd = parts.find((p) => p.type === "weekday")?.value.toLowerCase().slice(0, 3) ?? "mon";
+    const wd =
+      parts
+        .find((p) => p.type === "weekday")
+        ?.value.toLowerCase()
+        .slice(0, 3) ?? "mon";
     const hh = parts.find((p) => p.type === "hour")?.value ?? "00";
     const mm = parts.find((p) => p.type === "minute")?.value ?? "00";
     const iso = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     }).format(now);
     const holiday = (bh.holidays ?? []).some((h) => h.date === iso);
     if (holiday) return false;
@@ -540,7 +665,9 @@ function computeOpen(bh: BusinessHours): boolean {
     if (!day || !day.enabled) return false;
     const cur = `${hh}:${mm}`;
     return cur >= day.open && cur <= day.close;
-  } catch { return true; }
+  } catch {
+    return true;
+  }
 }
 
 // ==================== Types ====================
@@ -573,7 +700,10 @@ export interface AgentAvailability {
 export interface BusinessHours {
   workspace_id: string;
   timezone: string;
-  weekly_schedule: Record<"mon"|"tue"|"wed"|"thu"|"fri"|"sat"|"sun", { open: string; close: string; enabled: boolean }>;
+  weekly_schedule: Record<
+    "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun",
+    { open: string; close: string; enabled: boolean }
+  >;
   holidays: Array<{ date: string; label: string }>;
   offline_message: string;
 }
@@ -599,8 +729,15 @@ export interface HandoffEvent {
   workspace_id: string;
   conversation_id: string;
   kind:
-    | "transfer_agent" | "transfer_department" | "takeover" | "resume_ai"
-    | "queue_enter" | "queue_leave" | "queue_assigned" | "fallback_assigned" | "offline_bounced";
+    | "transfer_agent"
+    | "transfer_department"
+    | "takeover"
+    | "resume_ai"
+    | "queue_enter"
+    | "queue_leave"
+    | "queue_assigned"
+    | "fallback_assigned"
+    | "offline_bounced";
   from_user_id: string | null;
   to_user_id: string | null;
   from_department_id: string | null;

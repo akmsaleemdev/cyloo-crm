@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useUpdateCustomer, type CustomerRow } from "@/hooks/use-customers";
-import { useCurrentWorkspace, useWorkspaceMembers, type WorkspaceMemberRow } from "@/hooks/use-workspace";
+import {
+  useCurrentWorkspace,
+  useWorkspaceMembers,
+  type WorkspaceMemberRow,
+} from "@/hooks/use-workspace";
 import { normalizePhone } from "@/lib/inbox/contact-display";
 import { TagSelector } from "@/components/app/tags/tag-selector";
 import { cn } from "@/lib/utils";
@@ -127,10 +127,23 @@ export function InlineEditableField({
         <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />
       ) : (
         <>
-          <Button size="icon" variant="ghost" onMouseDown={(e) => e.preventDefault()} onClick={commit}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={commit}
+          >
             <Check className="w-3.5 h-3.5" />
           </Button>
-          <Button size="icon" variant="ghost" onMouseDown={(e) => e.preventDefault()} onClick={() => { setValue(initial ?? ""); setEditing(false); }}>
+          <Button
+            size="icon"
+            variant="ghost"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setValue(initial ?? "");
+              setEditing(false);
+            }}
+          >
             <X className="w-3.5 h-3.5" />
           </Button>
         </>
@@ -142,16 +155,13 @@ export function InlineEditableField({
 function readField(c: CustomerRow, f: Field): string | null {
   if (f === "name") {
     return (
-      c.display_name?.trim() ||
-      [c.first_name, c.last_name].filter(Boolean).join(" ").trim() ||
-      null
+      c.display_name?.trim() || [c.first_name, c.last_name].filter(Boolean).join(" ").trim() || null
     );
   }
   if (f === "phone") return c.phone ?? null;
   if (f === "email") return c.email ?? null;
   return null;
 }
-
 
 function buildPatch(f: Field, v: string | null) {
   if (f === "name") {
@@ -163,7 +173,7 @@ function buildPatch(f: Field, v: string | null) {
     return { display_name: v, first_name: first, last_name: last };
   }
   if (f === "phone") {
-    return { phone: v ? normalizePhone(v) ?? v : null };
+    return { phone: v ? (normalizePhone(v) ?? v) : null };
   }
   return { email: v };
 }
@@ -176,7 +186,8 @@ export function InlineOwnerPicker({ customer }: Props) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const current = members.find((m) => m.user_id === customer.owner_id) as WorkspaceMemberRow | undefined;
+  const current = members.find((m) => m.user_id === customer.owner_id) as
+    WorkspaceMemberRow | undefined;
 
   const setOwner = async (userId: string | null) => {
     setSaving(true);
@@ -203,7 +214,9 @@ export function InlineOwnerPicker({ customer }: Props) {
             <>
               <Avatar className="w-4 h-4">
                 {current.avatar_url ? <AvatarImage src={current.avatar_url} /> : null}
-                <AvatarFallback className="text-[8px]">{initials(current.display_name || current.email || "?")}</AvatarFallback>
+                <AvatarFallback className="text-[8px]">
+                  {initials(current.display_name || current.email || "?")}
+                </AvatarFallback>
               </Avatar>
               <span className="text-foreground">{current.display_name || current.email}</span>
             </>
@@ -213,7 +226,11 @@ export function InlineOwnerPicker({ customer }: Props) {
               <span>Unassigned</span>
             </>
           )}
-          {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60" />}
+          {saving ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60" />
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="p-0 w-64" align="start">
@@ -240,7 +257,9 @@ export function InlineOwnerPicker({ customer }: Props) {
               >
                 <Avatar className="w-6 h-6">
                   {m.avatar_url ? <AvatarImage src={m.avatar_url} /> : null}
-                  <AvatarFallback className="text-[11px]">{initials(m.display_name || m.email || "?")}</AvatarFallback>
+                  <AvatarFallback className="text-[11px]">
+                    {initials(m.display_name || m.email || "?")}
+                  </AvatarFallback>
                 </Avatar>
                 <span className="truncate flex-1">{m.display_name || m.email}</span>
                 {customer.owner_id === m.user_id && <Check className="w-3.5 h-3.5" />}

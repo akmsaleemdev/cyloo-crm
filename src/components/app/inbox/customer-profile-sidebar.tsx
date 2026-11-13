@@ -669,7 +669,8 @@ function Field({
       </div>
     </>
   );
-  const cls = "flex items-start gap-2 rounded-control p-1.5 px-2.5 -mx-1.5 hover:bg-muted transition-colors";
+  const cls =
+    "flex items-start gap-2 rounded-control p-1.5 px-2.5 -mx-1.5 hover:bg-muted transition-colors";
   if (to && params) {
     return (
       <Link to={to as never} params={params as never} className={cls}>

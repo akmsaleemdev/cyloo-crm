@@ -177,8 +177,15 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       if (snaps && snaps.length) {
         // group by snapshot_date desc, take newest date's rows
         const newest = snaps[0].snapshot_date;
-        const older = snaps.find((s: { snapshot_date: string }) => s.snapshot_date <= t30.slice(0, 10))?.snapshot_date;
-        for (const s of snaps as Array<{ snapshot_date: string; mrr_cents: number; arr_cents: number; churn_rate: number }>) {
+        const older = snaps.find(
+          (s: { snapshot_date: string }) => s.snapshot_date <= t30.slice(0, 10),
+        )?.snapshot_date;
+        for (const s of snaps as Array<{
+          snapshot_date: string;
+          mrr_cents: number;
+          arr_cents: number;
+          churn_rate: number;
+        }>) {
           if (s.snapshot_date === newest) {
             mrrCents += Number(s.mrr_cents ?? 0);
             arrCents += Number(s.arr_cents ?? 0);
@@ -261,7 +268,9 @@ export interface GrowthPoint {
 
 export const getGrowthTrends = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: { days?: number }) => z.object({ days: z.number().min(7).max(365).default(30) }).parse(d ?? {}))
+  .validator((d: { days?: number }) =>
+    z.object({ days: z.number().min(7).max(365).default(30) }).parse(d ?? {}),
+  )
   .handler(async ({ data, context }): Promise<GrowthPoint[]> => {
     const { supabase, userId } = context;
     await assertPlatformStaff(supabase, userId);
@@ -275,7 +284,10 @@ export const getGrowthTrends = createServerFn({ method: "GET" })
     const [orgs, users, snaps, msgs, aiDaily, wfRuns] = await Promise.all([
       sbAny(supabase).from("organizations").select(sel("created_at")).gte("created_at", sinceIso),
       sbAny(supabase).from("profiles").select(sel("created_at")).gte("created_at", sinceIso),
-      sbAny(supabase).from("billing_revenue_snapshots").select(sel("snapshot_date, mrr_cents")).gte("snapshot_date", sinceDate),
+      sbAny(supabase)
+        .from("billing_revenue_snapshots")
+        .select(sel("snapshot_date, mrr_cents"))
+        .gte("snapshot_date", sinceDate),
       sbAny(supabase).from("messages").select(sel("created_at")).gte("created_at", sinceIso),
       sbAny(supabase).from("ai_usage_daily").select(sel("day, cost_usd")).gte("day", sinceDate),
       sbAny(supabase).from("workflow_runs").select(sel("started_at")).gte("started_at", sinceIso),
@@ -302,18 +314,28 @@ export const getGrowthTrends = createServerFn({ method: "GET" })
       if (b) (b[key] as number) = ((b[key] as number) ?? 0) + value;
     };
 
-    for (const r of ((orgs.data ?? []) as unknown as Array<{ created_at: string }>)) bump(r.created_at, "organizations");
-    for (const r of ((users.data ?? []) as unknown as Array<{ created_at: string }>)) bump(r.created_at, "users");
-    for (const r of ((msgs.data ?? []) as unknown as Array<{ created_at: string }>)) bump(r.created_at, "messages");
-    for (const r of ((wfRuns.data ?? []) as unknown as Array<{ started_at: string }>)) bump(r.started_at, "workflowRuns");
-    for (const r of ((aiDaily.data ?? []) as unknown as Array<{ day: string; cost_usd: number }>)) {
+    for (const r of (orgs.data ?? []) as unknown as Array<{ created_at: string }>)
+      bump(r.created_at, "organizations");
+    for (const r of (users.data ?? []) as unknown as Array<{ created_at: string }>)
+      bump(r.created_at, "users");
+    for (const r of (msgs.data ?? []) as unknown as Array<{ created_at: string }>)
+      bump(r.created_at, "messages");
+    for (const r of (wfRuns.data ?? []) as unknown as Array<{ started_at: string }>)
+      bump(r.started_at, "workflowRuns");
+    for (const r of (aiDaily.data ?? []) as unknown as Array<{ day: string; cost_usd: number }>) {
       const b = buckets.get(r.day);
       if (b) b.aiCostUsd += Number(r.cost_usd ?? 0);
     }
     // MRR: latest per day (sum across orgs)
     const mrrByDay = new Map<string, number>();
-    for (const r of ((snaps.data ?? []) as unknown as Array<{ snapshot_date: string; mrr_cents: number }>)) {
-      mrrByDay.set(r.snapshot_date, (mrrByDay.get(r.snapshot_date) ?? 0) + Number(r.mrr_cents ?? 0));
+    for (const r of (snaps.data ?? []) as unknown as Array<{
+      snapshot_date: string;
+      mrr_cents: number;
+    }>) {
+      mrrByDay.set(
+        r.snapshot_date,
+        (mrrByDay.get(r.snapshot_date) ?? 0) + Number(r.mrr_cents ?? 0),
+      );
     }
     // Fill running MRR (carry forward)
     let running = 0;
@@ -358,20 +380,27 @@ export const getTopTenants = createServerFn({ method: "GET" })
       .from("organizations")
       .select(sel("id, name, slug"))
       .limit(500);
-    const orgList = ((orgs ?? []) as unknown as Array<{ id: string; name: string; slug: string | null }>);
+    const orgList = (orgs ?? []) as unknown as Array<{
+      id: string;
+      name: string;
+      slug: string | null;
+    }>;
     if (orgList.length === 0) return [];
 
     // subscriptions -> plan and MRR proxy
     const { data: subs } = await supabase
       .from("subscriptions")
       .select(sel("organization_id, status, plan_id, plans(name, monthly_price_cents)"))
-      .in("organization_id", orgList.map((o) => o.id));
+      .in(
+        "organization_id",
+        orgList.map((o) => o.id),
+      );
     const subMap = new Map<string, { status: string; plan: string | null; mrrCents: number }>();
-    for (const s of ((subs ?? []) as unknown as Array<{
+    for (const s of (subs ?? []) as unknown as Array<{
       organization_id: string;
       status: string;
       plans: { name: string; monthly_price_cents: number } | null;
-    }>)) {
+    }>) {
       subMap.set(s.organization_id, {
         status: s.status,
         plan: s.plans?.name ?? null,
@@ -383,9 +412,12 @@ export const getTopTenants = createServerFn({ method: "GET" })
     const { data: members } = await supabase
       .from("organization_members")
       .select(sel("organization_id"))
-      .in("organization_id", orgList.map((o) => o.id));
+      .in(
+        "organization_id",
+        orgList.map((o) => o.id),
+      );
     const userMap = new Map<string, number>();
-    for (const m of ((members ?? []) as unknown as Array<{ organization_id: string }>)) {
+    for (const m of (members ?? []) as unknown as Array<{ organization_id: string }>) {
       userMap.set(m.organization_id, (userMap.get(m.organization_id) ?? 0) + 1);
     }
 
@@ -396,7 +428,7 @@ export const getTopTenants = createServerFn({ method: "GET" })
       .select(sel("workspace_id"))
       .gte("created_at", t30);
     const msgMap = new Map<string, number>();
-    for (const m of ((msgs ?? []) as unknown as Array<{ workspace_id: string }>)) {
+    for (const m of (msgs ?? []) as unknown as Array<{ workspace_id: string }>) {
       msgMap.set(m.workspace_id, (msgMap.get(m.workspace_id) ?? 0) + 1);
     }
 
@@ -405,7 +437,7 @@ export const getTopTenants = createServerFn({ method: "GET" })
       .select(sel("workspace_id, cost_usd"))
       .gte("day", t30.slice(0, 10));
     const aiMap = new Map<string, number>();
-    for (const r of ((ai ?? []) as unknown as Array<{ workspace_id: string; cost_usd: number }>)) {
+    for (const r of (ai ?? []) as unknown as Array<{ workspace_id: string; cost_usd: number }>) {
       aiMap.set(r.workspace_id, (aiMap.get(r.workspace_id) ?? 0) + Number(r.cost_usd ?? 0));
     }
 
@@ -444,7 +476,9 @@ export interface ChurnPoint {
 
 export const getChurnTrend = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: { days?: number }) => z.object({ days: z.number().min(30).max(365).default(90) }).parse(d ?? {}))
+  .validator((d: { days?: number }) =>
+    z.object({ days: z.number().min(30).max(365).default(90) }).parse(d ?? {}),
+  )
   .handler(async ({ data, context }): Promise<ChurnPoint[]> => {
     const { supabase, userId } = context;
     await assertPlatformStaff(supabase, userId);
@@ -457,12 +491,12 @@ export const getChurnTrend = createServerFn({ method: "GET" })
       .order("snapshot_date", { ascending: true });
 
     const byDay = new Map<string, ChurnPoint>();
-    for (const s of ((snaps ?? []) as unknown as Array<{
+    for (const s of (snaps ?? []) as unknown as Array<{
       snapshot_date: string;
       churn_rate: number;
       new_subscriptions: number;
       churned_subscriptions: number;
-    }>)) {
+    }>) {
       const cur = byDay.get(s.snapshot_date) ?? {
         date: s.snapshot_date,
         churnRatePct: 0,
@@ -506,8 +540,24 @@ export const exportAnalyticsCsv = createServerFn({ method: "POST" })
       return {
         filename: `platform-growth-${stamp}.csv`,
         csv: toCsv(
-          ["date", "organizations", "users", "mrr_cents", "messages", "ai_cost_usd", "workflow_runs"],
-          rows.map((r) => [r.date, r.organizations, r.users, r.mrrCents, r.messages, r.aiCostUsd, r.workflowRuns]),
+          [
+            "date",
+            "organizations",
+            "users",
+            "mrr_cents",
+            "messages",
+            "ai_cost_usd",
+            "workflow_runs",
+          ],
+          rows.map((r) => [
+            r.date,
+            r.organizations,
+            r.users,
+            r.mrrCents,
+            r.messages,
+            r.aiCostUsd,
+            r.workflowRuns,
+          ]),
         ),
       };
     }
@@ -516,7 +566,17 @@ export const exportAnalyticsCsv = createServerFn({ method: "POST" })
       return {
         filename: `platform-top-tenants-${stamp}.csv`,
         csv: toCsv(
-          ["organization_id", "name", "slug", "plan", "status", "mrr_cents", "users", "messages_30d", "ai_cost_usd"],
+          [
+            "organization_id",
+            "name",
+            "slug",
+            "plan",
+            "status",
+            "mrr_cents",
+            "users",
+            "messages_30d",
+            "ai_cost_usd",
+          ],
           rows.map((r) => [
             r.organizationId,
             r.name,
@@ -565,6 +625,9 @@ export const exportAnalyticsCsv = createServerFn({ method: "POST" })
     ];
     return {
       filename: `platform-overview-${stamp}.csv`,
-      csv: toCsv(["metric", "value"], rows.map((r) => [r[0], r[1]])),
+      csv: toCsv(
+        ["metric", "value"],
+        rows.map((r) => [r[0], r[1]]),
+      ),
     };
   });

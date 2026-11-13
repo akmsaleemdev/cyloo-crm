@@ -71,8 +71,9 @@ export async function fetchChatbotAnalytics(
 
   for (const m of messagesRes.data ?? []) {
     // Supabase FK-embed returns nested obj or array depending on relation type.
-    const rel = (m as { chatbot_sessions?: { chatbot_id?: string } | Array<{ chatbot_id?: string }> })
-      .chatbot_sessions;
+    const rel = (
+      m as { chatbot_sessions?: { chatbot_id?: string } | Array<{ chatbot_id?: string }> }
+    ).chatbot_sessions;
     const chatbotId = Array.isArray(rel) ? rel[0]?.chatbot_id : rel?.chatbot_id;
     if (!chatbotId) continue;
     const row = out[chatbotId];
@@ -83,9 +84,8 @@ export async function fetchChatbotAnalytics(
   }
 
   for (const row of Object.values(out)) {
-    row.replyRate = row.userMessages > 0
-      ? Math.min(1, row.assistantMessages / row.userMessages)
-      : null;
+    row.replyRate =
+      row.userMessages > 0 ? Math.min(1, row.assistantMessages / row.userMessages) : null;
   }
   return out;
 }

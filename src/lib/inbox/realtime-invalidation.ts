@@ -29,11 +29,7 @@ const WORKSPACE_SCOPED_ROOTS = [
 ] as const;
 
 /** Keys that are not workspace-scoped and are invalidated by root only. */
-const GLOBAL_ROOTS = [
-  "conversation-activity",
-  "handoff",
-  "dash",
-] as const;
+const GLOBAL_ROOTS = ["conversation-activity", "handoff", "dash"] as const;
 
 export type ConversationInvalidator = {
   /**

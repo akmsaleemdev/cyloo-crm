@@ -31,7 +31,11 @@ const OPERATOR_MAP: Record<string, string> = {
 };
 
 function edgeFrom(edges: ChatbotEdge[], nodeId: string, handle?: string): ChatbotEdge | undefined {
-  return edges.find((e) => e.source === nodeId && (handle ? e.sourceHandle === handle : !e.sourceHandle || e.sourceHandle === "out"));
+  return edges.find(
+    (e) =>
+      e.source === nodeId &&
+      (handle ? e.sourceHandle === handle : !e.sourceHandle || e.sourceHandle === "out"),
+  );
 }
 
 function anyEdgeFrom(edges: ChatbotEdge[], nodeId: string): ChatbotEdge | undefined {
@@ -83,7 +87,11 @@ export function adaptChatbotFlow(flow: ChatbotFlow | null | undefined): AdapterR
 
     switch (n.type) {
       case "start":
-        nodes.push({ id: n.id, type: "start", next: resolveNext(edges, passthrough, anyEdgeFrom(edges, n.id)?.target) });
+        nodes.push({
+          id: n.id,
+          type: "start",
+          next: resolveNext(edges, passthrough, anyEdgeFrom(edges, n.id)?.target),
+        });
         break;
 
       case "message":
@@ -126,12 +134,17 @@ export function adaptChatbotFlow(flow: ChatbotFlow | null | undefined): AdapterR
       case "quick_reply": {
         const labels = (n.config.buttons ?? n.config.replies ?? []) as unknown[];
         const successor = resolveNext(edges, passthrough, anyEdgeFrom(edges, n.id)?.target);
-        const options = (Array.isArray(labels) ? labels : []).map((l, i) => {
-          const label = typeof l === "string" ? l : String((l as { label?: unknown } | null)?.label ?? `Option ${i + 1}`);
-          const handleEdge = edgeFrom(edges, n.id, label) ?? edgeFrom(edges, n.id, `btn-${i}`);
-          const target = resolveNext(edges, passthrough, handleEdge?.target) ?? successor;
-          return { label, next: target ?? "" };
-        }).filter((o) => o.next);
+        const options = (Array.isArray(labels) ? labels : [])
+          .map((l, i) => {
+            const label =
+              typeof l === "string"
+                ? l
+                : String((l as { label?: unknown } | null)?.label ?? `Option ${i + 1}`);
+            const handleEdge = edgeFrom(edges, n.id, label) ?? edgeFrom(edges, n.id, `btn-${i}`);
+            const target = resolveNext(edges, passthrough, handleEdge?.target) ?? successor;
+            return { label, next: target ?? "" };
+          })
+          .filter((o) => o.next);
         if (options.length === 0) {
           nodes.push({
             id: n.id,
@@ -154,10 +167,15 @@ export function adaptChatbotFlow(flow: ChatbotFlow | null | undefined): AdapterR
         const rawFields = Array.isArray(n.config.fields) ? (n.config.fields as unknown[]) : [];
         const successor = resolveNext(edges, passthrough, anyEdgeFrom(edges, n.id)?.target);
         if (rawFields.length === 0) {
-          nodes.push({ id: n.id, type: "message", text: String(n.config.intro ?? "Please share the following details."), next: successor });
+          nodes.push({
+            id: n.id,
+            type: "message",
+            text: String(n.config.intro ?? "Please share the following details."),
+            next: successor,
+          });
           break;
         }
-        // Expand into a chain of ask nodes: <formId>-f0 -> <formId>-f1 -> 
+        // Expand into a chain of ask nodes: <formId>-f0 -> <formId>-f1 ->
         rawFields.forEach((raw, i) => {
           const f = (raw ?? {}) as { label?: string; key?: string };
           const id = i === 0 ? n.id : `${n.id}-f${i}`;

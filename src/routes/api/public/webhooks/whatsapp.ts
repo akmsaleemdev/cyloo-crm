@@ -35,9 +35,8 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
         // verification and was accepted by the core webhook engine.
         if (response.status === 200) {
           try {
-            const { processWhatsAppFormSubmissions } = await import(
-              "@/lib/messaging/whatsapp-forms.server"
-            );
+            const { processWhatsAppFormSubmissions } =
+              await import("@/lib/messaging/whatsapp-forms.server");
             await processWhatsAppFormSubmissions(rawBody);
           } catch (err) {
             // Never let form ingestion failures block the ack — Meta retries

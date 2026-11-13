@@ -20,9 +20,18 @@ function SlaMonitor() {
   });
 
   const rows = data as Array<{
-    id: string; ticket_id: string; state: string;
-    minutes_to_resolution: number | null; minutes_to_first_response: number | null;
-    conversations: { id: string; subject: string | null; status: string; priority: string; assigned_to: string | null };
+    id: string;
+    ticket_id: string;
+    state: string;
+    minutes_to_resolution: number | null;
+    minutes_to_first_response: number | null;
+    conversations: {
+      id: string;
+      subject: string | null;
+      status: string;
+      priority: string;
+      assigned_to: string | null;
+    };
   }>;
 
   const breached = rows.filter((r) => r.state === "breached");
@@ -38,23 +47,44 @@ function SlaMonitor() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Active SLAs</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Active SLAs</CardTitle>
+        </CardHeader>
         <CardContent className="p-0">
-          {isLoading ? <div className="p-6 text-sm text-muted-foreground">Loading</div> :
-            rows.length === 0 ? <div className="p-6 text-sm text-muted-foreground">No SLAs attached yet. Open a ticket and click "Attach default SLA".</div> :
+          {isLoading ? (
+            <div className="p-6 text-sm text-muted-foreground">Loading</div>
+          ) : rows.length === 0 ? (
+            <div className="p-6 text-sm text-muted-foreground">
+              No SLAs attached yet. Open a ticket and click "Attach default SLA".
+            </div>
+          ) : (
             <div className="divide-y">
               {rows.map((r) => (
-                <Link key={r.id} to="/helpdesk/$id" params={{ id: r.ticket_id }}
-                  className="flex items-center gap-3 p-4 hover:bg-muted">
+                <Link
+                  key={r.id}
+                  to="/helpdesk/$id"
+                  params={{ id: r.ticket_id }}
+                  className="flex items-center gap-3 p-4 hover:bg-muted"
+                >
                   <StateBadge state={r.state} />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{r.conversations?.subject || "(no subject)"}</div>
+                    <div className="font-medium truncate">
+                      {r.conversations?.subject || "(no subject)"}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {r.conversations?.priority} · {r.conversations?.status}
                     </div>
                   </div>
                   <div className="text-right text-xs">
-                    <div className={r.state === "breached" ? "text-red-600 font-medium" : r.state === "at_risk" ? "text-orange-600" : "text-muted-foreground"}>
+                    <div
+                      className={
+                        r.state === "breached"
+                          ? "text-red-600 font-medium"
+                          : r.state === "at_risk"
+                            ? "text-orange-600"
+                            : "text-muted-foreground"
+                      }
+                    >
                       {r.minutes_to_resolution !== null
                         ? r.minutes_to_resolution < 0
                           ? `Overdue ${Math.abs(r.minutes_to_resolution)}m`
@@ -62,20 +92,34 @@ function SlaMonitor() {
                         : "—"}
                     </div>
                     <div className="text-muted-foreground">
-                      {r.minutes_to_first_response !== null && r.minutes_to_first_response < 0 ? "First response overdue" : "First response ok"}
+                      {r.minutes_to_first_response !== null && r.minutes_to_first_response < 0
+                        ? "First response overdue"
+                        : "First response ok"}
                     </div>
                   </div>
                 </Link>
               ))}
-            </div>}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 }
 
-function StatCard({ label, count, icon: Icon, tone }: { label: string; count: number; icon: typeof AlertTriangle; tone: "red" | "orange" | "green" }) {
-  const toneClass = tone === "red" ? "text-red-600" : tone === "orange" ? "text-orange-600" : "text-green-600";
+function StatCard({
+  label,
+  count,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  count: number;
+  icon: typeof AlertTriangle;
+  tone: "red" | "orange" | "green";
+}) {
+  const toneClass =
+    tone === "red" ? "text-red-600" : tone === "orange" ? "text-orange-600" : "text-green-600";
   return (
     <Card>
       <CardContent className="p-4 flex items-center gap-3">
@@ -91,6 +135,7 @@ function StatCard({ label, count, icon: Icon, tone }: { label: string; count: nu
 
 function StateBadge({ state }: { state: string }) {
   if (state === "breached") return <Badge variant="destructive">Breached</Badge>;
-  if (state === "at_risk") return <Badge className="bg-orange-500/15 text-orange-600 border-orange-300">At risk</Badge>;
+  if (state === "at_risk")
+    return <Badge className="bg-orange-500/15 text-orange-600 border-orange-300">At risk</Badge>;
   return <Badge variant="outline">OK</Badge>;
 }

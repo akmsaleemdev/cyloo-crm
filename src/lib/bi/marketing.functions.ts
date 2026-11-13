@@ -166,7 +166,7 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
     const { data: campaignsRaw = [] } = await supabase
       .from("campaigns")
       .select(
-        "id,name,status,channel,template_id,segment_id,contact_list_id,scheduled_at,started_at,completed_at,created_at,total_recipients,sent_count,delivered_count,read_count,replied_count,clicked_count,failed_count,opted_out_count,audience_snapshot"
+        "id,name,status,channel,template_id,segment_id,contact_list_id,scheduled_at,started_at,completed_at,created_at,total_recipients,sent_count,delivered_count,read_count,replied_count,clicked_count,failed_count,opted_out_count,audience_snapshot",
       )
       .eq("workspace_id", data.workspaceId)
       .gte("created_at", fromIso)
@@ -229,15 +229,42 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         a.cost += c.cost;
         return a;
       },
-      { sent: 0, delivered: 0, read: 0, replied: 0, clicked: 0, failed: 0, optedOut: 0, revenue: 0, cost: 0 }
+      {
+        sent: 0,
+        delivered: 0,
+        read: 0,
+        replied: 0,
+        clicked: 0,
+        failed: 0,
+        optedOut: 0,
+        revenue: 0,
+        cost: 0,
+      },
     );
 
     // Performance trend from campaign_recipients timestamps in period
     const campaignIds = campaigns.map((c) => c.id);
-    const trendMap = new Map<string, { sent: number; delivered: number; read: number; replied: number; clicked: number; optedOut: number }>();
+    const trendMap = new Map<
+      string,
+      {
+        sent: number;
+        delivered: number;
+        read: number;
+        replied: number;
+        clicked: number;
+        optedOut: number;
+      }
+    >();
     for (let i = 0; i < days; i++) {
       const d = new Date(from.getTime() + i * 24 * 60 * 60 * 1000);
-      trendMap.set(dayKey(d), { sent: 0, delivered: 0, read: 0, replied: 0, clicked: 0, optedOut: 0 });
+      trendMap.set(dayKey(d), {
+        sent: 0,
+        delivered: 0,
+        read: 0,
+        replied: 0,
+        clicked: 0,
+        optedOut: 0,
+      });
     }
 
     if (campaignIds.length > 0) {
@@ -249,7 +276,12 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         .limit(100000);
 
       for (const r of recipients ?? []) {
-        const bump = (ts: string | null, key: keyof typeof trendMap extends never ? never : "sent" | "delivered" | "read" | "replied" | "clicked" | "optedOut") => {
+        const bump = (
+          ts: string | null,
+          key: keyof typeof trendMap extends never
+            ? never
+            : "sent" | "delivered" | "read" | "replied" | "clicked" | "optedOut",
+        ) => {
           if (!ts) return;
           const k = dayKey(new Date(ts));
           const b = trendMap.get(k);
@@ -344,7 +376,9 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
       .slice(0, 10);
 
     // Templates
-    const templateIds = Array.from(new Set(campaigns.map((c) => c.templateId).filter(Boolean))) as string[];
+    const templateIds = Array.from(
+      new Set(campaigns.map((c) => c.templateId).filter(Boolean)),
+    ) as string[];
     let templateNames = new Map<string, string>();
     if (templateIds.length > 0) {
       const { data: tpls = [] } = await supabase
@@ -353,11 +387,28 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         .in("id", templateIds);
       for (const t of tpls ?? []) templateNames.set((t as any).id, (t as any).name);
     }
-    const tplAgg = new Map<string, { name: string; campaigns: number; sent: number; delivered: number; read: number; replied: number }>();
+    const tplAgg = new Map<
+      string,
+      {
+        name: string;
+        campaigns: number;
+        sent: number;
+        delivered: number;
+        read: number;
+        replied: number;
+      }
+    >();
     for (const c of campaigns) {
       if (!c.templateId) continue;
       const key = c.templateId;
-      const cur = tplAgg.get(key) ?? { name: templateNames.get(key) ?? "Unknown", campaigns: 0, sent: 0, delivered: 0, read: 0, replied: 0 };
+      const cur = tplAgg.get(key) ?? {
+        name: templateNames.get(key) ?? "Unknown",
+        campaigns: 0,
+        sent: 0,
+        delivered: 0,
+        read: 0,
+        replied: 0,
+      };
       cur.campaigns += 1;
       cur.sent += c.sent;
       cur.delivered += c.delivered;
@@ -380,8 +431,12 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
       .sort((a, b) => b.delivered - a.delivered);
 
     // Segments (via segment_id or contact_list_id)
-    const segIds = Array.from(new Set(campaigns.map((c) => c.segmentId).filter(Boolean))) as string[];
-    const listIds = Array.from(new Set(campaigns.map((c) => c.contactListId).filter(Boolean))) as string[];
+    const segIds = Array.from(
+      new Set(campaigns.map((c) => c.segmentId).filter(Boolean)),
+    ) as string[];
+    const listIds = Array.from(
+      new Set(campaigns.map((c) => c.contactListId).filter(Boolean)),
+    ) as string[];
     const segNames = new Map<string, string>();
     if (segIds.length > 0) {
       const { data: segs = [] } = await supabase
@@ -397,11 +452,30 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         .in("id", listIds);
       for (const l of lists ?? []) segNames.set((l as any).id, `${(l as any).name} (list)`);
     }
-    const segAgg = new Map<string, { name: string; campaigns: number; sent: number; delivered: number; read: number; replied: number; clicked: number }>();
+    const segAgg = new Map<
+      string,
+      {
+        name: string;
+        campaigns: number;
+        sent: number;
+        delivered: number;
+        read: number;
+        replied: number;
+        clicked: number;
+      }
+    >();
     for (const c of campaigns) {
       const key = c.segmentId ?? c.contactListId;
       if (!key) continue;
-      const cur = segAgg.get(key) ?? { name: segNames.get(key) ?? "Unnamed", campaigns: 0, sent: 0, delivered: 0, read: 0, replied: 0, clicked: 0 };
+      const cur = segAgg.get(key) ?? {
+        name: segNames.get(key) ?? "Unnamed",
+        campaigns: 0,
+        sent: 0,
+        delivered: 0,
+        read: 0,
+        replied: 0,
+        clicked: 0,
+      };
       cur.campaigns += 1;
       cur.sent += c.sent;
       cur.delivered += c.delivered;
@@ -428,9 +502,14 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
     // A/B tests
     const { data: variants = [] } = await supabase
       .from("campaign_ab_variants")
-      .select("id,campaign_id,name,weight,sent_count,delivered_count,read_count,replied_count,clicked_count,is_winner")
+      .select(
+        "id,campaign_id,name,weight,sent_count,delivered_count,read_count,replied_count,clicked_count,is_winner",
+      )
       .eq("workspace_id", data.workspaceId)
-      .in("campaign_id", campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"]);
+      .in(
+        "campaign_id",
+        campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"],
+      );
 
     const variantsByCampaign = new Map<string, any[]>();
     for (const v of variants ?? []) {
@@ -457,9 +536,10 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
       const sorted = [...perVariant].sort((a, b) => b.responseRate - a.responseRate);
       const winner = perVariant.find((v) => v.isWinner) ?? sorted[0];
       const runnerUp = sorted[1];
-      const lift = winner && runnerUp && runnerUp.responseRate > 0
-        ? ((winner.responseRate - runnerUp.responseRate) / runnerUp.responseRate) * 100
-        : 0;
+      const lift =
+        winner && runnerUp && runnerUp.responseRate > 0
+          ? ((winner.responseRate - runnerUp.responseRate) / runnerUp.responseRate) * 100
+          : 0;
       return {
         campaignId: cid,
         campaignName: campaignById.get(cid)?.name ?? "Campaign",

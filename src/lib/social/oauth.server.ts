@@ -47,8 +47,16 @@ export function decodeState(raw: string): SocialOAuthState | null {
   const b = Buffer.from(sign(payload));
   if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
-    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as SocialOAuthState;
-    if (!parsed.workspaceId || !parsed.userId || !Number.isFinite(parsed.exp) || parsed.exp < Date.now()) return null;
+    const parsed = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as SocialOAuthState;
+    if (
+      !parsed.workspaceId ||
+      !parsed.userId ||
+      !Number.isFinite(parsed.exp) ||
+      parsed.exp < Date.now()
+    )
+      return null;
     parsed.returnTo = safeOAuthReturnTo(parsed.returnTo);
     return parsed;
   } catch {
@@ -70,7 +78,11 @@ export function pkce(): { verifier: string; challenge: string } {
 export const X_SCOPES = ["tweet.read", "tweet.write", "users.read", "offline.access"];
 // threads_manage_insights is required to read per-post metrics in the
 // Performance tab; channels connected before it was added must reconnect.
-export const THREADS_SCOPES = ["threads_basic", "threads_content_publish", "threads_manage_insights"];
+export const THREADS_SCOPES = [
+  "threads_basic",
+  "threads_content_publish",
+  "threads_manage_insights",
+];
 // Requested at authorize time. TikTok may grant a subset — see parseTikTokScopes.
 export const TIKTOK_SCOPES = ["user.info.basic", "video.publish"];
 // OpenID Connect identity (matches what verify.functions.ts already requests
@@ -100,27 +112,36 @@ export function oauthCreds(platform: OAuthPlatform): OAuthAppCreds {
     const clientId = process.env["TIKTOK_CLIENT_KEY"];
     const clientSecret = process.env["TIKTOK_CLIENT_SECRET"];
     if (!clientId || !clientSecret)
-      throw new Error("TikTok login is not configured yet (missing TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET).");
+      throw new Error(
+        "TikTok login is not configured yet (missing TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET).",
+      );
     return { clientId, clientSecret };
   }
   if (platform === "youtube") {
     const clientId = process.env["YOUTUBE_CLIENT_ID"] ?? process.env["GOOGLE_CLIENT_ID"];
-    const clientSecret = process.env["YOUTUBE_CLIENT_SECRET"] ?? process.env["GOOGLE_CLIENT_SECRET"];
+    const clientSecret =
+      process.env["YOUTUBE_CLIENT_SECRET"] ?? process.env["GOOGLE_CLIENT_SECRET"];
     if (!clientId || !clientSecret)
-      throw new Error("YouTube login is not configured yet (missing YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET).");
+      throw new Error(
+        "YouTube login is not configured yet (missing YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET).",
+      );
     return { clientId, clientSecret };
   }
   if (platform === "linkedin") {
     const clientId = process.env["LINKEDIN_CLIENT_ID"];
     const clientSecret = process.env["LINKEDIN_CLIENT_SECRET"];
     if (!clientId || !clientSecret)
-      throw new Error("LinkedIn login is not configured yet (missing LINKEDIN_CLIENT_ID / LINKEDIN_CLIENT_SECRET).");
+      throw new Error(
+        "LinkedIn login is not configured yet (missing LINKEDIN_CLIENT_ID / LINKEDIN_CLIENT_SECRET).",
+      );
     return { clientId, clientSecret };
   }
   const clientId = process.env["THREADS_APP_ID"];
   const clientSecret = process.env["THREADS_APP_SECRET"];
   if (!clientId || !clientSecret)
-    throw new Error("Threads login is not configured yet (missing THREADS_APP_ID / THREADS_APP_SECRET).");
+    throw new Error(
+      "Threads login is not configured yet (missing THREADS_APP_ID / THREADS_APP_SECRET).",
+    );
   return { clientId, clientSecret };
 }
 
@@ -262,7 +283,9 @@ export function resolveTikTokConnect(args: {
   if (!openId) {
     return {
       ok: false,
-      redirectParams: { social_error: userInfo.error?.message ?? "Could not read your TikTok account." },
+      redirectParams: {
+        social_error: userInfo.error?.message ?? "Could not read your TikTok account.",
+      },
     };
   }
 
@@ -275,7 +298,9 @@ export function resolveTikTokConnect(args: {
     avatar_url: userInfo.data?.user?.avatar_url ?? null,
     access_token_plain: token.access_token,
     refresh_token_plain: token.refresh_token ?? null,
-    token_expires_at: token.expires_in ? new Date(now + token.expires_in * 1000).toISOString() : null,
+    token_expires_at: token.expires_in
+      ? new Date(now + token.expires_in * 1000).toISOString()
+      : null,
     refresh_token_expires_at: token.refresh_expires_in
       ? new Date(now + token.refresh_expires_in * 1000).toISOString()
       : null,
@@ -284,7 +309,10 @@ export function resolveTikTokConnect(args: {
     metadata: { granted_scopes: grantedScopes, can_publish: canPublish },
   };
 
-  const redirectParams: Record<string, string> = { social_connected: "1", social_platform: "TikTok" };
+  const redirectParams: Record<string, string> = {
+    social_connected: "1",
+    social_platform: "TikTok",
+  };
   if (!canPublish) {
     redirectParams.social_warning =
       "Connected, but TikTok did not grant video publishing. Reconnect and approve video.publish to enable posting.";
@@ -376,13 +404,17 @@ export function resolveLinkedInConnect(args: {
     };
   }
 
-  const grantedScopes = (token.scope ?? "").split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
+  const grantedScopes = (token.scope ?? "")
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const sub = userInfo.sub;
   if (!sub) {
     return {
       ok: false,
       redirectParams: {
-        social_error: userInfo.error_description ?? userInfo.error ?? "Could not read your LinkedIn account.",
+        social_error:
+          userInfo.error_description ?? userInfo.error ?? "Could not read your LinkedIn account.",
       },
     };
   }
@@ -397,14 +429,19 @@ export function resolveLinkedInConnect(args: {
     avatar_url: userInfo.picture ?? null,
     access_token_plain: token.access_token,
     refresh_token_plain: null,
-    token_expires_at: token.expires_in ? new Date(now + token.expires_in * 1000).toISOString() : null,
+    token_expires_at: token.expires_in
+      ? new Date(now + token.expires_in * 1000).toISOString()
+      : null,
     refresh_token_expires_at: null,
     status: "connected",
     created_by: state.userId,
     metadata: { granted_scopes: grantedScopes, can_publish: canPublish },
   };
 
-  const redirectParams: Record<string, string> = { social_connected: "1", social_platform: "LinkedIn" };
+  const redirectParams: Record<string, string> = {
+    social_connected: "1",
+    social_platform: "LinkedIn",
+  };
   if (!canPublish) {
     redirectParams.social_warning =
       "Connected, but LinkedIn did not grant post publishing. Reconnect and approve w_member_social to enable posting.";

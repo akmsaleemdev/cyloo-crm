@@ -4,18 +4,18 @@
  * endpoint, so this returns 501 until a speech provider is configured.
  * POST /api/mobile/ai-stt (multipart: file, model?)
  */
-import { createFileRoute } from '@tanstack/react-router';
-import { authenticateMobileRequest } from '@/lib/api/mobile-auth.server';
+import { createFileRoute } from "@tanstack/react-router";
+import { authenticateMobileRequest } from "@/lib/api/mobile-auth.server";
 
-export const Route = createFileRoute('/api/mobile/ai-stt')({
+export const Route = createFileRoute("/api/mobile/ai-stt")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const authed = await authenticateMobileRequest(request);
-        if ('response' in authed) return authed.response;
+        if ("response" in authed) return authed.response;
         // Speech-to-text is not available on Gemini's OpenAI-compatible API yet.
         return Response.json(
-          { error: 'Speech-to-text is not configured for this server.' },
+          { error: "Speech-to-text is not configured for this server." },
           { status: 501 },
         );
       },

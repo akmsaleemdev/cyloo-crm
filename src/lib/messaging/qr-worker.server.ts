@@ -23,9 +23,7 @@ function config() {
 }
 
 function sign(body: string, secret: string, timestamp: string): string {
-  return createHmac("sha256", secret)
-    .update(`${timestamp}.${body}`)
-    .digest("hex");
+  return createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex");
 }
 
 export async function callWorker<T = unknown>(
@@ -104,8 +102,8 @@ export const WorkerAPI = {
       client_message_id: string;
     },
   ) =>
-    callWorker<{ message_id: string; status: string }>(
-      `/sessions/${sessionId}/send`,
-      { method: "POST", body: payload },
-    ),
+    callWorker<{ message_id: string; status: string }>(`/sessions/${sessionId}/send`, {
+      method: "POST",
+      body: payload,
+    }),
 };

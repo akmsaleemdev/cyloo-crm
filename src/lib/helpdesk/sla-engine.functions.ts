@@ -218,13 +218,14 @@ export const slaDashboard = createServerFn({ method: "GET" })
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
     const { data: rows } = await sbAny(context.supabase)
       .from("ticket_sla_tracking")
-      .select(
-        "*, ticket:conversations(id, ticket_number, subject, priority, status, assigned_to)",
-      )
+      .select("*, ticket:conversations(id, ticket_number, subject, priority, status, assigned_to)")
       .eq("workspace_id", wsId);
     const now = Date.now();
     const list = (rows ?? []) as any[];
-    let onTrack = 0, atRisk = 0, breached = 0, resolved = 0;
+    let onTrack = 0,
+      atRisk = 0,
+      breached = 0,
+      resolved = 0;
     for (const r of list) {
       if (r.ticket?.status === "resolved" || r.ticket?.status === "closed") {
         resolved++;
@@ -262,9 +263,7 @@ export const slaEvents = createServerFn({ method: "GET" })
 
 export const slaReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((d: unknown) =>
-    z.object({ days: z.number().int().default(30) }).parse(d ?? {}),
-  )
+  .validator((d: unknown) => z.object({ days: z.number().int().default(30) }).parse(d ?? {}))
   .handler(async ({ data, context }) => {
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
     const since = new Date(Date.now() - data.days * 86400_000).toISOString();
@@ -273,7 +272,10 @@ export const slaReport = createServerFn({ method: "GET" })
       .select("event_type, created_at, level")
       .eq("workspace_id", wsId)
       .gte("created_at", since);
-    const buckets = new Map<string, { day: string; breach: number; warning: number; escalated: number }>();
+    const buckets = new Map<
+      string,
+      { day: string; breach: number; warning: number; escalated: number }
+    >();
     for (const ev of (events ?? []) as any[]) {
       const day = ev.created_at.slice(0, 10);
       const b = buckets.get(day) ?? { day, breach: 0, warning: 0, escalated: 0 };
@@ -310,10 +312,14 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
 
   const { data: tracks } = await admin
     .from("ticket_sla_tracking")
-    .select("*, ticket:conversations(id, workspace_id, assigned_to, priority, status, department_id)")
+    .select(
+      "*, ticket:conversations(id, workspace_id, assigned_to, priority, status, department_id)",
+    )
     .eq("paused", false);
   const list = (tracks ?? []) as any[];
-  const active = list.filter((t) => t.ticket && t.ticket.status !== "resolved" && t.ticket.status !== "closed");
+  const active = list.filter(
+    (t) => t.ticket && t.ticket.status !== "resolved" && t.ticket.status !== "closed",
+  );
   if (active.length === 0) return { scanned: 0, events: 0 };
 
   const policyIds = Array.from(new Set(active.map((t) => t.sla_policy_id).filter(Boolean)));
@@ -340,15 +346,21 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
       if (now >= due) {
         patch.first_response_breached = true;
         await sbAny(admin).from("sla_events").insert({
-          workspace_id: wsId, ticket_id: ticketId, sla_policy_id: t.sla_policy_id,
-          event_type: "breach", target: "response",
+          workspace_id: wsId,
+          ticket_id: ticketId,
+          sla_policy_id: t.sla_policy_id,
+          event_type: "breach",
+          target: "response",
         });
         events++;
       } else if (!t.response_warning_sent && due - now <= WARN_MS) {
         patch.response_warning_sent = true;
         await sbAny(admin).from("sla_events").insert({
-          workspace_id: wsId, ticket_id: ticketId, sla_policy_id: t.sla_policy_id,
-          event_type: "warning", target: "response",
+          workspace_id: wsId,
+          ticket_id: ticketId,
+          sla_policy_id: t.sla_policy_id,
+          event_type: "warning",
+          target: "response",
         });
         events++;
       }
@@ -360,15 +372,21 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
       if (now >= due) {
         patch.resolution_breached = true;
         await sbAny(admin).from("sla_events").insert({
-          workspace_id: wsId, ticket_id: ticketId, sla_policy_id: t.sla_policy_id,
-          event_type: "breach", target: "resolution",
+          workspace_id: wsId,
+          ticket_id: ticketId,
+          sla_policy_id: t.sla_policy_id,
+          event_type: "breach",
+          target: "resolution",
         });
         events++;
       } else if (!t.resolution_warning_sent && due - now <= WARN_MS) {
         patch.resolution_warning_sent = true;
         await sbAny(admin).from("sla_events").insert({
-          workspace_id: wsId, ticket_id: ticketId, sla_policy_id: t.sla_policy_id,
-          event_type: "warning", target: "resolution",
+          workspace_id: wsId,
+          ticket_id: ticketId,
+          sla_policy_id: t.sla_policy_id,
+          event_type: "warning",
+          target: "resolution",
         });
         events++;
       }
@@ -391,31 +409,48 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
       const meta: any = { level: rule.level };
 
       // Insert escalation row
-      await sbAny(admin).from("ticket_escalations").insert({
-        workspace_id: wsId, ticket_id: ticketId, level: rule.level,
-        reason: rule.trigger_type, escalated_from: t.ticket?.assigned_to ?? null,
-        escalated_to: rule.reassign_to_user_id ?? null, auto: true,
-      });
+      await sbAny(admin)
+        .from("ticket_escalations")
+        .insert({
+          workspace_id: wsId,
+          ticket_id: ticketId,
+          level: rule.level,
+          reason: rule.trigger_type,
+          escalated_from: t.ticket?.assigned_to ?? null,
+          escalated_to: rule.reassign_to_user_id ?? null,
+          auto: true,
+        });
 
       // Reassign
       if (rule.reassign_to_user_id) {
-        await sbAny(admin).from("conversations").update({ assigned_to: rule.reassign_to_user_id, escalation_level: rule.level })
+        await sbAny(admin)
+          .from("conversations")
+          .update({ assigned_to: rule.reassign_to_user_id, escalation_level: rule.level })
           .eq("id", ticketId);
         meta.reassigned_to = rule.reassign_to_user_id;
       } else if (rule.reassign_to_department_id) {
-        await sbAny(admin).from("conversations").update({ department_id: rule.reassign_to_department_id, escalation_level: rule.level })
+        await sbAny(admin)
+          .from("conversations")
+          .update({ department_id: rule.reassign_to_department_id, escalation_level: rule.level })
           .eq("id", ticketId);
         meta.reassigned_dept = rule.reassign_to_department_id;
       } else {
-        await sbAny(admin).from("conversations").update({ escalation_level: rule.level }).eq("id", ticketId);
+        await sbAny(admin)
+          .from("conversations")
+          .update({ escalation_level: rule.level })
+          .eq("id", ticketId);
       }
 
       // Supervisor notifications
       if (rule.notify_supervisor && (rule.supervisor_user_ids ?? []).length > 0) {
         const [{ data: workspace }, { data: supervisors }] = await Promise.all([
           admin.from("workspaces").select("organization_id").eq("id", wsId).maybeSingle(),
-          admin.from("workspace_members").select("user_id").eq("workspace_id", wsId)
-            .eq("status", "active").in("user_id", rule.supervisor_user_ids),
+          admin
+            .from("workspace_members")
+            .select("user_id")
+            .eq("workspace_id", wsId)
+            .eq("status", "active")
+            .in("user_id", rule.supervisor_user_ids),
         ]);
         if (workspace?.organization_id && supervisors?.length) {
           const rows = supervisors.map((member: { user_id: string }) => ({
@@ -429,24 +464,39 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
             action_url: `/helpdesk/${ticketId}`,
             data: { ticket_id: ticketId, workspace_id: wsId, level: rule.level },
           }));
-          const { error: notificationError } = await sbAny(admin).from("notifications").insert(rows);
-          if (notificationError) console.warn("[helpdesk] SLA notification failed:", notificationError);
+          const { error: notificationError } = await sbAny(admin)
+            .from("notifications")
+            .insert(rows);
+          if (notificationError)
+            console.warn("[helpdesk] SLA notification failed:", notificationError);
         }
       }
 
       await sbAny(admin).from("sla_events").insert({
-        workspace_id: wsId, ticket_id: ticketId, sla_policy_id: t.sla_policy_id,
-        escalation_rule_id: rule.id, event_type: "escalated", level: rule.level, meta,
+        workspace_id: wsId,
+        ticket_id: ticketId,
+        sla_policy_id: t.sla_policy_id,
+        escalation_rule_id: rule.id,
+        event_type: "escalated",
+        level: rule.level,
+        meta,
       });
       events++;
 
       // Workflow event bridge — insert a workflow_queue row when configured
       if (rule.workflow_event) {
-        await sbAny(admin).from("workflow_queue").insert({
-          workspace_id: wsId, trigger_type: "sla_event",
-          trigger_data: { event: rule.workflow_event, ticket_id: ticketId, level: rule.level },
-          status: "pending",
-        }).then(() => {}, () => {});
+        await sbAny(admin)
+          .from("workflow_queue")
+          .insert({
+            workspace_id: wsId,
+            trigger_type: "sla_event",
+            trigger_data: { event: rule.workflow_event, ticket_id: ticketId, level: rule.level },
+            status: "pending",
+          })
+          .then(
+            () => {},
+            () => {},
+          );
       }
     }
 

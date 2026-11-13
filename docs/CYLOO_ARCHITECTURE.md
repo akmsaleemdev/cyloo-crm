@@ -37,16 +37,16 @@ flowchart TD
     CFW --> HOOKS
 ```
 
-| Layer | Technology | Notes |
-|---|---|---|
-| Edge runtime | Cloudflare Workers | Primary deployment target |
-| SSR framework | TanStack Start + Nitro | Vite 8 build pipeline |
-| Database | Supabase PostgreSQL | 380 tables, 237 migrations |
-| Auth | Supabase Auth + custom RBAC | JWT + RLS |
-| Realtime | Supabase Realtime | WebSocket push |
-| AI | Vercel AI SDK v7 | Multi-provider, streaming |
-| Background jobs | pg_cron | In-database scheduler |
-| WhatsApp QR | Node.js microservice (`qr-worker/`) | Unofficial WA Web path |
+| Layer           | Technology                          | Notes                      |
+| --------------- | ----------------------------------- | -------------------------- |
+| Edge runtime    | Cloudflare Workers                  | Primary deployment target  |
+| SSR framework   | TanStack Start + Nitro              | Vite 8 build pipeline      |
+| Database        | Supabase PostgreSQL                 | 380 tables, 237 migrations |
+| Auth            | Supabase Auth + custom RBAC         | JWT + RLS                  |
+| Realtime        | Supabase Realtime                   | WebSocket push             |
+| AI              | Vercel AI SDK v7                    | Multi-provider, streaming  |
+| Background jobs | pg_cron                             | In-database scheduler      |
+| WhatsApp QR     | Node.js microservice (`qr-worker/`) | Unofficial WA Web path     |
 
 ---
 
@@ -54,19 +54,19 @@ flowchart TD
 
 ### Core Stack
 
-| Concern | Library / Version | Notes |
-|---|---|---|
-| UI framework | React 19 | Concurrent features (Suspense, Server Components) |
-| SSR framework | TanStack Start | Nitro adapter → Cloudflare Workers |
-| Routing | TanStack Router | File-system routing, 350+ routes |
-| Build tool | Vite 8 | With `@tanstack/start` Vite plugin |
-| Styling | Tailwind CSS v4 | CSS-first config — **no `tailwind.config.js`** |
-| Design system | Radix UI primitives + shadcn/ui pattern | Accessible, composable components |
-| Animations | Framer Motion | Page transitions + micro-interactions |
-| Charts | Recharts | Analytics dashboards |
-| Workflow canvas | ReactFlow | Visual automation builder |
-| Forms | React Hook Form + Zod | Type-safe validation |
-| Toasts | Sonner | Lightweight notification stack |
+| Concern         | Library / Version                       | Notes                                             |
+| --------------- | --------------------------------------- | ------------------------------------------------- |
+| UI framework    | React 19                                | Concurrent features (Suspense, Server Components) |
+| SSR framework   | TanStack Start                          | Nitro adapter → Cloudflare Workers                |
+| Routing         | TanStack Router                         | File-system routing, 350+ routes                  |
+| Build tool      | Vite 8                                  | With `@tanstack/start` Vite plugin                |
+| Styling         | Tailwind CSS v4                         | CSS-first config — **no `tailwind.config.js`**    |
+| Design system   | Radix UI primitives + shadcn/ui pattern | Accessible, composable components                 |
+| Animations      | Framer Motion                           | Page transitions + micro-interactions             |
+| Charts          | Recharts                                | Analytics dashboards                              |
+| Workflow canvas | ReactFlow                               | Visual automation builder                         |
+| Forms           | React Hook Form + Zod                   | Type-safe validation                              |
+| Toasts          | Sonner                                  | Lightweight notification stack                    |
 
 ### State Management
 
@@ -121,21 +121,21 @@ CYLOO has **no separate REST API layer**. All server-side logic is exposed throu
 
 ```typescript
 // Example: src/server/contacts/getContact.ts
-import { createServerFn } from '@tanstack/start'
-import { z } from 'zod'
+import { createServerFn } from "@tanstack/start";
+import { z } from "zod";
 
-export const getContact = createServerFn({ method: 'GET' })
+export const getContact = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data }) => {
     // Runs in Nitro → Cloudflare Workers runtime
     // Full access to Supabase service-role client
     const { data: contact } = await supabase
-      .from('contacts')
-      .select('*')
-      .eq('id', data.id)
-      .single()
-    return contact
-  })
+      .from("contacts")
+      .select("*")
+      .eq("id", data.id)
+      .single();
+    return contact;
+  });
 ```
 
 ### Runtime Chain
@@ -148,13 +148,13 @@ Client call → TanStack Start RPC → Nitro handler → Cloudflare Workers → 
 
 Endpoints that must be reachable without a session (webhooks, cron callbacks):
 
-| Route | Purpose |
-|---|---|
-| `POST /api/public/hooks/whatsapp` | Incoming WhatsApp Business API events |
-| `POST /api/public/hooks/meta` | Meta (Instagram / Messenger) events |
-| `POST /api/public/hooks/sms` | SMS provider callbacks |
-| `POST /api/public/hooks/email` | Inbound email events |
-| `POST /api/public/hooks/cron` | pg_cron HTTP job callbacks |
+| Route                             | Purpose                                 |
+| --------------------------------- | --------------------------------------- |
+| `POST /api/public/hooks/whatsapp` | Incoming WhatsApp Business API events   |
+| `POST /api/public/hooks/meta`     | Meta (Instagram / Messenger) events     |
+| `POST /api/public/hooks/sms`      | SMS provider callbacks                  |
+| `POST /api/public/hooks/email`    | Inbound email events                    |
+| `POST /api/public/hooks/cron`     | pg_cron HTTP job callbacks              |
 | `GET  /api/public/hooks/whatsapp` | WhatsApp webhook verification challenge |
 
 > [!WARNING]
@@ -166,13 +166,13 @@ Endpoints that must be reachable without a session (webhooks, cron callbacks):
 
 ### Engine & Scale
 
-| Metric | Value |
-|---|---|
-| Engine | PostgreSQL (Supabase managed) |
-| Tables | 380 |
-| Stored functions | 173 |
-| RLS policies | 726 |
-| Migration files | 237 (in `supabase/migrations/`) |
+| Metric           | Value                           |
+| ---------------- | ------------------------------- |
+| Engine           | PostgreSQL (Supabase managed)   |
+| Tables           | 380                             |
+| Stored functions | 173                             |
+| RLS policies     | 726                             |
+| Migration files  | 237 (in `supabase/migrations/`) |
 
 ### Multi-Tenancy
 
@@ -208,16 +208,16 @@ erDiagram
 
 ### Key Subsystems
 
-| Subsystem | Tables (examples) | Notes |
-|---|---|---|
-| CRM core | `contacts`, `leads`, `deals`, `pipelines`, `pipeline_stages` | Full lifecycle |
-| Conversations | `conversations`, `messages`, `conversation_participants` | Unified inbox |
-| Campaigns | `campaigns`, `campaign_contacts`, `campaign_executions` | Bulk outreach |
-| AI | `ai_agents`, `ai_conversations`, `ai_messages`, `knowledge_bases` | RAG + agents |
-| Auth / RBAC | `profiles`, `workspace_members`, `roles`, `permissions`, `audit_logs` | Custom RBAC |
-| Security | `user_2fa`, `trusted_devices` | 2FA + device trust |
-| Background | pg_cron jobs (DB-managed) | Scheduled tasks |
-| Secrets | Supabase Vault (`pg_vault`) | Encrypted at-rest |
+| Subsystem     | Tables (examples)                                                     | Notes              |
+| ------------- | --------------------------------------------------------------------- | ------------------ |
+| CRM core      | `contacts`, `leads`, `deals`, `pipelines`, `pipeline_stages`          | Full lifecycle     |
+| Conversations | `conversations`, `messages`, `conversation_participants`              | Unified inbox      |
+| Campaigns     | `campaigns`, `campaign_contacts`, `campaign_executions`               | Bulk outreach      |
+| AI            | `ai_agents`, `ai_conversations`, `ai_messages`, `knowledge_bases`     | RAG + agents       |
+| Auth / RBAC   | `profiles`, `workspace_members`, `roles`, `permissions`, `audit_logs` | Custom RBAC        |
+| Security      | `user_2fa`, `trusted_devices`                                         | 2FA + device trust |
+| Background    | pg_cron jobs (DB-managed)                                             | Scheduled tasks    |
+| Secrets       | Supabase Vault (`pg_vault`)                                           | Encrypted at-rest  |
 
 ### Background Jobs (pg_cron)
 
@@ -263,13 +263,13 @@ User → Supabase Auth (email/password or OAuth)
 
 ### Auth Features
 
-| Feature | Implementation |
-|---|---|
-| Email / password | Supabase Auth built-in |
-| OAuth providers | Supabase Auth (Google, etc.) |
-| 2FA / TOTP | `user_2fa` table + authenticator app flow |
-| Trusted devices | `trusted_devices` table (skip 2FA on known devices) |
-| Session management | Supabase JWT + refresh tokens |
+| Feature            | Implementation                                      |
+| ------------------ | --------------------------------------------------- |
+| Email / password   | Supabase Auth built-in                              |
+| OAuth providers    | Supabase Auth (Google, etc.)                        |
+| 2FA / TOTP         | `user_2fa` table + authenticator app flow           |
+| Trusted devices    | `trusted_devices` table (skip 2FA on known devices) |
+| Session management | Supabase JWT + refresh tokens                       |
 
 ### RBAC Model
 
@@ -290,11 +290,11 @@ First-admin setup is guarded by an environment secret:
 
 ```typescript
 // Timing-safe comparison to prevent timing attacks
-import { timingSafeEqual } from 'crypto'
+import { timingSafeEqual } from "crypto";
 const valid = timingSafeEqual(
   Buffer.from(provided),
-  Buffer.from(process.env.SETUP_BOOTSTRAP_TOKEN!)
-)
+  Buffer.from(process.env.SETUP_BOOTSTRAP_TOKEN!),
+);
 ```
 
 ### Audit Logs
@@ -307,24 +307,24 @@ All sensitive mutations (role changes, deletions, settings updates) are written 
 
 ### SDK & Providers
 
-| Component | Technology |
-|---|---|
-| SDK | Vercel AI SDK v7 (`ai` package) |
-| Provider adapter | `@ai-sdk/openai-compatible` |
+| Component          | Technology                                           |
+| ------------------ | ---------------------------------------------------- |
+| SDK                | Vercel AI SDK v7 (`ai` package)                      |
+| Provider adapter   | `@ai-sdk/openai-compatible`                          |
 | Supported backends | OpenAI, OpenRouter, local models (Ollama-compatible) |
-| Streaming | `streamText()` / `streamObject()` — edge-compatible |
+| Streaming          | `streamText()` / `streamObject()` — edge-compatible  |
 
 ### Features
 
-| Feature | Description | Status |
-|---|---|---|
-| AI Assistant | In-app chat with CRM context | ✅ Implemented |
-| Chatbot builder | Visual builder for customer-facing bots | ✅ Implemented |
-| Reply suggestions | AI-suggested responses in conversations | ✅ Implemented |
-| Conversation summarization | LLM-generated thread summaries | ✅ Implemented |
-| Workflow automation | AI-triggered workflow actions | ✅ Implemented |
-| Knowledge base / RAG | Vector search via pgvector | ✅ Implemented |
-| Agent tool use | Structured tool calling with human-approval gate | ✅ Implemented |
+| Feature                    | Description                                      | Status         |
+| -------------------------- | ------------------------------------------------ | -------------- |
+| AI Assistant               | In-app chat with CRM context                     | ✅ Implemented |
+| Chatbot builder            | Visual builder for customer-facing bots          | ✅ Implemented |
+| Reply suggestions          | AI-suggested responses in conversations          | ✅ Implemented |
+| Conversation summarization | LLM-generated thread summaries                   | ✅ Implemented |
+| Workflow automation        | AI-triggered workflow actions                    | ✅ Implemented |
+| Knowledge base / RAG       | Vector search via pgvector                       | ✅ Implemented |
+| Agent tool use             | Structured tool calling with human-approval gate | ✅ Implemented |
 
 ### RAG Architecture
 
@@ -350,6 +350,7 @@ Tool executions that modify data (send message, update deal, create task) are ga
 ### Token & Cost Tracking
 
 Every AI request records:
+
 - Input tokens
 - Output tokens
 - Estimated cost (USD)
@@ -364,16 +365,16 @@ This feeds the billing and usage-limit subsystems.
 
 ### Channels
 
-| Channel | Integration | Path |
-|---|---|---|
-| WhatsApp Business | Meta Cloud API (official) | `conversations` table → Realtime |
-| WhatsApp QR | `qr-worker/` microservice (unofficial) | For accounts without BSP access |
-| Email | Configurable SMTP / provider | Pluggable adapter |
-| SMS | Pluggable SMS provider | Pluggable adapter |
-| Instagram DM | Meta Business API | `conversations` table |
-| Facebook Messenger | Meta Business API | `conversations` table |
-| TikTok | TikTok Business API | `conversations` table |
-| Web Chat | Embeddable JS widget | WebSocket → Supabase Realtime |
+| Channel            | Integration                            | Path                             |
+| ------------------ | -------------------------------------- | -------------------------------- |
+| WhatsApp Business  | Meta Cloud API (official)              | `conversations` table → Realtime |
+| WhatsApp QR        | `qr-worker/` microservice (unofficial) | For accounts without BSP access  |
+| Email              | Configurable SMTP / provider           | Pluggable adapter                |
+| SMS                | Pluggable SMS provider                 | Pluggable adapter                |
+| Instagram DM       | Meta Business API                      | `conversations` table            |
+| Facebook Messenger | Meta Business API                      | `conversations` table            |
+| TikTok             | TikTok Business API                    | `conversations` table            |
+| Web Chat           | Embeddable JS widget                   | WebSocket → Supabase Realtime    |
 
 ### Unified Inbox Model
 
@@ -422,14 +423,15 @@ npm run build:cloudflare   →  scripts/build-cloudflare.mjs
 npm run deploy:cloudflare  →  wrangler deploy
 ```
 
-| Component | Cloudflare product |
-|---|---|
-| SSR + server functions | Cloudflare Workers |
-| Session state | Durable Objects |
-| Static assets | Cloudflare CDN (R2 / Workers Sites) |
-| Edge caching | Cloudflare Cache API |
+| Component              | Cloudflare product                  |
+| ---------------------- | ----------------------------------- |
+| SSR + server functions | Cloudflare Workers                  |
+| Session state          | Durable Objects                     |
+| Static assets          | Cloudflare CDN (R2 / Workers Sites) |
+| Edge caching           | Cloudflare Cache API                |
 
 **Build pipeline (`scripts/build-cloudflare.mjs`):**
+
 1. Run Vite 8 build (client bundle)
 2. Run Nitro build with Cloudflare Workers preset
 3. Bundle server functions into a single Worker entry
@@ -457,36 +459,36 @@ services:
     build: ./qr-worker
 ```
 
-| Service | Purpose |
-|---|---|
-| `app` | Main CRM application (Node.js / Nitro) |
-| `nginx` | Reverse proxy + TLS termination |
-| `qr-worker` | WhatsApp QR session manager |
+| Service     | Purpose                                |
+| ----------- | -------------------------------------- |
+| `app`       | Main CRM application (Node.js / Nitro) |
+| `nginx`     | Reverse proxy + TLS termination        |
+| `qr-worker` | WhatsApp QR session manager            |
 
 > [!TIP]
 > For self-hosted production, point Supabase to a self-hosted Supabase stack or a managed Supabase project. The application itself is stateless — all persistence is in Supabase.
 
 ### Environment Variables (Required)
 
-| Variable | Used By | Description |
-|---|---|---|
-| `SUPABASE_URL` | App | Supabase project URL |
-| `SUPABASE_ANON_KEY` | App | Public anon key (client-side) |
+| Variable                    | Used By      | Description                                 |
+| --------------------------- | ------------ | ------------------------------------------- |
+| `SUPABASE_URL`              | App          | Supabase project URL                        |
+| `SUPABASE_ANON_KEY`         | App          | Public anon key (client-side)               |
 | `SUPABASE_SERVICE_ROLE_KEY` | App (server) | Service role key (never exposed to browser) |
-| `SETUP_BOOTSTRAP_TOKEN` | App (server) | First-admin bootstrap secret |
-| `AI_PROVIDER_API_KEY` | App (server) | AI provider key |
-| `META_WEBHOOK_VERIFY_TOKEN` | App (server) | WhatsApp/Meta webhook verification |
-| `META_APP_SECRET` | App (server) | Meta payload signature validation |
+| `SETUP_BOOTSTRAP_TOKEN`     | App (server) | First-admin bootstrap secret                |
+| `AI_PROVIDER_API_KEY`       | App (server) | AI provider key                             |
+| `META_WEBHOOK_VERIFY_TOKEN` | App (server) | WhatsApp/Meta webhook verification          |
+| `META_APP_SECRET`           | App (server) | Meta payload signature validation           |
 
 ---
 
 ## 9. Microservices
 
-| Service | Location | Runtime | Purpose |
-|---|---|---|---|
-| Main App | `src/` | Cloudflare Workers / Node.js | CRM, omnichannel inbox, AI, marketing, campaigns |
-| QR Worker | `qr-worker/` | Node.js | WhatsApp Web QR session management |
-| pg_cron | Supabase DB | PostgreSQL | Scheduled background jobs (in-DB) |
+| Service   | Location     | Runtime                      | Purpose                                          |
+| --------- | ------------ | ---------------------------- | ------------------------------------------------ |
+| Main App  | `src/`       | Cloudflare Workers / Node.js | CRM, omnichannel inbox, AI, marketing, campaigns |
+| QR Worker | `qr-worker/` | Node.js                      | WhatsApp Web QR session management               |
+| pg_cron   | Supabase DB  | PostgreSQL                   | Scheduled background jobs (in-DB)                |
 
 > [!NOTE]
 > CYLOO is intentionally **not** a microservices-heavy architecture. The main app is a monolith deployed to the edge. Only capabilities requiring persistent TCP connections (WhatsApp Web sessions) are split into a dedicated service.
@@ -505,17 +507,17 @@ Main App  →   Supabase    : Supabase JS client (REST + WebSocket)
 
 ### Threat Model & Controls
 
-| Threat | Control |
-|---|---|
-| Tenant data leakage | 726 RLS policies on all tenant-scoped tables |
-| Secret exposure | Supabase Vault (`pg_vault`) — encrypted at rest |
-| XSS via user content | DOMPurify sanitization on all user-generated HTML |
-| CSRF | TanStack Start built-in CSRF token protection |
-| Rate abuse | Supabase rate limiting + application-level guards |
-| Spoofed webhooks | Signature-based verification (HMAC) on all inbound hooks |
-| Timing attacks on bootstrap | `crypto.timingSafeEqual` for token comparison |
-| Privilege escalation | RBAC check in server functions + RLS at DB layer |
-| 2FA bypass | `trusted_devices` table — per-device trust with expiry |
+| Threat                      | Control                                                  |
+| --------------------------- | -------------------------------------------------------- |
+| Tenant data leakage         | 726 RLS policies on all tenant-scoped tables             |
+| Secret exposure             | Supabase Vault (`pg_vault`) — encrypted at rest          |
+| XSS via user content        | DOMPurify sanitization on all user-generated HTML        |
+| CSRF                        | TanStack Start built-in CSRF token protection            |
+| Rate abuse                  | Supabase rate limiting + application-level guards        |
+| Spoofed webhooks            | Signature-based verification (HMAC) on all inbound hooks |
+| Timing attacks on bootstrap | `crypto.timingSafeEqual` for token comparison            |
+| Privilege escalation        | RBAC check in server functions + RLS at DB layer         |
+| 2FA bypass                  | `trusted_devices` table — per-device trust with expiry   |
 
 ### RLS as Primary Isolation
 
@@ -541,16 +543,11 @@ CREATE POLICY "tenant_isolation" ON contacts
 
 ```typescript
 // Canonical pattern for inbound hook validation
-import { createHmac, timingSafeEqual } from 'crypto'
+import { createHmac, timingSafeEqual } from "crypto";
 
 function validateMetaSignature(body: string, signature: string): boolean {
-  const expected = createHmac('sha256', process.env.META_APP_SECRET!)
-    .update(body)
-    .digest('hex')
-  return timingSafeEqual(
-    Buffer.from(`sha256=${expected}`),
-    Buffer.from(signature)
-  )
+  const expected = createHmac("sha256", process.env.META_APP_SECRET!).update(body).digest("hex");
+  return timingSafeEqual(Buffer.from(`sha256=${expected}`), Buffer.from(signature));
 }
 ```
 
@@ -581,13 +578,13 @@ sequenceDiagram
 
 ### Error & Retry Handling
 
-| Failure point | Behaviour |
-|---|---|
-| Signature invalid | 403 returned immediately; payload discarded |
-| DB insert fails | 500 returned; WhatsApp will retry (up to 72 h) |
+| Failure point           | Behaviour                                                     |
+| ----------------------- | ------------------------------------------------------------- |
+| Signature invalid       | 403 returned immediately; payload discarded                   |
+| DB insert fails         | 500 returned; WhatsApp will retry (up to 72 h)                |
 | Realtime delivery fails | UI falls back to polling via TanStack Query `refetchInterval` |
-| Agent offline | Message persisted in DB; visible on next session |
+| Agent offline           | Message persisted in DB; visible on next session              |
 
 ---
 
-*This document describes the architecture as implemented. UI-only or in-progress features are noted per-section. For database schema details see `supabase/migrations/`. For deployment runbooks see `docs/DEPLOYMENT.md`.*
+_This document describes the architecture as implemented. UI-only or in-progress features are noted per-section. For database schema details see `supabase/migrations/`. For deployment runbooks see `docs/DEPLOYMENT.md`._

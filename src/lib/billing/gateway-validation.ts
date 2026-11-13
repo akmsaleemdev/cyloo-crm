@@ -100,16 +100,14 @@ export function validateGatewayForm(
       parsed = null;
     }
     if (!parsed) errors.webhook_url = "Enter a full URL, e.g. https://example.com/webhook.";
-    else if (parsed.protocol !== "https:")
-      errors.webhook_url = "Webhook URLs must use https.";
+    else if (parsed.protocol !== "https:") errors.webhook_url = "Webhook URLs must use https.";
     else if (live && /localhost|127\.0\.0\.1/.test(parsed.hostname))
       errors.webhook_url = "A live gateway cannot use a localhost webhook URL.";
   } else if (values.enabled && live) {
     errors.webhook_url = "A live, enabled gateway needs a webhook URL.";
   }
 
-  if (methods.length === 0)
-    errors.supported_methods = "Select at least one payment method.";
+  if (methods.length === 0) errors.supported_methods = "Select at least one payment method.";
 
   if (notes.length > 2000) errors.notes = "Notes must be under 2000 characters.";
 

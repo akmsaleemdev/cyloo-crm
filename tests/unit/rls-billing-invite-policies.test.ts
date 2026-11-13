@@ -42,10 +42,7 @@ describe("RLS Billing & Invite Policies", () => {
           "i",
         ).test(allSQL);
         if (allSQL.includes(`CREATE TABLE`) && allSQL.includes(table)) {
-          expect(
-            rlsEnabled,
-            `Billing table "${table}" should have RLS enabled`,
-          ).toBe(true);
+          expect(rlsEnabled, `Billing table "${table}" should have RLS enabled`).toBe(true);
         }
       }
     }
@@ -53,9 +50,7 @@ describe("RLS Billing & Invite Policies", () => {
 
   it("should not allow anon access to billing tables", () => {
     const billingPolicies = [
-      ...allSQL.matchAll(
-        /CREATE\s+POLICY\s+\S+\s+ON\s+(?:public\.)?(billing_\w+)[^;]+;/gi,
-      ),
+      ...allSQL.matchAll(/CREATE\s+POLICY\s+\S+\s+ON\s+(?:public\.)?(billing_\w+)[^;]+;/gi),
     ];
 
     for (const match of billingPolicies) {
@@ -76,13 +71,10 @@ describe("RLS Billing & Invite Policies", () => {
       const policyText = match[0].toLowerCase();
       // Invite policies should reference workspace_id or organization_id
       const hasTenantScope =
-        policyText.includes("workspace_id") ||
-        policyText.includes("organization_id");
-      expect(
-        hasTenantScope,
-        `Invitation policy should be scoped to tenant: ${match[1]}`,
-      ).toBe(true);
+        policyText.includes("workspace_id") || policyText.includes("organization_id");
+      expect(hasTenantScope, `Invitation policy should be scoped to tenant: ${match[1]}`).toBe(
+        true,
+      );
     }
   });
 });
-

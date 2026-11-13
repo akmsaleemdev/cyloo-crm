@@ -7,9 +7,15 @@ export const Route = createFileRoute("/_authenticated/settings/task-reminders")(
   head: () => ({
     meta: [
       { title: "Task Reminders — Account Settings" },
-      { name: "description", content: "Configure reminder schedules and notifications for your team's tasks." },
+      {
+        name: "description",
+        content: "Configure reminder schedules and notifications for your team's tasks.",
+      },
       { property: "og:title", content: "Task Reminders — Account Settings" },
-      { property: "og:description", content: "Configure reminder schedules and notifications for your team's tasks." },
+      {
+        property: "og:description",
+        content: "Configure reminder schedules and notifications for your team's tasks.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

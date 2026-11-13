@@ -31,8 +31,7 @@ const LEGACY_ACTIVE_ORG_KEYS = [
 ];
 const LEGACY_ACTIVE_WS_KEYS = ["cyloo.workspace.active", "activeWorkspaceId"];
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function safeGet(key: string): string | null {
   try {
@@ -72,11 +71,7 @@ function purgeOrgScopedDerivedCaches() {
       if (!k) continue;
       // Anything under cyloo.org.* other than the active id/version is
       // treated as an org-scoped derived cache and dropped on migration.
-      if (
-        k.startsWith("cyloo.org.") &&
-        k !== ACTIVE_ORG_KEY &&
-        k !== VERSION_KEY
-      ) {
+      if (k.startsWith("cyloo.org.") && k !== ACTIVE_ORG_KEY && k !== VERSION_KEY) {
         keys.push(k);
       }
       // TanStack Query persisted cache, if ever mounted, is org-scoped.
@@ -120,9 +115,7 @@ function migrateLegacyBrandNamespace() {
     for (let i = 0; i < window.localStorage.length; i++) {
       const k = window.localStorage.key(i);
       if (!k) continue;
-      const brand = LEGACY_BRAND_NAMES.find(
-        (b) => k.startsWith(`${b}.`) || k.startsWith(`${b}:`),
-      );
+      const brand = LEGACY_BRAND_NAMES.find((b) => k.startsWith(`${b}.`) || k.startsWith(`${b}:`));
       if (!brand) continue;
       const next = `cyloo${k.slice(brand.length)}`;
       const value = safeGet(k);

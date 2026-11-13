@@ -1,9 +1,25 @@
 import * as React from "react";
-import { Check, ChevronsUpDown, Plus, Building2, Loader2, AlertCircle, RefreshCw, Settings2, Layers } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Plus,
+  Building2,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  Settings2,
+  Layers,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
-  Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -86,7 +102,7 @@ export function OrganizationSwitcher({
 
   const active = organizations.find((o) => o.id === activeId) ?? organizations[0];
   const switchingTarget = switching
-    ? organizations.find((o) => o.id === switchingId)?.name ?? "organization"
+    ? (organizations.find((o) => o.id === switchingId)?.name ?? "organization")
     : null;
 
   // Announce switch lifecycle transitions through a polite live region.
@@ -132,7 +148,10 @@ export function OrganizationSwitcher({
         aria-busy="true"
         aria-live="polite"
       >
-        <Skeleton className={cn("shrink-0 rounded-control", collapsed ? "h-8 w-8" : "h-8 w-8")} aria-hidden="true" />
+        <Skeleton
+          className={cn("shrink-0 rounded-control", collapsed ? "h-8 w-8" : "h-8 w-8")}
+          aria-hidden="true"
+        />
         {!collapsed && (
           <div className="flex-1 min-w-0 space-y-1.5" aria-hidden="true">
             <Skeleton className="h-3 w-24" />
@@ -209,9 +228,7 @@ export function OrganizationSwitcher({
     },
   };
   const currentPhase = switching ? (switchPhase ?? "settling") : null;
-  const tooltipTitle = currentPhase
-    ? phaseCopy[currentPhase].title
-    : "Switch organization";
+  const tooltipTitle = currentPhase ? phaseCopy[currentPhase].title : "Switch organization";
   const tooltipHint = currentPhase
     ? phaseCopy[currentPhase].hint
     : "Choose a different organization or workspace.";
@@ -257,9 +274,18 @@ export function OrganizationSwitcher({
                     }
                   >
                     <div className="relative shrink-0">
-                      <Avatar className={cn("rounded-control", collapsed ? "h-8 w-8" : "h-8 w-8", switching && "opacity-40")}>
+                      <Avatar
+                        className={cn(
+                          "rounded-control",
+                          collapsed ? "h-8 w-8" : "h-8 w-8",
+                          switching && "opacity-40",
+                        )}
+                      >
                         {active.avatarUrl && <AvatarImage src={active.avatarUrl} alt="" />}
-                        <AvatarFallback className="rounded-control bg-gradient-accent text-accent-foreground text-xs font-semibold" aria-hidden="true">
+                        <AvatarFallback
+                          className="rounded-control bg-gradient-accent text-accent-foreground text-xs font-semibold"
+                          aria-hidden="true"
+                        >
                           {active.name.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -272,7 +298,10 @@ export function OrganizationSwitcher({
                     </div>
                     {!collapsed && (
                       <>
-                        <span className="flex-1 min-w-0 text-left animate-fade-in" aria-hidden="true">
+                        <span
+                          className="flex-1 min-w-0 text-left animate-fade-in"
+                          aria-hidden="true"
+                        >
                           <span className="block truncate text-label-md text-xs">
                             {switching ? "Switching" : active.name}
                           </span>
@@ -284,7 +313,10 @@ export function OrganizationSwitcher({
                                 : `${active.plan ?? "Free"} · ${active.role ?? "member"}`}
                           </span>
                         </span>
-                        <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60 transition-transform" aria-hidden="true" />
+                        <ChevronsUpDown
+                          className="h-4 w-4 shrink-0 opacity-60 transition-transform"
+                          aria-hidden="true"
+                        />
                       </>
                     )}
                   </button>
@@ -344,7 +376,11 @@ export function OrganizationSwitcher({
                       disabled={switching}
                       aria-current={isActive ? "true" : undefined}
                       aria-label={`${o.name}${isActive ? ", current organization" : ""}${isSwitchingRow ? ", switching" : ""}`}
-                      onSelect={() => { if (switching) return; onSelect(o.id); setOpen(false); }}
+                      onSelect={() => {
+                        if (switching) return;
+                        onSelect(o.id);
+                        setOpen(false);
+                      }}
                       className="gap-2 aria-disabled:opacity-60"
                     >
                       <Avatar className="h-10 w-10 rounded-full" aria-hidden="true">
@@ -361,12 +397,18 @@ export function OrganizationSwitcher({
                       </div>
                       {isSwitchingRow ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+                          <Loader2
+                            className="h-4 w-4 animate-spin text-muted-foreground"
+                            aria-hidden="true"
+                          />
                           <span className="sr-only">Switching</span>
                         </>
                       ) : (
                         <>
-                          <Check className={cn("h-4 w-4", isActive ? "opacity-100" : "opacity-0")} aria-hidden="true" />
+                          <Check
+                            className={cn("h-4 w-4", isActive ? "opacity-100" : "opacity-0")}
+                            aria-hidden="true"
+                          />
                           {isActive && <span className="sr-only">Current organization</span>}
                         </>
                       )}
@@ -387,7 +429,12 @@ export function OrganizationSwitcher({
                           disabled={switching || w.archived || !w.organizationId}
                           aria-current={isActiveWs ? "true" : undefined}
                           aria-label={`${w.name}${w.archived ? ", archived" : ""}${!w.organizationId ? ", not linked to an organization" : ""}${isActiveWs ? ", current workspace" : ""}`}
-                          onSelect={() => { if (switching || w.archived || !w.organizationId || !onSelectWorkspace) return; onSelectWorkspace(w.id); setOpen(false); }}
+                          onSelect={() => {
+                            if (switching || w.archived || !w.organizationId || !onSelectWorkspace)
+                              return;
+                            onSelectWorkspace(w.id);
+                            setOpen(false);
+                          }}
                           className="gap-2 aria-disabled:opacity-60"
                         >
                           <Avatar className="h-10 w-10 rounded-full" aria-hidden="true">
@@ -400,10 +447,17 @@ export function OrganizationSwitcher({
                             <div className="truncate text-label-md text-xs">{w.name}</div>
                             <div className="truncate text-[12px] text-muted-foreground">
                               {w.organizationName ? `${w.organizationName} · ` : ""}
-                              {w.archived ? "archived" : !w.organizationId ? "Not linked to an organization" : "Workspace"}
+                              {w.archived
+                                ? "archived"
+                                : !w.organizationId
+                                  ? "Not linked to an organization"
+                                  : "Workspace"}
                             </div>
                           </div>
-                          <Check className={cn("h-4 w-4", isActiveWs ? "opacity-100" : "opacity-0")} aria-hidden="true" />
+                          <Check
+                            className={cn("h-4 w-4", isActiveWs ? "opacity-100" : "opacity-0")}
+                            aria-hidden="true"
+                          />
                           {isActiveWs && <span className="sr-only">Current workspace</span>}
                         </CommandItem>
                       );
@@ -416,7 +470,11 @@ export function OrganizationSwitcher({
                 {onCreate && (
                   <CommandItem
                     disabled={switching}
-                    onSelect={() => { if (switching) return; onCreate(); setOpen(false); }}
+                    onSelect={() => {
+                      if (switching) return;
+                      onCreate();
+                      setOpen(false);
+                    }}
                     className="gap-2 text-primary aria-disabled:opacity-60"
                   >
                     <Plus className="h-4 w-4" aria-hidden="true" />
@@ -426,7 +484,11 @@ export function OrganizationSwitcher({
                 {onCreateWorkspace && (
                   <CommandItem
                     disabled={switching}
-                    onSelect={() => { if (switching) return; onCreateWorkspace(); setOpen(false); }}
+                    onSelect={() => {
+                      if (switching) return;
+                      onCreateWorkspace();
+                      setOpen(false);
+                    }}
                     className="gap-2 aria-disabled:opacity-60"
                   >
                     <Layers className="h-4 w-4" aria-hidden="true" />

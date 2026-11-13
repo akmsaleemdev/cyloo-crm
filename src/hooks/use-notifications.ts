@@ -4,10 +4,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { sbAny } from "@/lib/supabase/untyped";
 
 export type NotificationCategory =
-  | "system" | "workspace" | "invitation" | "security" | "subscription"
-  | "mention" | "assignment" | "task" | "deal" | "campaign" | "workflow" | "usage_alert" | "ai" | "info"
-  | "ticket_mention" | "livechat_handoff" | "birthday" | "communication" | "crm" | "marketing"
-  | "automation" | "project" | "insights" | "api_configuration" | "settings" | "platform";
+  | "system"
+  | "workspace"
+  | "invitation"
+  | "security"
+  | "subscription"
+  | "mention"
+  | "assignment"
+  | "task"
+  | "deal"
+  | "campaign"
+  | "workflow"
+  | "usage_alert"
+  | "ai"
+  | "info"
+  | "ticket_mention"
+  | "livechat_handoff"
+  | "birthday"
+  | "communication"
+  | "crm"
+  | "marketing"
+  | "automation"
+  | "project"
+  | "insights"
+  | "api_configuration"
+  | "settings"
+  | "platform";
 
 export type NotificationStatus = "unread" | "read" | "archived";
 export type NotificationChannel = "in_app" | "email" | "push" | "sms";
@@ -27,10 +49,12 @@ export type NotificationRow = {
   created_at: string;
 };
 
-export function useNotifications(filter: {
-  status?: NotificationStatus | "all" | "active";
-  category?: NotificationCategory | "all";
-} = {}) {
+export function useNotifications(
+  filter: {
+    status?: NotificationStatus | "all" | "active";
+    category?: NotificationCategory | "all";
+  } = {},
+) {
   return useQuery({
     queryKey: ["notifications", filter],
     queryFn: async (): Promise<NotificationRow[]> => {
@@ -151,16 +175,18 @@ export function useCreateNotification() {
     }) => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("Not authenticated");
-      const { error } = await sbAny(supabase).from("notifications").insert({
-        user_id: u.user.id,
-        title: input.title,
-        body: input.body ?? null,
-        category: input.category ?? "info",
-        channel: "in_app",
-        status: "unread",
-        action_url: input.action_url ?? null,
-        data: (input.data ?? {}) as never,
-      });
+      const { error } = await sbAny(supabase)
+        .from("notifications")
+        .insert({
+          user_id: u.user.id,
+          title: input.title,
+          body: input.body ?? null,
+          category: input.category ?? "info",
+          channel: "in_app",
+          status: "unread",
+          action_url: input.action_url ?? null,
+          data: (input.data ?? {}) as never,
+        });
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),

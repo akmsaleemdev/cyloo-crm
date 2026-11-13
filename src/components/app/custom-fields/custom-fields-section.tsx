@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { DatePicker, DateTimePicker, fromDateString, toDateString, fromLocalDateTimeString, toLocalDateTimeString } from "@/shared/components";
+import {
+  DatePicker,
+  DateTimePicker,
+  fromDateString,
+  toDateString,
+  fromLocalDateTimeString,
+  toLocalDateTimeString,
+} from "@/shared/components";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
@@ -66,9 +73,7 @@ export function CustomFieldsSection({ entity, values, onChange, columns = 2 }: P
           )}
           <div
             className={
-              columns === 2
-                ? "grid grid-cols-1 md:grid-cols-2 gap-4"
-                : "grid grid-cols-1 gap-4"
+              columns === 2 ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "grid grid-cols-1 gap-4"
             }
           >
             {list.map((field) => (
@@ -108,9 +113,7 @@ function CustomFieldControl({
         {field.is_required && <span className="text-destructive">*</span>}
       </Label>
       <FieldInput field={field} value={value} onChange={onChange} />
-      {field.help_text && (
-        <p className="text-xs text-muted-foreground">{field.help_text}</p>
-      )}
+      {field.help_text && <p className="text-xs text-muted-foreground">{field.help_text}</p>}
     </div>
   );
 }
@@ -136,10 +139,10 @@ function FieldInput({
             field.field_type === "email"
               ? "email"
               : field.field_type === "url"
-              ? "url"
-              : field.field_type === "phone"
-              ? "tel"
-              : "text"
+                ? "url"
+                : field.field_type === "phone"
+                  ? "tel"
+                  : "text"
           }
           value={(value as string) ?? ""}
           placeholder={placeholder}
@@ -164,9 +167,7 @@ function FieldInput({
           step={field.field_type === "number" ? "1" : "0.01"}
           value={(value as number | string) ?? ""}
           placeholder={placeholder}
-          onChange={(e) =>
-            onChange(e.target.value === "" ? null : Number(e.target.value))
-          }
+          onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
         />
       );
     case "date":
@@ -187,33 +188,20 @@ function FieldInput({
     case "checkbox":
       return (
         <div className="flex items-center gap-2">
-          <Checkbox
-            checked={Boolean(value)}
-            onCheckedChange={(v) => onChange(Boolean(v))}
-          />
-          <span className="text-sm text-muted-foreground">
-            {placeholder || "Enabled"}
-          </span>
+          <Checkbox checked={Boolean(value)} onCheckedChange={(v) => onChange(Boolean(v))} />
+          <span className="text-sm text-muted-foreground">{placeholder || "Enabled"}</span>
         </div>
       );
     case "switch":
       return (
         <div className="flex items-center gap-2">
-          <Switch
-            checked={Boolean(value)}
-            onCheckedChange={(v) => onChange(Boolean(v))}
-          />
-          <span className="text-sm text-muted-foreground">
-            {placeholder || "Enabled"}
-          </span>
+          <Switch checked={Boolean(value)} onCheckedChange={(v) => onChange(Boolean(v))} />
+          <span className="text-sm text-muted-foreground">{placeholder || "Enabled"}</span>
         </div>
       );
     case "select":
       return (
-        <Select
-          value={(value as string) ?? ""}
-          onValueChange={(v) => onChange(v)}
-        >
+        <Select value={(value as string) ?? ""} onValueChange={(v) => onChange(v)}>
           <SelectTrigger>
             <SelectValue placeholder={placeholder || "Select..."} />
           </SelectTrigger>
@@ -244,13 +232,13 @@ function FieldInput({
         </RadioGroup>
       );
     case "multi_select":
-      return (
-        <MultiSelectField field={field} value={value} onChange={onChange} />
-      );
+      return <MultiSelectField field={field} value={value} onChange={onChange} />;
     case "file":
       return <FileUploadField field={field} value={value} onChange={onChange} accept="*/*" />;
     case "image":
-      return <FileUploadField field={field} value={value} onChange={onChange} accept="image/*" preview />;
+      return (
+        <FileUploadField field={field} value={value} onChange={onChange} accept="image/*" preview />
+      );
     case "relationship":
       return (
         <Input
@@ -260,12 +248,7 @@ function FieldInput({
         />
       );
     default:
-      return (
-        <Input
-          value={(value as string) ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      );
+      return <Input value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} />;
   }
 }
 
@@ -301,15 +284,10 @@ function MultiSelectField({
           })}
         </div>
       )}
-      <Select
-        value=""
-        onValueChange={(v) => v && onChange([...selected, v])}
-      >
+      <Select value="" onValueChange={(v) => v && onChange([...selected, v])}>
         <SelectTrigger>
           <SelectValue
-            placeholder={
-              remaining.length ? field.placeholder || "Add option..." : "All selected"
-            }
+            placeholder={remaining.length ? field.placeholder || "Add option..." : "All selected"}
           />
         </SelectTrigger>
         <SelectContent>
@@ -417,12 +395,7 @@ function FileUploadField({
           </Button>
         </label>
         {current?.url && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onChange(null)}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)}>
             Remove
           </Button>
         )}

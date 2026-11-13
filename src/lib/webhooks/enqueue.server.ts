@@ -15,9 +15,9 @@ export async function enqueueWebhookEvent(
   if (!endpoints?.length) return { enqueued: 0 };
 
   const rows = endpoints
-    .filter((e: any) =>
-      (e.events as string[]).includes("*") ||
-      (e.events as string[]).includes(args.eventType),
+    .filter(
+      (e: any) =>
+        (e.events as string[]).includes("*") || (e.events as string[]).includes(args.eventType),
     )
     .map((e: any) => ({
       endpoint_id: e.id,

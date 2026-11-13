@@ -34,7 +34,11 @@ export interface InboxCore {
   egress: {
     /** Send a channel-neutral draft through the appropriate provider. */
     send(draft: OutboundDraft, account: ChannelAccountRef): Promise<SendResult>;
-    markRead(kind: ChannelKind, providerMessageId: string, account: ChannelAccountRef): Promise<void>;
+    markRead(
+      kind: ChannelKind,
+      providerMessageId: string,
+      account: ChannelAccountRef,
+    ): Promise<void>;
     sendTyping(kind: ChannelKind, to: string, account: ChannelAccountRef): Promise<void>;
   };
 }

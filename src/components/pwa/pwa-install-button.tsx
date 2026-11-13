@@ -92,7 +92,7 @@ export function PwaInstallButton({ className, variant = "topbar" }: PwaInstallBu
                     "relative grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-all duration-200",
                     "hover:bg-surface-elevated hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
                     !hasPulsed && "animate-pulse",
-                    className
+                    className,
                   )}
                 >
                   <Download className="h-4 w-4" />
@@ -113,7 +113,8 @@ export function PwaInstallButton({ className, variant = "topbar" }: PwaInstallBu
           <div className="space-y-3">
             <h4 className="font-display font-semibold text-foreground">Install CYLOO App</h4>
             <p className="text-xs text-muted-foreground">
-              To install on your iOS device, tap the Safari share icon and select &ldquo;Add to Home Screen&rdquo;.
+              To install on your iOS device, tap the Safari share icon and select &ldquo;Add to Home
+              Screen&rdquo;.
             </p>
             <div className="flex flex-col gap-2 rounded-lg bg-surface/60 p-2.5 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -158,7 +159,7 @@ export function PwaInstallButton({ className, variant = "topbar" }: PwaInstallBu
               "relative grid h-8 w-8 place-items-center rounded-lg text-muted-foreground transition-all duration-200",
               "hover:bg-surface-elevated hover:text-foreground focus:outline-none focus-visible:ring-1 focus-visible:ring-ring active:scale-95",
               !hasPulsed && "animate-pulse",
-              className
+              className,
             )}
           >
             <Download className="h-4 w-4" />
@@ -171,4 +172,3 @@ export function PwaInstallButton({ className, variant = "topbar" }: PwaInstallBu
     </TooltipProvider>
   );
 }
-

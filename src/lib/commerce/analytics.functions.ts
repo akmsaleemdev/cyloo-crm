@@ -1,6 +1,6 @@
-import { createServerFn } from '@tanstack/react-start';
-import { z } from 'zod';
-import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const filterSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -37,43 +37,43 @@ async function loadWindow(
   channel?: string,
 ) {
   let ordersQ = supabase
-    .from('commerce_orders')
+    .from("commerce_orders")
     .select(
-      'id,total,subtotal,discount,status,payment_status,channel,contact_id,conversation_id,currency,created_at,paid_at,refunded_at,cancelled_at',
+      "id,total,subtotal,discount,status,payment_status,channel,contact_id,conversation_id,currency,created_at,paid_at,refunded_at,cancelled_at",
     )
-    .eq('workspace_id', workspaceId)
-    .gte('created_at', from)
-    .lte('created_at', to);
-  if (channel && channel !== 'all') ordersQ = ordersQ.eq('channel', channel);
+    .eq("workspace_id", workspaceId)
+    .gte("created_at", from)
+    .lte("created_at", to);
+  if (channel && channel !== "all") ordersQ = ordersQ.eq("channel", channel);
 
   const [ordersRes, itemsRes, cartsRes, linksRes, promosRes] = await Promise.all([
     ordersQ,
     supabase
-      .from('commerce_order_items')
+      .from("commerce_order_items")
       .select(
-        'id,name,product_id,quantity,total,unit_price,order_id,commerce_orders!inner(workspace_id,channel,created_at,payment_status)',
+        "id,name,product_id,quantity,total,unit_price,order_id,commerce_orders!inner(workspace_id,channel,created_at,payment_status)",
       )
-      .eq('commerce_orders.workspace_id', workspaceId)
-      .gte('commerce_orders.created_at', from)
-      .lte('commerce_orders.created_at', to),
+      .eq("commerce_orders.workspace_id", workspaceId)
+      .gte("commerce_orders.created_at", from)
+      .lte("commerce_orders.created_at", to),
     supabase
-      .from('commerce_carts')
-      .select('id,status,total,coupon_code,created_at,updated_at,contact_id')
-      .eq('workspace_id', workspaceId)
-      .gte('created_at', from)
-      .lte('created_at', to),
+      .from("commerce_carts")
+      .select("id,status,total,coupon_code,created_at,updated_at,contact_id")
+      .eq("workspace_id", workspaceId)
+      .gte("created_at", from)
+      .lte("created_at", to),
     supabase
-      .from('commerce_payment_links')
-      .select('id,amount,status,paid_amount,refunded_amount,created_at')
-      .eq('workspace_id', workspaceId)
-      .gte('created_at', from)
-      .lte('created_at', to),
+      .from("commerce_payment_links")
+      .select("id,amount,status,paid_amount,refunded_amount,created_at")
+      .eq("workspace_id", workspaceId)
+      .gte("created_at", from)
+      .lte("created_at", to),
     supabase
-      .from('commerce_promotion_redemptions')
-      .select('id,code_used,amount_off_cents,currency,promotion_id,created_at,order_id')
-      .eq('workspace_id', workspaceId)
-      .gte('created_at', from)
-      .lte('created_at', to),
+      .from("commerce_promotion_redemptions")
+      .select("id,code_used,amount_off_cents,currency,promotion_id,created_at,order_id")
+      .eq("workspace_id", workspaceId)
+      .gte("created_at", from)
+      .lte("created_at", to),
   ]);
 
   const orders: OrderRow[] = (ordersRes.data ?? []) as any;
@@ -89,11 +89,11 @@ async function loadWindow(
   const catByProduct: Record<string, string> = {};
   if (productIds.length) {
     const { data: prods } = await supabase
-      .from('products')
-      .select('id,category,category_id,product_categories(name)')
-      .in('id', productIds);
+      .from("products")
+      .select("id,category,category_id,product_categories(name)")
+      .in("id", productIds);
     (prods ?? []).forEach((p: any) => {
-      catByProduct[p.id] = p.product_categories?.name ?? p.category ?? 'Uncategorized';
+      catByProduct[p.id] = p.product_categories?.name ?? p.category ?? "Uncategorized";
     });
   }
 
@@ -104,11 +104,11 @@ async function loadWindow(
   const contactMap: Record<string, string> = {};
   if (contactIds.length) {
     const { data: cs } = await supabase
-      .from('contacts')
-      .select('id,name,display_name')
-      .in('id', contactIds);
+      .from("contacts")
+      .select("id,name,display_name")
+      .in("id", contactIds);
     (cs ?? []).forEach((c: any) => {
-      contactMap[c.id] = c.display_name ?? c.name ?? 'Customer';
+      contactMap[c.id] = c.display_name ?? c.name ?? "Customer";
     });
   }
 
@@ -120,9 +120,9 @@ async function loadWindow(
   const agentIds = new Set<string>();
   if (convIds.length) {
     const { data: convs } = await supabase
-      .from('conversations')
-      .select('id,assigned_to')
-      .in('id', convIds);
+      .from("conversations")
+      .select("id,assigned_to")
+      .in("id", convIds);
     (convs ?? []).forEach((c: any) => {
       agentByConv[c.id] = c.assigned_to;
       if (c.assigned_to) agentIds.add(c.assigned_to);
@@ -131,11 +131,11 @@ async function loadWindow(
   const agentMap: Record<string, string> = {};
   if (agentIds.size) {
     const { data: profs } = await supabase
-      .from('profiles')
-      .select('id,full_name,email')
-      .in('id', Array.from(agentIds));
+      .from("profiles")
+      .select("id,full_name,email")
+      .in("id", Array.from(agentIds));
     (profs ?? []).forEach((p: any) => {
-      agentMap[p.id] = p.full_name ?? p.email ?? 'Agent';
+      agentMap[p.id] = p.full_name ?? p.email ?? "Agent";
     });
   }
 
@@ -143,20 +143,19 @@ async function loadWindow(
 }
 
 function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
-  const { orders, items, carts, links, promos, catByProduct, contactMap, agentByConv, agentMap } = w;
+  const { orders, items, carts, links, promos, catByProduct, contactMap, agentByConv, agentMap } =
+    w;
 
-  const paidOrders = orders.filter((o) => o.payment_status === 'paid');
-  const refundedOrders = orders.filter(
-    (o) => o.payment_status === 'refunded' || o.refunded_at,
-  );
-  const cancelledOrders = orders.filter((o) => o.cancelled_at || o.status === 'cancelled');
+  const paidOrders = orders.filter((o) => o.payment_status === "paid");
+  const refundedOrders = orders.filter((o) => o.payment_status === "refunded" || o.refunded_at);
+  const cancelledOrders = orders.filter((o) => o.cancelled_at || o.status === "cancelled");
 
   const totalRevenue = paidOrders.reduce((s, o) => s + Number(o.total ?? 0), 0);
   const totalOrders = orders.length;
   const aov = paidOrders.length ? totalRevenue / paidOrders.length : 0;
 
   // Abandoned carts: status active/abandoned and not converted to order
-  const abandoned = carts.filter((c) => c.status !== 'converted' && c.status !== 'checked_out');
+  const abandoned = carts.filter((c) => c.status !== "converted" && c.status !== "checked_out");
   const abandonmentRate = carts.length ? (abandoned.length / carts.length) * 100 : 0;
 
   // Checkout conversion = paid orders / carts created
@@ -164,9 +163,9 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
 
   // Payment success = paid links / (paid + failed + expired). Fallback to paid/all links.
   const linkAttempts = links.filter((l) =>
-    ['paid', 'failed', 'expired', 'cancelled', 'active'].includes(l.status),
+    ["paid", "failed", "expired", "cancelled", "active"].includes(l.status),
   );
-  const linkPaid = links.filter((l) => l.status === 'paid').length;
+  const linkPaid = links.filter((l) => l.status === "paid").length;
   const paymentSuccessRate = linkAttempts.length ? (linkPaid / linkAttempts.length) * 100 : 0;
 
   // Refund rate
@@ -175,12 +174,13 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
     : 0;
 
   // Daily series
-  const byDay: Record<string, { date: string; revenue: number; orders: number; refunds: number }> = {};
+  const byDay: Record<string, { date: string; revenue: number; orders: number; refunds: number }> =
+    {};
   orders.forEach((o) => {
     const day = (o.paid_at ?? o.created_at).slice(0, 10);
     byDay[day] ??= { date: day, revenue: 0, orders: 0, refunds: 0 };
     byDay[day].orders += 1;
-    if (o.payment_status === 'paid') byDay[day].revenue += Number(o.total ?? 0);
+    if (o.payment_status === "paid") byDay[day].revenue += Number(o.total ?? 0);
     if (o.refunded_at) byDay[day].refunds += 1;
   });
   const daily = Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date));
@@ -188,7 +188,7 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
   // Top products
   const byProduct: Record<string, { name: string; qty: number; revenue: number }> = {};
   items.forEach((it) => {
-    const key = it.name ?? 'Unknown';
+    const key = it.name ?? "Unknown";
     byProduct[key] ??= { name: key, qty: 0, revenue: 0 };
     byProduct[key].qty += Number(it.quantity ?? 0);
     byProduct[key].revenue += Number(it.total ?? 0);
@@ -200,7 +200,7 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
   // Top categories
   const byCategory: Record<string, { name: string; qty: number; revenue: number }> = {};
   items.forEach((it) => {
-    const cat = (it.product_id && catByProduct[it.product_id]) || 'Uncategorized';
+    const cat = (it.product_id && catByProduct[it.product_id]) || "Uncategorized";
     byCategory[cat] ??= { name: cat, qty: 0, revenue: 0 };
     byCategory[cat].qty += Number(it.quantity ?? 0);
     byCategory[cat].revenue += Number(it.total ?? 0);
@@ -210,12 +210,13 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
     .slice(0, 10);
 
   // Top customers
-  const byCustomer: Record<string, { id: string; name: string; orders: number; revenue: number }> = {};
+  const byCustomer: Record<string, { id: string; name: string; orders: number; revenue: number }> =
+    {};
   paidOrders.forEach((o) => {
     if (!o.contact_id) return;
     byCustomer[o.contact_id] ??= {
       id: o.contact_id,
-      name: contactMap[o.contact_id] ?? 'Customer',
+      name: contactMap[o.contact_id] ?? "Customer",
       orders: 0,
       revenue: 0,
     };
@@ -229,10 +230,10 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
   // Revenue by channel
   const chan: Record<string, { channel: string; orders: number; revenue: number }> = {};
   orders.forEach((o) => {
-    const c = o.channel ?? 'direct';
+    const c = o.channel ?? "direct";
     chan[c] ??= { channel: c, orders: 0, revenue: 0 };
     chan[c].orders += 1;
-    if (o.payment_status === 'paid') chan[c].revenue += Number(o.total ?? 0);
+    if (o.payment_status === "paid") chan[c].revenue += Number(o.total ?? 0);
   });
   const byChannel = Object.values(chan).sort((a, b) => b.revenue - a.revenue);
 
@@ -240,18 +241,18 @@ function computeMetrics(w: Awaited<ReturnType<typeof loadWindow>>) {
   const ag: Record<string, { agent: string; orders: number; revenue: number }> = {};
   orders.forEach((o) => {
     const aid = o.conversation_id ? agentByConv[o.conversation_id] : null;
-    const key = aid ?? 'unassigned';
-    const name = aid ? agentMap[aid] ?? 'Agent' : 'Unassigned';
+    const key = aid ?? "unassigned";
+    const name = aid ? (agentMap[aid] ?? "Agent") : "Unassigned";
     ag[key] ??= { agent: name, orders: 0, revenue: 0 };
     ag[key].orders += 1;
-    if (o.payment_status === 'paid') ag[key].revenue += Number(o.total ?? 0);
+    if (o.payment_status === "paid") ag[key].revenue += Number(o.total ?? 0);
   });
   const byAgent = Object.values(ag).sort((a, b) => b.revenue - a.revenue);
 
   // Coupon usage
   const coup: Record<string, { code: string; uses: number; discount: number }> = {};
   promos.forEach((p) => {
-    const code = p.code_used ?? 'AUTO';
+    const code = p.code_used ?? "AUTO";
     coup[code] ??= { code, uses: 0, discount: 0 };
     coup[code].uses += 1;
     coup[code].discount += Number(p.amount_off_cents ?? 0) / 100;
@@ -290,7 +291,7 @@ export type CommerceAnalyticsResult = {
   range: { from: string; to: string };
 };
 
-export const getCommerceAnalyticsReport = createServerFn({ method: 'GET' })
+export const getCommerceAnalyticsReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: CommerceAnalyticsFilter) => filterSchema.parse(d))
   .handler(async ({ data, context }): Promise<CommerceAnalyticsResult> => {

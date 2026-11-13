@@ -26,7 +26,7 @@ export const teamsProvider: MeetingProvider = {
       startDateTime: req.start_at,
       endDateTime: req.end_at,
       lobbyBypassSettings: {
-        scope: req.options?.waiting_room ?? true ? "organizer" : "everyone",
+        scope: (req.options?.waiting_room ?? true) ? "organizer" : "everyone",
         isDialInBypassEnabled: false,
       },
       recordAutomatically: !!req.options?.recording,

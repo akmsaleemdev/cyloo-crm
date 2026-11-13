@@ -25,9 +25,13 @@ export const Route = createFileRoute("/api/public/booking/slots")({
         const url = new URL(request.url);
         const parsed = querySchema.safeParse(Object.fromEntries(url.searchParams));
         if (!parsed.success) {
-          return new Response(JSON.stringify({ error: "invalid_query", issues: parsed.error.issues }), {
-            status: 400, headers: { "Content-Type": "application/json", ...CORS },
-          });
+          return new Response(
+            JSON.stringify({ error: "invalid_query", issues: parsed.error.issues }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...CORS },
+            },
+          );
         }
         const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
         const supabase = createClient(process.env.SUPABASE_URL!, key, {
@@ -35,7 +39,8 @@ export const Route = createFileRoute("/api/public/booking/slots")({
           global: {
             fetch: (input, init) => {
               const h = new Headers(init?.headers);
-              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+                h.delete("Authorization");
               h.set("apikey", key);
               return fetch(input, { ...init, headers: h });
             },
@@ -44,17 +49,27 @@ export const Route = createFileRoute("/api/public/booking/slots")({
 
         let eventTypeId = parsed.data.event_type_id;
         if (!eventTypeId && parsed.data.slug) {
-          const { data } = await sbAny(supabase).from("booking_event_types")
-            .select("id").eq("slug", parsed.data.slug).eq("is_active", true).maybeSingle();
+          const { data } = await sbAny(supabase)
+            .from("booking_event_types")
+            .select("id")
+            .eq("slug", parsed.data.slug)
+            .eq("is_active", true)
+            .maybeSingle();
           eventTypeId = data?.id;
         }
         if (!eventTypeId) {
           return new Response(JSON.stringify({ error: "not_found" }), {
-            status: 404, headers: { "Content-Type": "application/json", ...CORS },
+            status: 404,
+            headers: { "Content-Type": "application/json", ...CORS },
           });
         }
         const slots = dedupeSlotsByStart(
-          await computeAvailability(supabase as never, eventTypeId, parsed.data.from, parsed.data.to),
+          await computeAvailability(
+            supabase as never,
+            eventTypeId,
+            parsed.data.from,
+            parsed.data.to,
+          ),
         );
         return new Response(JSON.stringify({ slots }), {
           headers: { "Content-Type": "application/json", ...CORS },

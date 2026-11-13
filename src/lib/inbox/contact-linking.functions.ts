@@ -38,9 +38,7 @@ export const searchWorkspaceContacts = createServerFn({ method: "POST" })
     const q = data.q.trim();
     let query = context.supabase
       .from("contacts")
-      .select(
-        "id, first_name, last_name, display_name, name, phone, whatsapp, email, avatar_url",
-      )
+      .select("id, first_name, last_name, display_name, name, phone, whatsapp, email, avatar_url")
       .eq("workspace_id", data.workspaceId)
       .order("updated_at", { ascending: false })
       .limit(data.limit);
@@ -107,16 +105,18 @@ export const relinkConversationContact = createServerFn({ method: "POST" })
 
     // Best-effort audit trail on conversation_activity if present.
     try {
-      await sbAny(context.supabase).from("conversation_activity").insert({
-        conversation_id: data.conversationId,
-        workspace_id: data.workspaceId,
-        actor_id: context.userId,
-        activity_type: "contact_relinked",
-        metadata: {
-          previous_contact_id: prev.contact_id,
-          new_contact_id: data.contactId,
-        },
-      } as never);
+      await sbAny(context.supabase)
+        .from("conversation_activity")
+        .insert({
+          conversation_id: data.conversationId,
+          workspace_id: data.workspaceId,
+          actor_id: context.userId,
+          activity_type: "contact_relinked",
+          metadata: {
+            previous_contact_id: prev.contact_id,
+            new_contact_id: data.contactId,
+          },
+        } as never);
     } catch {
       /* activity table optional */
     }
@@ -199,9 +199,7 @@ export const createWorkspaceContact = createServerFn({ method: "POST" })
     const { data: contact, error } = await context.supabase
       .from("contacts")
       .insert(payload)
-      .select(
-        "id, first_name, last_name, display_name, name, phone, whatsapp, email, avatar_url",
-      )
+      .select("id, first_name, last_name, display_name, name, phone, whatsapp, email, avatar_url")
       .single();
     if (error) throw error;
     return contact as {
@@ -267,7 +265,9 @@ export const bulkRelinkConversationContacts = createServerFn({ method: "POST" })
         },
       }));
       if (rows.length) {
-        await sbAny(context.supabase).from("conversation_activity").insert(rows as never);
+        await sbAny(context.supabase)
+          .from("conversation_activity")
+          .insert(rows as never);
       }
     } catch {
       /* optional */
@@ -275,4 +275,3 @@ export const bulkRelinkConversationContacts = createServerFn({ method: "POST" })
 
     return { count: updated?.length ?? 0 };
   });
-

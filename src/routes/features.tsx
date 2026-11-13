@@ -18,14 +18,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-import featureAnalyticsImg from "@/assets/marketing/feature-analytics-new.png";
-import featureAutomationsImg from "@/assets/marketing/feature-automations-new.png";
-import featureBroadcastImg from "@/assets/marketing/feature-broadcast-new.png";
-import featureHelpdeskImg from "@/assets/marketing/feature-helpdesk-new.png";
+import featureAnalyticsImg from "@/assets/marketing/cyloo-analytics.svg";
+import featureAutomationsImg from "@/assets/marketing/cyloo-automations.svg";
+import featureBroadcastImg from "@/assets/marketing/cyloo-campaigns.svg";
+import featureHelpdeskImg from "@/assets/marketing/cyloo-inbox.svg";
 import featureCommerceImg from "@/assets/marketing/stepper-ecommerce.jpg";
 import featureAppointmentsImg from "@/assets/marketing/stepper-flow.jpg";
-import featureAiStudioImg from "@/assets/marketing/feature-ai-studio.png";
-import featureSharedInboxImg from "@/assets/marketing/feature-shared-inbox.png";
+import featureAiStudioImg from "@/assets/marketing/cyloo-platform.svg";
+import featureSharedInboxImg from "@/assets/marketing/cyloo-inbox.svg";
 import { redirectSignedInFromMarketing } from "@/lib/auth/marketing-redirect";
 
 export const Route = createFileRoute("/features")({

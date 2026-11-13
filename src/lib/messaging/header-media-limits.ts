@@ -37,7 +37,9 @@ export const HEADER_MEDIA_RULES: Record<
 
 export const ALL_HEADER_MIMES: string[] = Object.values(HEADER_MEDIA_RULES).flatMap((r) => r.mimes);
 
-export const MAX_HEADER_BYTES = Math.max(...Object.values(HEADER_MEDIA_RULES).map((r) => r.maxBytes));
+export const MAX_HEADER_BYTES = Math.max(
+  ...Object.values(HEADER_MEDIA_RULES).map((r) => r.maxBytes),
+);
 
 export function formatForMime(mime: string): HeaderMediaFormat | null {
   for (const [format, rule] of Object.entries(HEADER_MEDIA_RULES)) {

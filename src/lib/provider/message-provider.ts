@@ -36,4 +36,6 @@ class MockProvider implements MessageProvider {
 
 let _provider: MessageProvider = new MockProvider();
 export const getMessageProvider = () => _provider;
-export const setMessageProvider = (p: MessageProvider) => { _provider = p; };
+export const setMessageProvider = (p: MessageProvider) => {
+  _provider = p;
+};

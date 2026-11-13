@@ -20,7 +20,10 @@ export interface ThreadsPublishInput {
   firstComment?: string | null;
 }
 
-async function call(path: string, params: Record<string, string>): Promise<Record<string, unknown>> {
+async function call(
+  path: string,
+  params: Record<string, string>,
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${API}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -29,7 +32,8 @@ async function call(path: string, params: Record<string, string>): Promise<Recor
   const text = await res.text();
   const json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   if (!res.ok || json["error"]) {
-    const msg = (json["error"] as { message?: string } | undefined)?.message ?? `Threads error ${res.status}`;
+    const msg =
+      (json["error"] as { message?: string } | undefined)?.message ?? `Threads error ${res.status}`;
     throw new Error(msg);
   }
   return json;
@@ -48,7 +52,8 @@ async function createContainer(
 
 export async function publishToThreads(input: ThreadsPublishInput): Promise<ProviderPublishResult> {
   const token = resolveToken(input.accessTokenCipher);
-  if (!input.userId) throw new Error("Threads channel is missing its user ID. Reconnect the channel.");
+  if (!input.userId)
+    throw new Error("Threads channel is missing its user ID. Reconnect the channel.");
   if (input.contentType === "poll") throw new Error("Threads does not support polls.");
   if (input.contentType === "story") throw new Error("Threads does not support stories.");
 
@@ -102,7 +107,10 @@ export async function publishToThreads(input: ThreadsPublishInput): Promise<Prov
         text: input.firstComment.trim(),
         reply_to_id: id,
       });
-      await call(`/${input.userId}/threads_publish`, { access_token: token, creation_id: replyContainer });
+      await call(`/${input.userId}/threads_publish`, {
+        access_token: token,
+        creation_id: replyContainer,
+      });
     } catch {
       // A failed reply must not undo a successful post.
     }

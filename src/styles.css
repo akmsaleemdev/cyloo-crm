@@ -122,7 +122,10 @@
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
-    transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease;
+    transition:
+      transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 200ms ease;
   }
   .glass-card:hover {
     border-color: color-mix(in oklab, var(--border) 80%, transparent);
@@ -294,10 +297,18 @@
 
   /* ── Typography ─────────────────────────────────────────────────────────── */
   /* Font families — Inter Variable for modern enterprise SaaS typography */
-  --font-sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-display: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-heading: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans:
+    "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display:
+    "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-heading:
+    "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+    monospace;
   --font-body: var(--font-sans);
 
   /* Type scale — 8pt-aligned rem values with paired line-heights.
@@ -741,46 +752,46 @@
  * ============================================================================ */
 :root {
   /* Apple-inspired neutral scale */
-  --neutral-50: #FAFAFC;
-  --neutral-100: #F5F5F7;
-  --neutral-200: #E5E5EA;
-  --neutral-300: #D1D1D6;
-  --neutral-400: #AEAEB2;
-  --neutral-500: #8E8E93;
+  --neutral-50: #fafafc;
+  --neutral-100: #f5f5f7;
+  --neutral-200: #e5e5ea;
+  --neutral-300: #d1d1d6;
+  --neutral-400: #aeaeb2;
+  --neutral-500: #8e8e93;
   --neutral-600: #636366;
-  --neutral-700: #48484A;
-  --neutral-800: #2C2C2E;
-  --neutral-900: #1C1C1E;
+  --neutral-700: #48484a;
+  --neutral-800: #2c2c2e;
+  --neutral-900: #1c1c1e;
   --neutral-950: #000000;
 
   /* Surfaces — Apple-inspired clean SaaS hierarchy */
-  --background: #F5F5F7;
-  --foreground: #1D1D1F;
-  --surface: #FFFFFF;
-  --surface-elevated: #FFFFFF;
-  --surface-sunken: #F0F1F4;
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-sunken: #f0f1f4;
 
-  --card: #FFFFFF;
-  --card-foreground: #1D1D1F;
-  --popover: #FFFFFF;
-  --popover-foreground: #1D1D1F;
+  --card: #ffffff;
+  --card-foreground: #1d1d1f;
+  --popover: #ffffff;
+  --popover-foreground: #1d1d1f;
 
   /* Primary — CYLOO brand blue #2F40CF */
   --primary: oklch(0.44 0.19 265);
-  --primary-foreground: #FFFFFF;
+  --primary-foreground: #ffffff;
   /* Lifted variant of the live --primary so tenant accent / white-label
      overrides propagate to every glow surface instantly. */
-  --primary-glow: color-mix(in oklab, var(--primary) 88%, #FFFFFF 12%);
+  --primary-glow: color-mix(in oklab, var(--primary) 88%, #ffffff 12%);
   --primary-muted: color-mix(in oklab, var(--primary) 10%, var(--surface));
 
   /* Secondary — subtle light surface */
-  --secondary: #F0F1F4;
-  --secondary-foreground: #1D1D1F;
+  --secondary: #f0f1f4;
+  --secondary-foreground: #1d1d1f;
   --secondary-muted: color-mix(in oklab, var(--secondary) 40%, var(--surface));
 
   /* Accent — CYLOO brand green #3ECE90 */
   --accent: #3ece90; /* CYLOO green */
-  --accent-foreground: #FFFFFF;
+  --accent-foreground: #ffffff;
   /* AA-safe derivatives of the live accent:
      --accent-strong : solid fills that carry white text (>= 4.5:1)
      --accent-readable: accent used AS TEXT on light surfaces (>= 4.5:1) */
@@ -788,12 +799,12 @@
   --accent-readable: color-mix(in oklab, var(--accent) 86%, black);
   --accent-muted: color-mix(in oklab, var(--accent) 12%, var(--surface));
 
-  --muted: #F0F1F4;
-  --muted-foreground: #6E6E73;
+  --muted: #f0f1f4;
+  --muted-foreground: #6e6e73;
 
   /* Status */
   --success: oklch(0.62 0.14 150);
-  --success-foreground: #FFFFFF;
+  --success-foreground: #ffffff;
   --success-muted: color-mix(in oklab, var(--success) 12%, var(--surface));
   --whatsapp: oklch(0.75 0.174 152); /* #25D366 */
   --whatsapp-foreground: oklch(0.16 0.02 152);
@@ -802,21 +813,21 @@
   --warning-foreground: oklch(0.22 0.02 60);
   --warning-muted: color-mix(in oklab, var(--warning) 15%, var(--surface));
   --danger: oklch(0.487 0.216 28); /* #BA181B */
-  --danger-foreground: #FFFFFF;
+  --danger-foreground: #ffffff;
   --danger-muted: color-mix(in oklab, var(--danger) 12%, var(--surface));
   --info: oklch(0.55 0.14 240);
-  --info-foreground: #FFFFFF;
+  --info-foreground: #ffffff;
   --info-muted: color-mix(in oklab, var(--info) 12%, var(--surface));
 
   --status-online: var(--success);
   --status-away: var(--warning);
   --status-busy: var(--danger);
-  --status-offline: #AEAEB2;
+  --status-offline: #aeaeb2;
 
   /* Borders + focus */
-  --border: #E5E5EA;
-  --border-strong: #D1D1D6;
-  --input: #E5E5EA;
+  --border: #e5e5ea;
+  --border-strong: #d1d1d6;
+  --input: #e5e5ea;
   --ring: var(--primary);
 
   /* Chart palette — CYLOO brand colors cascading */
@@ -824,19 +835,19 @@
   --chart-2: oklch(0.75 0.17 155); /* CYLOO green #3ECE90 */
   --chart-3: oklch(0.293 0.148 27); /* #128C7E */
   --chart-4: oklch(0.487 0.216 28); /* #BA181B */
-  --chart-5: #6E6E73;
-  --chart-6: #1D1D1F;
-  --chart-7: #D1D1D6;
+  --chart-5: #6e6e73;
+  --chart-6: #1d1d1f;
+  --chart-7: #d1d1d6;
   --chart-8: #000000;
 
   /* Sidebar — clean Apple-inspired light rail with subtle border & hover */
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1D1D1F;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1d1d1f;
   --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #F0F1F4;
-  --sidebar-accent-foreground: #1D1D1F;
-  --sidebar-border: #E5E5EA;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f1f4;
+  --sidebar-accent-foreground: #1d1d1f;
+  --sidebar-border: #e5e5ea;
   --sidebar-ring: var(--primary);
 
   /* Hero surface — dark gradient in both themes; foreground stays near-white for AA */
@@ -3032,7 +3043,7 @@
   --tw-ring-offset-shadow: 0 0 #0000 !important;
   --tw-ring-color: transparent !important;
   --tw-ring-offset-width: 0px !important;
-  --tw-ring-inset:                         !important;
+  --tw-ring-inset: /* empty: no inset keyword */ !important;
 }
 *:focus,
 *:focus-visible,

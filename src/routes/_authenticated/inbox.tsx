@@ -371,7 +371,8 @@ function InboxPage() {
 
   const handleListAction = (conversation: ConversationRow, action: ConversationListAction) => {
     const metadata = readMeta(conversation);
-    const reportError = (error: Error) => toast.error(error.message || "Could not update conversation");
+    const reportError = (error: Error) =>
+      toast.error(error.message || "Could not update conversation");
     switch (action) {
       case "open":
         handleSelectConversation(conversation);
@@ -398,15 +399,26 @@ function InboxPage() {
         const next = !isFlag(metadata, "pinned");
         toggleFlag.mutate(
           { id: conversation.id, metadata, key: "pinned", value: next },
-          { onSuccess: () => toast.success(next ? "Pinned to top" : "Unpinned"), onError: reportError },
+          {
+            onSuccess: () => toast.success(next ? "Pinned to top" : "Unpinned"),
+            onError: reportError,
+          },
         );
         break;
       }
       case "resolve": {
         const next = conversation.status !== "resolved";
         updateConv.mutate(
-          { id: conversation.id, patch: next ? { status: "resolved", resolved_at: new Date().toISOString() } : { status: "open", resolved_at: null } },
-          { onSuccess: () => toast.success(next ? "Marked as resolved" : "Reopened"), onError: reportError },
+          {
+            id: conversation.id,
+            patch: next
+              ? { status: "resolved", resolved_at: new Date().toISOString() }
+              : { status: "open", resolved_at: null },
+          },
+          {
+            onSuccess: () => toast.success(next ? "Marked as resolved" : "Reopened"),
+            onError: reportError,
+          },
         );
         break;
       }
@@ -414,7 +426,10 @@ function InboxPage() {
         const next = !conversation.is_archived;
         updateConv.mutate(
           { id: conversation.id, patch: { is_archived: next } },
-          { onSuccess: () => toast.success(next ? "Archived" : "Unarchived"), onError: reportError },
+          {
+            onSuccess: () => toast.success(next ? "Archived" : "Unarchived"),
+            onError: reportError,
+          },
         );
         break;
       }
@@ -608,8 +623,12 @@ function InboxPage() {
               className={cn(
                 "min-w-0 overflow-hidden border-r border-border shrink-0 w-full min-[992px]:w-[360px] min-[992px]:max-w-[360px] xl:w-[420px] xl:max-w-[420px] transition-[width,opacity]",
                 selected
-                  ? (listOpen ? "hidden min-[992px]:block" : "hidden")
-                  : (listOpen ? "block" : "block min-[992px]:hidden"),
+                  ? listOpen
+                    ? "hidden min-[992px]:block"
+                    : "hidden"
+                  : listOpen
+                    ? "block"
+                    : "block min-[992px]:hidden",
               )}
             >
               <ConversationList
@@ -639,7 +658,12 @@ function InboxPage() {
               />
             </div>
 
-            <div className={cn("flex-1 flex-col min-w-0 min-h-0", selected ? "flex" : "hidden min-[992px]:flex")}>
+            <div
+              className={cn(
+                "flex-1 flex-col min-w-0 min-h-0",
+                selected ? "flex" : "hidden min-[992px]:flex",
+              )}
+            >
               {selected ? (
                 <div className="@container flex flex-1 min-h-0 min-w-0 flex-col overflow-hidden">
                   <ConversationHeader
@@ -804,14 +828,24 @@ function InboxHeaderActions() {
         <RealtimeStatusIndicator />
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
               aria-label={soundOn ? "Mute inbox sounds" : "Turn on inbox sounds"}
               aria-pressed={soundOn}
-              onClick={() => { const next = !soundOn; setSoundOn(next); setInboundSoundEnabled(next); }}>
+              onClick={() => {
+                const next = !soundOn;
+                setSoundOn(next);
+                setInboundSoundEnabled(next);
+              }}
+            >
               {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             </Button>
           </TooltipTrigger>
-          <TooltipContent className="text-xs">{soundOn ? "Inbox sounds on" : "Inbox sounds off"}</TooltipContent>
+          <TooltipContent className="text-xs">
+            {soundOn ? "Inbox sounds on" : "Inbox sounds off"}
+          </TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>

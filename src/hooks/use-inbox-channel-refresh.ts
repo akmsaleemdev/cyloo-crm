@@ -36,7 +36,9 @@ function useSocialCommentSync(workspaceId: string | undefined, channels: string[
         void qc.invalidateQueries({ queryKey: ["conversations", workspaceId] });
         void qc.invalidateQueries({ queryKey: ["conversation-channel-unread", workspaceId] });
       })
-      .catch((err: unknown) => console.warn("[social-inbox] sync skipped:", (err as Error).message));
+      .catch((err: unknown) =>
+        console.warn("[social-inbox] sync skipped:", (err as Error).message),
+      );
     return () => {
       cancelled = true;
     };
@@ -85,7 +87,6 @@ export function useInboxChannelRefresh(
         }),
       ]);
     })();
-
 
     return () => {
       cancelled = true;

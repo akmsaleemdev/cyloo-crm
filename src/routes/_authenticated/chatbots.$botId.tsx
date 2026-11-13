@@ -701,7 +701,10 @@ function DeployTab({ bot }: { bot: Chatbot }) {
         {CHANNELS.map((c) => {
           const active = deps.data?.find((d) => d.channel === c.id && d.enabled);
           return (
-            <div key={c.id} className="rounded-control border border-border bg-surface p-4 space-y-3">
+            <div
+              key={c.id}
+              className="rounded-control border border-border bg-surface p-4 space-y-3"
+            >
               <div className="flex items-center justify-between">
                 <div className={`font-semibold ${c.color}`}>{c.label}</div>
                 {active && (

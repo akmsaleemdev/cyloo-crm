@@ -26,9 +26,10 @@ const REALTIME_RESET_EVENT = "cyloo:realtime-reset";
 export type OrgRealtimeResetReason = "pre-switch" | "post-switch" | "manual";
 
 /** Fire-and-forget teardown; safe to call in any phase of a switch. */
-export function resetRealtimeForOrgSwitch(
-  reason: OrgRealtimeResetReason = "manual",
-): { ok: boolean; error?: unknown } {
+export function resetRealtimeForOrgSwitch(reason: OrgRealtimeResetReason = "manual"): {
+  ok: boolean;
+  error?: unknown;
+} {
   try {
     // Tear down the centralized manager's registry first so ref-counted
     // subscribers don't attempt to reuse channels bound to the previous org.
@@ -36,16 +37,13 @@ export function resetRealtimeForOrgSwitch(
     // Then drop any legacy channels created directly on the browser client.
     void supabase.removeAllChannels?.();
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent(REALTIME_RESET_EVENT, { detail: { reason } }),
-      );
+      window.dispatchEvent(new CustomEvent(REALTIME_RESET_EVENT, { detail: { reason } }));
     }
     return { ok: true };
   } catch (error) {
     return { ok: false, error };
   }
 }
-
 
 /**
  * Returns a monotonically increasing counter that bumps every time an org

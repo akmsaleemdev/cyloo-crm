@@ -43,7 +43,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { getCrmSalesAnalytics } from "@/lib/bi/crm-sales.functions";
 import { useCurrencyFormatter } from "@/hooks/use-currency";
 
@@ -259,7 +265,11 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={funnelData} layout="vertical" margin={{ left: 10, right: 20 }}>
                     <CartesianGrid horizontal={false} strokeOpacity={0.2} />
-                    <XAxis type="number" tickFormatter={(v) => fmtCurrency(v as number)} tick={{ fontSize: 11 }} />
+                    <XAxis
+                      type="number"
+                      tickFormatter={(v) => fmtCurrency(v as number)}
+                      tick={{ fontSize: 11 }}
+                    />
                     <YAxis dataKey="stage" type="category" width={110} tick={{ fontSize: 11 }} />
                     <Tooltip formatter={(v: number) => fmtCurrency(v)} />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]}>
@@ -274,7 +284,11 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-4">
-            <KpiCard icon={Activity} label="Open deals" value={fmtNumber(data.pipeline.openDeals)} />
+            <KpiCard
+              icon={Activity}
+              label="Open deals"
+              value={fmtNumber(data.pipeline.openDeals)}
+            />
             <KpiCard
               icon={TrendingUp}
               label="Weighted pipeline"
@@ -298,7 +312,11 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
         {/* LEADS */}
         <TabsContent value="leads" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-4">
-            <KpiCard icon={Users} label="Total leads" value={fmtNumber(data.leadConversion.total)} />
+            <KpiCard
+              icon={Users}
+              label="Total leads"
+              value={fmtNumber(data.leadConversion.total)}
+            />
             <KpiCard
               icon={Target}
               label="Qualification rate"
@@ -333,7 +351,12 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
                       <YAxis tick={{ fontSize: 11 }} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="total" name="Leads" fill={CHART_COLORS[0]} radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="total"
+                        name="Leads"
+                        fill={CHART_COLORS[0]}
+                        radius={[4, 4, 0, 0]}
+                      />
                       <Bar
                         dataKey="converted"
                         name="Converted"
@@ -488,11 +511,7 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
               label="Paying customers"
               value={fmtNumber(data.ltv.totalCustomers)}
             />
-            <KpiCard
-              icon={TrendingUp}
-              label="Customer LTV"
-              value={fmtCurrency(data.ltv.avgLtv)}
-            />
+            <KpiCard icon={TrendingUp} label="Customer LTV" value={fmtCurrency(data.ltv.avgLtv)} />
             <KpiCard
               icon={Target}
               label="Est. CAC"
@@ -535,7 +554,10 @@ export function CrmSalesAnalytics({ workspaceId }: { workspaceId: string }) {
                   <BarChart data={data.dealSizeTrend}>
                     <CartesianGrid strokeOpacity={0.2} vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => fmtCurrency(v as number)} />
+                    <YAxis
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(v) => fmtCurrency(v as number)}
+                    />
                     <Tooltip formatter={(v: number) => fmtCurrency(v)} />
                     <Bar dataKey="avg" fill={CHART_COLORS[1]} radius={[4, 4, 0, 0]} />
                   </BarChart>

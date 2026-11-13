@@ -30,9 +30,21 @@ export const Route = createFileRoute("/api/public/hooks/run-scheduled-syncs")({
           for (const a of list) {
             if (!seenWs.has(a.workspace_id)) {
               seenWs.add(a.workspace_id);
-              await runSync({ workspaceId: a.workspace_id, kind: "webhook_drain", triggerSource: "cron" });
-              await runSync({ workspaceId: a.workspace_id, kind: "outbox_drain", triggerSource: "cron" });
-              await runSync({ workspaceId: a.workspace_id, kind: "scheduled_messages", triggerSource: "cron" });
+              await runSync({
+                workspaceId: a.workspace_id,
+                kind: "webhook_drain",
+                triggerSource: "cron",
+              });
+              await runSync({
+                workspaceId: a.workspace_id,
+                kind: "outbox_drain",
+                triggerSource: "cron",
+              });
+              await runSync({
+                workspaceId: a.workspace_id,
+                kind: "scheduled_messages",
+                triggerSource: "cron",
+              });
             }
           }
 

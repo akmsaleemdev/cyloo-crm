@@ -100,7 +100,10 @@ export function useUploadAvatar() {
         .createSignedUrl(path, 60 * 60 * 24 * 365);
       if (sErr) throw sErr;
       const url = signed.signedUrl;
-      const { error } = await sbAny(supabase).from("profiles").update({ avatar_url: url }).eq("id", u.user.id);
+      const { error } = await sbAny(supabase)
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("id", u.user.id);
       if (error) throw error;
       return url;
     },

@@ -28,38 +28,35 @@ export const HEADER_HEIGHT_VAR = "var(--height-header)" as const;
  * sized to `--height-header`, aligned, with an optional border on the
  * top/bottom edge and surface background.
  */
-export const headerSlotVariants = cva(
-  "flex items-center shrink-0 h-header min-h-15",
-  {
-    variants: {
-      border: {
-        none: "",
-        top: "border-t",
-        bottom: "border-b",
-      },
-      tone: {
-        /** Matches the sidebar surface (organization switcher, admin sidebar). */
-        sidebar: "border-sidebar-border",
-        /** Matches the main app surface (topbar, footer, inbox panels). */
-        surface: "border-border bg-surface/60",
-        /** Border only, transparent background (nested sub-headers). */
-        plain: "border-border",
-      },
-      padding: {
-        none: "",
-        sm: "px-3",
-        md: "px-4",
-        lg: "px-4 lg:px-6",
-        xl: "px-6",
-      },
+export const headerSlotVariants = cva("flex items-center shrink-0 h-header min-h-15", {
+  variants: {
+    border: {
+      none: "",
+      top: "border-t",
+      bottom: "border-b",
     },
-    defaultVariants: {
-      border: "bottom",
-      tone: "surface",
-      padding: "lg",
+    tone: {
+      /** Matches the sidebar surface (organization switcher, admin sidebar). */
+      sidebar: "border-sidebar-border",
+      /** Matches the main app surface (topbar, footer, inbox panels). */
+      surface: "border-border bg-surface/60",
+      /** Border only, transparent background (nested sub-headers). */
+      plain: "border-border",
     },
-  }
-);
+    padding: {
+      none: "",
+      sm: "px-3",
+      md: "px-4",
+      lg: "px-4 lg:px-6",
+      xl: "px-6",
+    },
+  },
+  defaultVariants: {
+    border: "bottom",
+    tone: "surface",
+    padding: "lg",
+  },
+});
 
 export type HeaderSlotVariants = VariantProps<typeof headerSlotVariants>;
 
@@ -69,9 +66,7 @@ export type HeaderSlotVariants = VariantProps<typeof headerSlotVariants>;
  * @example
  *   <div className={headerSlotClass({ border: "top", tone: "surface" })}></div>
  */
-export function headerSlotClass(
-  opts: HeaderSlotVariants & { className?: string } = {}
-) {
+export function headerSlotClass(opts: HeaderSlotVariants & { className?: string } = {}) {
   const { className, ...variants } = opts;
   return cn(headerSlotVariants(variants), className);
 }
@@ -89,18 +84,12 @@ type HeaderSlotProps = React.HTMLAttributes<HTMLElement> &
  *   <HeaderSlot as="header" border="bottom"></HeaderSlot>
  *   <HeaderSlot as="footer" border="top" role="contentinfo"></HeaderSlot>
  */
-export const HeaderSlot = React.forwardRef<HTMLElement, HeaderSlotProps>(
-  function HeaderSlot(
-    { as = "div", border, tone, padding, className, ...rest },
-    ref
-  ) {
-    const Comp = as as React.ElementType;
-    return (
-      <Comp
-        ref={ref}
-        className={headerSlotClass({ border, tone, padding, className })}
-        {...rest}
-      />
-    );
-  }
-);
+export const HeaderSlot = React.forwardRef<HTMLElement, HeaderSlotProps>(function HeaderSlot(
+  { as = "div", border, tone, padding, className, ...rest },
+  ref,
+) {
+  const Comp = as as React.ElementType;
+  return (
+    <Comp ref={ref} className={headerSlotClass({ border, tone, padding, className })} {...rest} />
+  );
+});

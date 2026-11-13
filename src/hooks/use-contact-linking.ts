@@ -10,14 +10,9 @@ import {
   type ContactSearchResult,
 } from "@/lib/inbox/contact-linking.functions";
 
-
 export type { ContactSearchResult };
 
-export function useContactSearch(
-  workspaceId: string | undefined,
-  q: string,
-  enabled = true,
-) {
+export function useContactSearch(workspaceId: string | undefined, q: string, enabled = true) {
   const fn = useServerFn(searchWorkspaceContacts);
   return useQuery({
     queryKey: ["inbox-contact-search", workspaceId, q],

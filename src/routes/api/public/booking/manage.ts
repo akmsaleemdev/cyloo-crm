@@ -44,22 +44,31 @@ export const Route = createFileRoute("/api/public/booking/manage")({
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
         const { data: appt } = await supabaseAdmin
           .from("booking_appointments")
-          .select("id, event_type_id, start_at, end_at, status, customer_name, customer_email, customer_timezone, location_kind, join_url, cancellation_reason")
+          .select(
+            "id, event_type_id, start_at, end_at, status, customer_name, customer_email, customer_timezone, location_kind, join_url, cancellation_reason",
+          )
           .eq("manage_token", token)
           .maybeSingle();
         if (!appt) return json({ error: "not_found" }, 404);
         const { data: eventType } = await supabaseAdmin
           .from("booking_event_types")
-          .select("id, name, slug, description, duration_minutes, location_kind, color, confirmation_message")
+          .select(
+            "id, name, slug, description, duration_minutes, location_kind, color, confirmation_message",
+          )
           .eq("id", (appt as { event_type_id: string }).event_type_id)
           .maybeSingle();
         return json({ appointment: appt, eventType });
       },
       POST: async ({ request }) => {
         let body: unknown;
-        try { body = await request.json(); } catch { return json({ error: "invalid_json" }, 400); }
+        try {
+          body = await request.json();
+        } catch {
+          return json({ error: "invalid_json" }, 400);
+        }
         const parsed = postSchema.safeParse(body);
-        if (!parsed.success) return json({ error: "invalid_body", issues: parsed.error.issues }, 400);
+        if (!parsed.success)
+          return json({ error: "invalid_body", issues: parsed.error.issues }, 400);
         const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
         const { data: appt } = await supabaseAdmin
           .from("booking_appointments")
@@ -67,7 +76,12 @@ export const Route = createFileRoute("/api/public/booking/manage")({
           .eq("manage_token", parsed.data.token)
           .maybeSingle();
         if (!appt) return json({ error: "not_found" }, 404);
-        const a = appt as { id: string; status: string; host_id: string | null; event_type_id: string };
+        const a = appt as {
+          id: string;
+          status: string;
+          host_id: string | null;
+          event_type_id: string;
+        };
         if (a.status === "cancelled") return json({ error: "already_cancelled" }, 409);
 
         if (parsed.data.action === "cancel") {
@@ -100,7 +114,8 @@ export const Route = createFileRoute("/api/public/booking/manage")({
           .update({ start_at, end_at, status: "confirmed" } as never)
           .eq("id", a.id);
         if (error) {
-          if (String(error.message).includes("booking_no_double_book")) return json({ error: "slot_taken" }, 409);
+          if (String(error.message).includes("booking_no_double_book"))
+            return json({ error: "slot_taken" }, 409);
           return json({ error: "update_failed", detail: error.message }, 500);
         }
         return json({ ok: true, start_at, end_at });

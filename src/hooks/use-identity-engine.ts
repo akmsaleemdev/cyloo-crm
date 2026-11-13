@@ -30,8 +30,7 @@ export function useSetIdentityConfig() {
   const { data: ws } = useCurrentWorkspace();
   const fn = useServerFn(setIdentityConfig);
   return useMutation({
-    mutationFn: (patch: Record<string, unknown>) =>
-      fn({ data: { workspaceId: ws!.id, ...patch } }),
+    mutationFn: (patch: Record<string, unknown>) => fn({ data: { workspaceId: ws!.id, ...patch } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["identity-config"] }),
   });
 }

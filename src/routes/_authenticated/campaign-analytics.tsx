@@ -455,9 +455,7 @@ function CampaignAnalyticsPage() {
                     <td className="px-5 py-3 text-right ">{fmtInt(c.replied)}</td>
                     <td className="px-5 py-3 text-right ">{fmtInt(c.clicked)}</td>
                     <td className="px-5 py-3 text-right ">{fmtInt(c.conversions)}</td>
-                    <td className="px-5 py-3 text-right  font-medium">
-                      {fmtCur(c.revenue)}
-                    </td>
+                    <td className="px-5 py-3 text-right  font-medium">{fmtCur(c.revenue)}</td>
                     <td className="px-5 py-3 text-right ">{fmtPct(c.engagement)}</td>
                   </tr>
                 ))}

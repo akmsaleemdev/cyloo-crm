@@ -91,20 +91,27 @@ const CHANNELS = ["web", "email", "whatsapp", "sms", "chat", "instagram", "faceb
 
 function priorityColor(p?: string | null) {
   switch (p) {
-    case "urgent": return "bg-red-500/10 text-red-600 border-red-500/20";
-    case "high": return "bg-orange-500/10 text-orange-600 border-orange-500/20";
-    case "low": return "bg-slate-500/10 text-slate-500 border-slate-500/20";
-    default: return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+    case "urgent":
+      return "bg-red-500/10 text-red-600 border-red-500/20";
+    case "high":
+      return "bg-orange-500/10 text-orange-600 border-orange-500/20";
+    case "low":
+      return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+    default:
+      return "bg-blue-500/10 text-blue-600 border-blue-500/20";
   }
 }
 
 function statusColor(s?: string | null) {
   switch (s) {
     case "resolved":
-    case "closed": return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+    case "closed":
+      return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
     case "on_hold":
-    case "pending": return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-    default: return "bg-primary/10 text-primary border-primary/20";
+    case "pending":
+      return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+    default:
+      return "bg-primary/10 text-primary border-primary/20";
   }
 }
 
@@ -126,10 +133,7 @@ function TicketManagementPage() {
   const [mergePrimary, setMergePrimary] = useState<string>("");
   const [tagsInput, setTagsInput] = useState("");
 
-  const queryKey = useMemo(
-    () => ["ticket-manage", filters, page] as const,
-    [filters, page],
-  );
+  const queryKey = useMemo(() => ["ticket-manage", filters, page] as const, [filters, page]);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey,
@@ -151,7 +155,9 @@ function TicketManagementPage() {
       }),
   });
 
-  const rows = (data?.rows ?? []) as Array<Record<string, string | number | boolean | null | string[]>>;
+  const rows = (data?.rows ?? []) as Array<
+    Record<string, string | number | boolean | null | string[]>
+  >;
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / 25));
 
@@ -241,7 +247,9 @@ function TicketManagementPage() {
           <Button variant="outline" size="sm" onClick={() => setShowFilters((v) => !v)}>
             <Filter className="h-4 w-4 mr-2" /> Filters
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-2">{activeFilterCount}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {activeFilterCount}
+              </Badge>
             )}
           </Button>
           <Button size="sm" onClick={() => setShowCreate(true)}>
@@ -272,12 +280,24 @@ function TicketManagementPage() {
       {showFilters && (
         <Card className="p-4 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FilterGroup title="Status" values={STATUSES} selected={filters.status}
-              onToggle={(v) => toggleMulti("status", v)} />
-            <FilterGroup title="Priority" values={PRIORITIES} selected={filters.priority}
-              onToggle={(v) => toggleMulti("priority", v)} />
-            <FilterGroup title="Channel" values={CHANNELS} selected={filters.channel}
-              onToggle={(v) => toggleMulti("channel", v)} />
+            <FilterGroup
+              title="Status"
+              values={STATUSES}
+              selected={filters.status}
+              onToggle={(v) => toggleMulti("status", v)}
+            />
+            <FilterGroup
+              title="Priority"
+              values={PRIORITIES}
+              selected={filters.priority}
+              onToggle={(v) => toggleMulti("priority", v)}
+            />
+            <FilterGroup
+              title="Channel"
+              values={CHANNELS}
+              selected={filters.channel}
+              onToggle={(v) => toggleMulti("channel", v)}
+            />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1">
@@ -287,7 +307,10 @@ function TicketManagementPage() {
                 value={tagsInput}
                 onChange={(e) => setTagsInput(e.target.value)}
                 onBlur={() => {
-                  const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
+                  const tags = tagsInput
+                    .split(",")
+                    .map((t) => t.trim())
+                    .filter(Boolean);
                   setFilters((f) => ({ ...f, tags_any: tags }));
                   setPage(1);
                 }}
@@ -296,24 +319,38 @@ function TicketManagementPage() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Created from</label>
-              <DatePicker value={fromDateString(filters.created_from ?? "")}
-                onChange={(d) => { setFilters((f) => ({ ...f, created_from: toDateString(d) })); setPage(1); }} />
+              <DatePicker
+                value={fromDateString(filters.created_from ?? "")}
+                onChange={(d) => {
+                  setFilters((f) => ({ ...f, created_from: toDateString(d) }));
+                  setPage(1);
+                }}
+              />
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium">Created to</label>
-              <DatePicker value={fromDateString(filters.created_to ?? "")}
-                onChange={(d) => { setFilters((f) => ({ ...f, created_to: toDateString(d) })); setPage(1); }} />
+              <DatePicker
+                value={fromDateString(filters.created_to ?? "")}
+                onChange={(d) => {
+                  setFilters((f) => ({ ...f, created_to: toDateString(d) }));
+                  setPage(1);
+                }}
+              />
             </div>
           </div>
           <div className="flex items-center gap-6">
             <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={filters.include_deleted}
-                onCheckedChange={(c) => setFilters((f) => ({ ...f, include_deleted: !!c }))} />
+              <Checkbox
+                checked={filters.include_deleted}
+                onCheckedChange={(c) => setFilters((f) => ({ ...f, include_deleted: !!c }))}
+              />
               Include deleted
             </label>
             <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={filters.parent_only}
-                onCheckedChange={(c) => setFilters((f) => ({ ...f, parent_only: !!c }))} />
+              <Checkbox
+                checked={filters.parent_only}
+                onCheckedChange={(c) => setFilters((f) => ({ ...f, parent_only: !!c }))}
+              />
               Parent tickets only
             </label>
           </div>
@@ -326,7 +363,9 @@ function TicketManagementPage() {
           <span className="text-sm font-medium">{selected.size} selected</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">Status <ChevronDown className="h-3.5 w-3.5 ml-1" /></Button>
+              <Button variant="outline" size="sm">
+                Status <ChevronDown className="h-3.5 w-3.5 ml-1" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {STATUSES.map((s) => (
@@ -338,7 +377,9 @@ function TicketManagementPage() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">Priority <ChevronDown className="h-3.5 w-3.5 ml-1" /></Button>
+              <Button variant="outline" size="sm">
+                Priority <ChevronDown className="h-3.5 w-3.5 ml-1" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {PRIORITIES.map((p) => (
@@ -349,17 +390,23 @@ function TicketManagementPage() {
             </DropdownMenuContent>
           </DropdownMenu>
           <TagBulkAction onApply={(tags) => runBulk.mutate({ add_tags: tags })} />
-          <Button variant="outline" size="sm" onClick={() => {
-            if (selected.size < 2) return toast.error("Select ≥ 2 tickets to merge");
-            setMergePrimary(Array.from(selected)[0]);
-            setShowMerge(true);
-          }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (selected.size < 2) return toast.error("Select ≥ 2 tickets to merge");
+              setMergePrimary(Array.from(selected)[0]);
+              setShowMerge(true);
+            }}
+          >
             <Merge className="h-4 w-4 " /> Merge
           </Button>
           <Button variant="destructive" size="sm" onClick={() => runDelete.mutate()}>
             <Trash2 className="h-4 w-4 " /> Delete
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Clear</Button>
+          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+            Clear
+          </Button>
         </Card>
       )}
 
@@ -382,10 +429,18 @@ function TicketManagementPage() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">Loading</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                  Loading
+                </TableCell>
+              </TableRow>
             )}
             {!isLoading && rows.length === 0 && (
-              <TableRow><TableCell colSpan={8} className="text-center py-10 text-muted-foreground">No tickets match your filters.</TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
+                  No tickets match your filters.
+                </TableCell>
+              </TableRow>
             )}
             {rows.map((r) => {
               const id = String(r.id);
@@ -393,17 +448,27 @@ function TicketManagementPage() {
               const tags = Array.isArray(r.tags) ? (r.tags as string[]) : [];
               return (
                 <TableRow key={id} data-state={selected.has(id) ? "selected" : undefined}>
-                  <TableCell><Checkbox checked={selected.has(id)} onCheckedChange={() => toggleOne(id)} /></TableCell>
+                  <TableCell>
+                    <Checkbox checked={selected.has(id)} onCheckedChange={() => toggleOne(id)} />
+                  </TableCell>
                   <TableCell className="font-mono text-xs">{num}</TableCell>
                   <TableCell>
-                    <Link to="/helpdesk/$id" params={{ id }} className="hover:underline font-medium">
+                    <Link
+                      to="/helpdesk/$id"
+                      params={{ id }}
+                      className="hover:underline font-medium"
+                    >
                       {String(r.subject ?? "(no subject)")}
                     </Link>
                     {r.parent_ticket_id && (
-                      <Badge variant="outline" className="ml-2 text-[11px]">child</Badge>
+                      <Badge variant="outline" className="ml-2 text-[11px]">
+                        child
+                      </Badge>
                     )}
                     {r.merged_into_id && (
-                      <Badge variant="outline" className="ml-2 text-[11px]">merged</Badge>
+                      <Badge variant="outline" className="ml-2 text-[11px]">
+                        merged
+                      </Badge>
                     )}
                   </TableCell>
                   <TableCell>
@@ -416,17 +481,27 @@ function TicketManagementPage() {
                       {String(r.priority ?? "")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{String(r.channel ?? "")}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">
+                    {String(r.channel ?? "")}
+                  </TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap">
                       {tags.slice(0, 3).map((t) => (
-                        <Badge key={t} variant="secondary" className="text-[11px]">{t}</Badge>
+                        <Badge key={t} variant="secondary" className="text-[11px]">
+                          {t}
+                        </Badge>
                       ))}
-                      {tags.length > 3 && <span className="text-xs text-muted-foreground">+{tags.length - 3}</span>}
+                      {tags.length > 3 && (
+                        <span className="text-xs text-muted-foreground">+{tags.length - 3}</span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => navigate({ to: "/helpdesk/$id", params: { id } })}>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => navigate({ to: "/helpdesk/$id", params: { id } })}
+                    >
                       <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -443,8 +518,22 @@ function TicketManagementPage() {
           {total} total · page {page}/{totalPages} {isFetching && ""}
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</Button>
-          <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            Prev
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            Next
+          </Button>
         </div>
       </div>
 
@@ -454,7 +543,9 @@ function TicketManagementPage() {
         onCreate={async (payload) => {
           try {
             const r = await createFn({ data: payload });
-            toast.success(`Ticket #${(r as { ticket_number?: number })?.ticket_number ?? ""} created`);
+            toast.success(
+              `Ticket #${(r as { ticket_number?: number })?.ticket_number ?? ""} created`,
+            );
             setShowCreate(false);
             qc.invalidateQueries({ queryKey: ["ticket-manage"] });
           } catch (e) {
@@ -470,9 +561,14 @@ function TicketManagementPage() {
             <DialogTitle>Merge {selected.size} tickets</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 text-sm">
-            <p className="text-muted-foreground">Choose the ticket that should remain as primary. Others will be closed and their messages moved.</p>
+            <p className="text-muted-foreground">
+              Choose the ticket that should remain as primary. Others will be closed and their
+              messages moved.
+            </p>
             <Select value={mergePrimary} onValueChange={setMergePrimary}>
-              <SelectTrigger className="h-9"><SelectValue placeholder="Select primary ticket" /></SelectTrigger>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Select primary ticket" />
+              </SelectTrigger>
               <SelectContent>
                 {Array.from(selected).map((id) => {
                   const r = rows.find((x) => String(x.id) === id);
@@ -486,8 +582,13 @@ function TicketManagementPage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMerge(false)}>Cancel</Button>
-            <Button onClick={() => runMerge.mutate()} disabled={!mergePrimary || runMerge.isPending}>
+            <Button variant="outline" onClick={() => setShowMerge(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => runMerge.mutate()}
+              disabled={!mergePrimary || runMerge.isPending}
+            >
               {runMerge.isPending ? "Merging" : "Merge tickets"}
             </Button>
           </DialogFooter>
@@ -498,8 +599,16 @@ function TicketManagementPage() {
 }
 
 function FilterGroup({
-  title, values, selected, onToggle,
-}: { title: string; values: string[]; selected: string[]; onToggle: (v: string) => void }) {
+  title,
+  values,
+  selected,
+  onToggle,
+}: {
+  title: string;
+  values: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
   return (
     <div className="space-y-1">
       <label className="text-xs font-medium">{title}</label>
@@ -512,7 +621,9 @@ function FilterGroup({
               type="button"
               onClick={() => onToggle(v)}
               className={`text-xs px-2.5 py-1 rounded-control border transition-colors ${
-                on ? "bg-primary text-primary-foreground border-primary" : "bg-background hover:bg-muted"
+                on
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background hover:bg-muted"
               }`}
             >
               {v.replace("_", " ")}
@@ -530,20 +641,38 @@ function TagBulkAction({ onApply }: { onApply: (tags: string[]) => void }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm"><TagIcon className="h-4 w-4 " /> Tag</Button>
+        <Button variant="outline" size="sm">
+          <TagIcon className="h-4 w-4 " /> Tag
+        </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogHeader><DialogTitle>Add tags</DialogTitle></DialogHeader>
-        <Input placeholder="tag1, tag2" value={val} onChange={(e) => setVal(e.target.value)} className="h-9" />
+        <DialogHeader>
+          <DialogTitle>Add tags</DialogTitle>
+        </DialogHeader>
+        <Input
+          placeholder="tag1, tag2"
+          value={val}
+          onChange={(e) => setVal(e.target.value)}
+          className="h-9"
+        />
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={() => {
-            const tags = val.split(",").map((t) => t.trim()).filter(Boolean);
-            if (!tags.length) return;
-            onApply(tags);
-            setOpen(false);
-            setVal("");
-          }}>Apply</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              const tags = val
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean);
+              if (!tags.length) return;
+              onApply(tags);
+              setOpen(false);
+              setVal("");
+            }}
+          >
+            Apply
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -551,13 +680,20 @@ function TagBulkAction({ onApply }: { onApply: (tags: string[]) => void }) {
 }
 
 function CreateTicketDialog({
-  open, onOpenChange, onCreate,
+  open,
+  onOpenChange,
+  onCreate,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCreate: (p: {
-    subject: string; description?: string; priority: string; status: string;
-    channel: string; ticket_type: string; tags: string[];
+    subject: string;
+    description?: string;
+    priority: string;
+    status: string;
+    channel: string;
+    ticket_type: string;
+    tags: string[];
   }) => void | Promise<void>;
 }) {
   const [subject, setSubject] = useState("");
@@ -570,33 +706,54 @@ function CreateTicketDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
-        <DialogHeader><DialogTitle>New ticket</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle>New ticket</DialogTitle>
+        </DialogHeader>
         <div className="space-y-3">
           <div>
             <label className="text-xs font-medium">Subject *</label>
-            <Input value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={300} className="h-9" />
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              maxLength={300}
+              className="h-9"
+            />
           </div>
           <div>
             <label className="text-xs font-medium">Description</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+            />
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="text-xs font-medium">Priority</label>
               <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {PRIORITIES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-xs font-medium">Type</label>
               <Select value={ticketType} onValueChange={setTicketType}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {["question", "incident", "problem", "task"].map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -604,9 +761,15 @@ function CreateTicketDialog({
             <div>
               <label className="text-xs font-medium">Channel</label>
               <Select value={channel} onValueChange={setChannel}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {CHANNELS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  {CHANNELS.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -617,7 +780,9 @@ function CreateTicketDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button
             disabled={!subject.trim()}
             onClick={() =>
@@ -628,7 +793,10 @@ function CreateTicketDialog({
                 status: "open",
                 channel,
                 ticket_type: ticketType,
-                tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+                tags: tags
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean),
               })
             }
           >

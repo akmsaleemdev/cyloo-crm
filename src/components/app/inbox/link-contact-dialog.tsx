@@ -53,7 +53,8 @@ export function LinkContactDialog({ open, onOpenChange, conversation, onLinked }
   const createFn = useCreateContactAndLink(workspaceId);
 
   const channelPhone = useMemo(() => {
-    const c = conversation?.contact as { phone?: string | null; whatsapp?: string | null } | null | undefined;
+    const c = conversation?.contact as
+      { phone?: string | null; whatsapp?: string | null } | null | undefined;
     return c?.phone ?? c?.whatsapp ?? null;
   }, [conversation]);
 
@@ -128,8 +129,8 @@ export function LinkContactDialog({ open, onOpenChange, conversation, onLinked }
         <DialogHeader>
           <DialogTitle>Link conversation to a contact</DialogTitle>
           <DialogDescription>
-            Search the CRM directory or create a new contact. The current
-            conversation will be re-linked immediately.
+            Search the CRM directory or create a new contact. The current conversation will be
+            re-linked immediately.
           </DialogDescription>
         </DialogHeader>
 
@@ -216,23 +217,43 @@ export function LinkContactDialog({ open, onOpenChange, conversation, onLinked }
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label htmlFor="lc-first">First name</Label>
-                <Input id="lc-first" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                <Input
+                  id="lc-first"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="lc-last">Last name</Label>
-                <Input id="lc-last" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                <Input
+                  id="lc-last"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
               </div>
             </div>
             <div className="space-y-1">
               <Label htmlFor="lc-phone">Phone / WhatsApp</Label>
-              <Input id="lc-phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 123 4567" />
+              <Input
+                id="lc-phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 555 123 4567"
+              />
             </div>
             <div className="space-y-1">
               <Label htmlFor="lc-email">Email</Label>
-              <Input id="lc-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <Input
+                id="lc-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
               <Button onClick={handleCreate} disabled={createFn.isPending}>
                 {createFn.isPending && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
                 Create and link

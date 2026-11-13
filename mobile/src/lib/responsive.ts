@@ -2,15 +2,15 @@
  * Responsive hook — phone / tablet breakpoints.
  * Tablet = shortest side >= 600dp (matches Android + iPad heuristics).
  */
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions } from "react-native";
 
-export type Breakpoint = 'phone' | 'tablet';
+export type Breakpoint = "phone" | "tablet";
 
 export function useResponsive() {
   const { width, height } = useWindowDimensions();
   const shortest = Math.min(width, height);
-  const bp: Breakpoint = shortest >= 600 ? 'tablet' : 'phone';
-  const isTablet = bp === 'tablet';
+  const bp: Breakpoint = shortest >= 600 ? "tablet" : "phone";
+  const isTablet = bp === "tablet";
   const isLandscape = width > height;
   const columns = isTablet ? (isLandscape ? 3 : 2) : 1;
   return { width, height, bp, isTablet, isLandscape, columns };

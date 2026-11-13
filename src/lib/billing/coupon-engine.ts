@@ -26,21 +26,25 @@ export interface CouponApplyContext {
   billing_cycle_index?: number; // 0 = first invoice
 }
 
-export type CouponValidation =
-  | { ok: true; coupon: CouponRow }
-  | { ok: false; reason: string };
+export type CouponValidation = { ok: true; coupon: CouponRow } | { ok: false; reason: string };
 
-export function validateCoupon(coupon: CouponRow | null, ctx: CouponApplyContext): CouponValidation {
+export function validateCoupon(
+  coupon: CouponRow | null,
+  ctx: CouponApplyContext,
+): CouponValidation {
   if (!coupon) return { ok: false, reason: "not_found" };
   if (!coupon.is_active) return { ok: false, reason: "inactive" };
-  if (coupon.redeem_by && new Date(coupon.redeem_by) < new Date()) return { ok: false, reason: "expired" };
+  if (coupon.redeem_by && new Date(coupon.redeem_by) < new Date())
+    return { ok: false, reason: "expired" };
   if (coupon.max_redemptions != null && coupon.times_redeemed >= coupon.max_redemptions)
     return { ok: false, reason: "exhausted" };
   if (coupon.applies_to_plan_ids.length && !coupon.applies_to_plan_ids.includes(ctx.plan_id))
     return { ok: false, reason: "plan_mismatch" };
-  if (coupon.currency && coupon.currency !== ctx.currency) return { ok: false, reason: "currency_mismatch" };
+  if (coupon.currency && coupon.currency !== ctx.currency)
+    return { ok: false, reason: "currency_mismatch" };
   if (coupon.duration === "repeating" && coupon.duration_in_months != null) {
-    if ((ctx.billing_cycle_index ?? 0) >= coupon.duration_in_months) return { ok: false, reason: "duration_over" };
+    if ((ctx.billing_cycle_index ?? 0) >= coupon.duration_in_months)
+      return { ok: false, reason: "duration_over" };
   }
   return { ok: true, coupon };
 }

@@ -2,10 +2,18 @@ import { Brand } from "@/components/brand";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
-import { startGoogleWorkspaceOAuth, listGoogleWorkspaceConnections } from "@/lib/integrations/google-workspace.functions";
+import {
+  startGoogleWorkspaceOAuth,
+  listGoogleWorkspaceConnections,
+} from "@/lib/integrations/google-workspace.functions";
 import { connectGoogleWorkspacePopup } from "@/lib/integrations/google-oauth-popup";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,27 +21,43 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  CheckCircle2, Loader2, Copy, ExternalLink, ShieldCheck, KeyRound, Webhook, Zap, Plug, ArrowRight, Clock,
+  CheckCircle2,
+  Loader2,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  KeyRound,
+  Webhook,
+  Zap,
+  Plug,
+  ArrowRight,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { IntegrationProvider } from "@/lib/integrations/core";
 import { ProviderAvatar } from "./provider-avatar";
 import { describeScope } from "./scope-description";
-import {
-  useInstalledIntegrations, type ConnectionMeta,
-} from "@/lib/integrations/installed-store";
+import { useInstalledIntegrations, type ConnectionMeta } from "@/lib/integrations/installed-store";
 
 type Mode = "connect" | "reconnect";
 
 export function ConnectIntegrationDialog({
-  provider, open, onOpenChange, mode = "connect", onSuccess,
+  provider,
+  open,
+  onOpenChange,
+  mode = "connect",
+  onSuccess,
 }: {
   provider: IntegrationProvider | null;
   open: boolean;
@@ -92,9 +116,14 @@ export function ConnectIntegrationDialog({
               <ProviderAvatar id={provider.id} name={provider.name} size="sm" />
               <div className="min-w-0">
                 <DialogTitle>{provider.name}</DialogTitle>
-                <DialogDescription asChild><div>
-                  {provider.vendor} · <Badge variant="secondary" className="text-[11px]">{provider.authType.replace("_", " ")}</Badge>
-                </div></DialogDescription>
+                <DialogDescription asChild>
+                  <div>
+                    {provider.vendor} ·{" "}
+                    <Badge variant="secondary" className="text-[11px]">
+                      {provider.authType.replace("_", " ")}
+                    </Badge>
+                  </div>
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -104,13 +133,15 @@ export function ConnectIntegrationDialog({
             </div>
             <p className="text-sm font-medium">Not available yet</p>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              {provider.name} needs a real OAuth connection to {provider.vendor}, and that isn't wired up on
-              this deployment yet. No account has been connected — this integration cannot be turned on until
-              a real authorization flow is configured.
+              {provider.name} needs a real OAuth connection to {provider.vendor}, and that isn't
+              wired up on this deployment yet. No account has been connected — this integration
+              cannot be turned on until a real authorization flow is configured.
             </p>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -119,11 +150,16 @@ export function ConnectIntegrationDialog({
 
   const steps: string[] = (() => {
     switch (provider.authType) {
-      case "oauth2": return ["Review", "Permissions", "Authorize", "Done"];
-      case "api_key": return ["Review", "Credentials", "Verify", "Done"];
-      case "webhook_url": return ["Review", "Endpoint", "Verify", "Done"];
-      case "signed_request": return ["Review", "Signing", "Verify", "Done"];
-      case "none": return ["Review", "Connect", "Done"];
+      case "oauth2":
+        return ["Review", "Permissions", "Authorize", "Done"];
+      case "api_key":
+        return ["Review", "Credentials", "Verify", "Done"];
+      case "webhook_url":
+        return ["Review", "Endpoint", "Verify", "Done"];
+      case "signed_request":
+        return ["Review", "Signing", "Verify", "Done"];
+      case "none":
+        return ["Review", "Connect", "Done"];
     }
   })();
 
@@ -160,7 +196,10 @@ export function ConnectIntegrationDialog({
           await connectGoogleWorkspacePopup((targetOrigin) =>
             startGWOAuth({ data: { targetOrigin, workspaceId: authorizedWorkspaceId } }),
           );
-          if (workspaceRef.current !== authorizedWorkspaceId) throw new Error("Workspace changed during sign-in. Connect again in the selected workspace.");
+          if (workspaceRef.current !== authorizedWorkspaceId)
+            throw new Error(
+              "Workspace changed during sign-in. Connect again in the selected workspace.",
+            );
           const saved = await listGWConn({ data: { workspaceId: authorizedWorkspaceId } });
           if (workspaceRef.current !== authorizedWorkspaceId) return;
           const connected = saved.find((row) => row.status === "active");
@@ -170,9 +209,7 @@ export function ConnectIntegrationDialog({
           setStep(step + 1);
           return;
         }
-        throw new Error(
-          `${provider.name} has no real OAuth flow wired up yet.`,
-        );
+        throw new Error(`${provider.name} has no real OAuth flow wired up yet.`);
       }
       await new Promise((r) => setTimeout(r, 700));
       setStep(step + 1);
@@ -187,9 +224,7 @@ export function ConnectIntegrationDialog({
     const meta: ConnectionMeta = {
       accountLabel: account || (provider.authType === "api_key" ? "API key" : provider.name),
       config: Object.fromEntries(
-        provider.configSchema
-          .filter((f) => !f.secret)
-          .map((f) => [f.key, values[f.key]]),
+        provider.configSchema.filter((f) => !f.secret).map((f) => [f.key, values[f.key]]),
       ),
       callbackUrl: provider.authType === "signed_request" ? callbackUrl : undefined,
     };
@@ -225,8 +260,7 @@ export function ConnectIntegrationDialog({
     }
   };
 
-  const setField = (key: string, v: string | boolean) =>
-    setValues((s) => ({ ...s, [key]: v }));
+  const setField = (key: string, v: string | boolean) => setValues((s) => ({ ...s, [key]: v }));
 
   return (
     <Dialog open={open} onOpenChange={(o) => (!busy || !o) && onOpenChange(o)}>
@@ -238,9 +272,14 @@ export function ConnectIntegrationDialog({
               <DialogTitle>
                 {mode === "reconnect" ? "Reconnect" : "Connect"} {provider.name}
               </DialogTitle>
-              <DialogDescription asChild><div>
-                {provider.vendor} · <Badge variant="secondary" className="text-[11px]">{provider.authType.replace("_", " ")}</Badge>
-              </div></DialogDescription>
+              <DialogDescription asChild>
+                <div>
+                  {provider.vendor} ·{" "}
+                  <Badge variant="secondary" className="text-[11px]">
+                    {provider.authType.replace("_", " ")}
+                  </Badge>
+                </div>
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -258,7 +297,12 @@ export function ConnectIntegrationDialog({
               >
                 {i < step ? <CheckCircle2 className="h-3 w-3" /> : i + 1}
               </div>
-              <span className={cn("text-[11px] truncate", i === step ? "font-medium" : "text-muted-foreground")}>
+              <span
+                className={cn(
+                  "text-[11px] truncate",
+                  i === step ? "font-medium" : "text-muted-foreground",
+                )}
+              >
                 {s}
               </span>
               {i < steps.length - 1 && <div className="flex-1 h-px bg-border" />}
@@ -273,12 +317,22 @@ export function ConnectIntegrationDialog({
               <div className="rounded-control border p-3 text-xs space-y-1.5">
                 <Row label="Category" value={provider.category} />
                 <Row label="Version" value={`v${provider.version}`} />
-                <Row label="Actions" value={String(provider.capabilities.filter((c) => c.kind !== "trigger").length)} />
-                <Row label="Triggers" value={String(provider.capabilities.filter((c) => c.kind === "trigger").length)} />
+                <Row
+                  label="Actions"
+                  value={String(provider.capabilities.filter((c) => c.kind !== "trigger").length)}
+                />
+                <Row
+                  label="Triggers"
+                  value={String(provider.capabilities.filter((c) => c.kind === "trigger").length)}
+                />
               </div>
               {provider.docsUrl && (
-                <a href={provider.docsUrl} target="_blank" rel="noreferrer"
-                   className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                <a
+                  href={provider.docsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
                   <ExternalLink className="h-3 w-3" /> Setup documentation
                 </a>
               )}
@@ -298,16 +352,24 @@ export function ConnectIntegrationDialog({
                       <CheckCircle2 className="h-3 w-3 mt-0.5 text-primary shrink-0" />
                       <div className="min-w-0">
                         <div>{describeScope(s)}</div>
-                        <div className="font-mono text-[11px] text-muted-foreground truncate">{s}</div>
+                        <div className="font-mono text-[11px] text-muted-foreground truncate">
+                          {s}
+                        </div>
                       </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-muted-foreground">Provider will use its default permission set.</p>
+                <p className="text-xs text-muted-foreground">
+                  Provider will use its default permission set.
+                </p>
               )}
               <label className="flex items-start gap-2 pt-2 border-t cursor-pointer">
-                <Checkbox checked={consent} onCheckedChange={(v) => setConsent(v === true)} className="mt-0.5" />
+                <Checkbox
+                  checked={consent}
+                  onCheckedChange={(v) => setConsent(v === true)}
+                  className="mt-0.5"
+                />
                 <span className="text-xs">
                   I authorize <Brand /> to access {provider.name} on behalf of my workspace.
                 </span>
@@ -322,8 +384,12 @@ export function ConnectIntegrationDialog({
                   <div className="h-12 w-12 mx-auto rounded-full bg-primary/10 text-primary grid place-items-center">
                     <Plug className="h-5 w-5" />
                   </div>
-                  <p className="text-sm">You'll be redirected to {provider.vendor} to authorize access.</p>
-                  <p className="text-xs text-muted-foreground">A popup will open. Approve access, then return here.</p>
+                  <p className="text-sm">
+                    You'll be redirected to {provider.vendor} to authorize access.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    A popup will open. Approve access, then return here.
+                  </p>
                 </>
               )}
               {oauthPhase === "redirecting" && (
@@ -343,7 +409,13 @@ export function ConnectIntegrationDialog({
               </div>
               {provider.configSchema.length === 0 && (
                 <Field
-                  field={{ key: "api_key", label: "API key", type: "password", required: true, placeholder: "sk_live_..." }}
+                  field={{
+                    key: "api_key",
+                    label: "API key",
+                    type: "password",
+                    required: true,
+                    placeholder: "sk_live_...",
+                  }}
                   value={values["api_key"] as string | undefined}
                   onChange={(v) => setField("api_key", v)}
                 />
@@ -396,14 +468,19 @@ export function ConnectIntegrationDialog({
               </div>
               <Alert>
                 <AlertDescription className="text-xs">
-                  {provider.vendor} will send signed requests here. <Brand /> verifies each payload's HMAC signature.
+                  {provider.vendor} will send signed requests here. <Brand /> verifies each
+                  payload's HMAC signature.
                 </AlertDescription>
               </Alert>
               <div>
                 <Label className="text-xs">Callback URL</Label>
                 <div className="rounded-control border p-2 flex items-center gap-2 bg-muted/40">
                   <code className="text-xs flex-1 truncate">{callbackUrl}</code>
-                  <Button size="sm" variant="ghost" onClick={() => copy(callbackUrl, "Callback URL")}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => copy(callbackUrl, "Callback URL")}
+                  >
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -411,7 +488,9 @@ export function ConnectIntegrationDialog({
               <div>
                 <Label className="text-xs">Signing secret</Label>
                 <div className="rounded-control border p-2 flex items-center gap-2 bg-muted/40">
-                  <code className="text-xs flex-1 truncate">whsec_{provider.id}_{cryptoRandom()}</code>
+                  <code className="text-xs flex-1 truncate">
+                    whsec_{provider.id}_{cryptoRandom()}
+                  </code>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -463,7 +542,12 @@ export function ConnectIntegrationDialog({
                 <CheckCircle2 className="h-6 w-6" />
               </div>
               <p className="text-sm font-medium">
-                {provider.name} {mode === "reconnect" ? "reconnected" : provider.authType === "oauth2" ? "connected" : "saved"}
+                {provider.name}{" "}
+                {mode === "reconnect"
+                  ? "reconnected"
+                  : provider.authType === "oauth2"
+                    ? "connected"
+                    : "saved"}
               </p>
               {account && <p className="text-xs text-muted-foreground">{account}</p>}
             </div>
@@ -494,7 +578,11 @@ export function ConnectIntegrationDialog({
           )}
           {steps[step] === "Authorize" && oauthPhase !== "authorized" && (
             <Button onClick={runAuthorize} disabled={busy}>
-              {busy ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Plug className="h-3.5 w-3.5 mr-1.5" />}
+              {busy ? (
+                <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Plug className="h-3.5 w-3.5 mr-1.5" />
+              )}
               Authorize with {provider.vendor}
             </Button>
           )}
@@ -503,12 +591,11 @@ export function ConnectIntegrationDialog({
               Continue <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
             </Button>
           )}
-          {isLast && (
-            <Button onClick={finalize}>
-              Finish
-            </Button>
-          )}
-          {steps[step + 1] === "Done" && steps[step] !== "Verify" && steps[step] !== "Authorize" && null}
+          {isLast && <Button onClick={finalize}>Finish</Button>}
+          {steps[step + 1] === "Done" &&
+            steps[step] !== "Verify" &&
+            steps[step] !== "Authorize" &&
+            null}
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -525,11 +612,18 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 function Field({
-  field, value, onChange,
+  field,
+  value,
+  onChange,
 }: {
   field: {
-    key: string; label: string; type: string; required?: boolean;
-    placeholder?: string; helpText?: string; options?: readonly string[];
+    key: string;
+    label: string;
+    type: string;
+    required?: boolean;
+    placeholder?: string;
+    helpText?: string;
+    options?: readonly string[];
   };
   value: string | boolean | undefined;
   onChange: (v: string | boolean) => void;
@@ -538,16 +632,28 @@ function Field({
   return (
     <div className="space-y-1">
       <Label htmlFor={id} className="text-xs">
-        {field.label}{field.required && <span className="text-destructive"> *</span>}
+        {field.label}
+        {field.required && <span className="text-destructive"> *</span>}
       </Label>
       {field.type === "textarea" ? (
-        <Textarea id={id} placeholder={field.placeholder}
-          value={(value as string) ?? ""} onChange={(e) => onChange(e.target.value)} rows={3} />
+        <Textarea
+          id={id}
+          placeholder={field.placeholder}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          rows={3}
+        />
       ) : field.type === "select" ? (
         <Select value={(value as string) ?? ""} onValueChange={onChange}>
-          <SelectTrigger id={id} className="h-9"><SelectValue placeholder={field.placeholder} /></SelectTrigger>
+          <SelectTrigger id={id} className="h-9">
+            <SelectValue placeholder={field.placeholder} />
+          </SelectTrigger>
           <SelectContent>
-            {field.options?.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+            {field.options?.map((o) => (
+              <SelectItem key={o} value={o}>
+                {o}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       ) : field.type === "boolean" ? (
@@ -575,5 +681,7 @@ function Field({
 function cryptoRandom() {
   const bytes = new Uint8Array(16);
   if (typeof window !== "undefined" && window.crypto) window.crypto.getRandomValues(bytes);
-  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }

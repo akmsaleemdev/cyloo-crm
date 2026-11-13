@@ -133,16 +133,20 @@ export const deleteMeetingAccount = createServerFn({ method: "POST" })
 export const listMeetingHistory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      workspaceId: z.string().uuid(),
-      appointmentId: z.string().uuid().optional(),
-      limit: z.number().int().min(1).max(200).default(50),
-    }).parse(v),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        appointmentId: z.string().uuid().optional(),
+        limit: z.number().int().min(1).max(200).default(50),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     let q = sbAny(context.supabase)
       .from("meeting_history")
-      .select("id, appointment_id, provider, action, join_url, external_meeting_id, error, created_at")
+      .select(
+        "id, appointment_id, provider, action, join_url, external_meeting_id, error, created_at",
+      )
       .eq("workspace_id", data.workspaceId)
       .order("created_at", { ascending: false })
       .limit(data.limit);
@@ -160,7 +164,9 @@ export const listMeetingAttendance = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await sbAny(context.supabase)
       .from("meeting_attendance")
-      .select("id, participant_name, participant_email, participant_role, joined_at, left_at, duration_seconds, provider")
+      .select(
+        "id, participant_name, participant_email, participant_role, joined_at, left_at, duration_seconds, provider",
+      )
       .eq("workspace_id", data.workspaceId)
       .eq("appointment_id", data.appointmentId)
       .order("joined_at", { ascending: true });
@@ -171,21 +177,23 @@ export const listMeetingAttendance = createServerFn({ method: "POST" })
 export const recordAttendance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
-    z.object({
-      workspaceId: z.string().uuid(),
-      appointmentId: z.string().uuid(),
-      participants: z.array(
-        z.object({
-          name: z.string().nullable(),
-          email: z.string().nullable(),
-          role: z.enum(["host", "co_host", "guest"]).default("guest"),
-          joined_at: z.string().nullable(),
-          left_at: z.string().nullable(),
-          duration_seconds: z.number().nullable(),
-          provider: z.string().nullable(),
-        }),
-      ),
-    }).parse(v),
+    z
+      .object({
+        workspaceId: z.string().uuid(),
+        appointmentId: z.string().uuid(),
+        participants: z.array(
+          z.object({
+            name: z.string().nullable(),
+            email: z.string().nullable(),
+            role: z.enum(["host", "co_host", "guest"]).default("guest"),
+            joined_at: z.string().nullable(),
+            left_at: z.string().nullable(),
+            duration_seconds: z.number().nullable(),
+            provider: z.string().nullable(),
+          }),
+        ),
+      })
+      .parse(v),
   )
   .handler(async ({ data, context }) => {
     const rows = data.participants.map((p) => ({
@@ -202,13 +210,15 @@ export const recordAttendance = createServerFn({ method: "POST" })
     if (!rows.length) return { inserted: 0 };
     const { error } = await sbAny(context.supabase).from("meeting_attendance").insert(rows);
     if (error) throw error;
-    await sbAny(context.supabase).from("meeting_history").insert({
-      workspace_id: data.workspaceId,
-      appointment_id: data.appointmentId,
-      provider: rows[0].provider ?? "unknown",
-      action: "attendance_synced",
-      payload: { count: rows.length },
-    });
+    await sbAny(context.supabase)
+      .from("meeting_history")
+      .insert({
+        workspace_id: data.workspaceId,
+        appointment_id: data.appointmentId,
+        provider: rows[0].provider ?? "unknown",
+        action: "attendance_synced",
+        payload: { count: rows.length },
+      });
     return { inserted: rows.length };
   });
 
@@ -225,13 +235,15 @@ export const saveMeetingNotes = createServerFn({ method: "POST" })
       .select("workspace_id")
       .single();
     if (e1) throw e1;
-    await sbAny(context.supabase).from("meeting_history").insert({
-      workspace_id: (appt as { workspace_id: string }).workspace_id,
-      appointment_id: data.appointmentId,
-      provider: "system",
-      action: "notes_saved",
-      payload: { length: data.notes.length },
-    });
+    await sbAny(context.supabase)
+      .from("meeting_history")
+      .insert({
+        workspace_id: (appt as { workspace_id: string }).workspace_id,
+        appointment_id: data.appointmentId,
+        provider: "system",
+        action: "notes_saved",
+        payload: { length: data.notes.length },
+      });
     return { ok: true };
   });
 
@@ -253,12 +265,7 @@ export const syncMeetingAttendanceFromProvider = createServerFn({ method: "POST"
       meeting_provider_account_id: string | null;
     };
     const kind = row.location_kind as
-      | "zoom"
-      | "google_meet"
-      | "microsoft_teams"
-      | "jitsi"
-      | "livekit"
-      | null;
+      "zoom" | "google_meet" | "microsoft_teams" | "jitsi" | "livekit" | null;
     if (!kind || !["zoom", "microsoft_teams"].includes(kind)) {
       return { attendees: 0, note: "provider does not expose attendance API" };
     }

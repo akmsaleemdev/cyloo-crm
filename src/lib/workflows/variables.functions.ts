@@ -20,15 +20,21 @@ const ScopeEnum = z.enum([
   "custom",
 ]);
 
-async function resolveWorkspaceId(supabase: {
-  from: (table: string) => {
-    select: (cols: string) => {
-      eq: (col: string, val: string) => {
-        limit: (n: number) => { maybeSingle: () => Promise<{ data: unknown }> };
+async function resolveWorkspaceId(
+  supabase: {
+    from: (table: string) => {
+      select: (cols: string) => {
+        eq: (
+          col: string,
+          val: string,
+        ) => {
+          limit: (n: number) => { maybeSingle: () => Promise<{ data: unknown }> };
+        };
       };
     };
-  };
-}, userId: string): Promise<string> {
+  },
+  userId: string,
+): Promise<string> {
   const { data } = await supabase
     .from("workspace_members")
     .select("workspace_id")
@@ -114,7 +120,7 @@ export const upsertVariable = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const workspaceId = await resolveWorkspaceId(supabase as never, userId);
-    const automation_id = data.scope === "workflow" ? data.automationId ?? null : null;
+    const automation_id = data.scope === "workflow" ? (data.automationId ?? null) : null;
     if (data.scope === "workflow" && !automation_id) {
       throw new Error("workflow-scoped variables require an automationId");
     }
@@ -130,7 +136,10 @@ export const upsertVariable = createServerFn({ method: "POST" })
       created_by: userId,
     };
     if (data.id) {
-      const { error } = await sbAny(supabase).from("workflow_variables").update(row as never).eq("id", data.id);
+      const { error } = await sbAny(supabase)
+        .from("workflow_variables")
+        .update(row as never)
+        .eq("id", data.id);
       if (error) throw new Error(error.message);
       return { id: data.id };
     }
@@ -187,7 +196,12 @@ export const previewExpression = createServerFn({ method: "POST" })
     }
     const { data: rows } = await query;
     const { composeBag, interpolate, redactSecrets } = await import("./variables");
-    const scoped = ((rows ?? []) as Array<{ scope: VariableScope; key: string; value: unknown; is_secret: boolean }>);
+    const scoped = (rows ?? []) as Array<{
+      scope: VariableScope;
+      key: string;
+      value: unknown;
+      is_secret: boolean;
+    }>;
     const bag = composeBag(scoped, data.sample ?? {});
     const preview = redactSecrets(bag, scoped);
     const output = interpolate(data.template, preview);

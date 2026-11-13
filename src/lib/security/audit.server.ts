@@ -25,24 +25,29 @@ export type ServerAuditEvent = {
 export async function recordServerAuditEvent(event: ServerAuditEvent): Promise<void> {
   try {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    await sbAny(supabaseAdmin).from("security_events").insert({
-      workspace_id: event.workspaceId ?? null,
-      actor_id: event.actorId ?? null,
-      severity: event.severity ?? "info",
-      event_type: event.eventType,
-      resource_type: event.resourceType ?? null,
-      resource_id: event.resourceId ?? null,
-      ip_address: event.ip ?? null,
-      user_agent: event.userAgent?.slice(0, 300) ?? null,
-      data: { source: "server", ...(event.data ?? {}) },
-    });
+    await sbAny(supabaseAdmin)
+      .from("security_events")
+      .insert({
+        workspace_id: event.workspaceId ?? null,
+        actor_id: event.actorId ?? null,
+        severity: event.severity ?? "info",
+        event_type: event.eventType,
+        resource_type: event.resourceType ?? null,
+        resource_id: event.resourceId ?? null,
+        ip_address: event.ip ?? null,
+        user_agent: event.userAgent?.slice(0, 300) ?? null,
+        data: { source: "server", ...(event.data ?? {}) },
+      });
   } catch (error) {
     console.error("[audit] failed to record security event", event.eventType, error);
   }
 }
 
 /** Pulls caller IP + user agent out of an incoming request. */
-export function requestAuditContext(request: Request): { ip: string | null; userAgent: string | null } {
+export function requestAuditContext(request: Request): {
+  ip: string | null;
+  userAgent: string | null;
+} {
   const forwarded = request.headers.get("x-forwarded-for");
   return {
     ip: forwarded?.split(",")[0]?.trim() || request.headers.get("cf-connecting-ip") || null,
@@ -81,7 +86,9 @@ export async function auditServerDbError(
     data: {
       operation: context.operation ?? "read",
       pg_code: parsed?.code ?? null,
-      message: parsed?.message?.slice(0, 500) ?? (error instanceof Error ? error.message.slice(0, 500) : null),
+      message:
+        parsed?.message?.slice(0, 500) ??
+        (error instanceof Error ? error.message.slice(0, 500) : null),
       details: parsed?.details?.slice(0, 500) ?? null,
     },
   });

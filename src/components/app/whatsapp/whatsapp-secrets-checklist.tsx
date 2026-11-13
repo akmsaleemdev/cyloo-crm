@@ -37,7 +37,8 @@ export function WhatsAppSecretsChecklist({
   const startedRef = useRef(false);
 
   const run = useMutation<SecretsChecklist, Error, void>({
-    mutationFn: () => checkFn({
+    mutationFn: () =>
+      checkFn({
         data: {
           workspaceId: workspaceId!,
           channelAccountId,
@@ -67,8 +68,8 @@ export function WhatsAppSecretsChecklist({
             Required secrets
           </h3>
           <p className="text-xs text-muted-foreground">
-            Checks that every secret your WhatsApp accounts point to actually exists in Cloud → Secrets.
-            Values are never shown.
+            Checks that every secret your WhatsApp accounts point to actually exists in Cloud →
+            Secrets. Values are never shown.
           </p>
         </div>
         <Button
@@ -99,11 +100,13 @@ export function WhatsAppSecretsChecklist({
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>
-                {report.missingRequired} required secret{report.missingRequired === 1 ? "" : "s"} missing
+                {report.missingRequired} required secret{report.missingRequired === 1 ? "" : "s"}{" "}
+                missing
               </AlertTitle>
               <AlertDescription>
-                WhatsApp sending will fail until these are added. Open <strong>Cloud → Secrets</strong> and
-                add each secret below using the exact name shown.
+                WhatsApp sending will fail until these are added. Open{" "}
+                <strong>Cloud → Secrets</strong> and add each secret below using the exact name
+                shown.
               </AlertDescription>
             </Alert>
           ) : (
@@ -144,7 +147,9 @@ export function WhatsAppSecretsChecklist({
                     <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{secret.name}</code>
+                        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                          {secret.name}
+                        </code>
                         <Badge variant={secret.severity === "required" ? "default" : "secondary"}>
                           {secret.severity === "required" ? "Required" : "Recommended"}
                         </Badge>
@@ -158,7 +163,9 @@ export function WhatsAppSecretsChecklist({
                       </div>
                       <p className="text-xs text-muted-foreground">{secret.purpose}</p>
                       {secret.usedBy.length > 0 ? (
-                        <p className="text-xs text-muted-foreground">Used by: {secret.usedBy.join(", ")}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Used by: {secret.usedBy.join(", ")}
+                        </p>
                       ) : null}
                       {!secret.present && secret.remedy ? (
                         <p className="text-xs">

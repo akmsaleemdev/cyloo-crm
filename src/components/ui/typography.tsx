@@ -53,7 +53,8 @@ const headingVariants = cva("", {
 type HeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface HeadingProps
-  extends Omit<React.HTMLAttributes<HTMLHeadingElement>, "color">,
+  extends
+    Omit<React.HTMLAttributes<HTMLHeadingElement>, "color">,
     VariantProps<typeof headingVariants> {
   as?: `h${HeadingLevel}`;
   asChild?: boolean;
@@ -61,14 +62,10 @@ export interface HeadingProps
 
 export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
   ({ className, level = 2, tone, as, asChild, ...props }, ref) => {
-    const Tag = (asChild ? Slot : (as ?? (`h${level ?? 2}` as `h${HeadingLevel}`))) as React.ElementType;
-    return (
-      <Tag
-        ref={ref}
-        className={cn(headingVariants({ level, tone }), className)}
-        {...props}
-      />
-    );
+    const Tag = (
+      asChild ? Slot : (as ?? (`h${level ?? 2}` as `h${HeadingLevel}`))
+    ) as React.ElementType;
+    return <Tag ref={ref} className={cn(headingVariants({ level, tone }), className)} {...props} />;
   },
 );
 Heading.displayName = "Heading";
@@ -97,7 +94,8 @@ const displayVariants = cva("", {
 });
 
 export interface DisplayProps
-  extends Omit<React.HTMLAttributes<HTMLHeadingElement>, "color">,
+  extends
+    Omit<React.HTMLAttributes<HTMLHeadingElement>, "color">,
     VariantProps<typeof displayVariants> {
   as?: "h1" | "h2" | "p" | "span" | "div";
   asChild?: boolean;
@@ -106,13 +104,7 @@ export interface DisplayProps
 export const Display = React.forwardRef<HTMLHeadingElement, DisplayProps>(
   ({ className, size, tone, as = "h1", asChild, ...props }, ref) => {
     const Tag = (asChild ? Slot : as) as React.ElementType;
-    return (
-      <Tag
-        ref={ref}
-        className={cn(displayVariants({ size, tone }), className)}
-        {...props}
-      />
-    );
+    return <Tag ref={ref} className={cn(displayVariants({ size, tone }), className)} {...props} />;
   },
 );
 Display.displayName = "Display";
@@ -160,8 +152,7 @@ const textVariants = cva("", {
 });
 
 export interface TextProps
-  extends Omit<React.HTMLAttributes<HTMLElement>, "color">,
-    VariantProps<typeof textVariants> {
+  extends Omit<React.HTMLAttributes<HTMLElement>, "color">, VariantProps<typeof textVariants> {
   as?: "p" | "span" | "div" | "li" | "small" | "strong" | "em" | "label";
   asChild?: boolean;
   muted?: boolean;
@@ -209,17 +200,14 @@ const labelVariants = cva("inline-flex items-center gap-1", {
 });
 
 export interface LabelProps
-  extends React.LabelHTMLAttributes<HTMLLabelElement>,
-    VariantProps<typeof labelVariants> {
+  extends React.LabelHTMLAttributes<HTMLLabelElement>, VariantProps<typeof labelVariants> {
   asChild?: boolean;
 }
 
 export const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
   ({ className, size, tone, asChild, ...props }, ref) => {
     const Tag = (asChild ? Slot : "label") as React.ElementType;
-    return (
-      <Tag ref={ref} className={cn(labelVariants({ size, tone }), className)} {...props} />
-    );
+    return <Tag ref={ref} className={cn(labelVariants({ size, tone }), className)} {...props} />;
   },
 );
 Label.displayName = "Label";
@@ -345,9 +333,4 @@ export const Prose = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
 );
 Prose.displayName = "Prose";
 
-export {
-  headingVariants,
-  displayVariants,
-  textVariants,
-  labelVariants,
-};
+export { headingVariants, displayVariants, textVariants, labelVariants };

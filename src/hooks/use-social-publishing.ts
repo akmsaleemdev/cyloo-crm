@@ -4,7 +4,8 @@ import { useCurrentWorkspace, resolveWorkspaceId } from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
 import { SocialSaveError, normalizeSaveError } from "@/lib/social/save-errors";
 
-export type SocialPlatform = "facebook" | "instagram" | "linkedin" | "x" | "tiktok" | "youtube" | "threads";
+export type SocialPlatform =
+  "facebook" | "instagram" | "linkedin" | "x" | "tiktok" | "youtube" | "threads";
 
 export type SocialChannel = {
   id: string;
@@ -20,7 +21,8 @@ export type SocialChannel = {
   created_at: string;
 };
 
-export type SocialPostStatus = "draft" | "scheduled" | "publishing" | "published" | "failed" | "cancelled";
+export type SocialPostStatus =
+  "draft" | "scheduled" | "publishing" | "published" | "failed" | "cancelled";
 
 export type SocialPostTarget = {
   id: string;
@@ -137,7 +139,9 @@ export function useSocialChannels() {
     enabled: !!active?.id,
     queryFn: async () => {
       const { data, error } = await db("social_channels")
-        .select("id, workspace_id, platform, name, external_id, username, avatar_url, token_expires_at, status, metadata, created_at")
+        .select(
+          "id, workspace_id, platform, name, external_id, username, avatar_url, token_expires_at, status, metadata, created_at",
+        )
         .eq("workspace_id", active!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -160,7 +164,9 @@ export function useSaveSocialChannel() {
     }) => {
       const workspaceId = await resolveWorkspaceId(active?.id);
       if (!workspaceId)
-        throw new Error("No workspace is available for your account yet. Create a workspace in Settings first.");
+        throw new Error(
+          "No workspace is available for your account yet. Create a workspace in Settings first.",
+        );
       if (!input.name.trim()) throw new Error("Channel name is required");
       // Access tokens are never written from the browser — the server fn holds
       // the only path that can touch the credential column.
@@ -289,8 +295,7 @@ export function validatePost(input: PostInput, channels: SocialChannel[]): Recor
   if (kind === "carousel" && media.length < 2)
     errors.media = "A carousel needs at least two images";
 
-  if (type === "story" && input.link_url?.trim())
-    errors.link_url = "Stories cannot include a link";
+  if (type === "story" && input.link_url?.trim()) errors.link_url = "Stories cannot include a link";
 
   if (isPoll) {
     const opts = (input.poll_options ?? []).map((o) => o.trim()).filter(Boolean);
@@ -414,9 +419,13 @@ export function useSaveSocialPost() {
         if (!existing) throw new Error("Post not found in this workspace.");
         if (
           ["published", "publishing"].includes(existing.status) ||
-          (existing.social_post_targets ?? []).some((target: { status: string }) => target.status === "published")
+          (existing.social_post_targets ?? []).some(
+            (target: { status: string }) => target.status === "published",
+          )
         ) {
-          throw new Error("This post has already reached a channel. Duplicate it to publish a revised version.");
+          throw new Error(
+            "This post has already reached a channel. Duplicate it to publish a revised version.",
+          );
         }
         const { error } = await db("social_posts").update(payload).eq("id", postId);
         if (error) throw normalizeSaveError(error, "post");
@@ -464,9 +473,16 @@ export function useRescheduleSocialPost() {
         .eq("workspace_id", active.id)
         .maybeSingle();
       if (readError) throw readError;
-      if (!post || ["publishing", "published"].includes(post.status) ||
-          (post.social_post_targets ?? []).some((target: { status: string }) => target.status === "published")) {
-        throw new Error("This post has already reached a channel. Duplicate it to schedule a new version.");
+      if (
+        !post ||
+        ["publishing", "published"].includes(post.status) ||
+        (post.social_post_targets ?? []).some(
+          (target: { status: string }) => target.status === "published",
+        )
+      ) {
+        throw new Error(
+          "This post has already reached a channel. Duplicate it to schedule a new version.",
+        );
       }
       const { data, error } = await db("social_posts")
         .update({
@@ -479,7 +495,8 @@ export function useRescheduleSocialPost() {
         .in("status", ["draft", "scheduled", "failed"])
         .select("id");
       if (error) throw error;
-      if (!data?.length) throw new Error("This post changed while you were editing. Refresh and try again.");
+      if (!data?.length)
+        throw new Error("This post changed while you were editing. Refresh and try again.");
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["social-posts"] }),
   });

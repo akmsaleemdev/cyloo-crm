@@ -33,7 +33,8 @@ export const Route = createFileRoute("/api/public/widget/conversations")({
         const chatbotId = url.searchParams.get("chatbotId") ?? "";
         const sessionId = url.searchParams.get("sessionId") ?? "";
         const visitorToken = url.searchParams.get("visitorToken") ?? "";
-        if (!chatbotId || !sessionId || !visitorToken) return json(400, { error: "Missing params" });
+        if (!chatbotId || !sessionId || !visitorToken)
+          return json(400, { error: "Missing params" });
 
         const ip =
           request.headers.get("cf-connecting-ip") ??

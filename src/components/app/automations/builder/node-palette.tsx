@@ -13,7 +13,11 @@ const KIND_COLORS: Record<string, string> = {
   ai: "text-fuchsia-600 bg-fuchsia-500/10",
 };
 
-export const NodePalette = React.memo(function NodePalette({ onAdd }: { onAdd: (def: NodeDefinition) => void }) {
+export const NodePalette = React.memo(function NodePalette({
+  onAdd,
+}: {
+  onAdd: (def: NodeDefinition) => void;
+}) {
   const [q, setQ] = React.useState("");
   const filtered = React.useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -57,10 +61,18 @@ export const NodePalette = React.memo(function NodePalette({ onAdd }: { onAdd: (
         <div className="p-2 space-y-3">
           {grouped.map(([cat, items]) => (
             <div key={cat}>
-              <div className="px-2 pb-1 text-[11px]  text-muted-foreground font-semibold">{cat}</div>
+              <div className="px-2 pb-1 text-[11px]  text-muted-foreground font-semibold">
+                {cat}
+              </div>
               <div className="space-y-1">
                 {items.map((n) => {
-                  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[n.icon] || Icons.Box;
+                  const Icon =
+                    (
+                      Icons as unknown as Record<
+                        string,
+                        React.ComponentType<{ className?: string }>
+                      >
+                    )[n.icon] || Icons.Box;
                   return (
                     <button
                       key={n.type}
@@ -75,15 +87,23 @@ export const NodePalette = React.memo(function NodePalette({ onAdd }: { onAdd: (
                     >
                       {nodeChannel(n.type) ? (
                         // Real brand logo for channel nodes. Everything else keeps the simple icon.
-                        <ChannelIcon channel={nodeChannel(n.type)} boxed className="w-7 h-7 shrink-0" />
+                        <ChannelIcon
+                          channel={nodeChannel(n.type)}
+                          boxed
+                          className="w-7 h-7 shrink-0"
+                        />
                       ) : (
-                        <div className={`w-7 h-7 rounded-control grid place-items-center shrink-0 ${KIND_COLORS[n.kind]}`}>
+                        <div
+                          className={`w-7 h-7 rounded-control grid place-items-center shrink-0 ${KIND_COLORS[n.kind]}`}
+                        >
                           <Icon className="w-3.5 h-3.5" />
                         </div>
                       )}
                       <div className="min-w-0">
                         <div className="text-sm font-medium truncate">{n.label}</div>
-                        <div className="text-[11px] text-muted-foreground line-clamp-2">{n.description}</div>
+                        <div className="text-[11px] text-muted-foreground line-clamp-2">
+                          {n.description}
+                        </div>
                       </div>
                     </button>
                   );

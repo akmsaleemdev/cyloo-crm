@@ -13,7 +13,10 @@ import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { finalizePlanChange } from "@/lib/billing/plan-change.functions";
 
-type State = { status: "working" | "confirmed" | "pending" | "canceled" | "error"; message: string };
+type State = {
+  status: "working" | "confirmed" | "pending" | "canceled" | "error";
+  message: string;
+};
 
 export function CheckoutReturnBanner({
   organizationId,
@@ -44,7 +47,9 @@ export function CheckoutReturnBanner({
     const tick = async () => {
       attempt += 1;
       try {
-        const res = await finalizeFn({ data: { organization_id: organizationId, intent_id: intentId, canceled } });
+        const res = await finalizeFn({
+          data: { organization_id: organizationId, intent_id: intentId, canceled },
+        });
         if (cancelled) return;
         if (res.status === "pending" && attempt < 10) {
           setState({ status: "working", message: res.message });
@@ -52,7 +57,12 @@ export function CheckoutReturnBanner({
           return;
         }
         setState({
-          status: res.status === "confirmed" ? "confirmed" : res.status === "canceled" ? "canceled" : "pending",
+          status:
+            res.status === "confirmed"
+              ? "confirmed"
+              : res.status === "canceled"
+                ? "canceled"
+                : "pending",
           message: res.message,
         });
         onSettled();
@@ -75,7 +85,11 @@ export function CheckoutReturnBanner({
         : "border-accent/40 bg-accent/5";
 
   return (
-    <section className={`flex items-start gap-3 rounded-control border p-5 ${tone}`} role="status" aria-live="polite">
+    <section
+      className={`flex items-start gap-3 rounded-control border p-5 ${tone}`}
+      role="status"
+      aria-live="polite"
+    >
       <div className="mt-0.5 shrink-0">
         {state.status === "working" ? (
           <Loader2 className="size-5 animate-spin text-accent" />

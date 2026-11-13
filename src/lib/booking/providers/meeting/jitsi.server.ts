@@ -8,7 +8,20 @@
 import type { MeetingProvider, MeetingRequest, MeetingArtifact } from "./types";
 
 function randomRoom(): string {
-  const words = ["orbit", "quill", "atlas", "harbor", "prism", "vector", "candid", "meridian", "beacon", "signal", "nebula", "cadence"];
+  const words = [
+    "orbit",
+    "quill",
+    "atlas",
+    "harbor",
+    "prism",
+    "vector",
+    "candid",
+    "meridian",
+    "beacon",
+    "signal",
+    "nebula",
+    "cadence",
+  ];
   const a = words[Math.floor(Math.random() * words.length)];
   const b = words[Math.floor(Math.random() * words.length)];
   const n = Math.floor(1000 + Math.random() * 9000);
@@ -18,11 +31,14 @@ function randomRoom(): string {
 export const jitsiProvider: MeetingProvider = {
   kind: "jitsi",
   async createMeeting(account, req: MeetingRequest): Promise<MeetingArtifact> {
-    const domain = account?.config.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") || "meet.jit.si";
+    const domain =
+      account?.config.domain?.replace(/^https?:\/\//, "").replace(/\/$/, "") || "meet.jit.si";
     const room = randomRoom();
     const params = new URLSearchParams();
     if (req.options?.password) params.set("password", req.options.password);
-    const suffix = params.toString() ? `#config.startWithVideoMuted=false&${params.toString()}` : "";
+    const suffix = params.toString()
+      ? `#config.startWithVideoMuted=false&${params.toString()}`
+      : "";
     return {
       provider: "jitsi",
       join_url: `https://${domain}/${room}${suffix}`,

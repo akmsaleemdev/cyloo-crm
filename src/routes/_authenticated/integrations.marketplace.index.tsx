@@ -227,9 +227,7 @@ function MarketplacePage() {
           <section>
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-medium uppercase text-muted-foreground">
-                Featured
-              </h2>
+              <h2 className="text-sm font-medium uppercase text-muted-foreground">Featured</h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {featured.map((p) => (

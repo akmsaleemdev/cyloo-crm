@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="720" viewBox="0 0 600 720" role="img" aria-labelledby="title desc">
+  <title id="title">The CYLOO workspace</title>
+  <desc id="desc">Customer channels connect to a shared inbox, CRM pipelines and automation, with a choice of deployment and AI providers.</desc>
+  <rect width="600" height="720" rx="28" fill="#f8fafc"/>
+  <g font-family="Inter,Arial,sans-serif" fill="#0f172a">
+    <text x="44" y="82" font-size="13" font-weight="700" fill="#4338ca">CYLOO / CONNECTED CUSTOMER WORK</text>
+    <text x="44" y="126" font-size="30" font-weight="700">Context travels with you.</text>
+    <text x="44" y="158" font-size="14" fill="#475569">From the first message to the next opportunity.</text>
+    <g stroke="#cbd5e1" fill="#fff"><rect x="44" y="206" width="512" height="96" rx="16"/><rect x="44" y="362" width="512" height="150" rx="16"/><rect x="44" y="572" width="244" height="92" rx="16"/><rect x="312" y="572" width="244" height="92" rx="16"/></g>
+    <path d="M300 302V362M300 512V542H166V572M300 542H434V572" fill="none" stroke="#818cf8" stroke-width="3"/>
+    <text x="68" y="239" font-size="13" font-weight="700" fill="#64748b">CUSTOMER CHANNELS</text>
+    <text x="68" y="274" font-size="17">WhatsApp · Instagram · Messenger · Email</text>
+    <text x="68" y="402" font-size="25" font-weight="700" fill="#4338ca">One CYLOO workspace</text>
+    <text x="68" y="444" font-size="17">Shared inbox + CRM pipelines</text>
+    <text x="68" y="478" font-size="17">Team assignments + workflow automation</text>
+    <text x="68" y="610" font-size="17" font-weight="700">Hosting choice</text>
+    <text x="68" y="640" font-size="13" fill="#475569">Your configured infrastructure</text>
+    <text x="336" y="610" font-size="17" font-weight="700">AI provider choice</text>
+    <text x="336" y="640" font-size="13" fill="#475569">Your connected AI services</text>
+    <text x="44" y="695" font-size="11" fill="#64748b">Channel and provider setup required</text>
+  </g>
+</svg>

@@ -61,8 +61,7 @@ export function TaskKanban() {
       setDialogOpen(true);
     }
   }, [location.href, tasks, isLoading, isError]);
-  const canManageTask = (task: TaskBoardRow) =>
-    canModifyCrmTask(task, user?.id, workspaceRole);
+  const canManageTask = (task: TaskBoardRow) => canModifyCrmTask(task, user?.id, workspaceRole);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();

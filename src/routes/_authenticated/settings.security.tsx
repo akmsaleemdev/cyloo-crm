@@ -4,7 +4,11 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppTopbar } from "@/components/app/app-topbar";
-import { SettingsLayout, SettingsCard, SettingsRow } from "@/components/app/settings/settings-layout";
+import {
+  SettingsLayout,
+  SettingsCard,
+  SettingsRow,
+} from "@/components/app/settings/settings-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,10 +176,15 @@ function SecuritySettings() {
       title="Security & Authentication"
       description="Manage account credentials, two-factor authentication, session timeouts, and active devices."
     >
-      <SettingsCard title="Password Credentials" description="Use at least 8 characters with a mix of letters and numbers.">
+      <SettingsCard
+        title="Password Credentials"
+        description="Use at least 8 characters with a mix of letters and numbers."
+      >
         <form onSubmit={onChangePassword} className="p-5 grid gap-3 max-w-md">
           <div className="grid gap-2">
-            <Label htmlFor="pw" className="text-xs font-semibold text-[#ededed]">New password</Label>
+            <Label htmlFor="pw" className="text-xs font-semibold text-[#ededed]">
+              New password
+            </Label>
             <Input
               id="pw"
               type="password"
@@ -188,7 +197,9 @@ function SecuritySettings() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="pw2" className="text-xs font-semibold text-[#ededed]">Confirm password</Label>
+            <Label htmlFor="pw2" className="text-xs font-semibold text-[#ededed]">
+              Confirm password
+            </Label>
             <Input
               id="pw2"
               type="password"
@@ -210,7 +221,10 @@ function SecuritySettings() {
         </form>
       </SettingsCard>
 
-      <SettingsCard title="Two-Factor Authentication & Inactivity" description="Enhanced protection matching enterprise security compliance standards.">
+      <SettingsCard
+        title="Two-Factor Authentication & Inactivity"
+        description="Enhanced protection matching enterprise security compliance standards."
+      >
         <SettingsRow
           label="Require authenticator app (TOTP)"
           description="Prompt for a verification code from Google Authenticator, 1Password, or Authy on each login."
@@ -259,7 +273,9 @@ function SecuritySettings() {
               {sessions.data!.map((s: any) => (
                 <li key={s.id} className="py-2.5 flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-medium text-[#ededed]">{s.device ?? s.user_agent ?? "Browser Session"}</span>
+                    <span className="font-medium text-[#ededed]">
+                      {s.device ?? s.user_agent ?? "Browser Session"}
+                    </span>
                     <p className="text-[11px] text-[#737373]">
                       {s.location ?? s.ip_address ?? "Local Network"} · Last seen{" "}
                       {formatZoned(new Date(s.last_seen_at), {

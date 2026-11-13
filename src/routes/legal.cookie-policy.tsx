@@ -6,8 +6,7 @@ import { LegalPageShell } from "@/components/app/legal-page-shell";
 import { Button } from "@/components/ui/button";
 import { openCookiePreferences } from "@/lib/compliance/cookie-consent";
 
-const DESCRIPTION =
-  `How ${BRAND_NAME} uses cookies and similar technologies, the categories we set, and how to change your cookie preferences.`;
+const DESCRIPTION = `How ${BRAND_NAME} uses cookies and similar technologies, the categories we set, and how to change your cookie preferences.`;
 const TITLE = "Cookie Policy";
 
 export const Route = createFileRoute("/legal/cookie-policy")({

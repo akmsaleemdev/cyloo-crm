@@ -60,9 +60,10 @@ export async function enqueueNotification(supabase: SupabaseClient, row: NotifyR
     await sbAny(supabase).from("billing_notifications").insert(row);
     return;
   }
-  await sbAny(supabase).from("billing_notifications").upsert(row, { onConflict: "organization_id,dedupe_key" });
+  await sbAny(supabase)
+    .from("billing_notifications")
+    .upsert(row, { onConflict: "organization_id,dedupe_key" });
 }
-
 
 /**
  * Wire the event bus to notifications. Call once from your server bootstrap
@@ -75,119 +76,157 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
   wired = true;
 
   const mapping: Array<[BillingEventType, (evt: BillingEvent<any>) => NotifyRow]> = [
-    ["invoice.issued", (e) => ({
-      organization_id: e.organization_id,
-      kind: "invoice.issued",
-      subject: `New invoice issued`,
-      body: `A new invoice for ${formatMoney(e.data.total_cents, e.data.currency)} is now available.`,
-      payload: e.data,
-      related_invoice_id: e.data.invoice_id ?? null,
-      dedupe_key: `invoice.issued:${e.data.invoice_id}`,
-    })],
-    ["invoice.paid", (e) => ({
-      organization_id: e.organization_id,
-      kind: "invoice.paid",
-      subject: `Payment received`,
-      body: `Thanks — your invoice has been paid in full.`,
-      payload: e.data,
-      related_invoice_id: e.data.invoice_id ?? null,
-      dedupe_key: `invoice.paid:${e.data.invoice_id}`,
-    })],
-    ["invoice.payment_failed", (e) => ({
-      organization_id: e.organization_id,
-      kind: "invoice.payment_failed",
-      subject: `Payment failed — action required`,
-      body: `We couldn't collect payment for your latest invoice. Please update your payment method.`,
-      payload: e.data,
-      related_invoice_id: e.data.invoice_id ?? null,
-      dedupe_key: `invoice.payment_failed:${e.data.invoice_id}:${todayKey()}`,
-    })],
-    ["subscription.canceled", (e) => ({
-      organization_id: e.organization_id,
-      kind: "subscription.canceled",
-      subject: `Subscription canceled`,
-      body: `Your subscription has been canceled. You'll retain access until the end of your billing period.`,
-      payload: e.data,
-      dedupe_key: `subscription.canceled:${e.organization_id}:${todayKey()}`,
-    })],
-    ["subscription.trial_ending", (e) => ({
-      organization_id: e.organization_id,
-      kind: "subscription.trial_ending",
-      subject: `Your trial is ending soon`,
-      body: `Add a payment method to keep your workspace active.`,
-      payload: e.data,
-      dedupe_key: `subscription.trial_ending:${e.organization_id}:${todayKey()}`,
-    })],
-    ["quota.approaching", (e) => ({
-      organization_id: e.organization_id,
-      kind: "quota.approaching",
-      subject: `You're approaching a plan limit`,
-      body: `Usage for "${e.data.meter_code}" is above 80% for this period.`,
-      payload: e.data,
-      dedupe_key: `quota.approaching:${e.data.meter_code}:${todayKey()}`,
-    })],
-    ["quota.exceeded", (e) => ({
-      organization_id: e.organization_id,
-      kind: "quota.exceeded",
-      subject: `Plan limit reached`,
-      body: `You've reached your plan limit for "${e.data.meter_code}". Upgrade to keep going.`,
-      payload: e.data,
-      dedupe_key: `quota.exceeded:${e.data.meter_code}:${todayKey()}`,
-    })],
-    ["payment.attempt.succeeded", (e) => ({
-      organization_id: e.organization_id,
-      kind: "payment.succeeded",
-      subject: `Payment received`,
-      body: `Your payment of ${formatMoney(e.data.amount_cents ?? 0, e.data.currency ?? null)} was processed successfully.`,
-      payload: e.data,
-      related_invoice_id: e.data.invoice_id ?? null,
-      dedupe_key: `payment.succeeded:${e.data.attempt_id ?? e.data.invoice_id}:${todayKey()}`,
-    })],
-    ["invoice.due", (e) => ({
-      organization_id: e.organization_id,
-      kind: "invoice.due",
-      subject: `Invoice due soon`,
-      body: `Invoice ${e.data.number ?? ""} is due on ${e.data.due_date ?? "soon"}. Please review and pay.`,
-      payload: e.data,
-      related_invoice_id: e.data.invoice_id ?? null,
-      dedupe_key: `invoice.due:${e.data.invoice_id}:${todayKey()}`,
-    })],
-    ["subscription.renewed", (e) => ({
-      organization_id: e.organization_id,
-      kind: "subscription.renewed",
-      subject: `Subscription renewed`,
-      body: `Your subscription has been renewed for another period.`,
-      payload: e.data,
-      related_subscription_id: e.data.subscription_id ?? null,
-      dedupe_key: `subscription.renewed:${e.data.subscription_id}:${todayKey()}`,
-    })],
-    ["subscription.expired", (e) => ({
-      organization_id: e.organization_id,
-      kind: "subscription.expired",
-      subject: `Subscription expired`,
-      body: `Your subscription has expired. Reactivate to restore full access.`,
-      payload: e.data,
-      related_subscription_id: e.data.subscription_id ?? null,
-      dedupe_key: `subscription.expired:${e.data.subscription_id}:${todayKey()}`,
-    })],
-    ["usage.limit_reached", (e) => ({
-      organization_id: e.organization_id,
-      kind: "usage.limit_reached",
-      subject: `Usage limit reached`,
-      body: `You've hit 100% of your allowance for "${e.data.meter_code}".`,
-      payload: e.data,
-      dedupe_key: `usage.limit_reached:${e.data.meter_code}:${todayKey()}`,
-    })],
-    ["upgrade.recommended", (e) => ({
-      organization_id: e.organization_id,
-      kind: "upgrade.recommended",
-      subject: `Consider upgrading your plan`,
-      body: `Based on recent usage, upgrading to ${e.data.suggested_plan ?? "a higher plan"} would save you money and unlock more capacity.`,
-      payload: e.data,
-      dedupe_key: `upgrade.recommended:${e.organization_id}:${todayKey().slice(0, 7)}`,
-    })],
+    [
+      "invoice.issued",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "invoice.issued",
+        subject: `New invoice issued`,
+        body: `A new invoice for ${formatMoney(e.data.total_cents, e.data.currency)} is now available.`,
+        payload: e.data,
+        related_invoice_id: e.data.invoice_id ?? null,
+        dedupe_key: `invoice.issued:${e.data.invoice_id}`,
+      }),
+    ],
+    [
+      "invoice.paid",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "invoice.paid",
+        subject: `Payment received`,
+        body: `Thanks — your invoice has been paid in full.`,
+        payload: e.data,
+        related_invoice_id: e.data.invoice_id ?? null,
+        dedupe_key: `invoice.paid:${e.data.invoice_id}`,
+      }),
+    ],
+    [
+      "invoice.payment_failed",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "invoice.payment_failed",
+        subject: `Payment failed — action required`,
+        body: `We couldn't collect payment for your latest invoice. Please update your payment method.`,
+        payload: e.data,
+        related_invoice_id: e.data.invoice_id ?? null,
+        dedupe_key: `invoice.payment_failed:${e.data.invoice_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "subscription.canceled",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "subscription.canceled",
+        subject: `Subscription canceled`,
+        body: `Your subscription has been canceled. You'll retain access until the end of your billing period.`,
+        payload: e.data,
+        dedupe_key: `subscription.canceled:${e.organization_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "subscription.trial_ending",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "subscription.trial_ending",
+        subject: `Your trial is ending soon`,
+        body: `Add a payment method to keep your workspace active.`,
+        payload: e.data,
+        dedupe_key: `subscription.trial_ending:${e.organization_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "quota.approaching",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "quota.approaching",
+        subject: `You're approaching a plan limit`,
+        body: `Usage for "${e.data.meter_code}" is above 80% for this period.`,
+        payload: e.data,
+        dedupe_key: `quota.approaching:${e.data.meter_code}:${todayKey()}`,
+      }),
+    ],
+    [
+      "quota.exceeded",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "quota.exceeded",
+        subject: `Plan limit reached`,
+        body: `You've reached your plan limit for "${e.data.meter_code}". Upgrade to keep going.`,
+        payload: e.data,
+        dedupe_key: `quota.exceeded:${e.data.meter_code}:${todayKey()}`,
+      }),
+    ],
+    [
+      "payment.attempt.succeeded",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "payment.succeeded",
+        subject: `Payment received`,
+        body: `Your payment of ${formatMoney(e.data.amount_cents ?? 0, e.data.currency ?? null)} was processed successfully.`,
+        payload: e.data,
+        related_invoice_id: e.data.invoice_id ?? null,
+        dedupe_key: `payment.succeeded:${e.data.attempt_id ?? e.data.invoice_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "invoice.due",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "invoice.due",
+        subject: `Invoice due soon`,
+        body: `Invoice ${e.data.number ?? ""} is due on ${e.data.due_date ?? "soon"}. Please review and pay.`,
+        payload: e.data,
+        related_invoice_id: e.data.invoice_id ?? null,
+        dedupe_key: `invoice.due:${e.data.invoice_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "subscription.renewed",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "subscription.renewed",
+        subject: `Subscription renewed`,
+        body: `Your subscription has been renewed for another period.`,
+        payload: e.data,
+        related_subscription_id: e.data.subscription_id ?? null,
+        dedupe_key: `subscription.renewed:${e.data.subscription_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "subscription.expired",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "subscription.expired",
+        subject: `Subscription expired`,
+        body: `Your subscription has expired. Reactivate to restore full access.`,
+        payload: e.data,
+        related_subscription_id: e.data.subscription_id ?? null,
+        dedupe_key: `subscription.expired:${e.data.subscription_id}:${todayKey()}`,
+      }),
+    ],
+    [
+      "usage.limit_reached",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "usage.limit_reached",
+        subject: `Usage limit reached`,
+        body: `You've hit 100% of your allowance for "${e.data.meter_code}".`,
+        payload: e.data,
+        dedupe_key: `usage.limit_reached:${e.data.meter_code}:${todayKey()}`,
+      }),
+    ],
+    [
+      "upgrade.recommended",
+      (e) => ({
+        organization_id: e.organization_id,
+        kind: "upgrade.recommended",
+        subject: `Consider upgrading your plan`,
+        body: `Based on recent usage, upgrading to ${e.data.suggested_plan ?? "a higher plan"} would save you money and unlock more capacity.`,
+        payload: e.data,
+        dedupe_key: `upgrade.recommended:${e.organization_id}:${todayKey().slice(0, 7)}`,
+      }),
+    ],
   ];
-
 
   for (const [type, build] of mapping) {
     on(type, async (evt) => {

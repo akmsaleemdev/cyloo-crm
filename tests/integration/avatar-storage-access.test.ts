@@ -43,4 +43,3 @@ describe("Avatar Storage Access", () => {
     }
   });
 });
-

@@ -60,12 +60,7 @@ export function isTransientNetworkError(error: unknown): boolean {
     // Aborted requests are intentional — never retry them.
     if (name === "AbortError") return false;
   }
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : "";
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
   const lower = message.toLowerCase();
   return TRANSIENT_PATTERNS.some((p) => lower.includes(p));
 }

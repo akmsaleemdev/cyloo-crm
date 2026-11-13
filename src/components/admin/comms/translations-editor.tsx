@@ -26,7 +26,12 @@ interface Props {
  * language list comes from Platform Settings → Localization (enabled
  * languages), with search and a completion meter for larger sets.
  */
-export function TranslationsEditor({ translations, onChange, showSubject = false, bodyRows = 4 }: Props) {
+export function TranslationsEditor({
+  translations,
+  onChange,
+  showSubject = false,
+  bodyRows = 4,
+}: Props) {
   const { config } = usePlatformRuntime();
   const base = config.localization.fallbackLanguage || DEFAULT_LANGUAGE;
 
@@ -50,7 +55,10 @@ export function TranslationsEditor({ translations, onChange, showSubject = false
     );
   }, [languages, query]);
 
-  const coverage = translationCoverage(translations, languages.map((l) => l.code));
+  const coverage = translationCoverage(
+    translations,
+    languages.map((l) => l.code),
+  );
   const pct = coverage.total ? Math.round((coverage.filled / coverage.total) * 100) : 100;
 
   const patch = (k: "title" | "body" | "subject", v: string) => {
@@ -99,8 +107,8 @@ export function TranslationsEditor({ translations, onChange, showSubject = false
                 active
                   ? "border-accent bg-accent/10 text-accent"
                   : filled
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                  : "border-border hover:bg-muted"
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                    : "border-border hover:bg-muted"
               }`}
             >
               <span className="mr-1">{l.flag}</span>
