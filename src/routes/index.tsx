@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react";
 import { docsUrl } from "@/lib/docs/links";
 import { SHOW_RESOURCE_LINKS } from "@/lib/docs/visibility";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 import {
   MessagesSquare,
   Sparkles,
@@ -200,6 +201,16 @@ function LandingPage() {
 /* Nav                                                          */
 /* ============================================================ */
 function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 15);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const links = [
     { href: "#features", label: "Features" },
     { href: "#workflow", label: "Product" },
@@ -208,9 +219,19 @@ function Nav() {
     { href: "#demo", label: "Book a demo" },
   ];
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
+    <header
+      className={`sticky top-0 z-40 border-b transition-all duration-300 ${
+        scrolled
+          ? "border-border/80 bg-background/95 shadow-sm shadow-primary/5 backdrop-blur-md"
+          : "border-border bg-background/80 backdrop-blur-md"
+      }`}
+    >
       <div className="container-marketing grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 h-18 md:flex md:justify-between py-4">
-        <Link to="/" className="flex min-w-0 items-center gap-2.5 cursor-pointer" aria-label="CYLOO Home">
+        <Link
+          to="/"
+          className="flex min-w-0 items-center gap-2.5 cursor-pointer transition-transform duration-200 hover:scale-[1.02]"
+          aria-label="CYLOO Home"
+        >
           <PlatformLogo alt="CYLOO" className="h-8 md:h-9 w-auto shrink-0 object-contain" />
         </Link>
         <nav className="hidden items-center gap-5 text-base text-muted-foreground lg:flex xl:gap-8">
@@ -281,7 +302,7 @@ function Hero() {
         <div className="absolute -left-40 bottom-0 w-[420px] h-[420px] rounded-full bg-accent/20 blur-3xl" />
       </div>
       <div
-        className="relative container-marketing pt-28 pb-24 lg:pt-40 lg:pb-32"
+        className="relative container-marketing pt-28 pb-20 lg:pt-36 lg:pb-28"
         style={{
           borderLeftStyle: "dashed",
           borderRightStyle: "dashed",
@@ -291,14 +312,25 @@ function Hero() {
       >
         <CornerPlus corner="bl" />
         <CornerPlus corner="br" />
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary inline-flex items-center gap-1.5">
-            <PlatformMark
-              alt=""
-              className="size-3.5 shrink-0 object-contain hidden sm:inline"
-            />
-            WhatsApp, Messenger &amp; Instagram APIs · Self-hosted
-          </span>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.2, 0.9, 0.1, 1] }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.05 }}
+          >
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-xs">
+              <PlatformMark
+                alt=""
+                className="size-3.5 shrink-0 object-contain hidden sm:inline"
+              />
+              WhatsApp, Messenger &amp; Instagram APIs · Self-hosted &amp; Cloud
+            </span>
+          </motion.div>
           <h1 className="text-marketing-title-lg mt-6">
             Every conversation.
             <br />
@@ -314,37 +346,51 @@ function Hero() {
               />
             </span>
           </h1>
-          <p className="text-lg text-muted-foreground font-light mx-auto mt-6 max-w-2xl">
+          <p className="text-lg text-muted-foreground font-light mx-auto mt-6 max-w-2xl leading-relaxed">
             <Brand /> unifies WhatsApp, Messenger, Instagram, Telegram and email into one CRM
             workspace — with sales pipelines, AI chatbots, broadcast campaigns and automation, on
             infrastructure you own.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild variant="primary" size="xl" className="w-full md:w-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.18 }}
+            className="mt-8 flex flex-wrap justify-center gap-3"
+          >
+            <Button
+              asChild
+              variant="primary"
+              size="xl"
+              className="w-full md:w-auto shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
               <Link
                 to="/auth"
                 search={{ mode: "sign-up" }}
                 {...ctaAttrs("start-free-trial", "hero")}
               >
-                Start free trial <ArrowRight />
+                Start free trial <ArrowRight className="size-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="xl" className="w-full md:w-auto">
+            <Button
+              asChild
+              variant="outline"
+              size="xl"
+              className="w-full md:w-auto hover:bg-muted/60 transition-all bg-background!"
+            >
               <a
                 href="#workflow"
                 {...ctaAttrs("see-the-product", "hero")}
-                className=" bg-background!"
               >
                 <Play className="size-4" /> See the product
               </a>
             </Button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Monday.com-Inspired Interactive Product Board Showcase */}
         <HeroInteractiveShowcase />
 
-        <div className="mt-16 flex flex-wrap items-center justify-center gap-6 lg:mt-24">
+        <div className="mt-14 flex flex-wrap items-center justify-center gap-5 lg:mt-20">
           {[
             { Icon: SiWhatsapp, name: "WhatsApp", bg: "#25D366" },
             { Icon: SiMessenger, name: "Messenger", bg: "#0084FF" },
@@ -354,19 +400,94 @@ function Hero() {
             { Icon: Headphones, name: "Live Chat", bg: "#00B5A3" },
             { Icon: Mail, name: "Email", bg: "#64748B" },
           ].map(({ Icon, name, bg }) => (
-            <div key={name} className="flex flex-col items-center gap-2">
+            <div
+              key={name}
+              className="group flex flex-col items-center gap-2 cursor-pointer transition-transform duration-200 hover:-translate-y-1"
+            >
               <span
-                className="flex size-11 items-center justify-center rounded-full "
+                className="flex size-11 items-center justify-center rounded-full shadow-xs transition-shadow duration-200 group-hover:shadow-md"
                 style={{ background: bg }}
               >
-                <Icon className="size-5 text-white" />
+                <Icon className="size-5 text-white transition-transform duration-200 group-hover:scale-110" />
               </span>
-              <span className="text-xs font-medium text-muted-foreground">{name}</span>
+              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                {name}
+              </span>
             </div>
           ))}
         </div>
+
+        {/* Monday.com-Inspired Social Proof & Performance Trust Band */}
+        <TrustMetricsBand />
       </div>
     </section>
+  );
+}
+
+/* ============================================================ */
+/* Monday.com-Inspired Social Proof & Performance Trust Band   */
+/* ============================================================ */
+function TrustMetricsBand() {
+  const metrics = [
+    {
+      value: "99.9%",
+      label: "Uptime SLA",
+      sub: "Enterprise-grade reliability",
+      badgeColor: "#00C875",
+    },
+    {
+      value: "10M+",
+      label: "Messages Handled",
+      sub: "Official Meta Cloud APIs",
+      badgeColor: "#0073EA",
+    },
+    {
+      value: "150+",
+      label: "Countries Reached",
+      sub: "Sub-120ms global delivery",
+      badgeColor: "#A25DDC",
+    },
+    {
+      value: "$0",
+      label: "Seat Tax",
+      sub: "Unlimited team teammates",
+      badgeColor: "#FDAB3D",
+    },
+    {
+      value: "< 2 min",
+      label: "Instant Setup",
+      sub: "Plug & play integrations",
+      badgeColor: "#3ECE90",
+    },
+  ];
+
+  return (
+    <div className="mt-14 border-t border-border/70 pt-10">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
+        {metrics.map((m) => (
+          <div
+            key={m.label}
+            className="group flex flex-col items-center justify-center rounded-xl border border-border/70 bg-surface/70 p-4 text-center shadow-xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm hover:bg-surface"
+          >
+            <div className="flex items-center gap-1.5">
+              <span
+                className="size-2 rounded-full animate-pulse"
+                style={{ backgroundColor: m.badgeColor }}
+              />
+              <span className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+                {m.value}
+              </span>
+            </div>
+            <span className="mt-1 text-xs font-semibold text-foreground/90">
+              {m.label}
+            </span>
+            <span className="mt-0.5 text-[11px] text-muted-foreground group-hover:text-foreground/70 transition-colors">
+              {m.sub}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -1056,8 +1177,8 @@ function StackReplacement() {
         <div className="row-bleed-marketing grid grid-cols-1 items-end gap-8 border-b border-border pb-8 lg:grid-cols-[2fr_2fr_auto] lg:gap-12">
           {/* Left — title */}
           <div>
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Why <Brand />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/25 bg-indigo-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <Sparkles className="size-3 text-indigo-500" /> Why <Brand />
             </span>
             <h2 className="text-marketing-title mt-4 max-w-full">
               Stop juggling four tools.
@@ -2658,8 +2779,8 @@ function Features() {
     <section id="features" className="section-marketing relative scroll-mt-24">
       <div className="container-marketing relative pb-8 border-b border-border md:pb-16">
         <div className="mx-auto max-w-xl text-center">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-            Platform Featues
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+            <Layers className="size-3 text-primary" /> Platform Features
           </span>
           <h2 className="text-marketing-title mt-5 leading-tight">
             Everything you need to run omnichannel support at scale.
@@ -2857,8 +2978,8 @@ function IndustryUseCases() {
         <CornerPlus corner="br" />
         <div className="flex flex-wrap items-end justify-between gap-6 row-bleed-marketing border-b border-border pb-8">
           <div>
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Built for every industry
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/25 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+              <Building2 className="size-3 text-rose-500" /> Built for every industry
             </span>
             <h2 className="text-marketing-title mt-4 leading-tight">
               One platform. Endless possibilities.
@@ -2953,8 +3074,8 @@ function UnifiedInboxSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Unified Omnichannel Inbox
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              <Inbox className="size-3 text-emerald-500" /> Unified Omnichannel Inbox
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Every channel.
@@ -3504,8 +3625,8 @@ function CRMSalesSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              CRM &amp; Sales
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/25 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              <Users className="size-3 text-blue-500" /> CRM &amp; Sales Pipeline
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Turn conversations into customer relationships.
@@ -4015,8 +4136,8 @@ function AutomationBotsSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Automation &amp; Bots
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/25 bg-purple-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+              <Bot className="size-3 text-purple-500" /> Automation &amp; AI Bots
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Automate conversations.
@@ -4636,8 +4757,8 @@ function MarketingCampaignsSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Marketing Campaigns
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              <Megaphone className="size-3 text-amber-500" /> Marketing Campaigns
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Reach the right audience. Make every message count.
@@ -5121,8 +5242,8 @@ function PlatformEcosystemSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Platform Ecosystem
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+              <Plug className="size-3 text-cyan-500" /> Platform Ecosystem
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Connect. Integrate.
@@ -6069,8 +6190,8 @@ function WorkspaceManagementSpotlight() {
         <div className="grid min-w-0 grid-cols-1 items-end gap-0 border-b border-border lg:grid-cols-[0.85fr_1.4fr]">
           {/* Left — title */}
           <div className="min-w-0 border-border px-5 pb-5 pt-9 sm:px-8 sm:pb-6 sm:pt-12 lg:border-r lg:py-12">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Multi-Tenant &amp; Workspace Management
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-teal-500/25 bg-teal-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-400">
+              <ShieldCheck className="size-3 text-teal-500" /> Multi-Tenant &amp; Workspaces
             </span>
             <h2 className="text-marketing-title mt-5 leading-tight">
               Multiple workspaces.
@@ -6689,8 +6810,8 @@ function Stepper() {
         <CornerPlus corner="bl" />
         <CornerPlus corner="br" />
         <div className="max-w-2xl">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-            The workflow
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+            <Workflow className="size-3 text-primary" /> The End-to-End Workflow
           </span>
           <h2 className="text-marketing-title mt-4">
             From first message to fully automated revenue.
@@ -6851,8 +6972,8 @@ function Roles() {
 
         <div className="border-b border-border px-8 py-12 text-center lg:px-12 lg:py-16">
           <div className="mx-auto max-w-3xl">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Multi-role System
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+              <Users className="size-3 text-violet-500" /> Multi-Role Workspace
             </span>
             <h2 className="text-marketing-title mt-4">
               One platform. Seven purpose-built experiences.
@@ -7087,8 +7208,8 @@ function Security() {
         <CornerPlus corner="br" />
 
         <div className="max-w-3xl">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-            Security by design
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <ShieldCheck className="size-3 text-emerald-500" /> Security By Design
           </span>
           <h2 className="text-marketing-title mt-4">
             Enterprise controls baked into the schema, not bolted on.
@@ -7342,8 +7463,8 @@ function Integrations() {
         <div className="grid border-b border-border lg:grid-cols-[0.9fr_1.1fr]">
           {/* Editorial copy */}
           <div className="flex flex-col justify-center px-8 py-14 lg:min-h-[540px] lg:px-12 lg:py-16">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary w-fit ">
-              Connect your stack
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 w-fit">
+              <Plug className="size-3 text-cyan-500" /> Connect Your Stack
             </span>
             <h2 className="text-marketing-title mt-4">
               Plug into everything your business already runs on.
@@ -7516,35 +7637,35 @@ function CTA() {
       id="demo"
       className="section-marketing relative scroll-mt-24 border-b border-border bg-background p-0"
     >
-      {/* <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-32 top-0 size-[30rem] rounded-full bg-[#25D366]/7 blur-3xl" />
-        <div className="absolute -right-40 bottom-0 size-[32rem] rounded-full bg-primary/7 blur-3xl" />
-      </div> */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 top-0 size-[30rem] rounded-full bg-[#3ECE90]/8 blur-3xl" />
+        <div className="absolute -right-40 bottom-0 size-[32rem] rounded-full bg-primary/12 blur-3xl" />
+      </div>
 
       <div className="container-marketing relative py-0">
         <CornerPlus corner="bl" />
         <CornerPlus corner="br" />
 
-        <div className="row-bleed-marketing relative overflow-hidden border-y border-white/10 bg-primary p-0 text-white shadow-[0_32px_90px_-54px_rgba(1,89,65,0.75)]">
+        <div className="row-bleed-marketing relative overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#2F40CF] via-[#2433AD] to-[#1A2682] p-0 text-white shadow-[0_32px_90px_-54px_rgba(47,64,207,0.6)]">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-30"
+            className="pointer-events-none absolute inset-0 opacity-25"
             style={{
               backgroundImage:
-                "radial-gradient(circle, rgba(255,255,255,0.22) 1px, transparent 1px)",
+                "radial-gradient(circle, rgba(255,255,255,0.25) 1px, transparent 1px)",
               backgroundSize: "28px 28px",
               maskImage: "radial-gradient(ellipse 70% 80% at 0% 0%, black, transparent)",
               WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 0% 0%, black, transparent)",
             }}
           />
-          {/* <div
+          <div
             aria-hidden
-            className="absolute -right-20 -top-24 size-96 rounded-full bg-[#25D366]/18 blur-3xl"
+            className="pointer-events-none absolute -right-20 -top-24 size-96 rounded-full bg-[#3ECE90]/20 blur-3xl"
           />
           <div
             aria-hidden
-            className="absolute -bottom-48 left-1/3 size-[30rem] rounded-full bg-[#087F47]/25 blur-3xl"
-          /> */}
+            className="pointer-events-none absolute -bottom-48 left-1/3 size-[30rem] rounded-full bg-[#3ECE90]/15 blur-3xl"
+          />
 
           <div className="relative grid items-stretch lg:grid-cols-[0.95fr_1.05fr]">
             <div className="flex min-w-0 flex-col px-7 py-10 sm:px-10 lg:border-r lg:border-white/10 lg:px-14 lg:py-16">
@@ -7682,8 +7803,8 @@ function Pricing() {
 
         <div className="grid items-end gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <div className="max-w-xl">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">
-              Fair, flexible pricing
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
+              <Tag className="size-3 text-primary" /> Fair, Flexible Pricing
             </span>
             <h2 className="text-marketing-title mt-4">Simple pricing. No per-agent tax.</h2>
           </div>
