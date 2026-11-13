@@ -332,7 +332,7 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
       new Set(list.map((c) => c.contact_id).filter(Boolean)),
     ) as string[];
 
-    let contacts: Record<string, { name: string | null; phone: string | null }> = {};
+    const contacts: Record<string, { name: string | null; phone: string | null }> = {};
     if (contactIds.length) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: contactRows } = await (sbAny(context.supabase).from("contacts" as any) as any)

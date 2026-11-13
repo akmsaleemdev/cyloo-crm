@@ -22,12 +22,15 @@ ARG VITE_SUPABASE_PUBLISHABLE_KEY
 ARG VITE_APP_ENV=production
 ARG VITE_APP_MODE=production
 ARG APP_VERSION=6.8.9
+ARG APP_COMMIT=unknown
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
     VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY \
     VITE_APP_ENV=$VITE_APP_ENV \
     VITE_APP_MODE=$VITE_APP_MODE \
     APP_VERSION=$APP_VERSION \
+    APP_COMMIT=$APP_COMMIT \
     APP_MODE=$VITE_APP_MODE
+ENV NODE_OPTIONS=--max-old-space-size=4096
 # node-server emits the standalone HTTP server used by ECS, EC2 and Docker.
 ENV NITRO_PRESET=node-server
 RUN npm run prebuild && npm run build:server && npm run postbuild
@@ -35,9 +38,11 @@ RUN npm run prebuild && npm run build:server && npm run postbuild
 # ---------- 3. Runtime ----------
 FROM node:22-alpine AS runtime
 ARG APP_VERSION=6.8.9
+ARG APP_COMMIT=unknown
 LABEL org.opencontainers.image.title="CYLOO" \
       org.opencontainers.image.description="CYLOO omnichannel messaging platform" \
       org.opencontainers.image.version="$APP_VERSION" \
+      org.opencontainers.image.revision="$APP_COMMIT" \
       org.opencontainers.image.vendor="CYLOO"
 WORKDIR /app
 ENV NODE_ENV=production \
@@ -50,6 +55,8 @@ COPY --from=build --chown=cyloo:cyloo /app/.output ./.output
 COPY --from=build --chown=cyloo:cyloo /app/package.json ./package.json
 COPY --from=build --chown=cyloo:cyloo /app/scripts/start.mjs ./scripts/start.mjs
 COPY --from=build --chown=cyloo:cyloo /app/scripts/lib/environment.mjs ./scripts/lib/environment.mjs
+COPY --from=build --chown=cyloo:cyloo /app/scripts/verify-deployment.mjs ./scripts/verify-deployment.mjs
+COPY --from=build --chown=cyloo:cyloo /app/scripts/lib/deployment-verification.mjs ./scripts/lib/deployment-verification.mjs
 
 USER cyloo
 EXPOSE 3000

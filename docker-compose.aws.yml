@@ -1,0 +1,66 @@
+# Standalone EC2 deployment. Keep the Compose project name stable across releases.
+name: cyloo-aws
+
+services:
+  app:
+    image: cyloo/app:${APP_COMMIT:?Set APP_COMMIT to the release Git SHA}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_COMMIT: ${APP_COMMIT:?Set APP_COMMIT}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:?Set VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:?Set the public Supabase key}
+        VITE_APP_ENV: production
+        VITE_APP_MODE: production
+    env_file:
+      - ${CYLOO_ENV_FILE:-.env.production}
+    environment:
+      NODE_ENV: production
+      APP_MODE: production
+      HOST: 0.0.0.0
+      PORT: "3000"
+      APP_ORIGIN: https://${APP_DOMAIN:?Set the public hostname}
+    expose:
+      - "3000"
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 45s
+    mem_limit: ${APP_MEMORY_LIMIT:-2g}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/public/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set the public hostname without a scheme}
+      ACME_EMAIL: ${ACME_EMAIL:?Set the certificate contact email}
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/aws/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  caddy-data:
+  caddy-config:

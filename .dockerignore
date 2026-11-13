@@ -27,3 +27,14 @@ docker-compose*.yml
 README*.md
 tmp
 .DS_Store
+# Local credentials and operator notes must never enter image layers or caches.
+DB DETAILS.txt
+New Text Document.txt
+deploy/certs
+.ssh
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+.deploy-state
+backups

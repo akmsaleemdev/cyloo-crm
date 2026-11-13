@@ -55,6 +55,8 @@ playwright/.cache
 
 *.tsbuildinfo
 .tscache
+.deploy-state/
+backups/
 
 # Migration recovery snapshots (temporary, may contain sensitive dumps)
 .migration-recovery/

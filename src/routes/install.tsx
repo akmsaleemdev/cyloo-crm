@@ -12,7 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, XCircle, AlertTriangle, Info, ArrowRight, ArrowLeft, Sparkles, ShieldCheck, Database, Package, UserPlus } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Info,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  ShieldCheck,
+  Database,
+  Package,
+  UserPlus,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   checkSystemRequirements,
@@ -33,7 +45,10 @@ export const Route = createFileRoute("/install")({
   head: () => ({
     meta: [
       { title: `Install ${BRAND_NAME} — Enterprise Setup Wizard` },
-      { name: "description", content: `One-click installation wizard for ${BRAND_NAME}. Verify requirements, create your administrator account, activate your license, and launch in minutes.` },
+      {
+        name: "description",
+        content: `One-click installation wizard for ${BRAND_NAME}. Verify requirements, create your administrator account, activate your license, and launch in minutes.`,
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -66,8 +81,8 @@ export const Route = createFileRoute("/install")({
   component: InstallWizard,
 });
 
-
-type StepKey = "welcome" | "requirements" | "environment" | "admin" | "license" | "install" | "finish";
+type StepKey =
+  "welcome" | "requirements" | "environment" | "admin" | "license" | "install" | "finish";
 const STEPS: { key: StepKey; label: string }[] = [
   { key: "welcome", label: "Welcome" },
   { key: "requirements", label: "System" },
@@ -77,7 +92,6 @@ const STEPS: { key: StepKey; label: string }[] = [
   { key: "install", label: "Install" },
   { key: "finish", label: "Finish" },
 ];
-
 
 const statusIcon = (s: ProbeStatus) => {
   if (s === "pass") return <CheckCircle2 className="h-4 w-4 text-emerald-500" />;
@@ -95,7 +109,9 @@ function ProbeList({ probes }: { probes: Probe[] }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="font-medium">{p.label}</span>
-              <Badge variant="outline" className="text-[11px] uppercase">{p.status}</Badge>
+              <Badge variant="outline" className="text-[11px] uppercase">
+                {p.status}
+              </Badge>
             </div>
             <p className="text-sm text-muted-foreground">{p.detail}</p>
             {p.fix && <p className="mt-1 text-xs text-amber-600">→ {p.fix}</p>}
@@ -118,8 +134,16 @@ function InstallWizard() {
   const bootstrapFn = useServerFn(bootstrapSuperAdmin);
   const completeFn = useServerFn(completeSetup);
 
-  const sys = useQuery({ queryKey: ["install.sys"], queryFn: () => sysFn(), enabled: step === "requirements" });
-  const env = useQuery({ queryKey: ["install.env"], queryFn: () => envFn(), enabled: step === "environment" });
+  const sys = useQuery({
+    queryKey: ["install.sys"],
+    queryFn: () => sysFn(),
+    enabled: step === "requirements",
+  });
+  const env = useQuery({
+    queryKey: ["install.env"],
+    queryFn: () => envFn(),
+    enabled: step === "environment",
+  });
 
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
@@ -137,10 +161,20 @@ function InstallWizard() {
 
   const bootstrapMut = useMutation({
     mutationFn: async () => {
-      const r = await bootstrapFn({ data: { email: adminEmail, password: adminPassword, setup_token: setupToken, full_name: adminName || undefined } });
+      const r = await bootstrapFn({
+        data: {
+          email: adminEmail,
+          password: adminPassword,
+          setup_token: setupToken,
+          full_name: adminName || undefined,
+        },
+      });
       if (r.ok) {
         // Sign the new admin in immediately so subsequent steps have a session.
-        const { error } = await supabase.auth.signInWithPassword({ email: adminEmail, password: adminPassword });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: adminEmail,
+          password: adminPassword,
+        });
         if (error) throw new Error(`Admin created but sign-in failed: ${error.message}`);
       }
       return r;
@@ -164,7 +198,9 @@ function InstallWizard() {
 
   const installMut = useMutation({
     mutationFn: async () => {
-      const result = await installFn({ data: { seed_demo: seedDemo, admin_user_id: effectiveAdminUserId } });
+      const result = await installFn({
+        data: { seed_demo: seedDemo, admin_user_id: effectiveAdminUserId },
+      });
       if (result.ok) await completeFn();
       return result;
     },
@@ -179,7 +215,6 @@ function InstallWizard() {
     (step === "install" && installMut.data?.ok) ||
     step === "finish";
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
       <div className="mx-auto max-w-3xl px-4 py-12">
@@ -187,7 +222,9 @@ function InstallWizard() {
           <div className="mx-auto mb-6 flex items-center justify-center">
             <PlatformLogo className="h-12 max-w-[180px] object-contain" alt="CYLOO" />
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Install <Brand /></h1>
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Install <Brand />
+          </h1>
           <p className="text-muted-foreground">Enterprise setup wizard · {APP_VERSION_LABEL}</p>
         </div>
 
@@ -195,7 +232,9 @@ function InstallWizard() {
           <Progress value={((stepIdx + 1) / STEPS.length) * 100} />
           <div className="mt-2 flex justify-between text-xs text-muted-foreground">
             {STEPS.map((s, i) => (
-              <span key={s.key} className={i === stepIdx ? "font-medium text-foreground" : ""}>{s.label}</span>
+              <span key={s.key} className={i === stepIdx ? "font-medium text-foreground" : ""}>
+                {s.label}
+              </span>
             ))}
           </div>
         </div>
@@ -204,9 +243,12 @@ function InstallWizard() {
           {step === "welcome" && (
             <>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Welcome to <Brand /></CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" /> Welcome to <Brand />
+                </CardTitle>
                 <CardDescription>
-                  Enterprise omnichannel CRM, marketing automation, sales pipelines, AI assistant, and BI — all in one platform.
+                  Enterprise omnichannel CRM, marketing automation, sales pipelines, AI assistant,
+                  and BI — all in one platform.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -223,7 +265,9 @@ function InstallWizard() {
                   ))}
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  This wizard verifies your environment and required database tables, activates your CYLOO CRM license, and optionally seeds sample data. Apply database migrations before continuing.
+                  This wizard verifies your environment and required database tables, activates your
+                  CYLOO CRM license, and optionally seeds sample data. Apply database migrations
+                  before continuing.
                 </p>
               </CardContent>
             </>
@@ -233,7 +277,9 @@ function InstallWizard() {
             <>
               <CardHeader>
                 <CardTitle>System Requirements</CardTitle>
-                <CardDescription>Verifying runtime, crypto, and network capabilities.</CardDescription>
+                <CardDescription>
+                  Verifying runtime, crypto, and network capabilities.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {sys.isLoading && <p className="text-sm text-muted-foreground">Running checks</p>}
@@ -249,9 +295,17 @@ function InstallWizard() {
                 <CardDescription>Required and optional environment variables.</CardDescription>
               </CardHeader>
               <CardContent>
-                {setupStatusError && <p className="mb-4 rounded-control border border-rose-500/40 bg-rose-500/10 p-3 text-sm">{setupStatusError}</p>}
-                {env.isLoading && <p className="text-sm text-muted-foreground">Scanning environment</p>}
-                {env.isError && <p className="text-sm text-rose-500">{(env.error as Error).message}</p>}
+                {setupStatusError && (
+                  <p className="mb-4 rounded-control border border-rose-500/40 bg-rose-500/10 p-3 text-sm">
+                    {setupStatusError}
+                  </p>
+                )}
+                {env.isLoading && (
+                  <p className="text-sm text-muted-foreground">Scanning environment</p>
+                )}
+                {env.isError && (
+                  <p className="text-sm text-rose-500">{(env.error as Error).message}</p>
+                )}
                 {env.data && <ProbeList probes={env.data.probes} />}
               </CardContent>
             </>
@@ -260,81 +314,153 @@ function InstallWizard() {
           {step === "admin" && (
             <>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5 text-primary" /> Create Administrator Account</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5 text-primary" /> Create Administrator Account
+                </CardTitle>
                 <CardDescription>
-                  This is the first superadmin for your <Brand /> install. It's created before license activation so the wizard can continue on a fresh database.
+                  This is the first superadmin for your <Brand /> install. It's created before
+                  license activation so the wizard can continue on a fresh database.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {existingSuperAdminId ? (
                   <div className="flex items-start gap-2 rounded-control border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-                    <span>You are signed in as the existing super administrator. Continue with license activation.</span>
+                    <span>
+                      You are signed in as the existing super administrator. Continue with license
+                      activation.
+                    </span>
                   </div>
                 ) : (
-                <>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-email">Email</Label>
-                  <Input id="admin-email" type="email" autoComplete="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="you@example.com" disabled={!!adminUserId} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-password">Password</Label>
-                  <Input id="admin-password" type="password" autoComplete="new-password" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} placeholder="At least 8 characters" disabled={!!adminUserId} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="admin-name">Full name (optional)</Label>
-                  <Input id="admin-name" value={adminName} onChange={(e) => setAdminName(e.target.value)} placeholder="Jane Doe" disabled={!!adminUserId} />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="install-setup-token">Setup token</Label>
-                  <Input id="install-setup-token" type="password" autoComplete="off" value={setupToken}
-                    onChange={(e) => setSetupToken(e.target.value)} disabled={!!adminUserId} />
-                  <p className="text-xs text-muted-foreground">Enter the server's SETUP_BOOTSTRAP_TOKEN.</p>
-                </div>
-                <Button
-                  onClick={() => bootstrapMut.mutate()}
-                  disabled={bootstrapMut.isPending || !adminEmail || adminPassword.length < 8 || setupToken.length < 16 || !!adminUserId}
-                >
-                  {adminUserId ? "Administrator ready" : bootstrapMut.isPending ? "Creating" : "Create administrator"}
-                </Button>
-                {adminMsg && (
-                  <div className={`flex items-start gap-2 rounded-control border p-3 text-sm ${adminMsg.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-rose-500/40 bg-rose-500/10"}`}>
-                    {adminMsg.ok ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-rose-500" />}
-                    <span>{adminMsg.msg}</span>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Already created a Supabase Auth user? Assign that user the superadmin role in the database, then sign in and reopen /install.
-                </p>
-                </>
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-email">Email</Label>
+                      <Input
+                        id="admin-email"
+                        type="email"
+                        autoComplete="email"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        disabled={!!adminUserId}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-password">Password</Label>
+                      <Input
+                        id="admin-password"
+                        type="password"
+                        autoComplete="new-password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="At least 8 characters"
+                        disabled={!!adminUserId}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="admin-name">Full name (optional)</Label>
+                      <Input
+                        id="admin-name"
+                        value={adminName}
+                        onChange={(e) => setAdminName(e.target.value)}
+                        placeholder="Jane Doe"
+                        disabled={!!adminUserId}
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="install-setup-token">Setup token</Label>
+                      <Input
+                        id="install-setup-token"
+                        type="password"
+                        autoComplete="off"
+                        value={setupToken}
+                        onChange={(e) => setSetupToken(e.target.value)}
+                        disabled={!!adminUserId}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the server's SETUP_BOOTSTRAP_TOKEN.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={() => bootstrapMut.mutate()}
+                      disabled={
+                        bootstrapMut.isPending ||
+                        !adminEmail ||
+                        adminPassword.length < 8 ||
+                        setupToken.length < 16 ||
+                        !!adminUserId
+                      }
+                    >
+                      {adminUserId
+                        ? "Administrator ready"
+                        : bootstrapMut.isPending
+                          ? "Creating"
+                          : "Create administrator"}
+                    </Button>
+                    {adminMsg && (
+                      <div
+                        className={`flex items-start gap-2 rounded-control border p-3 text-sm ${adminMsg.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-rose-500/40 bg-rose-500/10"}`}
+                      >
+                        {adminMsg.ok ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-rose-500" />
+                        )}
+                        <span>{adminMsg.msg}</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Already created a Supabase Auth user? Assign that user the superadmin role in
+                      the database, then sign in and reopen /install.
+                    </p>
+                  </>
                 )}
               </CardContent>
             </>
           )}
 
-
-
           {step === "license" && (
             <>
               <CardHeader>
                 <CardTitle>License Activation</CardTitle>
-                <CardDescription>Enter your CYLOO CRM license key or trial activation code.</CardDescription>
+                <CardDescription>
+                  Enter your CYLOO CRM license key or trial activation code.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="purchase">Purchase code</Label>
-                  <Input id="purchase" value={purchase} onChange={(e) => setPurchase(e.target.value)} placeholder="00000000-0000-0000-0000-000000000000" />
+                  <Input
+                    id="purchase"
+                    value={purchase}
+                    onChange={(e) => setPurchase(e.target.value)}
+                    placeholder="00000000-0000-0000-0000-000000000000"
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="buyer">Buyer name (optional)</Label>
-                  <Input id="buyer" value={buyer} onChange={(e) => setBuyer(e.target.value)} placeholder="Your name or company" />
+                  <Input
+                    id="buyer"
+                    value={buyer}
+                    onChange={(e) => setBuyer(e.target.value)}
+                    placeholder="Your name or company"
+                  />
                 </div>
-                <Button onClick={() => activateMut.mutate()} disabled={activateMut.isPending || !purchase}>
+                <Button
+                  onClick={() => activateMut.mutate()}
+                  disabled={activateMut.isPending || !purchase}
+                >
                   {activateMut.isPending ? "Activating" : "Activate license"}
                 </Button>
                 {licenseMsg && (
-                  <div className={`flex items-start gap-2 rounded-control border p-3 text-sm ${licenseMsg.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-rose-500/40 bg-rose-500/10"}`}>
-                    {licenseMsg.ok ? <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-rose-500" />}
+                  <div
+                    className={`flex items-start gap-2 rounded-control border p-3 text-sm ${licenseMsg.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-rose-500/40 bg-rose-500/10"}`}
+                  >
+                    {licenseMsg.ok ? (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-rose-500" />
+                    )}
                     <span>{licenseMsg.msg}</span>
                   </div>
                 )}
@@ -363,7 +489,9 @@ function InstallWizard() {
                   {installMut.isPending ? "Checking" : "Verify installation"}
                 </Button>
                 {installMut.isError && (
-                  <p className="text-sm text-rose-500 break-words">{(installMut.error as Error).message}</p>
+                  <p className="text-sm text-rose-500 break-words">
+                    {(installMut.error as Error).message}
+                  </p>
                 )}
                 {installMut.data && (
                   <ul className="space-y-2">
@@ -385,8 +513,13 @@ function InstallWizard() {
           {step === "finish" && (
             <>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> You're ready to launch</CardTitle>
-                <CardDescription><Brand /> is installed and configured. Head to the dashboard{SHOW_RESOURCE_LINKS ? " or explore the release center" : ""}.</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" /> You're ready to launch
+                </CardTitle>
+                <CardDescription>
+                  <Brand /> is installed and configured. Head to the dashboard
+                  {SHOW_RESOURCE_LINKS ? " or explore the release center" : ""}.
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className={`grid gap-3 ${SHOW_RESOURCE_LINKS ? "sm:grid-cols-2" : ""}`}>
@@ -394,10 +527,17 @@ function InstallWizard() {
                     <p className="font-medium">Open dashboard</p>
                     <p className="text-sm text-muted-foreground">Go to the app home.</p>
                   </Link>
-                  {SHOW_RESOURCE_LINKS && <Link to="/release-center" className="rounded-control border bg-card/40 p-4 hover:bg-card">
-                    <p className="font-medium">Release Center</p>
-                    <p className="text-sm text-muted-foreground">Updates, health, optimization, docs.</p>
-                  </Link>}
+                  {SHOW_RESOURCE_LINKS && (
+                    <Link
+                      to="/release-center"
+                      className="rounded-control border bg-card/40 p-4 hover:bg-card"
+                    >
+                      <p className="font-medium">Release Center</p>
+                      <p className="text-sm text-muted-foreground">
+                        Updates, health, optimization, docs.
+                      </p>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </>
@@ -405,10 +545,17 @@ function InstallWizard() {
         </Card>
 
         <div className="mt-6 flex justify-between">
-          <Button variant="outline" onClick={() => setStepIdx((i) => Math.max(0, i - 1))} disabled={stepIdx === 0}>
+          <Button
+            variant="outline"
+            onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
+            disabled={stepIdx === 0}
+          >
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
-          <Button onClick={() => setStepIdx((i) => Math.min(STEPS.length - 1, i + 1))} disabled={!canProceed || stepIdx === STEPS.length - 1}>
+          <Button
+            onClick={() => setStepIdx((i) => Math.min(STEPS.length - 1, i + 1))}
+            disabled={!canProceed || stepIdx === STEPS.length - 1}
+          >
             Next <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

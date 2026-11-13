@@ -98,7 +98,7 @@ const eventTypeSchema = z.object({
       "custom",
     ])
     .default("custom"),
-  location_details: z.record(z.any()).default({}),
+  location_details: z.record(z.string(), z.any()).default({}),
   is_group: z.boolean().default(false),
   max_participants: z.number().int().min(1).max(1000).default(1),
   price: z.number().nullable().optional(),
@@ -300,7 +300,7 @@ const appointmentInputSchema = z.object({
     ])
     .default("internal"),
   source_conversation_id: z.string().uuid().optional().nullable(),
-  answers: z.record(z.any()).default({}),
+  answers: z.record(z.string(), z.any()).default({}),
 });
 
 export const createAppointment = createServerFn({ method: "POST" })

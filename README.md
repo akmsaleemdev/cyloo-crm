@@ -4,6 +4,8 @@ CYLOO is a multi-tenant customer messaging and CRM application built with React,
 
 **Release status:** local build/test results are recorded in the cleanup report. Deployment configuration is provided, but AWS deployment, live tenant isolation and complete production readiness require the outstanding checks in [deployment](docs/DEPLOYMENT.md). Do not treat older audit reports as current test evidence.
 
+**Deploy on AWS with Docker:** follow the [EC2 Docker deployment guide](docs/AWS_DOCKER_DEPLOYMENT.md) for installation, HTTPS, fresh builds, release verification, rollback, and removal of an identified old installation. The [Docker verification workflow](.github/workflows/docker-verify.yml) builds and starts the production image without production credentials.
+
 ## Requirements and repository layout
 
 - Node 22.12 or newer in the Node 22 release line; npm 11.9 was used for verification.

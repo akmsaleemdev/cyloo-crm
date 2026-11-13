@@ -19,8 +19,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "security:scan": "node scripts/security-scan-ci.mjs && node scripts/security-check-extensions.mjs",
-    "security:baseline": "node scripts/security-scan-ci.mjs --update-baseline && node scripts/security-check-extensions.mjs",
+    "security:scan": "node scripts/security-scan-ci.mjs",
+    "security:baseline": "node scripts/security-scan-ci.mjs --update-baseline",
+    "security:extensions": "node scripts/security-check-extensions.mjs",
     "security:policies": "node scripts/security-policy-assertions.mjs",
     "test:security:policies": "vitest run tests/unit/rls-policy-argument-order.test.ts tests/unit/rls-billing-invite-policies.test.ts tests/unit/messaging-account-security.test.ts tests/unit/gateway-secret-access.test.ts tests/integration/chatbot-webhook-secret-access.test.ts tests/integration/avatar-storage-access.test.ts tests/integration/workflow-rls-access.test.ts tests/integration/cross-tenant-access-prevention.test.ts tests/integration/tenant-access-audit-trail.test.ts tests/integration/tenant-audit-event-recording.test.ts tests/api/security-realtime-rls.test.ts",
     "format": "prettier --write .",
@@ -48,11 +49,13 @@
     "prebuild": "node scripts/check-public-environment.mjs && node scripts/check-forbidden-font-features.mjs && node scripts/check-menu-item-tokens.mjs && node scripts/check-outbound-branding.mjs && node scripts/check-deprecated-utilities.mjs",
     "test:security:api": "vitest run tests/api/security-cron-token.test.ts tests/api/security-bulk-mass-assignment.test.ts tests/api/security-realtime-rls.test.ts",
     "audit:realtime-rls": "node scripts/audit-realtime-rls.mjs",
-    "typecheck": "tsgo --noEmit -p tsconfig.json",
-    "typecheck:full": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "node --max-old-space-size=6144 node_modules/typescript/bin/tsc --noEmit -p tsconfig.json",
+    "typecheck:full": "npm run typecheck",
     "preflight": "node scripts/ci-preflight.mjs",
+    "verify:deployment": "node scripts/verify-deployment.mjs",
     "build:cloudflare": "node scripts/build-cloudflare.mjs",
-    "deploy:cloudflare": "node scripts/copy-docs-to-output.mjs && node scripts/deploy-cloudflare.mjs",
+    "predeploy:cloudflare": "npm run build:cloudflare",
+    "deploy:cloudflare": "node scripts/deploy-cloudflare.mjs",
     "start": "node --env-file-if-exists=.env scripts/start.mjs",
     "format:check": "prettier --check .",
     "audit:unused": "knip --include files,dependencies,unlisted,unresolved"
@@ -94,7 +97,6 @@
     "@tanstack/react-start": "^1.168.26",
     "@tanstack/react-virtual": "^3.14.6",
     "@tanstack/router-plugin": "^1.168.18",
-    "@tanstack/zod-adapter": "^1.167.0",
     "ai": "^7.0.31",
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
@@ -130,7 +132,7 @@
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.24.2"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
@@ -155,14 +157,14 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "jsdom": "^29.1.1",
+    "knip": "^5.80.0",
     "msw": "^2.15.0",
     "nitro": "3.0.260603-beta",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.3.3",
-    "vitest": "^4.1.10",
-    "knip": "^5.80.0"
+    "vitest": "^4.1.10"
   },
   "overrides": {
     "argparse": "^2.0.1",

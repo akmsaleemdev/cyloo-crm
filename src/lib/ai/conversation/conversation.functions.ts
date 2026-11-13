@@ -53,7 +53,7 @@ const ConfigSchema: z.ZodType<ConversationConfig> = z
     json: z.boolean().optional(),
     toolsEnabled: z.boolean().optional(),
     tools: z.array(z.string()).optional(),
-    customerMemory: z.record(z.unknown()).nullable().optional(),
+    customerMemory: z.record(z.string(), z.unknown()).nullable().optional(),
   })
   .passthrough() as z.ZodType<ConversationConfig>;
 
@@ -359,7 +359,7 @@ export const sendMessage = createServerFn({ method: "POST" })
               model: languageModel,
               system: systemPrompt,
               messages: [...history, { role: "user", content: data.message }],
-              output: Output.object({ schema: z.record(z.unknown()) }),
+              output: Output.object({ schema: z.record(z.string(), z.unknown()) }),
               temperature: config.temperature ?? 0.2,
             });
             assistantText = JSON.stringify(output);

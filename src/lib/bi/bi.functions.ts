@@ -118,7 +118,7 @@ export const upsertWidget = createServerFn({ method: "POST" })
           type: z.string(),
           title: z.string().min(1).max(120),
           dataSource: z.string(),
-          config: z.record(z.unknown()).optional(),
+          config: z.record(z.string(), z.unknown()).optional(),
           position: z.unknown().optional(),
           size: z.unknown().optional(),
           refreshIntervalS: z.number().int().min(0).max(3600).optional(),
@@ -181,7 +181,7 @@ export const runMetricQuery = createServerFn({ method: "POST" })
               to: z.string().optional(),
             }),
             granularity: z.string().optional(),
-            filters: z.record(z.unknown()).optional(),
+            filters: z.record(z.string(), z.unknown()).optional(),
             groupBy: z.array(z.string()).optional(),
           }),
           cacheTtlS: z.number().int().min(0).max(3600).optional(),
@@ -475,7 +475,7 @@ export const upsertKpi = createServerFn({ method: "POST" })
           formula: z.object({
             source: z.string(),
             aggregation: z.string().optional(),
-            filters: z.record(z.unknown()).optional(),
+            filters: z.record(z.string(), z.unknown()).optional(),
           }),
         })
         .parse(d),
@@ -742,7 +742,7 @@ export const updateDashboard = createServerFn({ method: "POST" })
           isDefault: z.boolean().optional(),
           icon: z.string().max(60).nullable().optional(),
           tags: z.array(z.string().max(40)).max(20).optional(),
-          layout: z.record(z.unknown()).optional(),
+          layout: z.record(z.string(), z.unknown()).optional(),
         })
         .parse(d),
   )

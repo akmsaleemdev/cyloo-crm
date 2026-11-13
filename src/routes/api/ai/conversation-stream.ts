@@ -25,7 +25,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 const BodySchema = z.object({
   conversationId: z.string().uuid(),
   message: z.string().min(1).max(20_000),
-  overrideConfig: z.record(z.unknown()).optional(),
+  overrideConfig: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const Route = createFileRoute("/api/ai/conversation-stream")({

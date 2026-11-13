@@ -43,7 +43,7 @@ export async function evaluateCartPromotions(
   },
 ): Promise<CartPromoResult> {
   const productIds = opts.lines.map((l) => l.product_id).filter((x): x is string => !!x);
-  let catMap: Record<string, { category_id: string | null; brand_id: string | null }> = {};
+  const catMap: Record<string, { category_id: string | null; brand_id: string | null }> = {};
   if (productIds.length) {
     const { data: prods } = await sbAny(sb)
       .from("products")
@@ -85,7 +85,7 @@ export async function evaluateCartPromotions(
     return isAuto || isCoupon;
   });
 
-  let customerCounts: Record<string, number> = {};
+  const customerCounts: Record<string, number> = {};
   if (opts.contactId && candidates.length) {
     const { data: reds } = await sbAny(sb)
       .from("commerce_promotion_redemptions")

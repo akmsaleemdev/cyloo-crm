@@ -158,7 +158,7 @@ export function useSaveQuote() {
       const wsId = active.id;
       const totals = computeTotals(input.lines);
 
-      let quoteId = input.id;
+      const quoteId = input.id;
       let quoteNumber: string | undefined;
 
       if (!quoteId) {

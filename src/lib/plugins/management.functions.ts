@@ -44,7 +44,7 @@ export const updatePluginSettings = createServerFn({ method: "POST" })
     z
       .object({
         installationId: z.string().uuid(),
-        config: z.record(z.unknown()).optional(),
+        config: z.record(z.string(), z.unknown()).optional(),
         grantedPermissions: z.array(z.string()).optional(),
       })
       .parse(i),
@@ -75,7 +75,7 @@ export const logPluginEvent = createServerFn({ method: "POST" })
         level: z.enum(["debug", "info", "warn", "error"]),
         event: z.string().max(120),
         message: z.string().max(2000).optional(),
-        context: z.record(z.unknown()).optional(),
+        context: z.record(z.string(), z.unknown()).optional(),
       })
       .parse(i),
   )
@@ -137,7 +137,7 @@ export const recordPluginHealth = createServerFn({ method: "POST" })
         errorRate: z.number().min(0).max(100).optional(),
         cpuUsage: z.number().min(0).max(100).optional(),
         memoryMb: z.number().int().min(0).optional(),
-        details: z.record(z.unknown()).optional(),
+        details: z.record(z.string(), z.unknown()).optional(),
       })
       .parse(i),
   )
@@ -390,7 +390,7 @@ export const putPluginStorage = createServerFn({ method: "POST" })
     z
       .object({
         installationId: z.string().uuid(),
-        patch: z.record(z.unknown()),
+        patch: z.record(z.string(), z.unknown()),
       })
       .parse(i),
   )

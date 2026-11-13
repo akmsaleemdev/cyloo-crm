@@ -735,7 +735,7 @@ export const upsertDeployment = createServerFn({ method: "POST" })
         channel_account_id: z.string().nullable().optional(),
         enabled: z.boolean().optional(),
         business_hours_only: z.boolean().optional(),
-        config: z.record(z.unknown()).optional(),
+        config: z.record(z.string(), z.unknown()).optional(),
       })
       .parse(v),
   )

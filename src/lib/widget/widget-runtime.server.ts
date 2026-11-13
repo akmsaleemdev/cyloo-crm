@@ -457,7 +457,7 @@ export async function loadWidgetStatus(sessionId: string): Promise<WidgetStatus 
   const handoff =
     handoffState === "human" || handoffState === "queued" || s.status === "handed_off";
 
-  let queuePosition: number | null = null;
+  const queuePosition: number | null = null;
   let queueStatus: "waiting" | "assigned" | null = null;
   if (handoffState === "queued") {
     const { data: q } = await supabaseAdmin

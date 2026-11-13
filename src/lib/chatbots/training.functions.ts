@@ -292,7 +292,7 @@ const testInput = z.object({
   userInput: z.string().min(1).max(4000),
   model: z.string().optional(),
   temperature: z.number().min(0).max(2).optional(),
-  variables: z.record(z.string()).optional(),
+  variables: z.record(z.string(), z.string()).optional(),
 });
 
 export const runPromptTest = createServerFn({ method: "POST" })

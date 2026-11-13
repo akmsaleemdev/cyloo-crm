@@ -335,7 +335,7 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
         customer_email: nn(z.string()),
         customer_phone: nn(z.string()),
         customer_timezone: nn(z.string()),
-        answers: nn(z.record(z.any())),
+        answers: nn(z.record(z.string(), z.any())),
         source_channel: nn(z.string()),
       }),
       execute: auditable(ctx, "book_meeting", async (a) => {

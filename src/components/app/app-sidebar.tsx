@@ -338,7 +338,7 @@ export function AppSidebar() {
         {/* User Profile Bar matching Screenshot 2 & 3 */}
         <div
           className={cn(
-            "h-14 flex items-center border-t border-sidebar-border bg-sidebar shrink-0",
+            "h-header flex items-center border-t border-sidebar-border bg-sidebar shrink-0",
             sidebarCollapsed ? "justify-center px-1" : "justify-between px-3",
           )}
         >

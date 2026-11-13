@@ -217,7 +217,7 @@ export const updateAutomationConfig = createServerFn({ method: "POST" })
         enabled: z.boolean().optional(),
         requireConfirmation: z.boolean().optional(),
         autoApplyThreshold: z.number().min(0).max(1).nullable().optional(),
-        config: z.record(z.unknown()).optional(),
+        config: z.record(z.string(), z.unknown()).optional(),
       })
       .parse(v),
   )
@@ -408,7 +408,7 @@ const SuggestionOutSchema = z.object({
         summary: z.string().optional().nullable(),
         rationale: z.string().optional().nullable(),
         confidence: z.number().min(0).max(1).optional().nullable(),
-        payload: z.record(z.unknown()).default({}),
+        payload: z.record(z.string(), z.unknown()).default({}),
       }),
     )
     .default([]),

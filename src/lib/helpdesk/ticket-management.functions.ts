@@ -64,7 +64,7 @@ export const createTicket = createServerFn({ method: "POST" })
         assigned_team_id: z.string().uuid().optional(),
         ticket_type: z.string().default("question"),
         tags: z.array(z.string()).max(30).default([]),
-        custom_fields: z.record(z.any()).default({}),
+        custom_fields: z.record(z.string(), z.any()).default({}),
         parent_ticket_id: z.string().uuid().optional(),
       })
       .parse(input),
@@ -132,7 +132,7 @@ export const updateTicket = createServerFn({ method: "POST" })
           assigned_team_id: z.string().uuid().nullable().optional(),
           ticket_type: z.string().optional(),
           tags: z.array(z.string()).max(30).optional(),
-          custom_fields: z.record(z.any()).optional(),
+          custom_fields: z.record(z.string(), z.any()).optional(),
           parent_ticket_id: z.string().uuid().nullable().optional(),
         }),
       })

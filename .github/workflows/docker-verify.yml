@@ -1,0 +1,59 @@
+name: Verify AWS Docker release
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      APP_COMMIT: ${{ github.sha }}
+      VITE_SUPABASE_URL: https://container-test.supabase.co
+      VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_container_test_only
+      APP_ORIGIN: https://crm.example.test
+      APP_DOMAIN: crm.example.test
+      ACME_EMAIL: operations@example.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate EC2 Compose configuration without displaying environment values
+        run: |
+          export CYLOO_ENV_FILE="$RUNNER_TEMP/cyloo-container.env"
+          printf '%s\n' 'SUPABASE_URL=https://container-test.supabase.co' 'SUPABASE_PUBLISHABLE_KEY=sb_publishable_container_test_only' 'SUPABASE_SERVICE_ROLE_KEY=container-test-only' > "$CYLOO_ENV_FILE"
+          docker compose -f docker-compose.aws.yml --env-file "$CYLOO_ENV_FILE" config --quiet
+      - name: Build the production Dockerfile with synthetic public configuration
+        run: |
+          docker build --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY --build-arg APP_COMMIT -t "cyloo-verify:$APP_COMMIT" .
+      - name: Start the container and verify its artifact and cache policy
+        run: |
+          docker run -d --name cyloo-docker-smoke -p 127.0.0.1:3832:3000 \
+            -e SUPABASE_URL="$VITE_SUPABASE_URL" \
+            -e SUPABASE_PUBLISHABLE_KEY="$VITE_SUPABASE_PUBLISHABLE_KEY" \
+            -e SUPABASE_SERVICE_ROLE_KEY=container-test-only \
+            -e APP_ORIGIN="$APP_ORIGIN" "cyloo-verify:$APP_COMMIT"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3832/api/public/health >/dev/null; then break; fi
+            sleep 2
+          done
+          node scripts/verify-deployment.mjs http://127.0.0.1:3832 --commit "$APP_COMMIT"
+          test "$(docker exec cyloo-docker-smoke id -u)" != 0
+          docker exec cyloo-docker-smoke sh -c 'test ! -e /app/.env && test ! -e "/app/DB DETAILS.txt" && test ! -e /app/deploy/certs'
+      - name: Validate the automatic HTTPS proxy configuration
+        run: |
+          docker run --rm -e APP_DOMAIN -e ACME_EMAIL -v "$PWD/deploy/aws/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs cyloo-docker-smoke 2>/dev/null || true
+      - name: Remove the isolated test container
+        if: always()
+        run: docker rm -f cyloo-docker-smoke 2>/dev/null || true

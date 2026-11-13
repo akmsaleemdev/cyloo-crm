@@ -379,7 +379,7 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
     const templateIds = Array.from(
       new Set(campaigns.map((c) => c.templateId).filter(Boolean)),
     ) as string[];
-    let templateNames = new Map<string, string>();
+    const templateNames = new Map<string, string>();
     if (templateIds.length > 0) {
       const { data: tpls = [] } = await supabase
         .from("wa_templates")

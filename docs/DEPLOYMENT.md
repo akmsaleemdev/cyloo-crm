@@ -2,6 +2,9 @@
 
 Current guidance for the repository as of 2026-11-13. See the [platform audit](./audit/CYLOO_PLATFORM_INDEPENDENCE.md) for validation results and release blockers. Older documentation sections and changelogs describe historical implementations; they are not release approval.
 
+For the complete EC2 walkthrough using the production Dockerfile and automatic
+HTTPS, start with [AWS Docker deployment](./AWS_DOCKER_DEPLOYMENT.md).
+
 ## Reproducible installation
 
 Use Node 22.12+ and npm 11.9, or Bun 1.4.4. Both applications' Bun lockfiles use the public npm registry. Keep the root npm lockfile synchronized: GitHub Actions and Docker use frozen npm installation. Do not replace integrity hashes or tarball URLs manually.
@@ -15,6 +18,10 @@ npm run security:scan
 npm run security:policies
 ```
 
+`security:scan` is the static CI gate. Run `npm run security:extensions` separately
+against the intended database with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`
+provided securely; it is a required deployment check, not a secret-free CI task.
+
 The Expo application is independent: install from `mobile/` with its own lockfile and run its typecheck and native release checks separately. The QR worker requires Node >=20 and has no committed lockfile; repeatable worker installation remains a release task.
 
 ## Choose a deployment target
@@ -27,6 +34,40 @@ npm start
 ```
 
 Docker uses `build:server` with the Node preset and runs the validated startup script as a non-root user. Cloudflare is opt-in via `npm run build:cloudflare`; never deploy the Node artifact as a Worker. Netlify remains a compatibility target and is not the AWS deployment path.
+
+For Cloudflare, use `npm run deploy:cloudflare -- --name WORKER --domain HOSTNAME`.
+Its predeploy hook rebuilds the current source with the Cloudflare preset and runs
+the normal prebuild checks and postbuild SSR/documentation steps. A failed build
+stops deployment rather than uploading an older `.output/` artifact. Use
+`npm run deploy:cloudflare -- --dry-run` to build and validate without publishing.
+Worker and domain settings can also be supplied through the existing Cloudflare
+environment variables. A Git push alone does not publish a Cloudflare Worker or
+dispatch the manual AWS workflow.
+
+For an existing Docker installation, a Git pull alone does not replace running
+containers. Rebuild and recreate the application from its deployed checkout:
+
+```sh
+docker compose --env-file .env.production build --build-arg APP_COMMIT="$(git rev-parse HEAD)" app
+docker compose --env-file .env.production up -d --no-deps --force-recreate app
+docker compose --env-file .env.production exec -T proxy nginx -t
+docker compose --env-file .env.production exec -T proxy nginx -s reload
+```
+
+The `/api/public/health` response includes the artifact's `commit` and `built_at`.
+Compare these after deployment; local builds with uncommitted changes include a
+`-dirty` suffix. Immutable asset URLs may be cached, but the service worker script
+must be revalidated so installed clients receive updates. Use the actual host's
+deployment mechanism; the example Cloudflare domain is not a production target.
+After publishing a clean commit, verify the actual host with:
+
+```sh
+npm run verify:deployment -- https://YOUR_HOST --commit EXPECTED_COMMIT_SHA
+```
+
+The check fails if a healthy server still serves an older commit or if its
+service worker is cached without revalidation. Reloading nginx also refreshes
+the Docker application's upstream address after container replacement.
 
 Configure the variables documented in `.env.example` using your hosting provider's secret store. Set the actual Supabase URL and public key at build time. Keep service-role keys, cron tokens, provider credentials and encryption keys server-only. Direct Google/Microsoft OAuth integrations require registered callback URLs on the deployed host and a stable `APP_USER_CONNECTION_KEY_SECRET`. AI calls use configured direct providers; no builder gateway credentials are required.
 

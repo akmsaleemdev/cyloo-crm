@@ -39,7 +39,7 @@ const BodySchema = z.object({
     .optional(),
   event: z.enum(["pageview", "custom", "identify"]).default("pageview"),
   eventName: z.string().max(120).optional(),
-  properties: z.record(z.unknown()).optional(),
+  properties: z.record(z.string(), z.unknown()).optional(),
 });
 
 function json(status: number, body: unknown) {

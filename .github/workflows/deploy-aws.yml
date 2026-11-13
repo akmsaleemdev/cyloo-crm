@@ -60,7 +60,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           image="$REGISTRY/$REPOSITORY:$GITHUB_SHA"
-          docker build --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY -t "$image" .
+          docker build --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY --build-arg APP_COMMIT="$GITHUB_SHA" -t "$image" .
           docker push "$image"
           echo "uri=$image" >> "$GITHUB_OUTPUT"
       - name: Read existing ECS task definition

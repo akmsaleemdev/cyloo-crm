@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { z } from "zod";
-import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { zodValidator, fallback } from "@/lib/validation/search";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

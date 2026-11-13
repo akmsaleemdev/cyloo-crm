@@ -340,7 +340,7 @@ const chatInput = z.object({
   max_tokens: z.number().int().min(1).max(32_000).optional(),
   response_format: z.enum(["text", "json_object"]).optional(),
   system: z.string().optional(),
-  variables: z.record(z.unknown()).optional(),
+  variables: z.record(z.string(), z.unknown()).optional(),
 });
 
 export interface AIChatResult {

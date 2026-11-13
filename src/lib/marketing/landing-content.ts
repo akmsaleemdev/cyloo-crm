@@ -13,8 +13,8 @@ export const OG_IMAGE_URL = `${SITE_URL}/api/public/og.png`;
 export function getLandingContent(brandName: string) {
   const name = brandName.trim() || BRAND_NAME;
   return {
-    title: `${name} — Omnichannel CRM, Shared Inbox & AI Automation`,
-    description: `${name} is a self-hosted omnichannel CRM: a shared team inbox for WhatsApp, Messenger, Instagram, Telegram and email, plus sales pipeline, AI chatbots, broadcast campaigns and commerce.`,
+    title: `${name} | Intelligence Business Platform`,
+    description: `Bring conversations, customers, projects, marketing, and everyday tasks together with ${name}, the intelligence business platform built to help you move forward.`,
   };
 }
 
@@ -22,7 +22,7 @@ export const { title: LANDING_TITLE, description: LANDING_DESCRIPTION } =
   getLandingContent(BRAND_NAME);
 
 export const LANDING_SOCIAL_DESCRIPTION =
-  "Run sales, support and marketing across WhatsApp, Messenger, Instagram, Telegram and email from one multi-tenant platform. AI Studio, automations and self-hosting.";
+  "CYLOO — Intelligence Business Platform. One place for conversations, customers, projects, marketing, and AI-powered work.";
 
 export const FAQ_CATEGORIES = [
   { id: "product", label: "Product" },

@@ -66,7 +66,7 @@ export const activateTheme = createServerFn({ method: "POST" })
         .object({
           themeId: z.string().uuid(),
           workspaceId: z.string().uuid().optional().nullable(),
-          overrides: z.record(z.string()).optional(),
+          overrides: z.record(z.string(), z.string()).optional(),
         })
         .parse(input),
   )

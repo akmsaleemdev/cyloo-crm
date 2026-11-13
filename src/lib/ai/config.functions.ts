@@ -263,7 +263,7 @@ export const upsertAIProviderInput = z.object({
   enabled: z.boolean().default(true),
   isDefault: z.boolean().default(false),
   priority: z.number().int().default(100),
-  config: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.unknown()).default({}),
 });
 export type UpsertAIProviderInput = z.infer<typeof upsertAIProviderInput>;
 
@@ -472,7 +472,7 @@ export const upsertAIModelInput = z.object({
   providerId: z.string().uuid(),
   modelId: z.string().min(1),
   displayName: z.string().min(1),
-  capabilities: z.record(z.boolean()).default({}),
+  capabilities: z.record(z.string(), z.boolean()).default({}),
   contextWindow: z.number().int().nullable().optional(),
   maxOutputTokens: z.number().int().nullable().optional(),
   inputCostPer1k: z.number().default(0),
@@ -543,7 +543,7 @@ export const upsertAIFeatureConfigInput = z.object({
   maxTokens: z.number().int().nullable().optional(),
   systemPrompt: z.string().nullable().optional(),
   enabled: z.boolean().default(true),
-  config: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.unknown()).default({}),
 });
 export type UpsertAIFeatureConfigInput = z.infer<typeof upsertAIFeatureConfigInput>;
 

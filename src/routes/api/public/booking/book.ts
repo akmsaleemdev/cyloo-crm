@@ -19,7 +19,7 @@ const bookSchema = z.object({
   customer_timezone: z.string().max(60).default("UTC"),
   start_at: z.string().datetime(),
   end_at: z.string().datetime(),
-  answers: z.record(z.any()).default({}),
+  answers: z.record(z.string(), z.any()).default({}),
   source_channel: z
     .enum(["booking_page", "whatsapp", "instagram", "telegram", "email", "livechat", "api"])
     .default("booking_page"),

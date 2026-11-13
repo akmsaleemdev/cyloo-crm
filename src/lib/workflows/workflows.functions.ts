@@ -18,7 +18,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 const RunInput = z.object({
   automationId: z.string().uuid(),
   triggerSource: z.string().default("manual"),
-  input: z.record(z.unknown()).default({}),
+  input: z.record(z.string(), z.unknown()).default({}),
   dryRun: z.boolean().optional(),
 });
 
@@ -62,7 +62,7 @@ export const runWorkflow = createServerFn({ method: "POST" })
 const EnqueueInput = z.object({
   automationId: z.string().uuid(),
   triggerSource: z.string().default("manual"),
-  input: z.record(z.unknown()).default({}),
+  input: z.record(z.string(), z.unknown()).default({}),
   runAt: z.string().datetime().optional(),
   priority: z.number().int().min(1).max(9).optional(),
   maxAttempts: z.number().int().min(1).max(20).optional(),
@@ -116,7 +116,7 @@ export const enqueueWorkflow = createServerFn({ method: "POST" })
 
 const EmitEventInput = z.object({
   eventType: z.string().min(1),
-  payload: z.record(z.unknown()).default({}),
+  payload: z.record(z.string(), z.unknown()).default({}),
   workspaceId: z.string().uuid().optional(),
   idempotencyKey: z.string().min(1).max(200).optional(),
 });
@@ -378,11 +378,11 @@ const TestRunInput = z.object({
   automationId: z.string().uuid(),
   graph: z
     .object({
-      nodes: z.array(z.record(z.unknown())),
-      edges: z.array(z.record(z.unknown())),
+      nodes: z.array(z.record(z.string(), z.unknown())),
+      edges: z.array(z.record(z.string(), z.unknown())),
     })
     .optional(),
-  input: z.record(z.unknown()).default({}),
+  input: z.record(z.string(), z.unknown()).default({}),
 });
 
 /**

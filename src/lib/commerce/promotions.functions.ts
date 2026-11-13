@@ -410,7 +410,7 @@ export const validatePromotions = createServerFn({ method: "POST" })
       return p.auto_apply || p.promo_type === "automatic";
     });
 
-    let customerCounts: Record<string, number> = {};
+    const customerCounts: Record<string, number> = {};
     if (data.contactId && candidates.length) {
       const { data: reds } = await context.supabase
         .from("commerce_promotion_redemptions")

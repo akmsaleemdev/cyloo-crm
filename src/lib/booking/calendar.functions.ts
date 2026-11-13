@@ -42,7 +42,7 @@ const entrySchema = z.object({
   timezone: z.string().max(64).default("UTC"),
   rrule: z.string().max(500).nullable().optional(),
   is_blocking: z.boolean().default(true),
-  metadata: z.record(z.any()).default({}),
+  metadata: z.record(z.string(), z.any()).default({}),
 });
 
 export const listCalendarEntries = createServerFn({ method: "POST" })

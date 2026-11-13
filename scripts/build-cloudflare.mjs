@@ -1,7 +1,11 @@
-/** Build the Cloudflare Worker locally using the normal short build command. */
+/** Run the complete build lifecycle for the Cloudflare target. */
 import { spawnSync } from "node:child_process";
 
-const build = spawnSync(process.execPath, ["node_modules/vite/bin/vite.js", "build"], {
+const npmCli = process.env.npm_execpath;
+if (!npmCli) throw new Error("Run the Cloudflare build with `npm run build:cloudflare`.");
+
+// Calling Vite directly skips public-environment checks, SSR fixes and docs.
+const build = spawnSync(process.execPath, [npmCli, "run", "build"], {
   env: { ...process.env, NITRO_PRESET: "cloudflare-module" },
   stdio: "inherit",
 });

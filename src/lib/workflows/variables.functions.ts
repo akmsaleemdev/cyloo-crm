@@ -176,7 +176,7 @@ export const deleteVariable = createServerFn({ method: "POST" })
 const PreviewInput = z.object({
   template: z.string(),
   automationId: z.string().uuid().optional(),
-  sample: z.record(z.unknown()).optional(),
+  sample: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const previewExpression = createServerFn({ method: "POST" })

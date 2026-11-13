@@ -132,7 +132,7 @@ async function retryFailedPayments(
     .lt("next_retry_at", new Date().toISOString())
     .limit(100);
   let retried = 0;
-  let succeeded = 0;
+  const succeeded = 0;
   for (const a of data ?? []) {
     const cfg = await loadConfig(sb, a.organization_id);
     if (a.retry_count >= cfg.max_payment_retries) continue;

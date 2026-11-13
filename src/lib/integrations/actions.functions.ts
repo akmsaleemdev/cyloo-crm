@@ -10,8 +10,8 @@ const inputSchema = z.object({
   providerId: z.string().min(1),
   capabilityId: z.string().min(1),
   workspaceId: z.string().uuid().optional(),
-  config: z.record(z.union([z.string(), z.boolean()]).optional()).default({}),
-  input: z.record(z.unknown()).default({}),
+  config: z.record(z.string(), z.union([z.string(), z.boolean()]).optional()).default({}),
+  input: z.record(z.string(), z.unknown()).default({}),
 });
 
 export const runIntegrationActionFn = createServerFn({ method: "POST" })

@@ -310,7 +310,6 @@ function ProductsPage() {
                   <div className="flex items-start gap-3">
                     <div className="h-14 w-14 rounded-control bg-muted overflow-hidden shrink-0 grid place-items-center">
                       {images[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={images[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
                         <Icon className="h-6 w-6 text-muted-foreground" />

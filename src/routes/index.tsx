@@ -1,5 +1,4 @@
 import { Brand, BrandWordmark, PlatformLogo, PlatformMark } from "@/components/brand";
-import { HeroInteractiveShowcase } from "@/components/marketing-redesign/hero-interactive-showcase";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { useBrandName } from "@/hooks/use-brand-name";
 import { usePlatformBranding } from "@/hooks/use-platform-branding";
@@ -61,6 +60,7 @@ import {
   MoreHorizontal,
   Settings,
   ChevronRight,
+  ChevronDown,
   type LucideIcon,
   ArrowLeft,
   UserPlus,
@@ -173,7 +173,6 @@ function LandingPage() {
         <main>
           <Hero />
           <StackReplacement />
-          <ChannelStrip />
           <Features />
           <IndustryUseCases />
           <UnifiedInboxSpotlight />
@@ -184,7 +183,6 @@ function LandingPage() {
           <WorkspaceManagementSpotlight />
           <PlatformOverviewBento />
           <Stepper />
-          <Roles />
           <Security />
           <Integrations />
           <CTA />
@@ -204,6 +202,8 @@ function LandingPage() {
 /* ============================================================ */
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
+  const [platformOpen, setPlatformOpen] = useState(false);
+  const platformTrigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 15);
@@ -213,12 +213,37 @@ function Nav() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const links = [
-    { href: "#features", label: "Features" },
-    { href: "#workflow", label: "Product" },
-    { href: "#industries", label: "Solutions" },
-    { href: "#pricing", label: "Pricing" },
-    { href: "#demo", label: "Book a demo" },
+  const platformItems = [
+    {
+      label: "Omnichannel Communications",
+      description: "All your conversations, together.",
+      icon: MessagesSquare,
+      href: "#features",
+    },
+    {
+      label: "CRM & Sales",
+      description: "Keep customers and opportunities organized.",
+      icon: Users,
+      href: "#features",
+    },
+    {
+      label: "Project Management",
+      description: "Plan work and keep tasks moving.",
+      icon: Check,
+      href: "#workflow",
+    },
+    {
+      label: "Marketing",
+      description: "Create campaigns and reach your audience.",
+      icon: Megaphone,
+      href: "#pricing",
+    },
+    {
+      label: "AI & Automation",
+      description: "Automate routine work and save time.",
+      icon: Bot,
+      href: "#workflow",
+    },
   ];
   return (
     <header
@@ -236,8 +261,70 @@ function Nav() {
         >
           <PlatformLogo alt="CYLOO" className="h-8 md:h-9 w-auto shrink-0 object-contain" />
         </Link>
-        <nav className="hidden items-center gap-5 text-base text-muted-foreground lg:flex xl:gap-8">
-          {links.map((l) => (
+        <nav
+          className="hidden items-center gap-5 text-base text-muted-foreground lg:flex xl:gap-8"
+          aria-label="Primary navigation"
+        >
+          <div
+            className="relative"
+            onMouseEnter={() => setPlatformOpen(true)}
+            onMouseLeave={() => setPlatformOpen(false)}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget)) setPlatformOpen(false);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setPlatformOpen(false);
+                platformTrigger.current?.focus();
+              }
+            }}
+          >
+            <button
+              ref={platformTrigger}
+              type="button"
+              aria-expanded={platformOpen}
+              aria-controls={platformOpen ? "platform-navigation" : undefined}
+              className="link-marketing inline-flex items-center gap-1 px-1"
+              onClick={() => setPlatformOpen((open) => !open)}
+            >
+              Platform{" "}
+              <ChevronDown
+                className={`size-3.5 transition-transform ${platformOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {platformOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.18 }}
+                id="platform-navigation"
+                className="absolute left-1/2 top-full z-50 w-80 -translate-x-1/2 pt-4"
+              >
+                <div className="rounded-xl border border-border bg-background p-2 shadow-xl">
+                  {platformItems.map(({ label, description, icon: Icon, href }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      className="flex gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
+                      onClick={() => setPlatformOpen(false)}
+                    >
+                      <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
+                      <span>
+                        <span className="block text-sm font-semibold text-foreground">{label}</span>
+                        <span className="block text-xs text-muted-foreground">{description}</span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+          {[
+            { href: "#industries", label: "Solutions" },
+            { href: "#automation", label: "AI & Automation" },
+            { href: "#pricing", label: "Pricing" },
+            { href: "#download", label: "Resources" },
+          ].map((l) => (
             <a
               key={l.href}
               href={l.href}
@@ -255,7 +342,7 @@ function Nav() {
           </div>
           <Button asChild variant="outline" size="default" className="hidden sm:inline-flex">
             <Link to="/auth" {...ctaAttrs("sign-in", "nav")}>
-              Sign in
+              Log In
             </Link>
           </Button>
           <Button asChild variant="primary" size="default">
@@ -326,29 +413,15 @@ function Hero() {
             transition={{ duration: 0.4, delay: 0.05 }}
           >
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-xs">
-              <PlatformMark alt="" className="size-3.5 shrink-0 object-contain hidden sm:inline" />
-              WhatsApp, Messenger &amp; Instagram APIs · Self-hosted &amp; Cloud
+              YOUR WORK. BEAUTIFULLY CONNECTED.
             </span>
           </motion.div>
           <h1 className="text-marketing-title-lg mt-6">
-            Every conversation.
-            <br />
-            <span className="relative inline-block font-black">
-              {/* gradient text */}
-              <span className="landing-hero-accent-text relative bg-clip-text text-transparent">
-                One unified workspace.
-              </span>
-              {/* underline bar */}
-              <span
-                aria-hidden
-                className="landing-hero-accent-bar absolute inset-x-0 -bottom-1.5 h-1.5 rounded-full opacity-90"
-              />
-            </span>
+            One Platform. Everything You Need to Move Forward.
           </h1>
           <p className="text-lg text-muted-foreground font-light mx-auto mt-6 max-w-2xl leading-relaxed">
-            <Brand /> unifies WhatsApp, Messenger, Instagram, Telegram and email into one CRM
-            workspace — with sales pipelines, AI chatbots, broadcast campaigns and automation, on
-            infrastructure you own.
+            Bring your conversations, customers, projects, marketing, and everyday tasks together.
+            CYLOO helps you stay organized, work smarter, and get more done with the power of AI.
           </p>
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -362,12 +435,8 @@ function Hero() {
               size="xl"
               className="w-full md:w-auto shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all"
             >
-              <Link
-                to="/auth"
-                search={{ mode: "sign-up" }}
-                {...ctaAttrs("start-free-trial", "hero")}
-              >
-                Start free trial <ArrowRight className="size-4" />
+              <Link to="/auth" search={{ mode: "sign-up" }} {...ctaAttrs("get-started", "hero")}>
+                Get Started <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button
@@ -376,25 +445,20 @@ function Hero() {
               size="xl"
               className="w-full md:w-auto hover:bg-muted/60 transition-all bg-background!"
             >
-              <a href="#workflow" {...ctaAttrs("see-the-product", "hero")}>
-                <Play className="size-4" /> See the product
+              <a href="#features" {...ctaAttrs("explore-cyloo", "hero")}>
+                Explore CYLOO
               </a>
             </Button>
           </motion.div>
         </motion.div>
 
-        {/* CYLOO workflow preview */}
-        <HeroInteractiveShowcase />
-
         <div className="mt-14 flex flex-wrap items-center justify-center gap-5 lg:mt-20">
           {[
-            { Icon: SiWhatsapp, name: "WhatsApp", bg: "#25D366" },
-            { Icon: SiMessenger, name: "Messenger", bg: "#0084FF" },
-            { Icon: SiInstagram, name: "Instagram", bg: "#E1306C" },
-            { Icon: SiTelegram, name: "Telegram", bg: "#2CA5E0" },
-            { Icon: MessageSquare, name: "SMS", bg: "#FF6B00" },
-            { Icon: Headphones, name: "Live Chat", bg: "#00B5A3" },
-            { Icon: Mail, name: "Email", bg: "#64748B" },
+            { Icon: MessagesSquare, name: "Conversations", bg: "#2339CC" },
+            { Icon: Users, name: "CRM & Sales", bg: "#2339CC" },
+            { Icon: Check, name: "Projects", bg: "#2339CC" },
+            { Icon: Megaphone, name: "Marketing", bg: "#2339CC" },
+            { Icon: Bot, name: "AI & Automation", bg: "#3ECE90" },
           ].map(({ Icon, name, bg }) => (
             <div
               key={name}
@@ -412,9 +476,6 @@ function Hero() {
             </div>
           ))}
         </div>
-
-        {/* CYLOO capabilities */}
-        <TrustMetricsBand />
       </div>
     </section>
   );
@@ -4120,7 +4181,10 @@ function AutomationBotsSpotlight() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className="relative section-marketing border-b border-border bg-surface">
+    <section
+      id="automation"
+      className="relative section-marketing border-b border-border bg-surface"
+    >
       <div className="relative container-marketing p-0">
         <CornerPlus corner="bl" />
         <CornerPlus corner="br" />
@@ -8221,7 +8285,7 @@ function Footer() {
                 <PlatformLogo alt="CYLOO" className="h-8 w-auto shrink-0 object-contain" />
               </Link>
               <p className="mt-4 max-w-xs text-sm text-background/70 dark:text-foreground/70">
-                The self-hosted omnichannel CRM for sales, support and marketing teams.
+                AI-Powered Omnichannel SaaS CRM
               </p>
               <div className="mt-6 flex items-center gap-3">
                 {channels.map(({ Icon, name }) => (

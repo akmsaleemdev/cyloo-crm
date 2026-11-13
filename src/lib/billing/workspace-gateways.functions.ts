@@ -345,7 +345,7 @@ export const getWorkspaceGatewayHealth = createServerFn({ method: "GET" })
         displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
         mode: p.mode ?? "sandbox",
         enabled,
-        isDefault: Boolean(o?.is_default) ? enabled : p.is_default && enabled,
+        isDefault: o?.is_default ? enabled : p.is_default && enabled,
         lastWebhookAt: s?.lastAt ?? null,
         lastWebhookStatus: s?.lastStatus ?? null,
         deliveries: total,

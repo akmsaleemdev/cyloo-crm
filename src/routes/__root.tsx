@@ -12,7 +12,7 @@ import {
   Scripts,
   retainSearchParams,
 } from "@tanstack/react-router";
-import { zodValidator } from "@tanstack/zod-adapter";
+import { zodValidator } from "@/lib/validation/search";
 import { z } from "zod";
 import { OrgUrlSync } from "@/lib/tenant/org-url-sync";
 import { useEffect, type ReactNode } from "react";
@@ -233,24 +233,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-        { title: `${brandName} — The AI-Powered CRM Platform` },
+        { title: `${brandName} | Intelligence Business Platform` },
         {
           name: "description",
-          content: `${brandName} is the modern, self-hosted omnichannel CRM for sales, support, marketing, and AI automation. Enterprise-grade, multi-tenant, production-ready.`,
+          content: `Bring conversations, customers, projects, marketing, and everyday tasks together with ${brandName}, the intelligence business platform built to help you move forward.`,
         },
         { name: "author", content: brandName },
         { name: "theme-color", content: "#171717" },
-        { property: "og:title", content: `${brandName} — The AI-Powered CRM Platform` },
+        { property: "og:title", content: `${brandName} — Intelligence Business Platform` },
         {
           property: "og:description",
           content:
-            "Sales, support, marketing, and AI automation on one omnichannel CRM. Self-hosted, multi-tenant, enterprise-ready.",
+            "One platform for conversations, customers, projects, marketing, and AI-powered work.",
         },
         { property: "og:type", content: "website" },
         { property: "og:site_name", content: brandName },
         { property: "og:image", content: "/og-image.png" },
         { name: "twitter:card", content: "summary_large_image" },
-        { name: "twitter:title", content: `${brandName} — The AI-Powered CRM Platform` },
+        { name: "twitter:title", content: `${brandName} — Intelligence Business Platform` },
         {
           name: "twitter:description",
           content: "Modern omnichannel CRM for sales, support, marketing, and AI automation.",

@@ -46,7 +46,7 @@ export const leadCaptureSchema = z
         message: "Please use your work email address",
       }),
     companySize: z.enum(COMPANY_SIZE_VALUES, {
-      errorMap: () => ({ message: "Select your company size" }),
+      error: "Select your company size",
     }),
     contactMethod: z.enum(["email", "whatsapp"]).default("email"),
     whatsappNumber: z
@@ -63,7 +63,7 @@ export const leadCaptureSchema = z
       .or(z.literal("")),
     sourcePage: z.string().trim().max(255).optional().or(z.literal("")),
     referrer: z.string().trim().max(500).optional().or(z.literal("")),
-    utm: z.record(z.string().max(200)).default({}),
+    utm: z.record(z.string(), z.string().max(200)).default({}),
     /** Honeypot — must stay empty. Bots fill it in. */
     website: z.string().max(0).optional().or(z.literal("")),
   })

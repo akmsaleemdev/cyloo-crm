@@ -202,7 +202,7 @@ export function useSaveInvoice() {
       const wsId = active.id;
       const totals = computeInvoiceTotals(input.lines);
 
-      let invoiceId = input.id;
+      const invoiceId = input.id;
       let invoiceNumber: string | undefined;
 
       if (!invoiceId) {

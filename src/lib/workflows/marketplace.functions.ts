@@ -13,8 +13,8 @@ import { sbAny } from "@/lib/supabase/untyped";
  */
 
 const GraphSchema = z.object({
-  nodes: z.array(z.record(z.unknown())).default([]),
-  edges: z.array(z.record(z.unknown())).default([]),
+  nodes: z.array(z.record(z.string(), z.unknown())).default([]),
+  edges: z.array(z.record(z.string(), z.unknown())).default([]),
 });
 
 const CATEGORIES = [

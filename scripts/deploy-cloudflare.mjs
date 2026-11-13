@@ -73,7 +73,7 @@ const generatedPath = resolve(".output/server/wrangler.json");
 const deployPath = resolve(".output/server/wrangler.deploy.json");
 const generatedConfig = await readFile(generatedPath, "utf8").catch((error) => {
   if (error?.code === "ENOENT") {
-    throw new Error("Prebuilt Cloudflare artifact not found. Run `npm run build` locally first.");
+    throw new Error("Cloudflare artifact not found. Run `npm run build:cloudflare` first.");
   }
   throw error;
 });

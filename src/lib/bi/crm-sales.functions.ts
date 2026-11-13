@@ -109,7 +109,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     const history = historyRes.data ?? [];
 
     // Lookup owner names
-    let ownerNames = new Map<string, string>();
+    const ownerNames = new Map<string, string>();
     const ownerIds = Array.from(
       new Set(deals.map((d: any) => d.owner_id).filter(Boolean)),
     ) as string[];
