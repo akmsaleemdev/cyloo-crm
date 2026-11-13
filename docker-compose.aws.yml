@@ -13,6 +13,7 @@ services:
         VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:?Set the public Supabase key}
         VITE_APP_ENV: production
         VITE_APP_MODE: production
+        BUILD_NODE_MAX_OLD_SPACE_SIZE: ${BUILD_NODE_MAX_OLD_SPACE_SIZE:-2048}
     env_file:
       - ${CYLOO_ENV_FILE:-.env.production}
     environment:

@@ -12,7 +12,16 @@ concurrency:
   cancel-in-progress: true
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    name: Docker (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     env:
       APP_COMMIT: ${{ github.sha }}
@@ -21,6 +30,7 @@ jobs:
       APP_ORIGIN: https://crm.example.test
       APP_DOMAIN: crm.example.test
       ACME_EMAIL: operations@example.test
+      TARGET_ARCH: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,9 +41,11 @@ jobs:
           export CYLOO_ENV_FILE="$RUNNER_TEMP/cyloo-container.env"
           printf '%s\n' 'SUPABASE_URL=https://container-test.supabase.co' 'SUPABASE_PUBLISHABLE_KEY=sb_publishable_container_test_only' 'SUPABASE_SERVICE_ROLE_KEY=container-test-only' > "$CYLOO_ENV_FILE"
           docker compose -f docker-compose.aws.yml --env-file "$CYLOO_ENV_FILE" config --quiet
+          docker compose -f docker-compose.yml --env-file "$CYLOO_ENV_FILE" config --quiet
       - name: Build the production Dockerfile with synthetic public configuration
         run: |
-          docker build --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY --build-arg APP_COMMIT -t "cyloo-verify:$APP_COMMIT" .
+          docker build --build-arg VITE_SUPABASE_URL --build-arg VITE_SUPABASE_PUBLISHABLE_KEY --build-arg APP_COMMIT --build-arg BUILD_NODE_MAX_OLD_SPACE_SIZE=2048 -t "cyloo-verify:$APP_COMMIT" .
+          test "$(docker image inspect --format '{{.Architecture}}' "cyloo-verify:$APP_COMMIT")" = "$TARGET_ARCH"
       - name: Start the container and verify its artifact and cache policy
         run: |
           docker run -d --name cyloo-docker-smoke -p 127.0.0.1:3832:3000 \

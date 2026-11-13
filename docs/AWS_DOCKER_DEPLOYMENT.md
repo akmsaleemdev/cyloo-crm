@@ -13,10 +13,15 @@ preparing this repository. Replace the placeholders below with your real values.
 
 ## 1. Create or identify the EC2 server
 
-1. In your chosen AWS region, use an Ubuntu 24.04 LTS **x86_64** instance with at
-   least 2 vCPUs, 8 GiB RAM for builds, and 30 GiB encrypted EBS storage. Monitor
+1. In your chosen AWS region, use an Ubuntu 24.04 LTS **x86_64 or ARM64** instance with
+   at least 2 vCPUs, preferably 8 GiB RAM for builds, and 30 GiB encrypted EBS storage. Monitor
    memory/disk and resize for your workload. This is starting capacity, not a load
    certification. Keep the existing instance if it already meets the requirements.
+   Build natively on the instance architecture; do not load an amd64-only image
+   onto an ARM64 server. CI verifies both architectures. EC2 Compose limits the
+   Node build heap to 2 GiB (`BUILD_NODE_MAX_OLD_SPACE_SIZE=2048`); smaller existing
+   instances also need enough available RAM/swap and disk for the running app and
+   temporary build layers. A low-memory failure should be resolved before cutover.
 2. Use an EC2 key pair or Systems Manager Session Manager. For SSH, permit TCP 22
    only from your administrator IP. Permit inbound TCP 80 and 443 for the web
    site. Do not expose application port 3000 to the internet.
@@ -152,6 +157,28 @@ sudo env APP_COMMIT="$APP_COMMIT" docker compose -f docker-compose.aws.yml --env
 ```
 
 ## 6. Switch traffic and enable HTTPS
+
+### Existing nginx installations
+
+If the existing deployment already uses this repository's nginx stack and has
+valid certificates, keep that ingress configuration during replacement. The
+original `docker-compose.yml` also supports commit-tagged images and the 2 GiB
+build heap. Copy the existing runtime environment and certificates into protected
+shared storage outside the new checkout. Export `CYLOO_ENV_FILE` and
+`CYLOO_CERTS_DIR` to their absolute shared paths, and preserve the old Compose
+project name with `-p EXISTING_PROJECT` so containers are replaced in the same
+stack. Do not start the Caddy Compose stack on these same ports.
+
+Build the new commit, start a separate candidate without public ports, and verify
+its health/build stamp first. Run `docker compose ... run --rm --no-deps proxy
+nginx -t` with the new source and shared certificate paths before cutover. Then
+recreate the existing stack with `up -d --wait --force-recreate`; verify the public
+commit and worker headers. Keep the old image and protected source/configuration
+backup for rollback. Delete the old checkout only after confirming no running
+container has a bind mount under it. This path preserves existing TLS management;
+check its certificate renewal service uses the shared certificate location.
+
+### New automatic HTTPS installations
 
 Inspect current listeners and containers before replacing an existing installation:
 

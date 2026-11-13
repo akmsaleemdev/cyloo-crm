@@ -22,7 +22,7 @@ x-app-env: &app-env
 
 services:
   app:
-    image: cyloo/app:${CYLOO_VERSION:-6.8.9}
+    image: cyloo/app:${APP_COMMIT:-${CYLOO_VERSION:-6.8.9}}
     build:
       context: .
       dockerfile: Dockerfile
@@ -31,9 +31,11 @@ services:
         VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
         VITE_APP_ENV: production
         APP_VERSION: ${CYLOO_VERSION:-6.8.9}
+        APP_COMMIT: ${APP_COMMIT:-unknown}
+        BUILD_NODE_MAX_OLD_SPACE_SIZE: ${BUILD_NODE_MAX_OLD_SPACE_SIZE:-2048}
     environment: *app-env
     env_file:
-      - .env.production
+      - ${CYLOO_ENV_FILE:-.env.production}
     restart: unless-stopped
     expose:
       - "3000"
@@ -74,7 +76,7 @@ services:
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./deploy/certs:/etc/nginx/certs:ro
+      - ${CYLOO_CERTS_DIR:-./deploy/certs}:/etc/nginx/certs:ro
       - nginx-cache:/var/cache/nginx
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
