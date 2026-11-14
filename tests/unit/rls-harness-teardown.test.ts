@@ -87,6 +87,16 @@ describe("RLS harness teardown authorization", () => {
   });
 
   it("deletes verified synthetic users and deduplicates repeated IDs", async () => {
+    lookup.mockImplementation(async (id: string) => ({
+      data: {
+        user: {
+          id,
+          email: "rls-a-run@rls-harness.test",
+          app_metadata: { rls_harness: true, run_id: "test-run" },
+        },
+      },
+      error: null,
+    }));
     const result = await teardownHarness([TEST_ID, TEST_ID, OTHER_ID]);
     expect(result).toEqual({ deleted: 2, errors: [] });
     expect(lookup).toHaveBeenCalledTimes(2);
