@@ -22,7 +22,7 @@ export async function teardownHarness(userIds: string[]) {
     }
 
     // Auth.admin.deleteUser has elevated permissions: check both the
-    // immutable test email suffix and harness-created metadata first.
+    // test email suffix and admin-only harness app metadata first.
     const { data, error: lookupError } = await admin.auth.admin.getUserById(id);
     const user = data?.user;
     if (lookupError || !user) {
@@ -31,8 +31,8 @@ export async function teardownHarness(userIds: string[]) {
     }
 
     if (
-      user.user_metadata?.rls_harness !== true ||
-      typeof user.user_metadata?.run_id !== "string" ||
+      user.app_metadata?.rls_harness !== true ||
+      typeof user.app_metadata?.run_id !== "string" ||
       !user.email?.endsWith("@rls-harness.test")
     ) {
       errors.push({ id, message: "not_a_harness_user" });
