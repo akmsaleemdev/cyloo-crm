@@ -7,16 +7,21 @@
 export type TaxBreakdown = { code: string; rate: number; amount: number };
 export type IndiaSupplyType = "intra_state" | "inter_state" | "unknown";
 
+const GST_COUNTRIES = new Set(["IN", "AU", "NZ", "SG"]);
+const VAT_COUNTRIES = new Set([
+  "AE", "SA", "BH", "OM", "GB", "IE", "DE", "FR", "IT", "ES", "PT",
+  "NL", "BE", "AT", "SE", "DK", "FI", "NO", "PL", "CZ", "HU",
+  "RO", "BG", "HR", "GR", "CY", "MT", "LU", "LV", "LT", "EE",
+  "SK", "SI", "ZA", "KE", "NG", "GH", "EG", "TR", "CH",
+]);
+
 export function taxDisplayName(country: string | null | undefined): string {
-  switch (country?.toUpperCase()) {
-    case "IN": return "GST";
-    case "AE": case "SA": case "BH": case "OM": return "VAT";
-    case "GB": return "VAT";
-    case "US": return "Sales tax";
-    case "CA": return "GST/HST";
-    case "AU": case "NZ": case "SG": return "GST";
-    default: return "Tax";
-  }
+  const code = country?.toUpperCase() ?? "";
+  if (GST_COUNTRIES.has(code)) return "GST";
+  if (VAT_COUNTRIES.has(code)) return "VAT";
+  if (code === "CA") return "GST/HST";
+  if (code === "US") return "Sales tax";
+  return "Tax";
 }
 
 /**
