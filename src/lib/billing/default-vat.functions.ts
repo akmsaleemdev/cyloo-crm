@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const getDefaultVatRate = createServerFn({ method: "GET" })
+export const getPlatformTaxDefaults = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
@@ -20,9 +20,13 @@ export const getDefaultVatRate = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error("Unable to load the platform VAT default");
     const value = data?.value;
-    const raw = value && typeof value === "object" && !Array.isArray(value)
-      ? (value as Record<string, unknown>).default_vat_rate
-      : undefined;
-    const rate = typeof raw === "number" ? raw : 0;
-    return Number.isFinite(rate) && rate >= 0 && rate <= 100 ? rate : 0;
+    const settings = value && typeof value === "object" && !Array.isArray(value)
+      ? value as Record<string, unknown> : {};
+    const validRate = (input: unknown): number | null =>
+      typeof input === "number" && Number.isFinite(input) && input >= 0 && input <= 100
+        ? input : null;
+    return {
+      vatRate: validRate(settings.default_vat_rate),
+      gstRate: validRate(settings.default_gst_rate),
+    };
   });
