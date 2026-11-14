@@ -392,6 +392,7 @@ import { Route as ApiPublicV1ConversationsRouteImport } from './routes/api/publi
 import { Route as ApiPublicV1DealsRouteImport } from './routes/api/public/v1/deals'
 import { Route as ApiPublicV1MessagesRouteImport } from './routes/api/public/v1/messages'
 import { Route as ApiPublicV1OpenapiRouteImport } from './routes/api/public/v1/openapi'
+import { Route as ApiPublicVcardViewIndexRouteImport } from './routes/api/public/vcard-view/index'
 import { Route as ApiPublicWebhooksDispatchRouteImport } from './routes/api/public/webhooks/dispatch'
 import { Route as ApiPublicWebhooksInstagramRouteImport } from './routes/api/public/webhooks/instagram'
 import { Route as ApiPublicWebhooksMessengerRouteImport } from './routes/api/public/webhooks/messenger'
@@ -2595,6 +2596,11 @@ const ApiPublicV1OpenapiRoute = ApiPublicV1OpenapiRouteImport.update({
   path: '/api/public/v1/openapi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVcardViewIndexRoute = ApiPublicVcardViewIndexRouteImport.update({
+  id: '/api/public/vcard-view/',
+  path: '/api/public/vcard-view/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksDispatchRoute =
   ApiPublicWebhooksDispatchRouteImport.update({
     id: '/api/public/webhooks/dispatch',
@@ -3193,6 +3199,7 @@ export interface FileRoutesByFullPath {
   '/client/billing/': typeof AuthenticatedClientBillingIndexRoute
   '/integrations/marketplace/': typeof AuthenticatedIntegrationsMarketplaceIndexRoute
   '/marketplace/plugins/': typeof AuthenticatedMarketplacePluginsIndexRoute
+  '/api/public/vcard-view/': typeof ApiPublicVcardViewIndexRoute
   '/client/billing/invoice/$id': typeof AuthenticatedClientBillingInvoiceIdRoute
   '/client/billing/order/$id': typeof AuthenticatedClientBillingOrderIdRoute
   '/client/billing/quote/$id': typeof AuthenticatedClientBillingQuoteIdRoute
@@ -3601,6 +3608,7 @@ export interface FileRoutesByTo {
   '/client/billing': typeof AuthenticatedClientBillingIndexRoute
   '/integrations/marketplace': typeof AuthenticatedIntegrationsMarketplaceIndexRoute
   '/marketplace/plugins': typeof AuthenticatedMarketplacePluginsIndexRoute
+  '/api/public/vcard-view': typeof ApiPublicVcardViewIndexRoute
   '/client/billing/invoice/$id': typeof AuthenticatedClientBillingInvoiceIdRoute
   '/client/billing/order/$id': typeof AuthenticatedClientBillingOrderIdRoute
   '/client/billing/quote/$id': typeof AuthenticatedClientBillingQuoteIdRoute
@@ -4022,6 +4030,7 @@ export interface FileRoutesById {
   '/_authenticated/client/billing/': typeof AuthenticatedClientBillingIndexRoute
   '/_authenticated/integrations/marketplace/': typeof AuthenticatedIntegrationsMarketplaceIndexRoute
   '/_authenticated/marketplace/plugins/': typeof AuthenticatedMarketplacePluginsIndexRoute
+  '/api/public/vcard-view/': typeof ApiPublicVcardViewIndexRoute
   '/_authenticated/client/billing/invoice/$id': typeof AuthenticatedClientBillingInvoiceIdRoute
   '/_authenticated/client/billing/order/$id': typeof AuthenticatedClientBillingOrderIdRoute
   '/_authenticated/client/billing/quote/$id': typeof AuthenticatedClientBillingQuoteIdRoute
@@ -4442,6 +4451,7 @@ export interface FileRouteTypes {
     | '/client/billing/'
     | '/integrations/marketplace/'
     | '/marketplace/plugins/'
+    | '/api/public/vcard-view/'
     | '/client/billing/invoice/$id'
     | '/client/billing/order/$id'
     | '/client/billing/quote/$id'
@@ -4850,6 +4860,7 @@ export interface FileRouteTypes {
     | '/client/billing'
     | '/integrations/marketplace'
     | '/marketplace/plugins'
+    | '/api/public/vcard-view'
     | '/client/billing/invoice/$id'
     | '/client/billing/order/$id'
     | '/client/billing/quote/$id'
@@ -5270,6 +5281,7 @@ export interface FileRouteTypes {
     | '/_authenticated/client/billing/'
     | '/_authenticated/integrations/marketplace/'
     | '/_authenticated/marketplace/plugins/'
+    | '/api/public/vcard-view/'
     | '/_authenticated/client/billing/invoice/$id'
     | '/_authenticated/client/billing/order/$id'
     | '/_authenticated/client/billing/quote/$id'
@@ -5424,6 +5436,7 @@ export interface RootRouteChildren {
   ApiPublicWidgetTrackRoute: typeof ApiPublicWidgetTrackRoute
   ApiPublicWidgetTypingRoute: typeof ApiPublicWidgetTypingRoute
   ApiPublicWidgetUploadRoute: typeof ApiPublicWidgetUploadRoute
+  ApiPublicVcardViewIndexRoute: typeof ApiPublicVcardViewIndexRoute
   ApiPublicBookingGoogleCalendarCallbackRoute: typeof ApiPublicBookingGoogleCalendarCallbackRoute
   ApiPublicBookingMicrosoftCalendarCallbackRoute: typeof ApiPublicBookingMicrosoftCalendarCallbackRoute
   ApiPublicHooksBillingAutomationRoute: typeof ApiPublicHooksBillingAutomationRoute
@@ -8120,6 +8133,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1OpenapiRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/vcard-view/': {
+      id: '/api/public/vcard-view/'
+      path: '/api/public/vcard-view'
+      fullPath: '/api/public/vcard-view/'
+      preLoaderRoute: typeof ApiPublicVcardViewIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/dispatch': {
       id: '/api/public/webhooks/dispatch'
       path: '/api/public/webhooks/dispatch'
@@ -9376,6 +9396,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWidgetTrackRoute: ApiPublicWidgetTrackRoute,
   ApiPublicWidgetTypingRoute: ApiPublicWidgetTypingRoute,
   ApiPublicWidgetUploadRoute: ApiPublicWidgetUploadRoute,
+  ApiPublicVcardViewIndexRoute: ApiPublicVcardViewIndexRoute,
   ApiPublicBookingGoogleCalendarCallbackRoute:
     ApiPublicBookingGoogleCalendarCallbackRoute,
   ApiPublicBookingMicrosoftCalendarCallbackRoute:
