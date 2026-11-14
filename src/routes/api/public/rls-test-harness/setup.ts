@@ -6,8 +6,8 @@ import { createFileRoute } from "@tanstack/react-router";
  * and returns credentials + access tokens for both.
  *
  * SECURITY:
- * - Gated by RLS_TEST_HARNESS_SECRET (header `x-harness-secret`).
- * - Refuses to run when APP_MODE=production unless RLS_TEST_HARNESS_ALLOW_PROD=1.
+ * - Gated by a 32+-byte RLS_TEST_HARNESS_SECRET (header `x-harness-secret`).
+ * - Refuses all production requests; requires an explicitly isolated Supabase test project.
  */
 export const Route = createFileRoute("/api/public/rls-test-harness/setup")({
   server: {
