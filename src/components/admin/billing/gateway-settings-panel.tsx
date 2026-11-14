@@ -40,6 +40,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   deleteGateway,
+  checkGatewaySetup,
   listGateways,
   setDefaultGateway,
   setGatewayEnabled,
@@ -127,6 +128,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
   const modeFn = useServerFn(setGatewayMode);
   const upsertFn = useServerFn(upsertGateway);
   const deleteFn = useServerFn(deleteGateway);
+  const checkSetupFn = useServerFn(checkGatewaySetup);
 
   const [editing, setEditing] = useState<{ mode: "add" | "edit"; form: FormState } | null>(null);
 
@@ -169,12 +171,22 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const checkSetupMut = useMutation({
+    mutationFn: (provider_id: string) => checkSetupFn({ data: { provider_id } }),
+    onSuccess: (result) => {
+      if (result.status === "configuration_ready") toast.info(result.message);
+      else toast.warning(result.message);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const saveMut = useMutation({
     mutationFn: (form: FormState) => upsertFn({ data: form }),
     onSuccess: (res) => {
-      toast.success(`${res.provider_id} saved`);
+      toast.success(`${res.provider_id} settings saved — checking setup`);
       setEditing(null);
       invalidate();
+      checkSetupMut.mutate(res.provider_id);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -284,6 +296,15 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   onClick={() => setEditing({ mode: "edit", form: fromGateway(p) })}
                 >
                   <Settings2 className="w-4 h-4 " /> Configure
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8"
+                  disabled={checkSetupMut.isPending}
+                  onClick={() => checkSetupMut.mutate(p.id)}
+                >
+                  Check setup
                 </Button>
                 <Button
                   size="sm"
