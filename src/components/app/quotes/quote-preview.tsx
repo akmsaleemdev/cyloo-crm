@@ -4,6 +4,7 @@ import { useTenantBrand } from "@/hooks/use-tenant-brand";
 import { useCurrencyFormatter } from "@/hooks/use-currency";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
 import { PRINTABLE_DOCUMENT_CLASS } from "@/lib/billing/document-print";
+import { taxDisplayName } from "@/lib/billing/tax-jurisdiction";
 
 type Props = { quote: QuoteWithLines; workspaceName?: string };
 
@@ -14,6 +15,18 @@ export function QuotePreview({ quote, workspaceName }: Props) {
   const zonedDate = useZonedDateFormatter();
   const money = (n: number) => fmt(n, quote.currency);
   const status = QUOTE_STATUS_META[quote.status];
+
+  const taxCountry = (quote as typeof quote & { tax_country_code?: string | null }).tax_country_code ?? null;
+  const taxSupply = (quote as typeof quote & { tax_supply_type?: string | null }).tax_supply_type ?? null;
+  const taxName = taxDisplayName(taxCountry);
+  const taxTotal = Number(quote.tax_total || 0);
+  const taxRows = taxCountry === "IN" && taxSupply === "intra_state"
+    ? [
+        { label: "CGST", amount: Math.round(taxTotal * 100 / 2) / 100 },
+        { label: "SGST/UTGST", amount: taxTotal - Math.round(taxTotal * 100 / 2) / 100 },
+      ]
+    : [{ label: taxCountry === "IN" && taxSupply === "inter_state" ? "IGST" : taxName, amount: taxTotal }];
+
 
   return (
     // `quote-document` is the shared printable-root marker; `quote-preview` is
@@ -85,7 +98,7 @@ export function QuotePreview({ quote, workspaceName }: Props) {
               <th className="py-2 text-right w-16">Qty</th>
               <th className="py-2 text-right w-24">Unit</th>
               <th className="py-2 text-right w-16">Disc</th>
-              <th className="py-2 text-right w-16">Tax</th>
+              <th className="py-2 text-right w-16">{taxName}</th>
               <th className="py-2 text-right w-28">Amount</th>
             </tr>
           </thead>
@@ -114,7 +127,7 @@ export function QuotePreview({ quote, workspaceName }: Props) {
           <div className="w-72 text-sm">
             <Row label="Subtotal" value={money(Number(quote.subtotal))} />
             <Row label="Discount" value={`− ${money(Number(quote.discount_total))}`} />
-            <Row label="Tax" value={money(Number(quote.tax_total))} />
+            {taxRows.map((row) => <Row key={row.label} label={row.label} value={money(row.amount)} />)}
             <div className="mt-2 flex justify-between border-t pt-2 text-base font-semibold">
               <span>Total</span>
               <span className="">{money(Number(quote.total))}</span>
@@ -147,7 +160,7 @@ export function QuotePreview({ quote, workspaceName }: Props) {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: string; key?: string }) {
   return (
     <div className="flex justify-between py-0.5">
       <span className="text-slate-500">{label}</span>
