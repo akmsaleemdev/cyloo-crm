@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isServerDemoMode } from "@/lib/demo/mode.server";
 import { trackPublicVCardView } from "@/routes/api/public/vcard-view/server/track-view.server";
 
@@ -33,6 +33,13 @@ const request = () =>
     method: "POST",
     headers: { referer: "https://test.example/v/test", "user-agent": "ExampleBrowser" },
   });
+
+const initialFlag = process.env.VCARD_VIEW_API_ENABLED;
+
+afterEach(() => {
+  if (initialFlag === undefined) delete process.env.VCARD_VIEW_API_ENABLED;
+  else process.env.VCARD_VIEW_API_ENABLED = initialFlag;
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
