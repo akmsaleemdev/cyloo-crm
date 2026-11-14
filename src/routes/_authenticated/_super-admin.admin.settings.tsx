@@ -1483,6 +1483,7 @@ function BillingPanel() {
       invoice_prefix?: string;
       tax_inclusive?: boolean;
       default_vat_rate?: number;
+      default_gst_rate?: number;
       company_name?: string;
       company_address?: string;
       vat_id?: string;
@@ -1498,7 +1499,7 @@ function BillingPanel() {
             onSave={() => {
               const errors = platformFieldErrors("billing", d);
               if (Object.keys(errors).length) {
-                toast.error("Enter a valid VAT percentage between 0 and 100");
+                toast.error("Enter valid VAT/GST percentages between 0 and 100");
                 return;
               }
               save.mutate({ key: "billing", value: d });
@@ -1533,6 +1534,21 @@ function BillingPanel() {
               value={d.invoice_prefix ?? "INV-"}
               onChange={(e) => patch({ invoice_prefix: e.target.value })}
             />
+          </Field>
+          <Field
+            label="Default GST (%) — India"
+            hint="Optional India GST starting rate, not a statutory universal rate. You must choose the applicable GST slab per supply."
+          >
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={d.default_gst_rate ?? 0}
+              onChange={(e) => patch({ default_gst_rate: Number(e.target.value) })}
+              aria-invalid={Boolean(platformFieldErrors("billing", d).default_gst_rate)}
+            />
+            <FieldError show message={platformFieldErrors("billing", d).default_gst_rate} />
           </Field>
           <Field label="Company name">
             <Input
