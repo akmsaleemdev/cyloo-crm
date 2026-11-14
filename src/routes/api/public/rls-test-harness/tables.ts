@@ -7,11 +7,9 @@ export const Route = createFileRoute("/api/public/rls-test-harness/tables")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const secret = process.env.RLS_TEST_HARNESS_SECRET;
-        if (!secret) return json({ error: "harness_disabled" }, 503);
-        if (request.headers.get("x-harness-secret") !== secret) {
-          return json({ error: "unauthorized" }, 401);
-        }
+        const { guardHarnessRequest } = await import("./server/harness.server");
+        const denied = guardHarnessRequest(request);
+        if (denied) return denied;
 
         try {
           const { listScopedTables } = await import("./server/tables.server");
@@ -29,7 +27,7 @@ export const Route = createFileRoute("/api/public/rls-test-harness/tables")({
             500,
           );
         } catch (err) {
-          return json({ error: "discovery_failed", message: (err as Error).message }, 500);
+          return json({ error: "discovery_failed", message: "Internal harness error" }, 500);
         }
       },
     },
