@@ -149,7 +149,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
         ...defaults,
       });
     }
-  }, [open, invoice, defaults, tenantCurrency, tenantCountry, vatRate]);
+  }, [open, invoice, defaults, tenantCurrency, tenantCountry]);
 
   // A late settings fetch may initialize only an untouched draft line.
   // Never rewrite saved invoice lines or explicit caller-provided defaults.
