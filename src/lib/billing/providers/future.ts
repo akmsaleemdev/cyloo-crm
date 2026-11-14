@@ -52,19 +52,6 @@ export const razorpayProvider = createStubProvider({
   },
 });
 
-/** Paystack — Africa (Nigeria, Ghana, Kenya, South Africa). */
-export const paystackProvider = createStubProvider({
-  id: "paystack",
-  displayName: "Paystack",
-  supports: {
-    checkout: true,
-    payments: true,
-    refunds: true,
-    partial_refunds: true,
-    webhooks: true,
-  },
-});
-
 /** Flutterwave — Africa + global payouts. */
 export const flutterwaveProvider = createStubProvider({
   id: "flutterwave",
@@ -92,32 +79,6 @@ export const mollieProvider = createStubProvider({
   },
 });
 
-/** Mercado Pago — Latin America. */
-export const mercadopagoProvider = createStubProvider({
-  id: "mercadopago",
-  displayName: "Mercado Pago",
-  supports: {
-    checkout: true,
-    payments: true,
-    refunds: true,
-    partial_refunds: true,
-    webhooks: true,
-  },
-});
-
-/** Midtrans — Indonesia + Southeast Asia. */
-export const midtransProvider = createStubProvider({
-  id: "midtrans",
-  displayName: "Midtrans",
-  supports: {
-    checkout: true,
-    payments: true,
-    refunds: true,
-    partial_refunds: true,
-    webhooks: true,
-  },
-});
-
 /** Custom Gateway — customer-supplied endpoint + HMAC webhook. */
 export const customProvider = createStubProvider({
   id: "custom",
@@ -129,4 +90,58 @@ export const customProvider = createStubProvider({
     partial_refunds: true,
     webhooks: true,
   },
+});
+
+/** GCC payment gateways: catalog-only until each provider's verified API adapter is implemented.
+ * All capabilities remain disabled so the UI cannot present a stub as a real gateway.
+ * Tabby and Tamara are mandatory roadmap integrations, NOT live BNPL checkouts.
+ */
+export const myfatoorahProvider = createStubProvider({
+  id: "myfatoorah",
+  displayName: "MyFatoorah",
+});
+
+export const paytabsProvider = createStubProvider({
+  id: "paytabs",
+  displayName: "PayTabs",
+});
+
+export const tapProvider = createStubProvider({
+  id: "tap",
+  displayName: "Tap Payments",
+});
+
+export const tabbyProvider = createStubProvider({
+  id: "tabby",
+  displayName: "Tabby",
+});
+
+export const tamaraProvider = createStubProvider({
+  id: "tamara",
+  displayName: "Tamara",
+});
+
+export const hyperpayProvider = createStubProvider({
+  id: "hyperpay",
+  displayName: "HyperPay",
+});
+
+export const moyasarProvider = createStubProvider({
+  id: "moyasar",
+  displayName: "Moyasar",
+});
+
+export const telrProvider = createStubProvider({
+  id: "telr",
+  displayName: "Telr",
+});
+
+export const thawaniProvider = createStubProvider({
+  id: "thawani",
+  displayName: "Thawani",
+});
+
+export const amazonPaymentServicesProvider = createStubProvider({
+  id: "amazon_payment_services",
+  displayName: "Amazon Payment Services",
 });
