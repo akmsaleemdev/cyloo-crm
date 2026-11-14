@@ -25,11 +25,14 @@ export async function trackPublicVCardView(
 
   // The RPC has EXECUTE granted only to service_role; its SQL body performs
   // the authoritative checks while holding a row lock.
-  const { data, error } = await supabaseAdmin.rpc("record_public_vcard_view" as never, {
-    _vcard_id: id,
-    _referrer: referrer,
-    _user_agent: userAgent,
-  } as never);
+  const { data, error } = await supabaseAdmin.rpc(
+    "record_public_vcard_view" as never,
+    {
+      _vcard_id: id,
+      _referrer: referrer,
+      _user_agent: userAgent,
+    } as never,
+  );
 
   if (error) return "failed";
   if (data === "recorded" || data === "not_found" || data === "throttled") return data;
