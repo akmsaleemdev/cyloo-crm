@@ -33,6 +33,22 @@ import { paddleProvider } from "./paddle";
 import { stripeProvider } from "./stripe";
 import type { BillingProvider, BillingProviderId } from "./types";
 
+/** Visible but not implemented. Never permit checkout or enablement for these ids. */
+export const GCC_CATALOG_ONLY_IDS = [
+  "myfatoorah", "paytabs", "tap", "tabby", "tamara",
+  "hyperpay", "moyasar", "telr", "thawani", "amazon_payment_services",
+] as const;
+
+export const RETIRED_GATEWAY_IDS = ["mercadopago", "paystack", "midtrans"] as const;
+
+export function isCatalogOnlyGateway(id: string): boolean {
+  return (GCC_CATALOG_ONLY_IDS as readonly string[]).includes(id);
+}
+
+export function isRetiredGateway(id: string): boolean {
+  return (RETIRED_GATEWAY_IDS as readonly string[]).includes(id);
+}
+
 const providers: Record<string, BillingProvider> = {
   stripe: stripeProvider,
   paddle: paddleProvider,
