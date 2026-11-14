@@ -465,7 +465,23 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
             <option value="AU">Australia</option>
             <option value="SG">Singapore</option>
             <option value="NZ">New Zealand</option>
+            {form.country_code &&
+              !["AE","SA","IN","BH","OM","QA","KW","GB","US","CA","AU","SG","NZ"].includes(form.country_code) && (
+                <option value={form.country_code}>{form.country_code} — Other country</option>
+              )}
           </select>
+          <label className="mt-2 block text-xs text-muted-foreground" htmlFor="custom-tax-country">
+            Other country: ISO 2-letter code
+          </label>
+          <input
+            id="custom-tax-country"
+            className="mt-1 w-full h-9 rounded-control border border-border bg-surface px-3 text-sm uppercase"
+            placeholder="e.g. DE, FR, ZA"
+            value={form.country_code}
+            maxLength={2}
+            disabled={!canEdit}
+            onChange={(e) => setForm({ ...form, country_code: e.target.value.toUpperCase().replace(/[^A-Z]/g, "") })}
+          />
           {form.country_code && (
             <p className="mt-1 text-xs text-muted-foreground">
               {taxDisplayName(form.country_code)}
