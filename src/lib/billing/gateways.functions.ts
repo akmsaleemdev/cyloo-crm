@@ -15,7 +15,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { formatGatewayErrors, hasGatewayErrors, validateGatewayForm } from "./gateway-validation";
-import { listBillingProviders } from "./providers";
+import { isCatalogOnlyGateway, isRetiredGateway, listBillingProviders } from "./providers";
 import { sbAny } from "@/lib/supabase/untyped";
 
 // Keep select() strings opaque to the type-level parser (typecheck perf).
@@ -148,7 +148,7 @@ export const listGateways = createServerFn({ method: "GET" })
       (catalog.find((p) => p.id === "custom")?.supports as Record<string, boolean>) ?? {};
 
     const customs = rows
-      .filter((r) => !known.has(r.provider_id))
+      .filter((r) => !known.has(r.provider_id) && !isRetiredGateway(r.provider_id))
       .map((r) =>
         shape(r.provider_id, r.display_label || r.provider_id, customAdapterSupports, r, false),
       );
@@ -165,6 +165,10 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
+      throw new Error("This gateway is not available for new payments until a verified adapter is implemented.");
+    }
 
     if (!data.enabled) {
       const { data: row } = await supabase
@@ -208,6 +212,10 @@ export const setDefaultGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id)) {
+      throw new Error("An unimplemented or retired gateway cannot be the default.");
+    }
 
     // Clear the current default first — a partial unique index enforces one.
     const clear = await supabase
@@ -311,6 +319,10 @@ export const upsertGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
+      throw new Error("This gateway cannot be enabled until its real payment adapter is verified.");
+    }
 
     // Same rules the configure dialog applies inline — never trust the client.
     const fieldErrors = validateGatewayForm({
