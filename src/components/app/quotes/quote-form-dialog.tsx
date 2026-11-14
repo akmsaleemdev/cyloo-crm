@@ -129,7 +129,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
         ...defaults,
       });
     }
-  }, [open, quote, defaults, tenantCurrency, tenantCountry, vatRate]);
+  }, [open, quote, defaults, tenantCurrency, tenantCountry]);
 
   // A late settings fetch may initialize only an untouched draft line.
   // Never rewrite saved quote lines or explicit caller-provided defaults.
