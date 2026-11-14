@@ -86,7 +86,8 @@ export function getProvider(id: PaymentProviderId): PaymentLinkProvider {
 }
 
 export function listProviders(): PaymentLinkProvider[] {
-  return Object.values(registry);
+  // Keep retired adapters addressable for historical records, but exclude them from new payment-link selection.
+  return Object.values(registry).filter((p) => !["mercadopago", "paystack", "midtrans"].includes(p.id));
 }
 
 export * from "./types";
