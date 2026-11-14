@@ -11,9 +11,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
  * shared 120-views/minute-per-card cap. Visitor-specific throttling and an
  * atomic view_count update are NOT implemented in this initial patch.
  */
-export async function trackPublicVCardView(id: unknown, request: Request): Promise<
-  "disabled" | "invalid" | "not_found" | "recorded" | "failed"
-> {
+export async function trackPublicVCardView(
+  id: unknown,
+  request: Request,
+): Promise<"disabled" | "invalid" | "not_found" | "recorded" | "failed"> {
   // Fail closed until server tracking, dashboard counting and grants are rolled out together.
   if (process.env.VCARD_VIEW_API_ENABLED !== "true" || isServerDemoMode()) return "disabled";
   if (typeof id !== "string" || !UUID_RE.test(id)) return "invalid";
