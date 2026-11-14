@@ -23,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getDefaultVatRate } from "@/lib/billing/default-vat.functions";
 import {
   computeInvoiceTotals,
   useSaveInvoice,
@@ -49,13 +51,13 @@ type Props = {
   defaults?: Partial<InvoiceFormInput>;
 };
 
-const emptyLine = () => ({
+const emptyLine = (vatRate = 0) => ({
   name: "",
   description: "",
   quantity: 1,
   unit_price: 0,
   discount_pct: 0,
-  tax_rate: 0,
+  tax_rate: vatRate,
   product_id: null,
 });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -73,12 +75,20 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
   // here wrote USD into the row itself, so every later render was correct to
   // show dollars — fixing the display alone could never have fixed that.
   const tenantCurrency = useTenantCurrency();
+  const getVatRate = useServerFn(getDefaultVatRate);
+  const { data: vatRate = 0, isSuccess: vatLoaded } = useQuery({
+    queryKey: ["platform-default-vat-rate"],
+    queryFn: () => getVatRate(),
+    enabled: open,
+    staleTime: 60_000,
+  });
+
 
   const [form, setForm] = useState<InvoiceFormInput>({
     currency: tenantCurrency,
     issue_date: today(),
     due_date: inDays(30),
-    lines: [emptyLine()],
+    lines: [emptyLine(vatRate)],
     contact_id: null,
     company_id: null,
     deal_id: null,
@@ -118,12 +128,28 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
         currency: tenantCurrency,
         issue_date: today(),
         due_date: inDays(30),
-        lines: [emptyLine()],
+        lines: [emptyLine(vatRate)],
         recurring: null,
         ...defaults,
       });
     }
   }, [open, invoice, defaults, tenantCurrency]);
+
+  // A late settings fetch may initialize only an untouched draft line.
+  // Never rewrite saved invoice lines or explicit caller-provided defaults.
+  useEffect(() => {
+    if (!open || invoice || !vatLoaded || defaults?.lines?.length) return;
+    setForm((previous) => {
+      const lines = previous.lines.map((line) =>
+        !line.name && !line.product_id && line.unit_price === 0 && line.tax_rate === 0
+          ? { ...line, tax_rate: vatRate }
+          : line,
+      );
+      return lines.some((line, index) => line !== previous.lines[index])
+        ? { ...previous, lines }
+        : previous;
+    });
+  }, [open, invoice, vatLoaded, vatRate, defaults?.lines]);
 
   const { data: contacts } = useQuery({
     queryKey: ["inv-contacts", wsId],
@@ -326,7 +352,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine()] }))}
+              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine(vatRate)] }))}
             >
               <Plus className="h-4 w-4 " /> Add line
             </Button>
