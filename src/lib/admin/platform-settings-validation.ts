@@ -102,9 +102,14 @@ const AnalyticsSchema = z
     }
   });
 
+const BillingSchema = z.object({
+  default_vat_rate: z.number().finite().min(0, "VAT cannot be negative").max(100, "VAT cannot exceed 100%").optional(),
+}).passthrough();
+
 const KEY_SCHEMAS: Partial<Record<string, z.ZodTypeAny>> = {
   general: GeneralSchema,
   branding: BrandingSchema,
+  billing: BillingSchema,
   analytics: AnalyticsSchema,
 };
 
