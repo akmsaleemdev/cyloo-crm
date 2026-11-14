@@ -46,6 +46,7 @@ import {
   setGatewayMode,
   upsertGateway,
 } from "@/lib/billing/gateways.functions";
+import { isCatalogOnlyGateway } from "@/lib/billing/providers";
 import {
   hasGatewayErrors,
   validateGatewayForm,
@@ -223,7 +224,8 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
           <Card className="p-4 text-sm text-muted-foreground">Loading gateways</Card>
         )}
         {gateways.map((p) => {
-          const implemented = Boolean(p.supports.payments && p.supports.checkout);
+          const catalogOnly = isCatalogOnlyGateway(p.id);
+          const implemented = !catalogOnly && Boolean(p.supports.payments && p.supports.checkout);
           const busy = toggleMut.isPending && toggleMut.variables?.provider_id === p.id;
           return (
             <Card key={p.id} className={`p-4 space-y-3 ${p.enabled ? "" : "opacity-70"}`}>
@@ -248,7 +250,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                     ) : (
                       <ShieldAlert className="w-3 h-3" />
                     )}
-                    {implemented ? "Full adapter" : "Stub adapter"} · {p.mode}
+                    {catalogOnly ? "Integration pending" : implemented ? "Full adapter" : "Stub adapter"} · {p.mode}
                     {p.secretName ? " · key set" : " · no key"}
                   </div>
                 </div>
@@ -257,6 +259,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                 ) : (
                   <Switch
                     checked={p.enabled}
+                    disabled={catalogOnly}
                     aria-label={`${p.enabled ? "Disable" : "Enable"} ${p.displayName}`}
                     onCheckedChange={(v) => toggleMut.mutate({ provider_id: p.id, enabled: v })}
                   />
@@ -286,7 +289,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  disabled={p.isDefault || defaultMut.isPending}
+                  disabled={catalogOnly || p.isDefault || defaultMut.isPending}
                   onClick={() => defaultMut.mutate({ provider_id: p.id })}
                 >
                   {p.isDefault ? "Default gateway" : "Make default"}
@@ -295,7 +298,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   size="sm"
                   variant="ghost"
                   className="h-8"
-                  disabled={modeMut.isPending}
+                  disabled={catalogOnly || modeMut.isPending}
                   onClick={() =>
                     modeMut.mutate({
                       provider_id: p.id,
@@ -454,6 +457,7 @@ function GatewayDialog({
               <div className="flex items-center gap-2 h-9">
                 <Switch
                   checked={form.enabled}
+                  disabled={isCatalogOnlyGateway(form.provider_id)}
                   aria-label="Gateway enabled"
                   onCheckedChange={(v) => patch({ enabled: v })}
                 />
