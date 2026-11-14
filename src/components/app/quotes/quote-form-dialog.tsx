@@ -22,6 +22,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getDefaultVatRate } from "@/lib/billing/default-vat.functions";
 import {
   computeTotals,
   useSaveQuote,
@@ -44,13 +46,13 @@ type Props = {
   defaults?: Partial<QuoteFormInput>;
 };
 
-const emptyLine = () => ({
+const emptyLine = (vatRate = 0) => ({
   name: "",
   description: "",
   quantity: 1,
   unit_price: 0,
   discount_pct: 0,
-  tax_rate: 0,
+  tax_rate: vatRate,
   product_id: null,
 });
 
@@ -59,13 +61,21 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
   // New quotes must open in the tenant currency: a hardcoded 'USD' here was
   // written into the quote row, so the display had no wrong value to correct.
   const tenantCurrency = useTenantCurrency();
+  const getVatRate = useServerFn(getDefaultVatRate);
+  const { data: vatRate = 0, isSuccess: vatLoaded } = useQuery({
+    queryKey: ["platform-default-vat-rate"],
+    queryFn: () => getVatRate(),
+    enabled: open,
+    staleTime: 60_000,
+  });
+
   const wsId = active?.id;
   const save = useSaveQuote();
 
   const [form, setForm] = useState<QuoteFormInput>({
     title: "",
     currency: tenantCurrency,
-    lines: [emptyLine()],
+    lines: [emptyLine(vatRate)],
     contact_id: null,
     company_id: null,
     deal_id: null,
@@ -96,9 +106,25 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
         })),
       });
     } else {
-      setForm({ title: "", currency: tenantCurrency, lines: [emptyLine()], ...defaults });
+      setForm({ title: "", currency: tenantCurrency, lines: [emptyLine(vatRate)], ...defaults });
     }
   }, [open, quote, defaults, tenantCurrency]);
+
+  // A late settings fetch may initialize only an untouched draft line.
+  // Never rewrite saved quote lines or explicit caller-provided defaults.
+  useEffect(() => {
+    if (!open || quote || !vatLoaded || defaults?.lines?.length) return;
+    setForm((previous) => {
+      const lines = previous.lines.map((line) =>
+        !line.name && !line.product_id && line.unit_price === 0 && line.tax_rate === 0
+          ? { ...line, tax_rate: vatRate }
+          : line,
+      );
+      return lines.some((line, index) => line !== previous.lines[index])
+        ? { ...previous, lines }
+        : previous;
+    });
+  }, [open, quote, vatLoaded, vatRate, defaults?.lines]);
 
   const { data: contacts } = useQuery({
     queryKey: ["quotes-contacts", wsId],
@@ -295,7 +321,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine()] }))}
+              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine(vatRate)] }))}
             >
               <Plus className="h-4 w-4 " /> Add line
             </Button>
