@@ -20,12 +20,7 @@ export function guardHarnessRequest(request: Request): Response | null {
   }
   const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
   const testUrl = process.env.SUPABASE_TEST_URL?.replace(/\/$/, "");
-  if (
-    process.env.RLS_TEST_ENVIRONMENT !== "isolated" ||
-    !url ||
-    !testUrl ||
-    url !== testUrl
-  ) {
+  if (process.env.RLS_TEST_ENVIRONMENT !== "isolated" || !url || !testUrl || url !== testUrl) {
     return deny(503, "harness_disabled");
   }
 
@@ -50,7 +45,8 @@ export function getHarnessAdmin() {
     (process.env.APP_MODE ?? process.env.VITE_APP_MODE) === "production" ||
     process.env.RLS_TEST_ENVIRONMENT !== "isolated" ||
     !process.env.SUPABASE_URL ||
-    process.env.SUPABASE_URL.replace(/\/$/, "") !== process.env.SUPABASE_TEST_URL?.replace(/\/$/, "")
+    process.env.SUPABASE_URL.replace(/\/$/, "") !==
+      process.env.SUPABASE_TEST_URL?.replace(/\/$/, "")
   ) {
     throw new Error("RLS harness requires an isolated, non-production test project");
   }

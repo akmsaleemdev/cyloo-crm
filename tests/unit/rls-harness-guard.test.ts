@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { guardHarnessRequest, getHarnessAdmin } from "@/routes/api/public/rls-test-harness/server/harness.server";
+import {
+  guardHarnessRequest,
+  getHarnessAdmin,
+} from "@/routes/api/public/rls-test-harness/server/harness.server";
 
 const secret = "test-only-secret-".repeat(4);
 const testUrl = "https://synthetic-rls-test.supabase.co";
