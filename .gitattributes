@@ -4,3 +4,6 @@ src/routes/api/public/rls-test-harness/*.ts text eol=lf
 src/routes/api/public/rls-test-harness/server/*.ts text eol=lf
 tests/unit/rls-harness-guard.test.ts text eol=lf
 tests/unit/rls-harness-teardown.test.ts text eol=lf
+src/routes/api/public/vcard-view/**/*.ts text eol=lf
+src/routes/api/public/vcard-view/index.ts text eol=lf
+tests/unit/vcard-view-tracking.test.ts text eol=lf
