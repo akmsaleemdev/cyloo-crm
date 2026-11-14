@@ -31,6 +31,7 @@ export async function teardownHarness(userIds: string[]) {
     }
 
     if (
+      user.id !== id ||
       user.app_metadata?.rls_harness !== true ||
       typeof user.app_metadata?.run_id !== "string" ||
       !user.email?.endsWith("@rls-harness.test")
