@@ -13,15 +13,9 @@ export const Route = createFileRoute("/api/public/rls-test-harness/setup")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = process.env.RLS_TEST_HARNESS_SECRET;
-        if (!secret) return json({ error: "harness_disabled" }, 503);
-        if (request.headers.get("x-harness-secret") !== secret) {
-          return json({ error: "unauthorized" }, 401);
-        }
-        const mode = process.env.APP_MODE ?? process.env.VITE_APP_MODE;
-        if (mode === "production" && process.env.RLS_TEST_HARNESS_ALLOW_PROD !== "1") {
-          return json({ error: "refused_in_production" }, 403);
-        }
+        const { guardHarnessRequest } = await import("./server/harness.server");
+        const denied = guardHarnessRequest(request);
+        if (denied) return denied;
 
         try {
           // Dynamic import to keep service role logic out of client bundle
@@ -29,7 +23,7 @@ export const Route = createFileRoute("/api/public/rls-test-harness/setup")({
           const result = await setupHarness();
           return json(result);
         } catch (err) {
-          return json({ error: "setup_failed", message: (err as Error).message }, 500);
+          return json({ error: "setup_failed", message: "Internal harness error" }, 500);
         }
       },
     },
