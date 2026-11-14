@@ -35,6 +35,7 @@ export type OrganizationRow = {
   phone: string | null;
   website: string | null;
   address: string | null;
+  country_code: string | null;
   timezone: string;
   currency: string;
   language: string;

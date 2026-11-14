@@ -45,6 +45,7 @@ import {
   timezoneOffsetLabel,
 } from "@/lib/i18n/locale-data";
 import { useRef } from "react";
+import { taxDisplayName, suggestedStandardRate } from "@/lib/billing/tax-jurisdiction";
 import { Upload, X } from "lucide-react";
 import {
   validateBrandingFile,
@@ -380,6 +381,7 @@ function ContactSection({ org, canEdit }: { org: OrganizationRow; canEdit: boole
 function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolean }) {
   const [form, setForm] = useState({
     timezone: org.timezone,
+    country_code: org.country_code ?? "",
     currency: org.currency,
     language: org.language,
   });
@@ -420,9 +422,13 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
   }
 
   async function save() {
+    if (!/^[A-Z]{2}$/.test(form.country_code)) {
+      toast.error("Select your organization country before saving");
+      return;
+    }
     try {
       await mut.mutateAsync(form);
-      toast.success("Locale updated");
+      toast.success("Locale and tax country updated");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Update failed");
     }
@@ -431,7 +437,60 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
   return (
     <div className="space-y-5 max-w-xl">
       <h2 className="font-bold text-xl">Locale</h2>
+      <p className="text-sm text-muted-foreground">
+        Your organization country sets the tax terminology and initial tax defaults for new
+        sales documents. It does not automatically determine whether a supply is taxable.
+      </p>
       <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <label className="text-xs font-medium text-muted-foreground">Tax country</label>
+          <select
+            className="mt-1 w-full h-10 rounded-control border border-border bg-surface px-3 text-sm"
+            value={form.country_code}
+            onChange={(e) => setForm({ ...form, country_code: e.target.value })}
+            disabled={!canEdit}
+            aria-label="Organization tax country"
+          >
+            <option value="">Choose country</option>
+            <option value="AE">United Arab Emirates</option>
+            <option value="SA">Saudi Arabia</option>
+            <option value="IN">India</option>
+            <option value="BH">Bahrain</option>
+            <option value="OM">Oman</option>
+            <option value="QA">Qatar</option>
+            <option value="KW">Kuwait</option>
+            <option value="GB">United Kingdom</option>
+            <option value="US">United States</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+            <option value="SG">Singapore</option>
+            <option value="NZ">New Zealand</option>
+            {form.country_code &&
+              !["AE","SA","IN","BH","OM","QA","KW","GB","US","CA","AU","SG","NZ"].includes(form.country_code) && (
+                <option value={form.country_code}>{form.country_code} — Other country</option>
+              )}
+          </select>
+          <label className="mt-2 block text-xs text-muted-foreground" htmlFor="custom-tax-country">
+            Other country: ISO 2-letter code
+          </label>
+          <input
+            id="custom-tax-country"
+            className="mt-1 w-full h-9 rounded-control border border-border bg-surface px-3 text-sm uppercase"
+            placeholder="e.g. DE, FR, ZA"
+            value={form.country_code}
+            maxLength={2}
+            disabled={!canEdit}
+            onChange={(e) => setForm({ ...form, country_code: e.target.value.toUpperCase().replace(/[^A-Z]/g, "") })}
+          />
+          {form.country_code && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {taxDisplayName(form.country_code)}
+              {suggestedStandardRate(form.country_code) === null
+                ? " · choose applicable rate per document"
+                : ` · standard rate example ${suggestedStandardRate(form.country_code)}%`}
+            </p>
+          )}
+        </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Timezone</label>
           <div className="mt-1">

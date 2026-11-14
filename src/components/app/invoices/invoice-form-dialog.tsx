@@ -23,6 +23,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getPlatformTaxDefaults } from "@/lib/billing/default-vat.functions";
+import { useActiveOrganization } from "@/hooks/use-organization";
+import { suggestedStandardRate, taxDisplayName, taxBreakdown } from "@/lib/billing/tax-jurisdiction";
 import {
   computeInvoiceTotals,
   useSaveInvoice,
@@ -49,13 +53,13 @@ type Props = {
   defaults?: Partial<InvoiceFormInput>;
 };
 
-const emptyLine = () => ({
+const emptyLine = (vatRate = 0) => ({
   name: "",
   description: "",
   quantity: 1,
   unit_price: 0,
   discount_pct: 0,
-  tax_rate: 0,
+  tax_rate: vatRate,
   product_id: null,
 });
 const today = () => new Date().toISOString().slice(0, 10);
@@ -73,12 +77,30 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
   // here wrote USD into the row itself, so every later render was correct to
   // show dollars — fixing the display alone could never have fixed that.
   const tenantCurrency = useTenantCurrency();
+  const { active: organization } = useActiveOrganization();
+  const getTaxDefaults = useServerFn(getPlatformTaxDefaults);
+  const { data: taxDefaults, isSuccess: vatLoaded } = useQuery({
+    queryKey: ["platform-tax-defaults"],
+    queryFn: () => getTaxDefaults(),
+    enabled: open,
+    staleTime: 60_000,
+  });
+  const tenantCountry = organization?.country_code ?? null;
+  const vatRate = tenantCountry === "IN"
+    ? (taxDefaults?.gstRate ?? 0)
+    : tenantCountry === "AE"
+      ? (taxDefaults?.vatRate ?? suggestedStandardRate(tenantCountry) ?? 0)
+      : (suggestedStandardRate(tenantCountry) ?? 0);
+
+
 
   const [form, setForm] = useState<InvoiceFormInput>({
+    tax_country_code: tenantCountry,
+    tax_supply_type: null,
     currency: tenantCurrency,
     issue_date: today(),
     due_date: inDays(30),
-    lines: [emptyLine()],
+    lines: [emptyLine(vatRate)],
     contact_id: null,
     company_id: null,
     deal_id: null,
@@ -91,6 +113,8 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
       const cf = (invoice.custom_fields as Record<string, unknown>) ?? {};
       setForm({
         id: invoice.id,
+        tax_country_code: (invoice as typeof invoice & {tax_country_code?: string | null}).tax_country_code ?? null,
+        tax_supply_type: (invoice as typeof invoice & {tax_supply_type?: "intra_state" | "inter_state" | null}).tax_supply_type ?? null,
         currency: invoice.currency,
         contact_id: invoice.contact_id,
         company_id: invoice.company_id,
@@ -116,14 +140,32 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
     } else {
       setForm({
         currency: tenantCurrency,
+        tax_country_code: tenantCountry,
+        tax_supply_type: null,
         issue_date: today(),
         due_date: inDays(30),
-        lines: [emptyLine()],
+        lines: [emptyLine(vatRate)],
         recurring: null,
         ...defaults,
       });
     }
-  }, [open, invoice, defaults, tenantCurrency]);
+  }, [open, invoice, defaults, tenantCurrency, tenantCountry]);
+
+  // A late settings fetch may initialize only an untouched draft line.
+  // Never rewrite saved invoice lines or explicit caller-provided defaults.
+  useEffect(() => {
+    if (!open || invoice || !vatLoaded || defaults?.lines?.length) return;
+    setForm((previous) => {
+      const lines = previous.lines.map((line) =>
+        !line.name && !line.product_id && line.unit_price === 0 && line.tax_rate === 0
+          ? { ...line, tax_rate: vatRate }
+          : line,
+      );
+      return lines.some((line, index) => line !== previous.lines[index])
+        ? { ...previous, lines }
+        : previous;
+    });
+  }, [open, invoice, vatLoaded, vatRate, defaults?.lines]);
 
   const { data: contacts } = useQuery({
     queryKey: ["inv-contacts", wsId],
@@ -195,7 +237,26 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
     });
   };
 
+  const taxCountry = form.tax_country_code ?? null;
+  const indianSupply = form.tax_supply_type ?? "unknown";
+  const taxLines = useMemo(() => {
+    const summed = new Map<string, { rate: number; amount: number }>();
+    for (const line of form.lines) {
+      const net = line.quantity * line.unit_price * (1 - line.discount_pct / 100);
+      if (!net || !line.tax_rate || (taxCountry === "IN" && indianSupply === "unknown")) continue;
+      for (const part of taxBreakdown(taxCountry, net, line.tax_rate, indianSupply)) {
+        const item = summed.get(part.code) ?? { rate: part.rate, amount: 0 };
+        item.amount += part.amount;
+        summed.set(part.code, item);
+      }
+    }
+    return Array.from(summed, ([name, part]) => ({ name, ...part }));
+  }, [form.lines, taxCountry, indianSupply]);
+
   const submit = async () => {
+    if (!invoice && !taxCountry) return toast.error("Select your organization's tax country under Organization → Locale");
+    if (taxCountry === "IN" && !form.tax_supply_type)
+      return toast.error("Select intra-state or inter-state GST treatment");
     if (!form.lines.length) return toast.error("At least one line item");
     if (form.lines.some((l) => !l.name.trim())) return toast.error("All line items need a name");
     try {
@@ -326,7 +387,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine()] }))}
+              onClick={() => setForm((f) => ({ ...f, lines: [...f.lines, emptyLine(vatRate)] }))}
             >
               <Plus className="h-4 w-4 " /> Add line
             </Button>
@@ -450,6 +511,41 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
           </div>
         </div>
 
+        {taxCountry === "IN" && (
+          <div className="rounded-control border p-3 space-y-2">
+            <Label>India GST supply treatment</Label>
+            <Select
+              value={form.tax_supply_type ?? "unknown"}
+              onValueChange={(v) =>
+                setForm((previous) => ({
+                  ...previous,
+                  tax_supply_type: v === "unknown" ? null : v as "intra_state" | "inter_state",
+                }))
+              }
+            >
+              <SelectTrigger><SelectValue placeholder="Choose supply treatment" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="unknown">Select supply treatment</SelectItem>
+                <SelectItem value="intra_state">Within the same state — CGST + SGST/UTGST</SelectItem>
+                <SelectItem value="inter_state">Between states — IGST</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Determine supply treatment using supplier and place-of-supply rules. Different
+              goods and services may require different GST rates.
+            </p>
+          </div>
+        )}
+        {taxLines.length > 0 && (
+          <div className="text-sm space-y-1">
+            {taxLines.map((part) => (
+              <div className="flex justify-end gap-8" key={part.name}>
+                <span>{part.name}</span>
+                <span className="w-28 text-right">{money(part.amount)}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="grid gap-3 md:grid-cols-2 mt-2">
           <div>
             <Label>Notes</Label>

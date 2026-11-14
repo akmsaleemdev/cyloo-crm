@@ -1482,6 +1482,8 @@ function BillingPanel() {
       auto_charge?: boolean;
       invoice_prefix?: string;
       tax_inclusive?: boolean;
+      default_vat_rate?: number;
+      default_gst_rate?: number;
       company_name?: string;
       company_address?: string;
       vat_id?: string;
@@ -1494,7 +1496,14 @@ function BillingPanel() {
         description="Default trial, grace, and invoice presentation."
         footer={
           <SaveButton
-            onSave={() => save.mutate({ key: "billing", value: d })}
+            onSave={() => {
+              const errors = platformFieldErrors("billing", d);
+              if (Object.keys(errors).length) {
+                toast.error("Enter valid VAT/GST percentages between 0 and 100");
+                return;
+              }
+              save.mutate({ key: "billing", value: d });
+            }}
             saving={save.isPending}
           />
         }
@@ -1526,6 +1535,21 @@ function BillingPanel() {
               onChange={(e) => patch({ invoice_prefix: e.target.value })}
             />
           </Field>
+          <Field
+            label="Default GST (%) — India"
+            hint="Optional India GST starting rate, not a statutory universal rate. You must choose the applicable GST slab per supply."
+          >
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              step="0.01"
+              value={d.default_gst_rate ?? 0}
+              onChange={(e) => patch({ default_gst_rate: Number(e.target.value) })}
+              aria-invalid={Boolean(platformFieldErrors("billing", d).default_gst_rate)}
+            />
+            <FieldError show message={platformFieldErrors("billing", d).default_gst_rate} />
+          </Field>
           <Field label="Company name">
             <Input
               value={d.company_name ?? ""}
@@ -1534,6 +1558,25 @@ function BillingPanel() {
           </Field>
           <Field label="Tax / VAT ID">
             <Input value={d.vat_id ?? ""} onChange={(e) => patch({ vat_id: e.target.value })} />
+          </Field>
+          <Field
+            label="Default VAT (%)"
+            hint="For new quotes and sales invoices. Enter 5 for the UAE standard rate; use 0 when tax does not apply. Existing documents retain their saved tax."
+          >
+            <Input
+              type="number"
+              inputMode="decimal"
+              min={0}
+              max={100}
+              step="0.01"
+              value={d.default_vat_rate ?? 0}
+              onChange={(e) => patch({ default_vat_rate: Number(e.target.value) })}
+              aria-invalid={Boolean(platformFieldErrors("billing", d).default_vat_rate)}
+            />
+            <FieldError
+              show
+              message={platformFieldErrors("billing", d).default_vat_rate}
+            />
           </Field>
         </div>
         <Field label="Company address">
