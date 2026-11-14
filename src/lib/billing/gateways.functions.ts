@@ -156,6 +156,76 @@ export const listGateways = createServerFn({ method: "GET" })
     return [...builtIns, ...customs];
   });
 
+/**
+ * Configuration readiness only. A secret reference is not the secret itself,
+ * and this check does not claim provider authentication or live connectivity.
+ * Provider integrations must implement verified sandbox API checks separately.
+ */
+export const checkGatewaySetup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z.object({ provider_id: z.string().min(2).max(40) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+
+    if (isRetiredGateway(data.provider_id)) {
+      return { status: "retired" as const, message: "This gateway is retired for new payments." };
+    }
+    if (isCatalogOnlyGateway(data.provider_id)) {
+      return {
+        status: "adapter_pending" as const,
+        message: "The provider adapter is not implemented yet. Saving keys cannot enable checkout.",
+      };
+    }
+
+    const provider = listBillingProviders().find((p) => p.id === data.provider_id);
+    if (!provider || !provider.supports.checkout || !provider.supports.payments) {
+      return {
+        status: "adapter_pending" as const,
+        message: "No verified payment and checkout implementation is registered for this provider.",
+      };
+    }
+
+    const { data: row, error } = await context.supabase
+      .from("payment_gateway_settings")
+      .select("mode, secret_name, webhook_secret_name, webhook_url")
+      .eq("provider_id", data.provider_id)
+      .maybeSingle();
+    if (error) throw new Error("Unable to read gateway configuration");
+    if (!row) return { status: "not_configured" as const, message: "Save the gateway configuration first." };
+
+    const config = row as {
+      mode: "sandbox" | "live";
+      secret_name: string | null;
+      webhook_secret_name: string | null;
+      webhook_url: string | null;
+    };
+    const secretName = config.secret_name;
+    if (!secretName || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(secretName) || !process.env[secretName]) {
+      return {
+        status: "missing_secret" as const,
+        message: "The backend secret is missing. Add it to the server environment using the configured secret name.",
+      };
+    }
+    if (!config.webhook_secret_name || !process.env[config.webhook_secret_name]) {
+      return {
+        status: "missing_webhook_secret" as const,
+        message: "Add the webhook verification secret to the backend environment.",
+      };
+    }
+    if (!config.webhook_url || !config.webhook_url.startsWith("https://")) {
+      return {
+        status: "missing_webhook_url" as const,
+        message: "Configure the public HTTPS webhook callback URL.",
+      };
+    }
+    return {
+      status: "configuration_ready" as const,
+      message: "Required configuration references are present. Provider API authentication, webhook verification and test transactions are still required.",
+    };
+  });
+
 /** Enable or disable a gateway platform-wide. */
 export const setGatewayEnabled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
