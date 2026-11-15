@@ -39,7 +39,7 @@ async function loadWorkspaceConnection(ctx: ActionContext): Promise<string> {
 }
 
 function vendorError(status: number, body: string): string {
-  let reason = "";
+  let reason: string;
   try {
     reason = (JSON.parse(body) as { error?: { message?: string } }).error?.message ?? "";
   } catch {
