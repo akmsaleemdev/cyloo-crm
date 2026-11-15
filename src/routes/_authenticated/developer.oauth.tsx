@@ -154,7 +154,7 @@ function ClientsList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.clients.map((c: any) => (
+            {data.clients.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium">{c.name}</TableCell>
                 <TableCell className="font-mono text-xs">{c.client_id}</TableCell>
@@ -189,7 +189,7 @@ function ClientsList() {
                       variant="ghost"
                       title="Rotate secret"
                       onClick={async () => {
-                        const r: any = await rotate({ data: { id: c.id } });
+                        const r = await rotate({ data: { id: c.id } });
                         setRotated({ id: c.id, secret: r.client_secret });
                       }}
                     >
@@ -332,7 +332,11 @@ function CreateClientDialog() {
                 <Label>Client type</Label>
                 <Select
                   value={form.clientType}
-                  onValueChange={(v: any) => setForm({ ...form, clientType: v })}
+                  onValueChange={(value) => {
+                    if (value === "public" || value === "confidential") {
+                      setForm({ ...form, clientType: value });
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -375,7 +379,7 @@ function CreateClientDialog() {
                 onClick={async () => {
                   setBusy(true);
                   try {
-                    const res: any = await create({
+                    const res = await create({
                       data: {
                         name: form.name,
                         description: form.description || undefined,
@@ -386,8 +390,8 @@ function CreateClientDialog() {
                       },
                     });
                     setIssued({ client_id: res.client_id, client_secret: res.client_secret });
-                  } catch (e: any) {
-                    toast.error(e.message ?? "Failed to create client");
+                  } catch (error: unknown) {
+                    toast.error(error instanceof Error ? error.message : "Failed to create client");
                   } finally {
                     setBusy(false);
                   }

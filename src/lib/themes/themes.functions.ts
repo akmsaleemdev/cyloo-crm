@@ -9,13 +9,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { sbAny } from "@/lib/supabase/untyped";
 
 function publicClient() {
   const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
   return createClient(process.env.SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      fetch: (input: any, init: any) => {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
         const h = new Headers(init?.headers);
         if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
           h.delete("Authorization");
@@ -27,11 +28,14 @@ function publicClient() {
 }
 
 async function activeWorkspaceId(
-  supabase: any,
+  supabase: unknown,
   userId: string,
   requested?: string | null,
 ): Promise<string> {
-  let query = supabase.from("workspace_members").select("workspace_id").eq("user_id", userId);
+  let query = sbAny(supabase)
+    .from("workspace_members")
+    .select("workspace_id")
+    .eq("user_id", userId);
   if (requested) query = query.eq("workspace_id", requested);
   const { data, error } = await query
     .order("created_at", { ascending: true })

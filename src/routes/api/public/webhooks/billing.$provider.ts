@@ -15,6 +15,8 @@
  */
 
 import { createFileRoute } from "@tanstack/react-router";
+import type { WebhookEvent } from "@/lib/billing/providers/types";
+import type { Json } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
   server: {
@@ -44,11 +46,11 @@ export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
             ...extra,
           });
 
-        let event: { id: string; type: string; data: unknown; provider: string } | null = null;
+        let event: WebhookEvent | null = null;
 
         try {
           const { getBillingProvider } = await import("@/lib/billing/providers");
-          const provider = getBillingProvider(providerId as any);
+          const provider = getBillingProvider(providerId);
           const secret = process.env[`${providerId.toUpperCase()}_WEBHOOK_SECRET`] ?? "";
           if (!secret) {
             await log({
@@ -60,7 +62,7 @@ export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
           }
 
           try {
-            event = (await provider.verifyWebhook({ raw_body: rawBody, signature, secret })) as any;
+            event = await provider.verifyWebhook({ raw_body: rawBody, signature, secret });
           } catch (verifyErr) {
             await log({
               status: "invalid_signature",
@@ -96,14 +98,14 @@ export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
               provider: providerId,
               event_type: event!.type,
               provider_event_id: event!.id,
-              payload: event!.data as any,
+              payload: event!.data as Json,
             })
             .select("id")
             .single();
 
           try {
             const { routeProviderEvent } = await import("@/lib/billing/webhook-router.server");
-            const result = await routeProviderEvent(supabaseAdmin, event as any);
+            const result = await routeProviderEvent(supabaseAdmin, event);
             await supabaseAdmin
               .from("billing_events")
               .update({

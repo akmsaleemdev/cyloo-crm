@@ -130,19 +130,21 @@ export const connectSmsAccount = createServerFn({ method: "POST" })
       }
       throw new Error(error.message);
     }
+    if (!saved) throw new Error("SMS account could not be saved");
+    const savedRow = saved as unknown as Row & { workspace_id: string };
 
     const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
     void recordServerAuditEvent({
       eventType: "sms_account.connect",
       severity: "info",
-      workspaceId: (saved as any)?.workspace_id ?? data.workspaceId,
+      workspaceId: savedRow.workspace_id,
       actorId: context.userId,
       resourceType: "sms_account",
-      resourceId: (saved as any)?.id,
+      resourceId: savedRow.id,
       data: { provider: data.provider, phone_number: data.phoneNumber },
     });
 
-    return { account: toSummary(saved as unknown as Row, true) };
+    return { account: toSummary(savedRow, true) };
   });
 
 export const updateSmsAccount = createServerFn({ method: "POST" })
@@ -186,6 +188,7 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!saved) throw new Error("SMS account not found, or you cannot manage it.");
+    const savedRow = saved as unknown as Row & { workspace_id: string };
 
     const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
     const rotatesSecrets = !!data.authToken;
@@ -193,7 +196,7 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
     void recordServerAuditEvent({
       eventType: rotatesSecrets ? "secrets.rotate" : "sms_account.update",
       severity: rotatesSecrets ? "warning" : "info",
-      workspaceId: (saved as any).workspace_id,
+      workspaceId: savedRow.workspace_id,
       actorId: context.userId,
       resourceType: "sms_account",
       resourceId: data.id,
@@ -203,7 +206,7 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
       },
     });
 
-    const row = saved as unknown as Row;
+    const row = savedRow;
     const flags = await tokenFlags([row.id]);
     return { account: toSummary(row, flags.has(row.id)) };
   });

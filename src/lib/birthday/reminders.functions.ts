@@ -16,7 +16,7 @@ export const getBirthdayReminderSettings = createServerFn({ method: "POST" })
     z.object({ workspace_id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase } = context;
     const { data: row, error } = await supabase
       .from("birthday_reminder_settings")
       .select("workspace_id, enabled, lead_days, email_enabled, inapp_enabled, updated_at")
@@ -39,7 +39,7 @@ export const upsertBirthdayReminderSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => SettingsSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
 
     // Only owner/admin can edit
     const { data: mem, error: mErr } = await supabase
@@ -76,7 +76,7 @@ export const runBirthdayRemindersNow = createServerFn({ method: "POST" })
     z.object({ workspace_id: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     const { data: mem } = await supabase
       .from("workspace_members")
       .select("role")
@@ -101,7 +101,7 @@ export const getUpcomingBirthdays = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase } = context as any;
+    const { supabase } = context;
     const horizon = data.days ?? 30;
     const { data: rows, error } = await supabase
       .from("contacts")
@@ -122,7 +122,7 @@ export const getUpcomingBirthdays = createServerFn({ method: "POST" })
       avatar_url: string | null;
     }> = [];
 
-    for (const r of (rows ?? []) as any[]) {
+    for (const r of rows ?? []) {
       const m = /^\d{4}-(\d{2})-(\d{2})$/.exec(r.birthday);
       if (!m) continue;
       const mm = Number(m[1]);

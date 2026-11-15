@@ -6,9 +6,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sbAny } from "@/lib/supabase/untyped";
 import { normalizeCurrencyCode } from "@/lib/currency/format";
 import { platformDefaultCurrency } from "@/lib/currency/resolve.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json } from "@/integrations/supabase/types";
 
 const RangeInput = z.object({
   range_days: z.number().int().min(7).max(730).default(90),
@@ -33,7 +34,7 @@ const MONTHLY_FACTOR: Record<string, number> = {
   year: 1 / 12,
 };
 
-async function assertPlatformAdmin(supabase: any, userId: string) {
+async function assertPlatformAdmin(supabase: SupabaseClient<Database>, userId: string) {
   const { data } = await supabase
     .from("user_roles")
     .select("role")
@@ -59,10 +60,12 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
     ).toISOString();
 
     // ---- Plans lookup
-    const { data: plansData } = await sbAny(supabase)
+    const { data: plansData } = await supabase
       .from("plans")
       .select("id, name, code, price_cents, currency, interval");
-    const plans = new Map<string, PlanRow>((plansData ?? []).map((p: any) => [p.id, p as PlanRow]));
+    const plans = new Map<string, PlanRow>(
+      (plansData ?? []).map((plan) => [plan.id, plan] as const),
+    );
 
     // ---- Subscriptions
     const { data: subs } = await supabase
@@ -70,7 +73,7 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
       .select(
         "id, organization_id, plan_id, status, seats, trial_ends_at, created_at, canceled_at, cancel_at, current_period_start, current_period_end, metadata",
       );
-    const allSubs = (subs ?? []) as any[];
+    const allSubs = subs ?? [];
 
     let mrr = 0;
     let active = 0;
@@ -126,7 +129,7 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
       .gte("snapshot_date", rangeStartIso.slice(0, 10))
       .order("snapshot_date", { ascending: true });
 
-    const timeseries = (snaps ?? []).map((s: any) => ({
+    const timeseries = (snaps ?? []).map((s) => ({
       date: s.snapshot_date,
       mrr: (s.mrr_cents ?? 0) / 100,
       arr: (s.arr_cents ?? 0) / 100,
@@ -149,29 +152,29 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
     const { data: invoicesRaw } = await supabase
       .from("billing_invoices")
       .select(
-        "id, organization_id, subscription_id, total_cents, amount_paid_cents, amount_refunded_cents, status, paid_at, currency, metadata",
+        "id, organization_id, subscription_id, total_cents, amount_paid_cents, status, paid_at, currency, metadata",
       )
       .eq("currency", currency)
       .gte("paid_at", rangeStartIso);
-    const invoices = (invoicesRaw ?? []) as any[];
+    const invoices = invoicesRaw ?? [];
 
     const grossRevenue = invoices.reduce((s, i) => s + (i.amount_paid_cents ?? 0), 0);
-    const refundsTotal = invoices.reduce((s, i) => s + (i.amount_refunded_cents ?? 0), 0);
 
     // ---- Payment attempts: failed + refunds
     const { data: attemptsRaw } = await supabase
       .from("billing_payment_attempts")
       .select(
-        "id, status, amount_cents, refunded_amount_cents, failure_reason, currency, created_at",
+        "id, status, amount_cents, refunded_amount_cents, failure_code, failure_message, currency, created_at",
       )
       .eq("currency", currency)
       .gte("created_at", rangeStartIso);
-    const attempts = (attemptsRaw ?? []) as any[];
+    const attempts = attemptsRaw ?? [];
+    const refundsTotal = attempts.reduce((sum, attempt) => sum + attempt.refunded_amount_cents, 0);
 
     const failedPayments = attempts.filter((a) => a.status === "failed");
     const failedByReason = new Map<string, number>();
     for (const f of failedPayments) {
-      const key = (f.failure_reason as string) || "unknown";
+      const key = f.failure_code ?? f.failure_message ?? "unknown";
       failedByReason.set(key, (failedByReason.get(key) ?? 0) + 1);
     }
 
@@ -185,13 +188,17 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
         "subscription.expanded",
       ])
       .gte("created_at", rangeStartIso);
-    const events = (eventsRaw ?? []) as any[];
+    const events = eventsRaw ?? [];
     let expansionRevenue = 0;
     let downgradeLoss = 0;
     let upgrades = 0;
     let downgrades = 0;
     for (const ev of events) {
-      const delta = Number(ev.payload?.mrr_delta_cents ?? 0);
+      const payload =
+        typeof ev.payload === "object" && ev.payload !== null && !Array.isArray(ev.payload)
+          ? ev.payload
+          : {};
+      const delta = Number(payload.mrr_delta_cents ?? 0);
       if (ev.event_type === "subscription.downgraded" || delta < 0) {
         downgradeLoss += Math.abs(delta);
         downgrades++;
@@ -210,9 +217,13 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
         .select("organization_id, billing_address")
         .in("organization_id", orgIds);
       const countryByOrg = new Map<string, string>();
-      for (const c of (customersRaw ?? []) as any[]) {
-        const country = (c.billing_address as any)?.country ?? "Unknown";
-        countryByOrg.set(c.organization_id, country);
+      for (const customer of customersRaw ?? []) {
+        const address = customer.billing_address as Json | null;
+        const addressRecord =
+          typeof address === "object" && address !== null && !Array.isArray(address) ? address : {};
+        const country =
+          typeof addressRecord.country === "string" ? addressRecord.country : "Unknown";
+        countryByOrg.set(customer.organization_id, country);
       }
       for (const inv of invoices) {
         const country = countryByOrg.get(inv.organization_id) ?? "Unknown";
@@ -225,8 +236,8 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
       .from("billing_invoices")
       .select("amount_paid_cents", { count: "exact", head: false })
       .eq("currency", currency);
-    const totalPaid = ((totalRevenueAllTimeRes.data ?? []) as any[]).reduce(
-      (s, i) => s + (i.amount_paid_cents ?? 0),
+    const totalPaid = (totalRevenueAllTimeRes.data ?? []).reduce(
+      (sum, invoice) => sum + (invoice.amount_paid_cents ?? 0),
       0,
     );
     const totalCustomers = Math.max(1, allSubs.length);
@@ -238,8 +249,8 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
       .eq("currency", currency)
       .gte("paid_at", prevRangeStart)
       .lt("paid_at", rangeStartIso);
-    const previousGross = ((previousRangeInvoicesRes.data ?? []) as any[]).reduce(
-      (s, i) => s + (i.amount_paid_cents ?? 0),
+    const previousGross = (previousRangeInvoicesRes.data ?? []).reduce(
+      (sum, invoice) => sum + (invoice.amount_paid_cents ?? 0),
       0,
     );
     const revenueGrowth = previousGross === 0 ? 0 : (grossRevenue - previousGross) / previousGross;
@@ -292,7 +303,7 @@ export const getRevenueAnalytics = createServerFn({ method: "GET" })
         .map((f) => ({
           id: f.id,
           amount_cents: f.amount_cents ?? 0,
-          reason: f.failure_reason ?? "unknown",
+          reason: f.failure_code ?? f.failure_message ?? "unknown",
           created_at: f.created_at,
         })),
     };

@@ -15,7 +15,8 @@ export function useConversationTasks(conversationId: string | null | undefined) 
     queryKey: ["conversation-tasks", conversationId],
     enabled: !!conversationId,
     queryFn: async (): Promise<ConversationTask[]> => {
-      const { data, error } = await (sbAny(supabase).from("tasks") as any)
+      const { data, error } = await sbAny(supabase)
+        .from("tasks")
         .select("id,title,status,priority,due_at")
         .eq("entity_type", "conversation")
         .eq("entity_id", conversationId)
@@ -38,7 +39,8 @@ export function useOpenTaskCounts(conversationIds: string[]) {
     enabled: conversationIds.length > 0,
     staleTime: 30_000,
     queryFn: async (): Promise<Record<string, number>> => {
-      const { data, error } = await (sbAny(supabase).from("tasks") as any)
+      const { data, error } = await sbAny(supabase)
+        .from("tasks")
         .select("entity_id")
         .eq("entity_type", "conversation")
         .in("entity_id", conversationIds)

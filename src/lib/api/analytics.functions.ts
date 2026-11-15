@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
+import { sbAny } from "@/lib/supabase/untyped";
 
 const FiltersSchema = z.object({
   days: z.number().int().min(1).max(90).default(7),
@@ -13,8 +14,8 @@ const FiltersSchema = z.object({
 
 export type ApiAnalyticsFilters = z.infer<typeof FiltersSchema>;
 
-async function getOrgId(supabase: any, userId: string): Promise<string | null> {
-  const { data } = await supabase
+async function getOrgId(supabase: unknown, userId: string): Promise<string | null> {
+  const { data } = await sbAny(supabase)
     .from("organization_members")
     .select("organization_id")
     .eq("user_id", userId)
@@ -33,8 +34,7 @@ export const getApiAnalytics = createServerFn({ method: "POST" })
 
     const since = new Date(Date.now() - data.days * 86400_000).toISOString();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase
+    let q = sbAny(supabase)
       .from("api_gateway_logs")
       .select("id, method, path, status_code, latency_ms, error, api_key_id, created_at")
       .eq("organization_id", orgId)
@@ -187,8 +187,7 @@ export const listApiLogs = createServerFn({ method: "POST" })
     const orgId = await getOrgId(supabase, userId);
     if (!orgId) return [];
     const since = new Date(Date.now() - data.days * 86400_000).toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase
+    let q = sbAny(supabase)
       .from("api_gateway_logs")
       .select("id, method, path, status_code, latency_ms, ip, error, created_at, api_key_id")
       .eq("organization_id", orgId)
@@ -213,8 +212,7 @@ export const exportApiLogsCsv = createServerFn({ method: "POST" })
     const orgId = await getOrgId(supabase, userId);
     if (!orgId) return "";
     const since = new Date(Date.now() - data.days * 86400_000).toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let q: any = supabase
+    let q = sbAny(supabase)
       .from("api_gateway_logs")
       .select("created_at, method, path, status_code, latency_ms, ip, api_key_id, error")
       .eq("organization_id", orgId)

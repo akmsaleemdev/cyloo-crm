@@ -4,22 +4,27 @@
  * Call from anywhere on the server after a business event happens.
  */
 export async function enqueueWebhookEvent(
-  admin: any,
+  admin: unknown,
   args: { organizationId: string; eventType: string; eventId: string; payload: unknown },
 ): Promise<{ enqueued: number }> {
-  const { data: endpoints } = await admin
+  const { data: endpointData } = await sbAny(admin)
     .from("webhook_endpoints")
     .select("id, events, max_retries")
     .eq("organization_id", args.organizationId)
     .eq("status", "active");
-  if (!endpoints?.length) return { enqueued: 0 };
+  const endpoints = (endpointData ?? []) as Array<{
+    id: string;
+    events: string[];
+    max_retries: number;
+  }>;
+  if (!endpoints.length) return { enqueued: 0 };
 
   const rows = endpoints
     .filter(
-      (e: any) =>
+      (e) =>
         (e.events as string[]).includes("*") || (e.events as string[]).includes(args.eventType),
     )
-    .map((e: any) => ({
+    .map((e) => ({
       endpoint_id: e.id,
       organization_id: args.organizationId,
       event_type: args.eventType,
@@ -31,9 +36,10 @@ export async function enqueueWebhookEvent(
 
   // ignoreDuplicates is not supported by supabase-js .insert; upsert on the
   // unique index (endpoint_id, event_id) with ignoreDuplicates handles replays.
-  const { error } = await admin
+  const { error } = await sbAny(admin)
     .from("webhook_deliveries")
     .upsert(rows, { onConflict: "endpoint_id,event_id", ignoreDuplicates: true });
   if (error) throw error;
   return { enqueued: rows.length };
 }
+import { sbAny } from "@/lib/supabase/untyped";

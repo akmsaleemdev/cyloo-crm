@@ -91,15 +91,17 @@ export const getTicket = createServerFn({ method: "GET" })
         .eq("conversation_id", data.id)
         .order("created_at", { ascending: true })
         .limit(200),
-      (sbAny(context.supabase).from("ticket_sla_tracking") as any)
+      sbAny(context.supabase)
+        .from("ticket_sla_tracking")
         .select("*")
         .eq("ticket_id", data.id)
         .maybeSingle(),
-      (sbAny(context.supabase).from("ticket_escalations") as any)
+      sbAny(context.supabase)
+        .from("ticket_escalations")
         .select("*")
         .eq("ticket_id", data.id)
         .order("created_at", { ascending: false }),
-      (sbAny(context.supabase).from("ticket_watchers") as any).select("*").eq("ticket_id", data.id),
+      sbAny(context.supabase).from("ticket_watchers").select("*").eq("ticket_id", data.id),
       sbAny(context.supabase)
         .from("conversation_notes")
         .select("*")
@@ -172,7 +174,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
       .eq("workspace_id", workspaceId)
       .maybeSingle();
     if (!conv) throw new Error("Ticket not found");
-    const { error } = await (sbAny(context.supabase).from("messages") as any).insert({
+    const { error } = await sbAny(context.supabase).from("messages").insert({
       workspace_id: workspaceId,
       conversation_id: data.id,
       body: data.body,
@@ -190,7 +192,7 @@ export const replyToTicket = createServerFn({ method: "POST" })
     if (!data.isInternal && !(conv as { first_response_at: string | null }).first_response_at) {
       patch.first_response_at = new Date().toISOString();
     }
-    await (sbAny(context.supabase).from("conversations") as any).update(patch).eq("id", data.id);
+    await sbAny(context.supabase).from("conversations").update(patch).eq("id", data.id);
     return { ok: true };
   });
 
@@ -201,7 +203,7 @@ export const addWatcher = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { error } = await (sbAny(context.supabase).from("ticket_watchers") as any).insert({
+    const { error } = await sbAny(context.supabase).from("ticket_watchers").insert({
       workspace_id: workspaceId,
       ticket_id: data.ticketId,
       user_id: data.userId,
@@ -218,7 +220,8 @@ export const removeWatcher = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { error } = await (sbAny(context.supabase).from("ticket_watchers") as any)
+    const { error } = await sbAny(context.supabase)
+      .from("ticket_watchers")
       .delete()
       .eq("ticket_id", data.ticketId)
       .eq("user_id", data.userId)
@@ -251,17 +254,19 @@ export const escalateTicket = createServerFn({ method: "POST" })
       .maybeSingle();
     const level =
       ((current as { escalation_level: number | null } | null)?.escalation_level ?? 0) + 1;
-    const { error } = await (sbAny(context.supabase).from("ticket_escalations") as any).insert({
-      workspace_id: workspaceId,
-      ticket_id: data.ticketId,
-      level,
-      reason: data.reason,
-      escalated_from: (current as { assigned_to: string | null } | null)?.assigned_to ?? null,
-      escalated_to: data.escalatedTo ?? null,
-      escalated_to_team: data.escalatedToTeam ?? null,
-      auto: false,
-      created_by: context.userId,
-    });
+    const { error } = await sbAny(context.supabase)
+      .from("ticket_escalations")
+      .insert({
+        workspace_id: workspaceId,
+        ticket_id: data.ticketId,
+        level,
+        reason: data.reason,
+        escalated_from: (current as { assigned_to: string | null } | null)?.assigned_to ?? null,
+        escalated_to: data.escalatedTo ?? null,
+        escalated_to_team: data.escalatedToTeam ?? null,
+        auto: false,
+        created_by: context.userId,
+      });
     if (error) throw new Error(error.message);
     await sbAny(context.supabase)
       .from("conversations")
@@ -324,17 +329,19 @@ export const attachSla = createServerFn({ method: "POST" })
     const base = new Date(c.created_at).getTime();
     const firstDue = new Date(base + firstMin * 60_000).toISOString();
     const resolutionDue = new Date(base + resolutionMin * 60_000).toISOString();
-    const { error } = await (sbAny(context.supabase).from("ticket_sla_tracking") as any).upsert(
-      {
-        workspace_id: workspaceId,
-        ticket_id: data.ticketId,
-        sla_policy_id: data.policyId ?? null,
-        first_response_due_at: firstDue,
-        resolution_due_at: resolutionDue,
-        paused: false,
-      },
-      { onConflict: "ticket_id" },
-    );
+    const { error } = await sbAny(context.supabase)
+      .from("ticket_sla_tracking")
+      .upsert(
+        {
+          workspace_id: workspaceId,
+          ticket_id: data.ticketId,
+          sla_policy_id: data.policyId ?? null,
+          first_response_due_at: firstDue,
+          resolution_due_at: resolutionDue,
+          paused: false,
+        },
+        { onConflict: "ticket_id" },
+      );
     if (error) throw new Error(error.message);
     return { ok: true, firstDue, resolutionDue };
   });
@@ -346,7 +353,8 @@ export const pauseSla = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { data: tracking } = await (sbAny(context.supabase).from("ticket_sla_tracking") as any)
+    const { data: tracking } = await sbAny(context.supabase)
+      .from("ticket_sla_tracking")
       .select("*")
       .eq("ticket_id", data.ticketId)
       .eq("workspace_id", workspaceId)
@@ -358,7 +366,8 @@ export const pauseSla = createServerFn({ method: "POST" })
       total_pause_seconds: number;
     };
     if (data.pause) {
-      await (sbAny(context.supabase).from("ticket_sla_tracking") as any)
+      await sbAny(context.supabase)
+        .from("ticket_sla_tracking")
         .update({
           paused: true,
           paused_at: new Date().toISOString(),
@@ -366,7 +375,8 @@ export const pauseSla = createServerFn({ method: "POST" })
         .eq("ticket_id", data.ticketId);
     } else if (t.paused && t.paused_at) {
       const pausedFor = Math.floor((Date.now() - new Date(t.paused_at).getTime()) / 1000);
-      await (sbAny(context.supabase).from("ticket_sla_tracking") as any)
+      await sbAny(context.supabase)
+        .from("ticket_sla_tracking")
         .update({
           paused: false,
           paused_at: null,
@@ -417,7 +427,8 @@ export const listCategories = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { data } = await (sbAny(context.supabase).from("ticket_categories") as any)
+    const { data } = await sbAny(context.supabase)
+      .from("ticket_categories")
       .select("*")
       .eq("workspace_id", workspaceId)
       .order("sort_order")
@@ -447,14 +458,16 @@ export const saveCategory = createServerFn({ method: "POST" })
     const workspaceId = await getWorkspaceId(context.userId);
     if (data.id) {
       const { id, ...rest } = data;
-      const { error } = await (sbAny(context.supabase).from("ticket_categories") as any)
+      const { error } = await sbAny(context.supabase)
+        .from("ticket_categories")
         .update(rest)
         .eq("id", id)
         .eq("workspace_id", workspaceId);
       if (error) throw new Error(error.message);
       return { id };
     }
-    const { data: row, error } = await (sbAny(context.supabase).from("ticket_categories") as any)
+    const { data: row, error } = await sbAny(context.supabase)
+      .from("ticket_categories")
       .insert({ ...data, workspace_id: workspaceId, created_by: context.userId })
       .select("id")
       .single();
@@ -467,7 +480,8 @@ export const deleteCategory = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { error } = await (sbAny(context.supabase).from("ticket_categories") as any)
+    const { error } = await sbAny(context.supabase)
+      .from("ticket_categories")
       .delete()
       .eq("id", data.id)
       .eq("workspace_id", workspaceId);
@@ -481,7 +495,8 @@ export const listMacros = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { data } = await (sbAny(context.supabase).from("ticket_macros") as any)
+    const { data } = await sbAny(context.supabase)
+      .from("ticket_macros")
       .select("*")
       .eq("workspace_id", workspaceId)
       .order("usage_count", { ascending: false })
@@ -509,14 +524,16 @@ export const saveMacro = createServerFn({ method: "POST" })
     const workspaceId = await getWorkspaceId(context.userId);
     if (data.id) {
       const { id, ...rest } = data;
-      const { error } = await (sbAny(context.supabase).from("ticket_macros") as any)
+      const { error } = await sbAny(context.supabase)
+        .from("ticket_macros")
         .update(rest)
         .eq("id", id)
         .eq("workspace_id", workspaceId);
       if (error) throw new Error(error.message);
       return { id };
     }
-    const { data: row, error } = await (sbAny(context.supabase).from("ticket_macros") as any)
+    const { data: row, error } = await sbAny(context.supabase)
+      .from("ticket_macros")
       .insert({ ...data, workspace_id: workspaceId, created_by: context.userId })
       .select("id")
       .single();
@@ -529,7 +546,8 @@ export const deleteMacro = createServerFn({ method: "POST" })
   .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { error } = await (sbAny(context.supabase).from("ticket_macros") as any)
+    const { error } = await sbAny(context.supabase)
+      .from("ticket_macros")
       .delete()
       .eq("id", data.id)
       .eq("workspace_id", workspaceId);
@@ -544,7 +562,8 @@ export const applyMacro = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { data: macro } = await (sbAny(context.supabase).from("ticket_macros") as any)
+    const { data: macro } = await sbAny(context.supabase)
+      .from("ticket_macros")
       .select("*")
       .eq("id", data.macroId)
       .eq("workspace_id", workspaceId)
@@ -556,7 +575,7 @@ export const applyMacro = createServerFn({ method: "POST" })
       usage_count: number;
     };
     // Post reply
-    await (sbAny(context.supabase).from("messages") as any).insert({
+    await sbAny(context.supabase).from("messages").insert({
       workspace_id: workspaceId,
       conversation_id: data.ticketId,
       body: m.body,
@@ -573,12 +592,14 @@ export const applyMacro = createServerFn({ method: "POST" })
       if (a.type === "set_category") patch.ticket_category_id = a.value;
     }
     if (Object.keys(patch).length > 1) {
-      await (sbAny(context.supabase).from("conversations") as any)
+      await sbAny(context.supabase)
+        .from("conversations")
         .update(patch)
         .eq("id", data.ticketId)
         .eq("workspace_id", workspaceId);
     }
-    await (sbAny(context.supabase).from("ticket_macros") as any)
+    await sbAny(context.supabase)
+      .from("ticket_macros")
       .update({ usage_count: (m.usage_count ?? 0) + 1 })
       .eq("id", data.macroId);
     return { ok: true };
@@ -590,7 +611,8 @@ export const listCsatSurveys = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const workspaceId = await getWorkspaceId(context.userId);
-    const { data } = await (sbAny(context.supabase).from("csat_surveys") as any)
+    const { data } = await sbAny(context.supabase)
+      .from("csat_surveys")
       .select("*")
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false });
@@ -618,14 +640,16 @@ export const saveCsatSurvey = createServerFn({ method: "POST" })
     const workspaceId = await getWorkspaceId(context.userId);
     if (data.id) {
       const { id, ...rest } = data;
-      const { error } = await (sbAny(context.supabase).from("csat_surveys") as any)
+      const { error } = await sbAny(context.supabase)
+        .from("csat_surveys")
         .update(rest)
         .eq("id", id)
         .eq("workspace_id", workspaceId);
       if (error) throw new Error(error.message);
       return { id };
     }
-    const { data: row, error } = await (sbAny(context.supabase).from("csat_surveys") as any)
+    const { data: row, error } = await sbAny(context.supabase)
+      .from("csat_surveys")
       .insert({ ...data, workspace_id: workspaceId, created_by: context.userId })
       .select("id")
       .single();
@@ -695,11 +719,13 @@ export const helpdeskAnalytics = createServerFn({ method: "GET" })
         .eq("workspace_id", workspaceId)
         .in("status", ["open", "pending", "waiting"] as never)
         .is("deleted_at", null),
-      (sbAny(context.supabase).from("ticket_sla_tracking") as any)
+      sbAny(context.supabase)
+        .from("ticket_sla_tracking")
         .select("id", { count: "exact", head: true })
         .eq("workspace_id", workspaceId)
         .eq("resolution_breached", true),
-      (sbAny(context.supabase).from("ticket_escalations") as any)
+      sbAny(context.supabase)
+        .from("ticket_escalations")
         .select("id, level, created_at")
         .eq("workspace_id", workspaceId)
         .gte("created_at", since),
@@ -817,7 +843,8 @@ export const aiTriageTicket = createServerFn({ method: "POST" })
     if (!conv) throw new Error("Ticket not found");
     const key = process.env.GEMINI_API_KEY;
     if (!key) return { priority: null, category: null, tags: [], summary: null };
-    const { data: cats } = await (sbAny(context.supabase).from("ticket_categories") as any)
+    const { data: cats } = await sbAny(context.supabase)
+      .from("ticket_categories")
       .select("id, name")
       .eq("workspace_id", workspaceId)
       .eq("is_active", true);
@@ -859,7 +886,8 @@ export const aiTriageTicket = createServerFn({ method: "POST" })
       if (parsed.summary) patch.ai_summary = parsed.summary;
       if (parsed.priority) patch.priority = parsed.priority;
       if (parsed.category_id) patch.ticket_category_id = parsed.category_id;
-      await (sbAny(context.supabase).from("conversations") as any)
+      await sbAny(context.supabase)
+        .from("conversations")
         .update(patch)
         .eq("id", data.ticketId)
         .eq("workspace_id", workspaceId);

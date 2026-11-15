@@ -926,7 +926,10 @@ function RestorePanel({ jobs }: { jobs: BackupJob[] }) {
   const executeFn = useServerFn(executeRestore);
   const listFn = useServerFn(listRestoreOperations);
   const qc = useQueryClient();
-  const { data: ops } = useQuery({ queryKey: ["restore-ops"], queryFn: () => listFn() });
+  const { data: ops } = useQuery<RestoreOperation[]>({
+    queryKey: ["restore-ops"],
+    queryFn: () => listFn(),
+  });
 
   const [backupId, setBackupId] = useState<string | null>(null);
   const [mode, setMode] = useState<"preview" | "in_place" | "new_workspace" | "point_in_time">(
@@ -935,7 +938,7 @@ function RestorePanel({ jobs }: { jobs: BackupJob[] }) {
   const [pit, setPit] = useState("");
   const [preview, setPreview] = useState<RestoreOperation | null>(null);
 
-  const previewMut = useMutation({
+  const previewMut = useMutation<RestoreOperation, Error, void>({
     mutationFn: () =>
       previewFn({
         data: {
@@ -964,6 +967,11 @@ function RestorePanel({ jobs }: { jobs: BackupJob[] }) {
   });
 
   const restorable = jobs.filter((j) => ["completed", "verified"].includes(j.status));
+  const warnings = Array.isArray(preview?.preview_summary.warnings)
+    ? preview.preview_summary.warnings.filter(
+        (warning): warning is string => typeof warning === "string",
+      )
+    : [];
 
   return (
     <div className="grid md:grid-cols-2 gap-4">
@@ -1035,16 +1043,12 @@ function RestorePanel({ jobs }: { jobs: BackupJob[] }) {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estimated size</span>
                   <span>
-                    {formatBytes(
-                      Number((preview.preview_summary as any)?.estimated_size_bytes) || 0,
-                    )}
+                    {formatBytes(Number(preview.preview_summary.estimated_size_bytes) || 0)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estimated duration</span>
-                  <span>
-                    {Number((preview.preview_summary as any)?.estimated_duration_minutes) || 0} min
-                  </span>
+                  <span>{Number(preview.preview_summary.estimated_duration_minutes) || 0} min</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Tables:</span>
@@ -1056,7 +1060,7 @@ function RestorePanel({ jobs }: { jobs: BackupJob[] }) {
                     ))}
                   </div>
                 </div>
-                {(preview.preview_summary as any)?.warnings?.map((w: string, i: number) => (
+                {warnings.map((w, i) => (
                   <div
                     key={i}
                     className="flex items-start gap-2 p-2 rounded bg-amber-500/10 border border-amber-500/30 text-xs"
@@ -1207,7 +1211,7 @@ function NotificationsPanel() {
           <p className="text-sm text-muted-foreground py-6 text-center">No notifications.</p>
         ) : (
           <ul className="space-y-2">
-            {(data ?? []).map((n: any) => (
+            {(data ?? []).map((n) => (
               <li
                 key={n.id}
                 className={`p-3 rounded border flex items-start gap-3 ${n.is_read ? "bg-card/40" : "bg-card"}`}

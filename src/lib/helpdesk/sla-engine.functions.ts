@@ -7,8 +7,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Database } from "@/integrations/supabase/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-async function getWorkspaceId(supabase: any, userId: string): Promise<string> {
+type SlaTrackingRow = Database["public"]["Tables"]["ticket_sla_tracking"]["Row"] & {
+  ticket: {
+    id: string;
+    ticket_number: string | null;
+    subject: string | null;
+    priority: string | null;
+    status: string | null;
+    assigned_to?: string | null;
+    department_id?: string | null;
+  } | null;
+};
+
+async function getWorkspaceId(supabase: SupabaseClient, userId: string): Promise<string> {
   const { data } = await supabase
     .from("workspace_members")
     .select("workspace_id")
@@ -53,7 +67,7 @@ export const upsertSlaPolicy = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
-    const { data: row, error } = await (sbAny(context.supabase) as any)
+    const { data: row, error } = await sbAny(context.supabase)
       .from("sla_policies")
       .upsert({ ...data, workspace_id: wsId, created_by: context.userId })
       .select()
@@ -100,7 +114,7 @@ export const upsertEscalationRule = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
-    const { data: row, error } = await (sbAny(context.supabase) as any)
+    const { data: row, error } = await sbAny(context.supabase)
       .from("sla_escalation_rules")
       .upsert({ ...data, workspace_id: wsId })
       .select()
@@ -156,14 +170,17 @@ export const saveBusinessHours = createServerFn({ method: "POST" })
     z
       .object({
         timezone: z.string(),
-        weekly_schedule: z.record(z.string(), z.any()),
+        weekly_schedule: z.record(
+          z.string(),
+          z.object({ open: z.string(), close: z.string(), enabled: z.boolean() }),
+        ),
         offline_message: z.string().optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
-    const { error } = await (sbAny(context.supabase) as any)
+    const { error } = await sbAny(context.supabase)
       .from("business_hours")
       .upsert({ ...data, workspace_id: wsId, updated_by: context.userId });
     if (error) throw error;
@@ -195,7 +212,7 @@ export const addHoliday = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const wsId = await getWorkspaceId(sbAny(context.supabase), context.userId);
-    const { error } = await (sbAny(context.supabase) as any)
+    const { error } = await sbAny(context.supabase)
       .from("sla_holidays")
       .insert({ ...data, workspace_id: wsId });
     if (error) throw error;
@@ -221,7 +238,7 @@ export const slaDashboard = createServerFn({ method: "GET" })
       .select("*, ticket:conversations(id, ticket_number, subject, priority, status, assigned_to)")
       .eq("workspace_id", wsId);
     const now = Date.now();
-    const list = (rows ?? []) as any[];
+    const list = (rows ?? []) as SlaTrackingRow[];
     let onTrack = 0,
       atRisk = 0,
       breached = 0,
@@ -276,7 +293,7 @@ export const slaReport = createServerFn({ method: "GET" })
       string,
       { day: string; breach: number; warning: number; escalated: number }
     >();
-    for (const ev of (events ?? []) as any[]) {
+    for (const ev of events ?? []) {
       const day = ev.created_at.slice(0, 10);
       const b = buckets.get(day) ?? { day, breach: 0, warning: 0, escalated: 0 };
       if (ev.event_type === "breach") b.breach++;
@@ -305,25 +322,27 @@ type Rule = {
   sla_policy_id: string;
 };
 
-export async function scanBreaches(admin: any): Promise<{ scanned: number; events: number }> {
+export async function scanBreaches(
+  admin: SupabaseClient,
+): Promise<{ scanned: number; events: number }> {
   const now = Date.now();
   const WARN_MS = 30 * 60_000;
   let events = 0;
 
-  const { data: tracks } = await admin
+  const { data: tracks } = await sbAny(admin)
     .from("ticket_sla_tracking")
     .select(
       "*, ticket:conversations(id, workspace_id, assigned_to, priority, status, department_id)",
     )
     .eq("paused", false);
-  const list = (tracks ?? []) as any[];
+  const list = (tracks ?? []) as SlaTrackingRow[];
   const active = list.filter(
     (t) => t.ticket && t.ticket.status !== "resolved" && t.ticket.status !== "closed",
   );
   if (active.length === 0) return { scanned: 0, events: 0 };
 
   const policyIds = Array.from(new Set(active.map((t) => t.sla_policy_id).filter(Boolean)));
-  const { data: rulesData } = await admin
+  const { data: rulesData } = await sbAny(admin)
     .from("sla_escalation_rules")
     .select("*")
     .in("sla_policy_id", policyIds.length ? policyIds : ["00000000-0000-0000-0000-000000000000"])
@@ -338,7 +357,7 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
   for (const t of active) {
     const wsId = t.workspace_id;
     const ticketId = t.ticket_id;
-    const patch: Record<string, any> = {};
+    const patch: Record<string, unknown> = {};
 
     // First-response warning/breach
     if (t.first_response_due_at && !t.first_response_breached) {
@@ -406,7 +425,7 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
       if (isWarn && (isResp ? t.first_response_breached : t.resolution_breached)) continue;
 
       patch.last_escalation_level = rule.level;
-      const meta: any = { level: rule.level };
+      const meta: Record<string, unknown> = { level: rule.level };
 
       // Insert escalation row
       await sbAny(admin)
@@ -450,7 +469,7 @@ export async function scanBreaches(admin: any): Promise<{ scanned: number; event
             .select("user_id")
             .eq("workspace_id", wsId)
             .eq("status", "active")
-            .in("user_id", rule.supervisor_user_ids),
+            .in("user_id", rule.supervisor_user_ids ?? []),
         ]);
         if (workspace?.organization_id && supervisors?.length) {
           const rows = supervisors.map((member: { user_id: string }) => ({

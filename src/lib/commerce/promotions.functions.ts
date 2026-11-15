@@ -1,7 +1,39 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { sbAny } from "@/lib/supabase/untyped";
+
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
+
+type PromotionSummary = Pick<
+  Tables<"commerce_promotions">,
+  "id" | "code" | "name" | "discount_type" | "promo_type" | "times_redeemed"
+>;
+type OrderSummary = Pick<
+  Tables<"commerce_orders">,
+  | "id"
+  | "order_number"
+  | "total"
+  | "subtotal"
+  | "discount"
+  | "currency"
+  | "status"
+  | "payment_status"
+  | "placed_at"
+  | "created_at"
+  | "contact_id"
+>;
+type ContactSummary = Pick<Tables<"contacts">, "id" | "name" | "email" | "phone">;
 
 const wsInput = z.object({ workspaceId: z.string().uuid() });
 
@@ -37,7 +69,7 @@ const promoSchema = z.object({
   is_active: z.boolean().default(true),
   is_stackable: z.boolean().default(false),
   priority: z.number().int().default(0),
-  rules: z.record(z.string(), z.any()).default({}),
+  rules: z.record(z.string(), jsonSchema).default({}),
   auto_apply: z.boolean().default(false),
 });
 
@@ -162,7 +194,7 @@ export const duplicatePromotion = createServerFn({ method: "POST" })
       .eq("workspace_id", data.workspaceId)
       .single();
     if (srcErr) throw new Error(srcErr.message);
-    const { id, created_at, updated_at, times_redeemed, code, name, ...rest } = src as any;
+    const { id, created_at, updated_at, times_redeemed, code, name, ...rest } = src;
     const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
     const payload = {
       ...rest,
@@ -214,7 +246,7 @@ export const bulkPromotionAction = createServerFn({ method: "POST" })
   });
 
 /** Core promotion evaluation shared by client + server. */
-type PromoRow = {
+export type PromoRow = {
   id: string;
   code: string | null;
   name: string;
@@ -576,7 +608,7 @@ export const getRedemptionHistory = createServerFn({ method: "GET" })
             .select("id, code, name, discount_type, promo_type, times_redeemed")
             .eq("workspace_id", data.workspaceId)
             .in("id", promoIds)
-        : Promise.resolve({ data: [], error: null } as any),
+        : Promise.resolve({ data: [] as PromotionSummary[], error: null }),
       orderIds.length
         ? sbAny(context.supabase)
             .from("commerce_orders")
@@ -585,19 +617,25 @@ export const getRedemptionHistory = createServerFn({ method: "GET" })
             )
             .eq("workspace_id", data.workspaceId)
             .in("id", orderIds)
-        : Promise.resolve({ data: [], error: null } as any),
+        : Promise.resolve({ data: [] as OrderSummary[], error: null }),
       contactIds.length
         ? sbAny(context.supabase)
             .from("contacts")
             .select("id, name, email, phone")
             .eq("workspace_id", data.workspaceId)
             .in("id", contactIds)
-        : Promise.resolve({ data: [], error: null } as any),
+        : Promise.resolve({ data: [] as ContactSummary[], error: null }),
     ]);
 
-    const promoMap = new Map<string, any>((promosRes.data ?? []).map((p: any) => [p.id, p]));
-    const orderMap = new Map<string, any>((ordersRes.data ?? []).map((o: any) => [o.id, o]));
-    const contactMap = new Map<string, any>((contactsRes.data ?? []).map((c: any) => [c.id, c]));
+    const promoMap = new Map<string, PromotionSummary>(
+      (promosRes.data ?? []).map((promo: PromotionSummary) => [promo.id, promo]),
+    );
+    const orderMap = new Map<string, OrderSummary>(
+      (ordersRes.data ?? []).map((order: OrderSummary) => [order.id, order]),
+    );
+    const contactMap = new Map<string, ContactSummary>(
+      (contactsRes.data ?? []).map((contact: ContactSummary) => [contact.id, contact]),
+    );
 
     // Timeline rows
     const timeline = redemptions.map((r) => {

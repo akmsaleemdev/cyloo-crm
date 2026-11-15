@@ -24,7 +24,7 @@ export const getPublicCardAccent = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
 
     const { data: card } = await supabaseAdmin
-      .from("vcards" as any)
+      .from("vcards" as never)
       .select("workspace_id, is_public, revoked_at")
       .eq("slug", data.slug)
       .maybeSingle();
@@ -38,7 +38,7 @@ export const getPublicCardAccent = createServerFn({ method: "GET" })
     if (!row?.workspace_id || !row.is_public || row.revoked_at) return { accent: null };
 
     const { data: config } = await supabaseAdmin
-      .from("white_label_configs" as any)
+      .from("white_label_configs" as never)
       .select("accent_color, is_active")
       .eq("workspace_id", row.workspace_id)
       .maybeSingle();

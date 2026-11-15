@@ -31,8 +31,11 @@ const UPLOAD_URL_TTL_SECONDS = 60 * 30; // 30 minutes for uploads
  * Returns `null` when the caller cannot see the workspace or when the
  * workspace has no `organization_id`.
  */
-async function resolveWorkspaceOrgId(supabase: any, workspaceId: string): Promise<string | null> {
-  const { data } = await supabase
+async function resolveWorkspaceOrgId(
+  supabase: unknown,
+  workspaceId: string,
+): Promise<string | null> {
+  const { data } = await sbAny(supabase)
     .from("workspaces")
     .select("organization_id")
     .eq("id", workspaceId)
@@ -49,7 +52,7 @@ async function resolveWorkspaceOrgId(supabase: any, workspaceId: string): Promis
  * re-minted inside an org-B session.
  */
 async function assertActiveOrgOwnsWorkspace(
-  supabase: any,
+  supabase: ReturnType<typeof sbAny>,
   userId: string,
   workspaceId: string,
   activeOrgId: string,
@@ -94,7 +97,7 @@ export const createMediaUploadUrl = createServerFn({ method: "POST" })
       data.activeOrgId,
     );
 
-    const safeName = data.filename.replace(/[^\w.\-]/g, "_").slice(-120);
+    const safeName = data.filename.replace(/[^\w.-]/g, "_").slice(-120);
     // Prefix the object path with the org id so storage layout is naturally
     // partitioned per-tenant. Downstream storage RLS can `starts_with` on
     // `<orgId>/` to enforce tenant boundaries.

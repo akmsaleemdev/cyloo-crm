@@ -150,5 +150,5 @@ export async function findTrialsEnding(
     .gt("trial_ends_at", now.toISOString())
     .lt("trial_ends_at", soon);
   if (error) throw error;
-  return (data ?? []) as any;
+  return data ?? [];
 }

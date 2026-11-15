@@ -23,9 +23,8 @@ export interface ReadinessReport {
   generated_at: string;
 }
 
-async function count(supabase: any, table: string, filter?: (q: any) => any): Promise<number> {
-  let q = sbAny(supabase).from(table).select("id", { count: "exact", head: true });
-  if (filter) q = filter(q);
+async function count(supabase: unknown, table: string): Promise<number> {
+  const q = sbAny(supabase).from(table).select("id", { count: "exact", head: true });
   const { count: c } = await q;
   return c ?? 0;
 }
@@ -120,7 +119,7 @@ export const getBookingReadiness = createServerFn({ method: "POST" })
       .from("ai_providers")
       .select("id, is_active")
       .limit(5);
-    const activeAi = (aiProviders ?? []).filter((p: any) => p.is_active).length;
+    const activeAi = (aiProviders ?? []).filter((provider) => provider.is_active).length;
     push({
       id: "ai-scheduling",
       category: "AI scheduling",

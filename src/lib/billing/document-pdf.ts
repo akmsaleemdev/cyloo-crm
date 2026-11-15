@@ -1,6 +1,15 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+type PostalAddress = {
+  line1?: string | null;
+  line2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+};
+
 export interface DocumentLike {
   id: string;
   type: "invoice" | "credit_note" | "receipt" | "refund_receipt";
@@ -8,7 +17,7 @@ export interface DocumentLike {
   number: string;
   customer_name?: string | null;
   customer_email?: string | null;
-  customer_address?: any;
+  customer_address?: PostalAddress | null;
   customer_tax_id?: string | null;
   currency: string;
   locale: string;
@@ -38,7 +47,7 @@ export interface DocumentLike {
 export interface TemplateLike {
   company_name?: string | null;
   company_logo_url?: string | null;
-  company_address?: any;
+  company_address?: PostalAddress | null;
   company_tax_id?: string | null;
   company_email?: string | null;
   company_phone?: string | null;
@@ -326,7 +335,7 @@ export function buildDocumentPdf(doc: DocumentLike, template: TemplateLike | nul
     pdf.text(doc.customer_email, 40, cy);
     cy += 12;
   }
-  const caddr = doc.customer_address as any;
+  const caddr = doc.customer_address;
   if (caddr?.line1) {
     pdf.text(caddr.line1, 40, cy);
     cy += 12;

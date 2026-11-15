@@ -195,7 +195,8 @@ function StoreIntegrations() {
     setBusyId(c.id);
     try {
       const res = await runTest.mutateAsync(c);
-      res.ok ? toast.success(res.message) : toast.error(res.message);
+      if (res.ok) toast.success(res.message);
+      else toast.error(res.message);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Test failed");
     } finally {

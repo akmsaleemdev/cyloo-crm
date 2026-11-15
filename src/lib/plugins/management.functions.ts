@@ -4,11 +4,34 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 
-async function activeWorkspaceId(supabase: any, userId: string): Promise<string> {
-  const { data } = await supabase
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
+
+function jsonObject(value: Json | null | undefined): Record<string, Json | undefined> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function relatedVersion(value: unknown): string | null {
+  if (!value || typeof value !== "object") return null;
+  if ("version" in value && typeof value.version === "string") return value.version;
+  if (Array.isArray(value)) return relatedVersion(value[0]);
+  return null;
+}
+
+async function activeWorkspaceId(supabase: unknown, userId: string): Promise<string> {
+  const { data } = await sbAny(supabase)
     .from("workspace_members")
     .select("workspace_id")
     .eq("user_id", userId)
@@ -44,13 +67,13 @@ export const updatePluginSettings = createServerFn({ method: "POST" })
     z
       .object({
         installationId: z.string().uuid(),
-        config: z.record(z.string(), z.unknown()).optional(),
+        config: z.record(z.string(), jsonSchema).optional(),
         grantedPermissions: z.array(z.string()).optional(),
       })
       .parse(i),
   )
   .handler(async ({ data, context }) => {
-    const patch: any = {};
+    const patch: Record<string, Json> = {};
     if (data.config !== undefined) patch.config = data.config;
     if (data.grantedPermissions !== undefined) patch.granted_permissions = data.grantedPermissions;
     const { data: row, error } = await sbAny(context.supabase)
@@ -75,7 +98,7 @@ export const logPluginEvent = createServerFn({ method: "POST" })
         level: z.enum(["debug", "info", "warn", "error"]),
         event: z.string().max(120),
         message: z.string().max(2000).optional(),
-        context: z.record(z.string(), z.unknown()).optional(),
+        context: z.record(z.string(), jsonSchema).optional(),
       })
       .parse(i),
   )
@@ -90,7 +113,7 @@ export const logPluginEvent = createServerFn({ method: "POST" })
         level: data.level,
         event: data.event,
         message: data.message,
-        context: (data.context ?? {}) as any,
+        context: data.context ?? {},
       });
     if (error) throw error;
     return { ok: true };
@@ -137,7 +160,7 @@ export const recordPluginHealth = createServerFn({ method: "POST" })
         errorRate: z.number().min(0).max(100).optional(),
         cpuUsage: z.number().min(0).max(100).optional(),
         memoryMb: z.number().int().min(0).optional(),
-        details: z.record(z.string(), z.unknown()).optional(),
+        details: z.record(z.string(), jsonSchema).optional(),
       })
       .parse(i),
   )
@@ -154,7 +177,7 @@ export const recordPluginHealth = createServerFn({ method: "POST" })
           error_rate: data.errorRate,
           cpu_usage: data.cpuUsage,
           memory_mb: data.memoryMb,
-          details: (data.details ?? {}) as any,
+          details: data.details ?? {},
         }),
       sbAny(context.supabase)
         .from("plugin_installations")
@@ -212,7 +235,7 @@ export const backupPlugin = createServerFn({ method: "POST" })
         plugin_id: install.plugin_id,
         installation_id: install.id,
         version_id: install.version_id,
-        version_string: (install as any).plugin_versions?.version ?? "0.0.0",
+        version_string: relatedVersion(install.plugin_versions) ?? "0.0.0",
         config_snapshot: install.config,
         permissions_snapshot: install.granted_permissions,
         storage_snapshot: install.storage,
@@ -390,7 +413,7 @@ export const putPluginStorage = createServerFn({ method: "POST" })
     z
       .object({
         installationId: z.string().uuid(),
-        patch: z.record(z.string(), z.unknown()),
+        patch: z.record(z.string(), jsonSchema),
       })
       .parse(i),
   )
@@ -400,10 +423,10 @@ export const putPluginStorage = createServerFn({ method: "POST" })
       .select("storage")
       .eq("id", data.installationId)
       .maybeSingle();
-    const merged = { ...((current?.storage as any) ?? {}), ...data.patch };
+    const merged = { ...jsonObject(current?.storage), ...data.patch };
     const { error } = await sbAny(context.supabase)
       .from("plugin_installations")
-      .update({ storage: merged as any })
+      .update({ storage: merged })
       .eq("id", data.installationId);
     if (error) throw error;
     return { storage: merged };
@@ -417,7 +440,7 @@ export const listPluginCategories = createServerFn({ method: "GET" }).handler(as
   const client = createClient(process.env.SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      fetch: (input: any, init: any) => {
+      fetch: (input, init) => {
         const h = new Headers(init?.headers);
         if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
           h.delete("Authorization");

@@ -46,8 +46,8 @@ export default function CRMNew() {
       }
       if (res.queued) Alert.alert("Saved offline", "This change will sync when you reconnect.");
       router.back();
-    } catch (e: any) {
-      Alert.alert("Save failed", e?.message ?? "Unknown error");
+    } catch (error: unknown) {
+      Alert.alert("Save failed", error instanceof Error ? error.message : "Unknown error");
     } finally {
       setSaving(false);
     }

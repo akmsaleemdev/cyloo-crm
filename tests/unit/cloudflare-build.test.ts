@@ -9,20 +9,25 @@ describe("Cloudflare build lifecycle", () => {
   it("runs the full npm build lifecycle with the Worker preset", () => {
     const directory = mkdtempSync(join(tmpdir(), "cyloo-cloudflare-"));
     try {
+      const childEnv = { ...process.env };
+      for (const key of Object.keys(childEnv)) {
+        if (key.toLowerCase() === "npm_execpath") delete childEnv[key];
+      }
+
       const npmCli = join(directory, "npm.cjs");
       writeFileSync(
         npmCli,
         "console.log(JSON.stringify({ args: process.argv.slice(2), preset: process.env.NITRO_PRESET }));",
       );
       const output = execFileSync(process.execPath, [resolve("scripts/build-cloudflare.mjs")], {
-        env: { ...process.env, npm_execpath: npmCli, NITRO_PRESET: "node-server" },
+        env: { ...childEnv, npm_execpath: npmCli, NITRO_PRESET: "node-server" },
         encoding: "utf8",
       });
       expect(JSON.parse(output)).toEqual({ args: ["run", "build"], preset: "cloudflare-module" });
 
       writeFileSync(npmCli, "process.exit(7);");
       const failed = spawnSync(process.execPath, [resolve("scripts/build-cloudflare.mjs")], {
-        env: { ...process.env, npm_execpath: npmCli },
+        env: { ...childEnv, npm_execpath: npmCli },
       });
       expect(failed.status).toBe(7);
     } finally {

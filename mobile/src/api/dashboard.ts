@@ -133,9 +133,9 @@ export async function fetchConversationAnalytics(workspaceId: string) {
       .eq("workspace_id", workspaceId)
       .gt("unread_count", 0),
   ]);
-  const count = (rows: any[] | null, key: string) =>
+  const count = (rows: Array<Record<string, unknown>> | null, key: string) =>
     (rows ?? []).reduce<Record<string, number>>((acc, r) => {
-      const k = r[key] ?? "unknown";
+      const k = String(r[key] ?? "unknown");
       acc[k] = (acc[k] ?? 0) + 1;
       return acc;
     }, {});
@@ -168,7 +168,8 @@ export async function fetchSalesAnalytics(workspaceId: string) {
       .eq("status", "lost")
       .gte("closed_at", since),
   ]);
-  const sum = (rows: any[] | null) => (rows ?? []).reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const sum = (rows: Array<Record<string, unknown>> | null) =>
+    (rows ?? []).reduce((total, row) => total + Number(row.amount ?? 0), 0);
   return {
     pipelineValue: sum(pipeline.data),
     pipelineCount: (pipeline.data ?? []).length,

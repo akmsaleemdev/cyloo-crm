@@ -7,8 +7,6 @@
  * message when a positional placeholder is empty.
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export type TemplateVarLocation = "header" | "body" | "button";
 
 export type TemplateVarSpec = {

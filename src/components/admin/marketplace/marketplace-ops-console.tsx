@@ -47,7 +47,20 @@ import {
 } from "lucide-react";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency";
-function KPI({ icon: Icon, label, value, sub }: any) {
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
+
+function KPI({
+  icon: Icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: ReactNode;
+  sub?: ReactNode;
+}) {
   return (
     <Card>
       <CardContent className="pt-6">
@@ -102,25 +115,28 @@ export function MarketplaceOpsConsole() {
       toast.success("Action recorded");
       invalidateAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Action failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Action failed"),
   });
 
   const scanMut = useMutation({
     mutationFn: (pluginId: string) => doScan({ data: { pluginId, scanner: "internal" } }),
-    onSuccess: (r: any) => {
-      toast.success(`Scan complete — ${r?.worst ?? "ok"} (score ${r?.score ?? 100})`);
+    onSuccess: (result) => {
+      toast.success(`Scan complete — ${result?.worst ?? "ok"} (score ${result?.score ?? 100})`);
       invalidateAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Scan failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Scan failed"),
   });
 
   const compatMut = useMutation({
     mutationFn: (pluginId: string) => doCompat({ data: { pluginId, targetPlatform: "cyloo" } }),
-    onSuccess: (r: any) => {
-      toast.success(`Compatibility ${r?.status}`);
+    onSuccess: (result) => {
+      toast.success(`Compatibility ${result?.status}`);
       invalidateAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Compatibility check failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Compatibility check failed"),
   });
 
   const reviewMut = useMutation({
@@ -202,7 +218,7 @@ export function MarketplaceOpsConsole() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {a?.topPluginsByInstalls.map((p: any) => (
+                    {a?.topPluginsByInstalls.map((p) => (
                       <TableRow key={p.id}>
                         <TableCell className="font-medium">{p.name}</TableCell>
                         <TableCell className="text-right">
@@ -234,7 +250,7 @@ export function MarketplaceOpsConsole() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {a?.topThemes.map((t: any) => (
+                    {a?.topThemes.map((t) => (
                       <TableRow key={t.id}>
                         <TableCell className="font-medium">{t.name}</TableCell>
                         <TableCell className="text-right">
@@ -265,7 +281,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {a?.topPluginsByRating.map((p: any) => (
+                  {a?.topPluginsByRating.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell className="text-right">{p.rating_avg?.toFixed(2)}</TableCell>
@@ -301,7 +317,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {q?.plugins.map((p: any) => (
+                  {q?.plugins.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{p.name}</TableCell>
                       <TableCell>{p.publisher_name ?? "—"}</TableCell>
@@ -383,7 +399,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {q?.themes.map((t: any) => (
+                  {q?.themes.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="font-medium">{t.name}</TableCell>
                       <TableCell>{t.publisher_name ?? "—"}</TableCell>
@@ -440,7 +456,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {q?.reviews.map((r: any) => (
+                  {q?.reviews.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">
                         {r.plugins?.name ?? r.plugin_id}
@@ -488,7 +504,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {scans.data?.scans.map((s: any) => (
+                  {scans.data?.scans.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell className="font-medium">
                         {s.plugins?.name ?? s.plugin_id}
@@ -539,7 +555,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {compat.data?.checks.map((c: any) => (
+                  {compat.data?.checks.map((c) => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">
                         {c.plugins?.name ?? c.plugin_id}
@@ -580,7 +596,7 @@ export function MarketplaceOpsConsole() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {log.data?.log.map((row: any) => (
+                  {log.data?.log.map((row) => (
                     <TableRow key={row.id}>
                       <TableCell className="text-muted-foreground">
                         {new Date(row.created_at).toLocaleString()}

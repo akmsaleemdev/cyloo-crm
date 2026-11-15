@@ -6,7 +6,7 @@ import { queryOptions, useSuspenseQuery, useQueryClient, useQuery } from "@tanst
 import { Suspense, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -62,6 +62,7 @@ import { WEBHOOK_EVENTS } from "@/lib/webhooks/events";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { DeveloperOrgSwitcher } from "@/components/app/developer/developer-org-switcher";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
+import type { LucideIcon } from "lucide-react";
 
 const endpointsQO = queryOptions({
   queryKey: ["webhooks", "endpoints"],
@@ -209,7 +210,7 @@ function EndpointsList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.endpoints.map((e: any) => (
+              {data.endpoints.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="font-medium">{e.name}</TableCell>
                   <TableCell className="font-mono text-xs max-w-[280px] truncate">
@@ -269,7 +270,7 @@ function EndpointsList() {
                       onClick={async () => {
                         if (!confirm("Rotate signing secret? Existing consumers must update."))
                           return;
-                        const r: any = await rotate({ data: { id: e.id } });
+                        const r = await rotate({ data: { id: e.id } });
                         setRotated(r.signing_secret);
                         qc.invalidateQueries({ queryKey: ["webhooks", "endpoints"] });
                       }}
@@ -332,7 +333,7 @@ function DeliveriesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {(data?.deliveries ?? []).map((d: any) => (
+            {(data?.deliveries ?? []).map((d) => (
               <TableRow key={d.id} className="cursor-pointer" onClick={() => setDetailId(d.id)}>
                 <TableCell className="font-mono text-xs">{d.event_type}</TableCell>
                 <TableCell>
@@ -365,7 +366,10 @@ function DeliveriesTable() {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { variant: any; label: string; icon: any }> = {
+  const map: Record<
+    string,
+    { variant: NonNullable<BadgeProps["variant"]>; label: string; icon: LucideIcon }
+  > = {
     succeeded: { variant: "default", label: "Succeeded", icon: CheckCircle2 },
     pending: { variant: "secondary", label: "Pending", icon: Clock },
     delivering: { variant: "secondary", label: "Delivering", icon: Loader2 },
@@ -628,7 +632,7 @@ function CreateEndpointDialog() {
               onClick={async () => {
                 setBusy(true);
                 try {
-                  const r: any = await create({
+                  const r = await create({
                     data: {
                       name: form.name,
                       description: form.description || undefined,
@@ -639,8 +643,8 @@ function CreateEndpointDialog() {
                   setIssued(r.signing_secret);
                   setOpen(false);
                   qc.invalidateQueries({ queryKey: ["webhooks", "endpoints"] });
-                } catch (e: any) {
-                  toast.error(e.message ?? "Failed");
+                } catch (error: unknown) {
+                  toast.error(error instanceof Error ? error.message : "Failed to create endpoint");
                 } finally {
                   setBusy(false);
                 }

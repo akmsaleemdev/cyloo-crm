@@ -1,8 +1,7 @@
 import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
-import { sbAny } from "@/lib/supabase/untyped";
+import type { LogEntry, LogQueryInput } from "@/lib/admin/audit.functions";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function severityFromLevel(level: string | null | undefined) {
   const l = (level ?? "").toLowerCase();
   if (["critical", "fatal"].includes(l)) return "critical";
@@ -16,18 +15,22 @@ function normalizeLimit(n: number | undefined) {
   return Math.max(1, Math.min(500, n ?? 100));
 }
 
-export async function queryLogsInternal(data: any) {
+function stringOrNull(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+export async function queryLogsInternal(data: LogQueryInput) {
   const limit = normalizeLimit(data.limit);
   const offset = Math.max(0, data.offset ?? 0);
   const q = (data.q ?? "").trim();
   const from = data.from ? new Date(data.from).toISOString() : null;
   const to = data.to ? new Date(data.to).toISOString() : null;
 
-  let rows: any[] = [];
+  let rows: LogEntry[] = [];
 
   switch (data.source) {
     case "audit": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("audit_logs")
         .select("*")
         .order("created_at", { ascending: false });
@@ -43,7 +46,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "audit",
         timestamp: x.created_at,
@@ -55,7 +58,7 @@ export async function queryLogsInternal(data: any) {
         resource: x.resource_type
           ? `${x.resource_type}${x.resource_id ? ":" + x.resource_id : ""}`
           : null,
-        ip: x.ip_address,
+        ip: stringOrNull(x.ip_address),
         user_agent: x.user_agent,
         message: null,
         meta: { changes: x.changes, metadata: x.metadata },
@@ -63,7 +66,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "auth": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("login_history")
         .select("*")
         .order("created_at", { ascending: false });
@@ -77,7 +80,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "auth",
         timestamp: x.created_at,
@@ -87,7 +90,7 @@ export async function queryLogsInternal(data: any) {
         organization_id: null,
         action: x.event,
         resource: x.device ?? null,
-        ip: x.ip_address,
+        ip: stringOrNull(x.ip_address),
         user_agent: x.user_agent,
         message: x.failure_reason ?? x.location ?? null,
         meta: { metadata: x.metadata, location: x.location },
@@ -95,7 +98,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "security": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("security_events")
         .select("*")
         .order("created_at", { ascending: false });
@@ -110,7 +113,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "security",
         timestamp: x.created_at,
@@ -122,7 +125,7 @@ export async function queryLogsInternal(data: any) {
         resource: x.resource_type
           ? `${x.resource_type}${x.resource_id ? ":" + x.resource_id : ""}`
           : null,
-        ip: x.ip_address,
+        ip: stringOrNull(x.ip_address),
         user_agent: x.user_agent,
         message: null,
         meta: { data: x.data },
@@ -130,7 +133,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "billing": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("billing_events")
         .select("*")
         .order("created_at", { ascending: false });
@@ -144,7 +147,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "billing",
         timestamp: x.created_at,
@@ -166,7 +169,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "payment": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("billing_payment_attempts")
         .select("*")
         .order("created_at", { ascending: false });
@@ -180,7 +183,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "payment",
         timestamp: x.created_at,
@@ -198,7 +201,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "api": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("api_keys")
         .select("*")
         .order("created_at", { ascending: false });
@@ -213,7 +216,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "api",
         timestamp: x.created_at,
@@ -231,7 +234,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "webhook": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("webhook_events")
         .select("*")
         .order("received_at", { ascending: false });
@@ -245,7 +248,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "webhook",
         timestamp: x.received_at,
@@ -263,7 +266,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "ai": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("ai_request_logs")
         .select("*")
         .order("created_at", { ascending: false });
@@ -278,7 +281,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "ai",
         timestamp: x.created_at,
@@ -296,7 +299,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "workflow": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("workflow_run_steps")
         .select("*")
         .order("started_at", { ascending: false });
@@ -310,7 +313,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "workflow",
         timestamp: x.started_at,
@@ -328,7 +331,7 @@ export async function queryLogsInternal(data: any) {
       break;
     }
     case "provider": {
-      let query = sbAny(supabaseAdmin)
+      let query = supabaseAdmin
         .from("provider_logs")
         .select("*")
         .order("created_at", { ascending: false });
@@ -342,7 +345,7 @@ export async function queryLogsInternal(data: any) {
       query = query.range(offset, offset + limit - 1);
       const { data: r, error } = await query;
       if (error) throw new Error(error.message);
-      rows = (r ?? []).map((x: any) => ({
+      rows = (r ?? []).map((x) => ({
         id: x.id,
         source: "provider",
         timestamp: x.created_at,

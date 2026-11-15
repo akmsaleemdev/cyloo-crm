@@ -42,8 +42,8 @@ function InstalledPluginsPage() {
     try {
       await fn();
       toast.success("Done");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Action failed");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Action failed");
     } finally {
       setBusy(null);
     }
@@ -190,7 +190,11 @@ function InstalledPluginsPage() {
   );
 }
 
-function LicenseBadge({ status }: { status: any }) {
+function LicenseBadge({
+  status,
+}: {
+  status: { state: string; expires_at?: string | null } | null;
+}) {
   const formatZoned = useZonedDateFormatter();
   if (!status)
     return (
@@ -209,8 +213,8 @@ function LicenseBadge({ status }: { status: any }) {
       <Badge className="text-[11px]">
         <CheckCircle2 className="size-3 " />
         Valid
-        {status.expiresAt
-          ? ` · exp ${formatZoned(new Date(status.expiresAt), { dateStyle: "short" })}`
+        {status.expires_at
+          ? ` · exp ${formatZoned(new Date(status.expires_at), { dateStyle: "short" })}`
           : ""}
       </Badge>
     );

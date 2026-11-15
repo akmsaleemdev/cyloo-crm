@@ -40,6 +40,21 @@ type Snapshot = {
   loadedAt: number;
 };
 
+function readPluginDependencies(manifest: unknown): DepSpec[] {
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) return [];
+  const dependencies = "dependencies" in manifest ? manifest.dependencies : undefined;
+  if (!Array.isArray(dependencies)) return [];
+  return dependencies.filter((dependency): dependency is DepSpec => {
+    if (!dependency || typeof dependency !== "object" || Array.isArray(dependency)) return false;
+    return (
+      "slug" in dependency &&
+      typeof dependency.slug === "string" &&
+      "range" in dependency &&
+      typeof dependency.range === "string"
+    );
+  });
+}
+
 class PluginManager {
   private snap: Snapshot = { installed: [], errors: {}, licenses: {}, loadedAt: 0 };
   private subscribers = new Set<(s: Snapshot) => void>();
@@ -64,20 +79,20 @@ class PluginManager {
     this.currentWorkspaceId = workspaceId;
     const { installations } = await listMyInstalledPlugins({});
     const installed = (installations ?? [])
-      .map((i: any): InstalledPlugin => ({
+      .map((i): InstalledPlugin => ({
         installationId: i.id,
         pluginId: i.plugin_id,
         slug: i.plugins?.slug ?? "",
-        version: i.plugin_versions?.version ?? i.plugins?.latest_version ?? "0.0.0",
+        version: i.plugin_versions?.version ?? "0.0.0",
         entryUrl: i.plugin_versions?.entry_url,
         grantedPermissions: (i.granted_permissions ?? []) as Permission[],
-        dependencies: (i.plugin_versions?.dependencies ?? []) as DepSpec[],
-        licenseKey: i.license_key,
-        licenseServerUrl: i.plugins?.license_server_url,
+        dependencies: readPluginDependencies(i.plugin_versions?.manifest),
+        licenseKey: i.plugin_license_activations?.[0]?.plugin_licenses?.license_key,
+        licenseServerUrl: undefined,
         pluginName: i.plugins?.name ?? "",
         status: i.status === "active" ? "active" : "disabled",
       }))
-      .filter((p: any) => p.slug);
+      .filter((p) => p.slug);
 
     const ordered = topologicalOrder(installed);
     const errors: Record<string, string> = {};

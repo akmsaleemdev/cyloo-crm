@@ -17,8 +17,8 @@ export default function DeviceScreen() {
   const wrap = async (fn: () => Promise<unknown>) => {
     try {
       await fn();
-    } catch (e: any) {
-      Alert.alert("Error", e?.message ?? String(e));
+    } catch (error: unknown) {
+      Alert.alert("Error", error instanceof Error ? error.message : String(error));
     }
   };
 

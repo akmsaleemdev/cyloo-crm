@@ -4,10 +4,11 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 
-async function assertSuperadmin(ctx: { supabase: any; userId: string }) {
+async function assertSuperadmin(ctx: { supabase: unknown; userId: string }) {
   const { data, error } = await sbAny(ctx.supabase).rpc("has_role", {
     _user_id: ctx.userId,
     _role: "superadmin",
@@ -97,10 +98,13 @@ export const getMarketplaceAnalytics = createServerFn({ method: "GET" })
       : 0;
 
     const paidPurchases = (purchases30.data ?? []).filter(
-      (p: any) => p.status === "paid" || p.status === "succeeded" || p.status === "completed",
+      (purchase) =>
+        purchase.status === "paid" ||
+        purchase.status === "succeeded" ||
+        purchase.status === "completed",
     );
-    const revenueCents = paidPurchases.reduce((s: number, p: any) => s + (p.amount_cents ?? 0), 0);
-    const netCents = paidPurchases.reduce((s: number, p: any) => s + (p.net_cents ?? 0), 0);
+    const revenueCents = paidPurchases.reduce((sum, purchase) => sum + purchase.amount_cents, 0);
+    const netCents = paidPurchases.reduce((sum, purchase) => sum + purchase.net_cents, 0);
 
     const pluginRows = (pluginsAgg.data ?? []) as Array<{ status: string }>;
     const themeRows = (themesAgg.data ?? []) as Array<{ status: string }>;
@@ -197,7 +201,7 @@ export const moderateEntity = createServerFn({ method: "POST" })
     const { supabaseAdmin: supabase } = await import("@/lib/demo/admin-write-guard.server");
     const table = data.entityType === "plugin" ? "plugins" : "themes";
 
-    const patch: Record<string, any> = {
+    const patch: Record<string, unknown> = {
       moderated_at: new Date().toISOString(),
       moderated_by: context.userId,
     };
@@ -233,7 +237,7 @@ export const moderateEntity = createServerFn({ method: "POST" })
 
     const { data: moderated, error } = await sbAny(supabase)
       .from(table)
-      .update(patch as any)
+      .update(patch)
       .eq("id", data.entityId)
       .select("id")
       .maybeSingle();
@@ -306,7 +310,7 @@ export const runSecurityScan = createServerFn({ method: "POST" })
       .eq("id", data.pluginId)
       .maybeSingle();
 
-    const versions = (plugin?.plugin_versions ?? []) as Array<any>;
+    const versions = plugin?.plugin_versions ?? [];
     const version = data.versionId
       ? versions.find((v) => v.id === data.versionId)
       : versions.sort((a, b) => (b.version ?? "").localeCompare(a.version ?? ""))[0];
@@ -416,19 +420,25 @@ export const runCompatibilityCheck = createServerFn({ method: "POST" })
     const supabase = context.supabase;
     const { data: plugin } = await supabase
       .from("plugins")
-      .select(
-        "id, plugin_versions(id, version, manifest, min_platform_version, max_platform_version)",
-      )
+      .select("id, plugin_versions(id, version, manifest)")
       .eq("id", data.pluginId)
       .maybeSingle();
-    const versions = (plugin?.plugin_versions ?? []) as Array<any>;
+    const versions = plugin?.plugin_versions ?? [];
     const version = data.versionId ? versions.find((v) => v.id === data.versionId) : versions[0];
+    const manifest =
+      version?.manifest && typeof version.manifest === "object" && !Array.isArray(version.manifest)
+        ? version.manifest
+        : {};
+    const minPlatform =
+      typeof manifest.min_platform_version === "string" ? manifest.min_platform_version : null;
+    const maxPlatform =
+      typeof manifest.max_platform_version === "string" ? manifest.max_platform_version : null;
 
-    const results: Record<string, any> = {
+    const results: Record<string, Json> = {
       hasManifest: Boolean(version?.manifest),
-      declaresPlatform: Boolean(version?.min_platform_version),
-      minPlatform: version?.min_platform_version ?? null,
-      maxPlatform: version?.max_platform_version ?? null,
+      declaresPlatform: Boolean(minPlatform),
+      minPlatform,
+      maxPlatform,
       targetVersion: data.targetVersion ?? "latest",
     };
     const ok = results.hasManifest && results.declaresPlatform !== false;

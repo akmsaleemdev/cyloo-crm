@@ -13,6 +13,8 @@ export function sanitizeSearchTerm(input: string, maxLength = 100): string {
     input
       .replace(/[,.()":*%\\]/g, " ")
       // Control characters have no place in a filter string either.
+      // Strip control characters before composing a PostgREST expression.
+      // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001f\u007f]/g, " ")
       .replace(/\s+/g, " ")
       .trim()

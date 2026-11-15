@@ -12,11 +12,24 @@
  *
  * Free listings are fulfilled inline (no Stripe round trip).
  */
-import { sbAny } from "@/lib/supabase/untyped";
+import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
 import { resolveWorkspaceCurrency } from "@/lib/currency/resolve.server";
+import { z } from "zod";
 
 const STRIPE_API = "https://api.stripe.com/v1";
 export const PLUGIN_CHECKOUT_PURPOSE = "plugin_purchase";
+
+const stripePluginSessionSchema = z
+  .object({
+    id: z.string(),
+    metadata: z.record(z.string(), z.string()).default({}),
+    payment_status: z.string().optional(),
+    status: z.string().nullable().optional(),
+    amount_total: z.number().nullable().optional(),
+    currency: z.string().nullable().optional(),
+    mode: z.string().optional(),
+  })
+  .passthrough();
 
 function requireStripeKey(): string {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -77,7 +90,7 @@ type PluginRow = {
 
 /** Creates a Stripe Checkout Session (or fulfils free listings inline). */
 export async function startPluginCheckoutServer(
-  supabase: any,
+  supabase: UntypedClient,
   userId: string,
   input: StartPluginCheckoutInput,
 ): Promise<{ free: boolean; url?: string; sessionId?: string; licenseId?: string }> {
@@ -183,9 +196,10 @@ export async function startPluginCheckoutServer(
  * Idempotent: a session already recorded in `plugin_purchases` is skipped.
  */
 export async function fulfilPluginCheckout(
-  session: any,
+  rawSession: unknown,
 ): Promise<{ handled: boolean; reason?: string }> {
-  const meta = (session?.metadata ?? {}) as Record<string, string>;
+  const session = stripePluginSessionSchema.parse(rawSession);
+  const meta = session.metadata;
   if (meta.cyloo_purpose !== PLUGIN_CHECKOUT_PURPOSE)
     return { handled: false, reason: "not a plugin checkout" };
   if (session.payment_status && session.payment_status !== "paid" && session.status !== "complete")

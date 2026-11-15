@@ -56,6 +56,7 @@ import { ImageDropUpload } from "@/components/branding/image-drop-upload";
 import type { BrandingScope } from "@/lib/branding/upload";
 import { ThemesSettings } from "./settings.themes";
 import { isValidAccent } from "@/lib/themes/accent-color";
+import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/settings/white-label")({
   staticData: { breadcrumb: "Customization" },
@@ -63,7 +64,9 @@ export const Route = createFileRoute("/_authenticated/settings/white-label")({
   component: WhiteLabelSettings,
 });
 
-const empty: any = {
+type WhiteLabelConfig = Tables<"white_label_configs">;
+
+const empty: Partial<WhiteLabelConfig> = {
   brand_name: "",
   logo_url: "",
   logo_dark_url: "",
@@ -118,7 +121,7 @@ const empty: any = {
   is_active: false,
 };
 
-const resetSections: Record<string, { label: string; fields: string[] }> = {
+const resetSections: Record<string, { label: string; fields: Array<keyof WhiteLabelConfig> }> = {
   brand: {
     label: "Identity & logos",
     fields: [
@@ -203,10 +206,10 @@ function WhiteLabelSettings() {
   const workspaceRole = useWorkspaceRole(workspaceId ?? undefined);
   const { data, isLoading } = useQuery({
     queryKey: ["white-label", workspaceId],
-    queryFn: () => getWhiteLabel({ data: { workspaceId } } as any),
+    queryFn: () => getWhiteLabel({ data: { workspaceId } }),
     enabled: !!workspaceId,
   });
-  const [form, setForm] = useState<any>(empty);
+  const [form, setForm] = useState<Partial<WhiteLabelConfig>>(empty);
   const [activeTab, setActiveTab] = useState("brand-colors");
   useEffect(() => {
     setForm({ ...empty, ...(data?.config ?? {}) });
@@ -224,7 +227,8 @@ function WhiteLabelSettings() {
       qc.invalidateQueries({ queryKey: ["white-label"] });
       qc.invalidateQueries({ queryKey: ["active-theme"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Save failed"),
   });
 
   const reset = useMutation({
@@ -244,15 +248,17 @@ function WhiteLabelSettings() {
   });
 
   const verify = useMutation({
-    mutationFn: () => verifyCustomDomain({ data: { workspaceId } } as any),
+    mutationFn: () => verifyCustomDomain({ data: { workspaceId } }),
     onSuccess: () => {
       toast.success("Domain verified");
       qc.invalidateQueries({ queryKey: ["white-label"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Verification failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Verification failed"),
   });
 
-  const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
+  const set = <K extends keyof WhiteLabelConfig>(key: K, value: WhiteLabelConfig[K]) =>
+    setForm((current) => ({ ...current, [key]: value }));
 
   if (isLoading || currentWorkspace.isLoading || (workspaceId && workspaceRole.isPending))
     return (
@@ -284,9 +290,8 @@ function WhiteLabelSettings() {
       </SettingsLayout>
     );
 
-  const savedDomain = (data?.config as any)?.custom_domain ?? "";
-  const verified =
-    savedDomain === form.custom_domain && (data?.config as any)?.custom_domain_verified;
+  const savedDomain = data?.config?.custom_domain ?? "";
+  const verified = savedDomain === form.custom_domain && data?.config?.custom_domain_verified;
 
   return (
     <SettingsLayout
@@ -983,7 +988,13 @@ function WhiteLabelSettings() {
   );
 }
 
-function BrandColorsPanel({ workspaceId, config }: { workspaceId: string; config: any }) {
+function BrandColorsPanel({
+  workspaceId,
+  config,
+}: {
+  workspaceId: string;
+  config: WhiteLabelConfig | null;
+}) {
   const qc = useQueryClient();
   const savedPrimary = config?.primary_color ?? "";
   const savedAccent = config?.accent_color ?? "";
@@ -1077,8 +1088,8 @@ function BrandColorsPanel({ workspaceId, config }: { workspaceId: string; config
 }
 
 /** Send null for cleared fields so existing saved values are actually removed. */
-function sanitize(form: any) {
-  const out: any = {};
+function sanitize(form: Partial<WhiteLabelConfig>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(form)) {
     if (v === undefined) continue;
     out[k] = v === "" ? null : v;

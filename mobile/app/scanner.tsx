@@ -8,7 +8,7 @@ export default function ScannerScreen() {
     // Return result via router params on the previous screen.
     router.back();
     setTimeout(() => {
-      router.setParams({ scanned: r.data, scannedType: r.type } as any);
+      router.setParams({ scanned: r.data, scannedType: r.type });
     }, 50);
   };
   return (

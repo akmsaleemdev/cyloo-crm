@@ -159,7 +159,7 @@ function ScheduledTab({ onSchedule }: { onSchedule: (id: string) => void }) {
           </tr>
         </thead>
         <tbody>
-          {data.map((c: any) => (
+          {data.map((c) => (
             <tr key={c.id} className="border-t border-border">
               <td className="px-4 py-3 font-medium">{c.name}</td>
               <td className="px-4 py-3">
@@ -245,13 +245,18 @@ function RecurringTab() {
     );
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-      {data.map((c: any) => (
+      {data.map((c) => (
         <div key={c.id} className="rounded-control border border-border bg-surface p-4">
           <div className="flex items-start justify-between gap-2">
             <div>
               <div className="font-medium">{c.name}</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                {c.recurrence_rule?.freq ?? "—"} · every {c.recurrence_rule?.interval ?? 1}
+                {(() => {
+                  const rule = c.recurrence_rule;
+                  const record =
+                    rule && typeof rule === "object" && !Array.isArray(rule) ? rule : null;
+                  return `${String(record?.freq ?? "—")} · every ${String(record?.interval ?? 1)}`;
+                })()}
               </div>
             </div>
             <StatusPill status={c.status} />
@@ -414,7 +419,7 @@ function ScheduleDialog({
   const [interval, setInterval] = useState(1);
 
   const draftCampaigns = useMemo(
-    () => (campaigns ?? []).filter((c: any) => c.status !== "completed"),
+    () => (campaigns ?? []).filter((c) => c.status !== "completed"),
     [campaigns],
   );
 
@@ -473,7 +478,7 @@ function ScheduleDialog({
               className="w-full bg-background border border-border rounded-control px-2 py-1.5 text-sm"
             >
               <option value="">Select a campaign</option>
-              {draftCampaigns.map((c: any) => (
+              {draftCampaigns.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name} · {c.status}
                 </option>

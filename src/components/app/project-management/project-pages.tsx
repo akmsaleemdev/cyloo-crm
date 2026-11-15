@@ -273,7 +273,7 @@ export function ProjectsOverviewPage() {
                     <Link
                       to="/projects/$projectId"
                       params={{ projectId: project.id }}
-                      search={(prev: any) => prev}
+                      search={{ taskId: undefined }}
                       className="hover:text-primary focus-visible:rounded-control focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                     >
                       {project.name}
@@ -294,7 +294,7 @@ export function ProjectsOverviewPage() {
                   <Link
                     to="/projects/$projectId"
                     params={{ projectId: project.id }}
-                    search={(prev: any) => prev}
+                    search={{ taskId: undefined }}
                     className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                   >
                     Open project <ArrowRight className="h-3.5 w-3.5" />

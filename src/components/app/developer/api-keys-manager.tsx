@@ -79,6 +79,7 @@ import { describeApiKeyError, type ApiKeyErrorInfo } from "@/lib/developer/api-k
 import { API_SCOPES, SCOPE_GROUPS } from "@/lib/api/scopes";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Database } from "@/integrations/supabase/types";
 
 /**
  * Shared API key manager used by both the Developer Center and
@@ -91,8 +92,22 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export const AVAILABLE_SCOPES: string[] = API_SCOPES as unknown as string[];
 
 type StatusFilter = "all" | "active" | "expired" | "revoked";
+type ApiKeyRow = Pick<
+  Database["public"]["Tables"]["api_keys"]["Row"],
+  | "id"
+  | "name"
+  | "description"
+  | "prefix"
+  | "scopes"
+  | "ip_allowlist"
+  | "last_used_at"
+  | "expires_at"
+  | "revoked_at"
+  | "rotated_from"
+  | "created_at"
+>;
 
-function keyStatus(k: any): Exclude<StatusFilter, "all"> {
+function keyStatus(k: ApiKeyRow): Exclude<StatusFilter, "all"> {
   if (k.revoked_at) return "revoked";
   if (k.expires_at && new Date(k.expires_at) < new Date()) return "expired";
   return "active";
@@ -155,7 +170,7 @@ function ScopePicker({
                       onChange?.();
                       setScopes((prev) =>
                         allOn
-                          ? prev.filter((sc) => !groupScopes.includes(sc as any))
+                          ? prev.filter((sc) => !new Set<string>(groupScopes).has(sc))
                           : Array.from(new Set([...prev, ...groupScopes])),
                       );
                     }}
@@ -233,15 +248,15 @@ export function ApiKeysManager() {
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [rotatingId, setRotatingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<{ id: string; info: ApiKeyErrorInfo } | null>(null);
-  const [confirmRevokeKey, setConfirmRevokeKey] = useState<any | null>(null);
-  const [confirmRotateKey, setConfirmRotateKey] = useState<any | null>(null);
+  const [confirmRevokeKey, setConfirmRevokeKey] = useState<ApiKeyRow | null>(null);
+  const [confirmRotateKey, setConfirmRotateKey] = useState<ApiKeyRow | null>(null);
   const [secretVisible, setSecretVisible] = useState(false);
   const [confirmReveal, setConfirmReveal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
 
   // Edit dialog state
-  const [editKey, setEditKey] = useState<any | null>(null);
+  const [editKey, setEditKey] = useState<ApiKeyRow | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editScopes, setEditScopes] = useState<string[]>([]);
@@ -256,24 +271,20 @@ export function ApiKeysManager() {
 
   const keysQ = useQuery({
     queryKey: ["developer", "api-keys", organizationId],
-    queryFn: () =>
-      listFn({ data: { organizationId: organizationId! } }) as Promise<{ keys: any[] }>,
+    queryFn: () => listFn({ data: { organizationId: organizationId! } }),
     enabled: !!organizationId,
   });
 
   const statsQ = useQuery({
     queryKey: ["developer", "api-key-stats", organizationId, editKey?.id],
-    queryFn: () =>
-      stats({
-        data: { organizationId: organizationId!, id: editKey!.id, days: 7 },
-      }) as Promise<any>,
+    queryFn: () => stats({ data: { organizationId: organizationId!, id: editKey!.id, days: 7 } }),
     enabled: !!organizationId && !!editKey?.id,
   });
 
-  const allKeys = keysQ.data?.keys ?? [];
+  const allKeys = useMemo(() => keysQ.data?.keys ?? [], [keysQ.data?.keys]);
   const keys = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return allKeys.filter((k: any) => {
+    return allKeys.filter((k) => {
       if (statusFilter !== "all" && keyStatus(k) !== statusFilter) return false;
       if (!q) return true;
       return (
@@ -336,7 +347,7 @@ export function ApiKeysManager() {
     }
     setBusy(true);
     try {
-      const res: any = await create({
+      const res = await create({
         data: {
           organizationId,
           name: name.trim(),
@@ -368,7 +379,7 @@ export function ApiKeysManager() {
     }
   }
 
-  function openEdit(k: any) {
+  function openEdit(k: ApiKeyRow) {
     setRowError(null);
     setEditError(null);
     setEditKey(k);
@@ -452,12 +463,12 @@ export function ApiKeysManager() {
     }
   }
 
-  async function handleRotate(k: any) {
+  async function handleRotate(k: ApiKeyRow) {
     if (!organizationId) return;
     setRowError(null);
     setRotatingId(k.id);
     try {
-      const res: any = await rotate({ data: { organizationId, id: k.id } });
+      const res = await rotate({ data: { organizationId, id: k.id } });
       setConfirmRotateKey(null);
       setRevealedTitle("Copy your rotated key");
       setRevealed(res.secret);
@@ -477,7 +488,7 @@ export function ApiKeysManager() {
     }
   }
 
-  function requestRevoke(k: any) {
+  function requestRevoke(k: ApiKeyRow) {
     setRowError(null);
     if (k.revoked_at) {
       toast.warning("Key already revoked", {
@@ -488,7 +499,7 @@ export function ApiKeysManager() {
     setConfirmRevokeKey(k);
   }
 
-  async function handleRevoke(k: any) {
+  async function handleRevoke(k: ApiKeyRow) {
     setRowError(null);
     if (!organizationId) {
       toast.error("No workspace selected", {
@@ -497,7 +508,7 @@ export function ApiKeysManager() {
       return;
     }
     // Re-check against the freshest list in case another tab revoked it meanwhile.
-    const current = (keysQ.data?.keys ?? []).find((row: any) => row.id === k.id);
+    const current = (keysQ.data?.keys ?? []).find((row) => row.id === k.id);
     if (current?.revoked_at) {
       toast.warning("Key already revoked", {
         description: `${current.name} was revoked on ${new Date(current.revoked_at).toLocaleString()}.`,
@@ -801,8 +812,9 @@ export function ApiKeysManager() {
                   </TableCell>
                 </TableRow>
               )}
-              {keys.map((k: any) => {
+              {keys.map((k) => {
                 const revoked = !!k.revoked_at;
+                const revokedAt = k.revoked_at;
                 const expired = k.expires_at && new Date(k.expires_at) < new Date();
                 return (
                   <TableRow key={k.id}>
@@ -846,9 +858,9 @@ export function ApiKeysManager() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-col items-end gap-1">
-                        {revoked ? (
+                        {revokedAt ? (
                           <span className="text-[11px] text-muted-foreground">
-                            Revoked {new Date(k.revoked_at).toLocaleDateString()}
+                            Revoked {new Date(revokedAt).toLocaleDateString()}
                           </span>
                         ) : (
                           isAuthorized && (
@@ -1117,7 +1129,7 @@ export function ApiKeysManager() {
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
-                handleRotate(confirmRotateKey);
+                if (confirmRotateKey) handleRotate(confirmRotateKey);
               }}
               disabled={!!rotatingId}
             >
@@ -1151,7 +1163,7 @@ export function ApiKeysManager() {
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
-                handleRevoke(confirmRevokeKey);
+                if (confirmRevokeKey) handleRevoke(confirmRevokeKey);
               }}
               disabled={!!revokingId}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"

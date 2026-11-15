@@ -6,6 +6,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 
 const input = z.object({
   workspaceId: z.string().uuid(),
@@ -128,6 +129,10 @@ const pctDelta = (curr: number, prev: number) =>
 const AI_SAVED_SECONDS_PER_SUCCESS = 45;
 const WF_SAVED_SECONDS_PER_SUCCESS = 120;
 
+function jsonRecord(value: Json | null): { [key: string]: Json | undefined } {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
+}
+
 export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((data: unknown) => input.parse(data))
@@ -141,7 +146,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
 
     // ---- AI request logs (current + previous) ----
     const aiSel =
-      "provider_id,provider_kind,model,feature,status,latency_ms,prompt_tokens,completion_tokens,total_tokens,cost_usd,metadata,created_at";
+      "provider_id,provider_kind,model,feature,status,latency_ms,prompt_tokens,completion_tokens,total_tokens,cost_usd,metadata,created_at" as const;
     const [{ data: aiCurr = [] }, { data: aiPrev = [] }] = await Promise.all([
       supabase
         .from("ai_request_logs")
@@ -158,7 +163,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
             .gte("created_at", prevFrom.toISOString())
             .lt("created_at", prevTo.toISOString())
             .limit(100000)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
     ]);
 
     // AI aggregates for current period
@@ -217,8 +222,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     let aiLatencyCount = 0;
     let aiAccepted = 0;
 
-    for (const r of aiCurr ?? []) {
-      const row = r as any;
+    for (const row of aiCurr ?? []) {
       const d = dayKey(new Date(row.created_at));
       const b = aiTrendMap.get(d);
       const success = row.status === "success";
@@ -241,8 +245,9 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         aiLatencySum += row.latency_ms;
         aiLatencyCount += 1;
       }
-      const meta = row.metadata ?? {};
-      if (meta && (meta.accepted === true || meta.accepted === "true")) aiAccepted += 1;
+      const meta = jsonRecord(row.metadata);
+      const wasAccepted = meta.accepted === true || meta.accepted === "true";
+      if (wasAccepted) aiAccepted += 1;
 
       // Provider
       const provKey = row.provider_id ?? row.provider_kind ?? "unknown";
@@ -274,7 +279,9 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       }
 
       // Prompt key from feature or metadata.prompt_key
-      const promptKey = (meta && (meta.prompt_key || meta.promptKey)) || row.feature || null;
+      const metadataPromptKey = meta.prompt_key ?? meta.promptKey;
+      const promptKey =
+        (typeof metadataPromptKey === "string" ? metadataPromptKey : null) ?? row.feature;
       if (promptKey) {
         const pk = String(promptKey);
         const cur = prompts.get(pk) ?? {
@@ -287,7 +294,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         cur.requests += 1;
         cur.totalTokens += tot;
         cur.costUsd += cost;
-        if (success) cur.accepted += meta.accepted ? 1 : success ? 1 : 0;
+        if (success) cur.accepted += 1;
         prompts.set(pk, cur);
       }
 
@@ -316,7 +323,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         .in("id", providerIds);
       for (const p of provRows ?? []) {
         for (const v of providers.values()) {
-          if (v.providerId === (p as any).id) v.name = (p as any).name;
+          if (v.providerId === p.id) v.name = p.name;
         }
       }
     }
@@ -330,7 +337,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         .select("key,name")
         .eq("workspace_id", data.workspaceId)
         .in("key", promptKeys);
-      for (const p of pr ?? []) promptNames.set((p as any).key, (p as any).name);
+      for (const p of pr ?? []) promptNames.set(p.key, p.name);
     }
 
     // Previous-period aggregates (totals only)
@@ -338,8 +345,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     let prevTokens = 0;
     let prevCost = 0;
     let prevSuccess = 0;
-    for (const r of aiPrev ?? []) {
-      const row = r as any;
+    for (const row of aiPrev ?? []) {
       prevRequests += 1;
       prevTokens += row.total_tokens ?? 0;
       prevCost += Number(row.cost_usd ?? 0) || 0;
@@ -378,7 +384,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       .slice(0, 10);
 
     // ---- Workflow runs (current + previous) ----
-    const wfSel = "id,automation_id,status,duration_ms,started_at,finished_at,error";
+    const wfSel = "id,automation_id,status,duration_ms,started_at,finished_at,error" as const;
     const [{ data: wfCurr = [] }, { data: wfPrev = [] }] = await Promise.all([
       supabase
         .from("workflow_runs")
@@ -395,7 +401,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
             .gte("started_at", prevFrom.toISOString())
             .lt("started_at", prevTo.toISOString())
             .limit(100000)
-        : Promise.resolve({ data: [] as any[] }),
+        : Promise.resolve({ data: [] }),
     ]);
 
     const wfTrendMap = new Map<string, { total: number; succeeded: number; failed: number }>();
@@ -426,8 +432,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     let wfDurSum = 0;
     let wfDurCount = 0;
 
-    for (const r of wfCurr ?? []) {
-      const row = r as any;
+    for (const row of wfCurr ?? []) {
       const d = dayKey(new Date(row.started_at));
       const b = wfTrendMap.get(d);
       if (b) b.total += 1;
@@ -469,11 +474,12 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
       if (fail) {
         cur.failed += 1;
         cur.lastFailureAt = row.started_at;
-        cur.lastError = row.error
-          ? typeof row.error === "string"
-            ? row.error
-            : (row.error?.message ?? JSON.stringify(row.error).slice(0, 200))
-          : null;
+        if (typeof row.error === "string") cur.lastError = row.error;
+        else if (row.error) {
+          const message = jsonRecord(row.error).message;
+          cur.lastError =
+            typeof message === "string" ? message : JSON.stringify(row.error).slice(0, 200);
+        } else cur.lastError = null;
       }
       if (row.duration_ms != null) {
         cur.durationSum += row.duration_ms;
@@ -486,8 +492,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
     let prevWfRuns = 0;
     let prevWfSucceeded = 0;
     let prevWfFailed = 0;
-    for (const r of wfPrev ?? []) {
-      const row = r as any;
+    for (const row of wfPrev ?? []) {
       prevWfRuns += 1;
       if (row.status === "succeeded" || row.status === "success" || row.status === "completed")
         prevWfSucceeded += 1;
@@ -502,7 +507,7 @@ export const getAiAutomationAnalytics = createServerFn({ method: "GET" })
         .from("automations")
         .select("id,name")
         .in("id", autoIds);
-      for (const a of autos ?? []) autoNames.set((a as any).id, (a as any).name);
+      for (const automation of autos ?? []) autoNames.set(automation.id, automation.name);
     }
 
     const wfSavedSeconds = wfSucceeded * WF_SAVED_SECONDS_PER_SUCCESS;

@@ -85,7 +85,7 @@ function VendorDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.plugins.map((p: any) => (
+                {data.plugins.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell>

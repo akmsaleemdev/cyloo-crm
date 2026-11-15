@@ -217,7 +217,7 @@ function WebhooksTabInner({ organizationId }: { organizationId: string }) {
                   </TableCell>
                 </TableRow>
               )}
-              {data.secrets.map((s: any) => (
+              {data.secrets.map((s) => (
                 <TableRow key={s.id}>
                   <TableCell className="font-mono text-xs">{s.secret_prefix}</TableCell>
                   <TableCell>
@@ -276,7 +276,7 @@ function WebhooksTabInner({ organizationId }: { organizationId: string }) {
                   </TableCell>
                 </TableRow>
               )}
-              {data.events.map((e: any) => (
+              {data.events.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="text-xs">{e.provider}</TableCell>
                   <TableCell className="text-xs font-medium">{e.event_type}</TableCell>

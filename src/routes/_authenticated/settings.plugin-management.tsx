@@ -58,6 +58,36 @@ export const Route = createFileRoute("/_authenticated/settings/plugin-management
   component: PluginManagementPage,
 });
 
+type PluginStatus = "active" | "disabled" | "error" | "pending";
+type PluginLogLevel = "debug" | "info" | "warn" | "error";
+function isPluginStatus(value: string): value is PluginStatus {
+  return ["active", "disabled", "error", "pending"].some((status) => status === value);
+}
+type PluginInstallation = {
+  id: string;
+  plugin_id: string;
+  status: PluginStatus;
+  config: Record<string, unknown> | null;
+  granted_permissions: string[] | null;
+  last_error: string | null;
+  last_health_status: string | null;
+  previous_version_id: string | null;
+  plugins: {
+    slug: string;
+    name: string;
+    tagline: string | null;
+    icon_url: string | null;
+    category: string | null;
+  } | null;
+  plugin_versions: { version: string; permissions: string[] | null } | null;
+};
+type OneClick = {
+  <Args extends unknown[]>(
+    fn: (...args: Args) => Promise<unknown>,
+    success: string,
+  ): (...args: Args) => Promise<void>;
+};
+
 function PluginManagementPage() {
   const qc = useQueryClient();
   const [category, setCategory] = useState<string>("all");
@@ -73,7 +103,10 @@ function PluginManagementPage() {
     queryFn: () => listPluginCategories({}),
   });
 
-  const installs = (data?.installations ?? []) as any[];
+  const installs = useMemo(
+    () => (data?.installations ?? []) as PluginInstallation[],
+    [data?.installations],
+  );
   const filtered = useMemo(
     () =>
       category === "all" ? installs : installs.filter((i) => i.plugins?.category === category),
@@ -82,15 +115,15 @@ function PluginManagementPage() {
   const currentInstall = selected ? installs.find((i) => i.id === selected) : null;
   const refresh = () => qc.invalidateQueries({ queryKey: ["plugin-mgmt"] });
 
-  const oneClick =
-    <T extends any[]>(fn: (...args: T) => Promise<any>, success: string) =>
-    async (...args: T) => {
+  const oneClick: OneClick =
+    <Args extends unknown[]>(fn: (...args: Args) => Promise<unknown>, success: string) =>
+    async (...args: Args) => {
       try {
         await fn(...args);
         toast.success(success);
         refresh();
-      } catch (e: any) {
-        toast.error(e?.message ?? "Action failed");
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : "Action failed");
       }
     };
 
@@ -117,7 +150,7 @@ function PluginManagementPage() {
           >
             All ({installs.length})
           </Button>
-          {(cats?.categories ?? []).map((c: any) => {
+          {(cats?.categories ?? []).map((c) => {
             const count = installs.filter((i) => i.plugins?.category === c.slug).length;
             if (count === 0) return null;
             return (
@@ -174,7 +207,7 @@ function PluginManagementPage() {
   );
 }
 
-function StatsRow({ installs }: { installs: any[] }) {
+function StatsRow({ installs }: { installs: PluginInstallation[] }) {
   const active = installs.filter((i) => i.status === "active").length;
   const disabled = installs.filter((i) => i.status === "disabled").length;
   const errored = installs.filter((i) => i.status === "error" || i.last_error).length;
@@ -208,9 +241,9 @@ function PluginCard({
   onOpen,
   onAction,
 }: {
-  install: any;
+  install: PluginInstallation;
   onOpen: () => void;
-  onAction: any;
+  onAction: OneClick;
 }) {
   const isActive = i.status === "active";
   const version = i.plugin_versions?.version ?? "—";
@@ -267,8 +300,10 @@ function PluginCard({
             checked={isActive}
             onCheckedChange={(v) =>
               onAction(
-                (s: string) =>
-                  setPluginStatus({ data: { installationId: i.id, status: s as any } }),
+                (status: string) => {
+                  if (!isPluginStatus(status)) throw new Error("Unsupported plugin status");
+                  return setPluginStatus({ data: { installationId: i.id, status } });
+                },
                 v ? "Plugin enabled" : "Plugin disabled",
               )(v ? "active" : "disabled")
             }
@@ -333,7 +368,7 @@ function PluginDetail({
   onChanged,
   onClose,
 }: {
-  install: any;
+  install: PluginInstallation;
   onChanged: () => void;
   onClose: () => void;
 }) {
@@ -392,16 +427,23 @@ function PluginDetail({
   );
 }
 
-function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () => void }) {
+function SettingsTab({
+  install: i,
+  onChanged,
+}: {
+  install: PluginInstallation;
+  onChanged: () => void;
+}) {
   const [text, setText] = useState(JSON.stringify(i.config ?? {}, null, 2));
   const [err, setErr] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: (config: any) => updatePluginSettings({ data: { installationId: i.id, config } }),
+    mutationFn: (config: Record<string, unknown>) =>
+      updatePluginSettings({ data: { installationId: i.id, config } }),
     onSuccess: () => {
       toast.success("Settings saved");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Save failed"),
+    onError: (e) => toast.error(e.message ?? "Save failed"),
   });
   return (
     <div className="space-y-3">
@@ -425,8 +467,8 @@ function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () =>
             try {
               const parsed = JSON.parse(text);
               save.mutate(parsed);
-            } catch (e: any) {
-              setErr("Invalid JSON: " + e.message);
+            } catch (e: unknown) {
+              setErr("Invalid JSON: " + (e instanceof Error ? e.message : String(e)));
             }
           }}
           disabled={save.isPending}
@@ -439,7 +481,13 @@ function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () =>
   );
 }
 
-function PermissionsTab({ install: i, onChanged }: { install: any; onChanged: () => void }) {
+function PermissionsTab({
+  install: i,
+  onChanged,
+}: {
+  install: PluginInstallation;
+  onChanged: () => void;
+}) {
   const [granted, setGranted] = useState<string[]>(i.granted_permissions ?? []);
   const requested = (i.plugin_versions?.permissions ?? []) as string[];
   const save = useMutation({
@@ -496,7 +544,7 @@ function PermissionsTab({ install: i, onChanged }: { install: any; onChanged: ()
   );
 }
 
-function HealthTab({ install: i }: { install: any }) {
+function HealthTab({ install: i }: { install: PluginInstallation }) {
   const formatZoned = useZonedDateFormatter();
   const { data } = useQuery({
     queryKey: ["plugin-health", i.id],
@@ -540,7 +588,7 @@ function HealthTab({ install: i }: { install: any }) {
           {rows.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">No health checks recorded yet.</p>
           )}
-          {rows.map((r: any) => (
+          {rows.map((r) => (
             <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs">
               <span className="capitalize font-medium">{r.status}</span>
               <span className="text-muted-foreground">{r.latency_ms ?? "—"} ms</span>
@@ -573,22 +621,21 @@ function HealthStat({
   );
 }
 
-function LogsTab({ install: i }: { install: any }) {
+function LogsTab({ install: i }: { install: PluginInstallation }) {
   const formatZoned = useZonedDateFormatter();
-  const [levels, setLevels] = useState<string[]>(["info", "warn", "error"]);
+  const [levels, setLevels] = useState<PluginLogLevel[]>(["info", "warn", "error"]);
   const { data } = useQuery({
     queryKey: ["plugin-logs", i.id, levels.join(",")],
-    queryFn: () =>
-      listPluginLogs({ data: { installationId: i.id, levels: levels as any, limit: 200 } }),
+    queryFn: () => listPluginLogs({ data: { installationId: i.id, levels, limit: 200 } }),
     refetchInterval: 15_000,
   });
   const rows = data?.logs ?? [];
-  const toggle = (l: string) =>
+  const toggle = (l: PluginLogLevel) =>
     setLevels((v) => (v.includes(l) ? v.filter((x) => x !== l) : [...v, l]));
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        {["debug", "info", "warn", "error"].map((l) => (
+        {(["debug", "info", "warn", "error"] as const).map((l) => (
           <Button
             key={l}
             size="sm"
@@ -604,7 +651,7 @@ function LogsTab({ install: i }: { install: any }) {
         {rows.length === 0 ? (
           <p className="p-4 text-sm text-muted-foreground">No logs match the selected levels.</p>
         ) : (
-          rows.map((r: any) => (
+          rows.map((r) => (
             <div key={r.id} className="border-b last:border-0 p-3 text-xs">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge
@@ -638,7 +685,7 @@ function BackupsTab({
   onChanged,
   onClose,
 }: {
-  install: any;
+  install: PluginInstallation;
   onChanged: () => void;
   onClose: () => void;
 }) {
@@ -662,7 +709,7 @@ function BackupsTab({
       onChanged();
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Restore failed"),
+    onError: (e) => toast.error(e.message ?? "Restore failed"),
   });
   const [reason, setReason] = useState("");
   const rows = data?.backups ?? [];
@@ -688,7 +735,7 @@ function BackupsTab({
           {rows.length === 0 && (
             <p className="p-4 text-sm text-muted-foreground">No backups yet.</p>
           )}
-          {rows.map((b: any) => (
+          {rows.map((b) => (
             <div key={b.id} className="p-3 flex items-center justify-between text-sm">
               <div>
                 <div className="flex items-center gap-2">

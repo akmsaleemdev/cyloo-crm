@@ -12,10 +12,11 @@ import {
   type CartLine,
   type EvalContext,
   type EvalResult,
+  type PromoRow,
 } from "./promotions.functions";
 import { sbAny } from "@/lib/supabase/untyped";
 
-type SB = any;
+type SB = unknown;
 
 export type AppliedPromoAudit = {
   promotion_id: string;
@@ -79,7 +80,7 @@ export async function evaluateCartPromotions(
     .order("priority", { ascending: false });
 
   const codeUp = opts.code?.trim().toUpperCase();
-  const candidates = ((rows ?? []) as any[]).filter((p) => {
+  const candidates = ((rows ?? []) as PromoRow[]).filter((p) => {
     const isAuto = p.auto_apply || p.promo_type === "automatic";
     const isCoupon = p.promo_type === "coupon" && codeUp && p.code?.toUpperCase() === codeUp;
     return isAuto || isCoupon;
@@ -110,7 +111,7 @@ export async function evaluateCartPromotions(
   let stackClosed = false;
   for (const p of candidates) {
     if (stackClosed) break;
-    const res = evaluatePromotion(p as any, ctx) as EvalResult | { skip: string };
+    const res = evaluatePromotion(p, ctx) as EvalResult | { skip: string };
     if ("skip" in res) continue;
     applied.push({
       promotion_id: res.promotion_id,

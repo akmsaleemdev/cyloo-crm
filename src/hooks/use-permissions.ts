@@ -114,7 +114,7 @@ export function useOrgRole(orgId?: string | null) {
         .eq("organization_id", _orgId)
         .eq("user_id", u.user.id)
         .maybeSingle();
-      return { role: (data?.role as any) ?? null };
+      return { role: data?.role ?? null };
     },
     enabled: !!_orgId,
   });
@@ -126,8 +126,9 @@ export function useIsSuperAdmin() {
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (sbAny(supabase).from("user_roles" as any) as any)
+
+      const { data } = await sbAny(supabase)
+        .from("user_roles")
         .select("role")
         .eq("user_id", u.user.id)
         .eq("role", "superadmin")

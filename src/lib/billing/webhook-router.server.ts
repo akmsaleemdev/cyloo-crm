@@ -12,24 +12,25 @@
  * price with no plan mapping, are ack'ed and left in `billing_events` with a
  * reason instead of failing the delivery (providers retry hard on 4xx/5xx).
  */
+import { sbAny } from "@/lib/supabase/untyped";
 
 export type BillingWebhookEvent = {
   id: string;
   type: string;
-  data: any;
+  data: unknown;
   provider: string;
 };
 
 export type RouteResult = { handled: boolean; reason?: string };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function routeProviderEvent(
-  supabase: any,
+  supabase: unknown,
   event: BillingWebhookEvent,
 ): Promise<RouteResult> {
   // Wire notifications on first event of the process.
   const { subscribeBillingNotifications } = await import("@/lib/billing/notifications.server");
-  subscribeBillingNotifications(supabase);
+  const db = sbAny(supabase);
+  subscribeBillingNotifications(db);
 
   // Marketplace Buy-now sessions are fulfilled before the subscription/payment
   // normalizer runs — they are plugin purchases, not plan billing.
@@ -44,7 +45,7 @@ export async function routeProviderEvent(
   }
 
   const { normalizeProviderEvent } = await import("@/lib/billing/webhook-normalize.server");
-  const normalized = await normalizeProviderEvent(supabase, event.provider, event.type, event.data);
+  const normalized = await normalizeProviderEvent(db, event.provider, event.type, event.data);
 
   if (normalized.kind === "ignored") {
     return { handled: false, reason: normalized.reason };
@@ -53,14 +54,14 @@ export async function routeProviderEvent(
   if (normalized.kind === "subscription") {
     const { upsertSubscriptionFromSnapshot } =
       await import("@/lib/billing/subscription-engine.server");
-    await upsertSubscriptionFromSnapshot(supabase, normalized.organization_id, normalized.snapshot);
+    await upsertSubscriptionFromSnapshot(db, normalized.organization_id, normalized.snapshot);
     return { handled: true };
   }
 
   // Payment (renewal charge, first charge, dunning failure).
   const { recordPaymentAttempt } = await import("@/lib/billing/payment-engine.server");
   const p = normalized.payment;
-  await recordPaymentAttempt(supabase, {
+  await recordPaymentAttempt(db, {
     organization_id: p.organization_id,
     invoice_id: p.invoice_id ?? undefined,
     subscription_id: p.subscription_id ?? undefined,
@@ -72,9 +73,9 @@ export async function routeProviderEvent(
     failure_code: p.failure_code ?? undefined,
     failure_message: p.failure_message ?? undefined,
     metadata: p.metadata,
-  } as any);
+  });
 
-  await applyPaymentOutcomeToSubscription(supabase, event.provider, normalized);
+  await applyPaymentOutcomeToSubscription(db, event.provider, normalized);
   return { handled: true };
 }
 
@@ -87,8 +88,7 @@ export async function routeProviderEvent(
  * Gateway refresh is best-effort: a missing API key must not fail the webhook.
  */
 async function applyPaymentOutcomeToSubscription(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: unknown,
   providerId: string,
   normalized: Extract<
     Awaited<
@@ -100,7 +100,7 @@ async function applyPaymentOutcomeToSubscription(
   const { payment, refresh_subscription_id } = normalized;
 
   if (payment.status === "failed") {
-    await supabase
+    await sbAny(supabase)
       .from("subscriptions")
       .update({ status: "past_due" })
       .eq("organization_id", payment.organization_id)
@@ -111,21 +111,21 @@ async function applyPaymentOutcomeToSubscription(
   if (!refresh_subscription_id) return;
   try {
     const { getBillingProvider } = await import("@/lib/billing/providers");
-    const provider = getBillingProvider(providerId as any);
+    const provider = getBillingProvider(providerId);
     const snap = await provider.getSubscription(refresh_subscription_id);
     const { resolvePlanCodeFromExternal } = await import("@/lib/billing/webhook-normalize.server");
     const plan_code =
       (await resolvePlanCodeFromExternal(supabase, providerId, snap.plan_code)) ?? snap.plan_code;
     const { upsertSubscriptionFromSnapshot } =
       await import("@/lib/billing/subscription-engine.server");
-    await upsertSubscriptionFromSnapshot(supabase, payment.organization_id, {
+    await upsertSubscriptionFromSnapshot(sbAny(supabase), payment.organization_id, {
       ...snap,
       plan_code,
     });
   } catch (err) {
     // Fall back to the minimum guarantee: a successful charge reactivates.
     console.warn("[billing webhook] subscription refresh skipped:", (err as Error).message);
-    await supabase
+    await sbAny(supabase)
       .from("subscriptions")
       .update({ status: "active" })
       .eq("organization_id", payment.organization_id)

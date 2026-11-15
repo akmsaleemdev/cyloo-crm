@@ -12,6 +12,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { UntypedClient } from "@/lib/supabase/untyped";
 
 export type FeatureTier = "stable" | "beta" | "premium" | "enterprise";
 export type FeatureRecord = {
@@ -60,9 +61,8 @@ const PLAN_KEY = "feature_plan_overrides";
 const LIC_KEY = "license_registry";
 const LOG_KEY = "license_logs";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertPlatformStaff(supabase: any, userId: string) {
-  const { data, error } = await supabase
+async function assertPlatformStaff(supabase: unknown, userId: string) {
+  const { data, error } = await sbAny(supabase)
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
@@ -72,8 +72,7 @@ async function assertPlatformStaff(supabase: any, userId: string) {
   return data[0].role as "superadmin" | "support";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function readSetting<T>(admin: any, key: string, fallback: T): Promise<T> {
+async function readSetting<T>(admin: UntypedClient, key: string, fallback: T): Promise<T> {
   const { data, error } = await admin
     .from("settings")
     .select("value")
@@ -84,8 +83,7 @@ async function readSetting<T>(admin: any, key: string, fallback: T): Promise<T> 
   return (data?.value as T) ?? fallback;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function writeSetting(admin: any, key: string, value: unknown) {
+async function writeSetting(admin: UntypedClient, key: string, value: unknown) {
   const { error } = await sbAny(admin)
     .from("settings")
     .upsert(
@@ -103,8 +101,7 @@ async function writeSetting(admin: any, key: string, value: unknown) {
   if (error) throw new Error(error.message);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function appendLog(admin: any, entry: LicenseLog) {
+async function appendLog(admin: UntypedClient, entry: LicenseLog) {
   const logs = await readSetting<LicenseLog[]>(admin, LOG_KEY, []);
   const next = [entry, ...logs].slice(0, 500);
   await writeSetting(admin, LOG_KEY, next);
@@ -126,9 +123,8 @@ function toAuditAction(action: string): "create" | "update" | "delete" | "revoke
   return "update";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function audit(
-  admin: any,
+  admin: UntypedClient,
   actor: string,
   action: string,
   resourceId: string,

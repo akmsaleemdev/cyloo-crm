@@ -16,9 +16,12 @@ export const Route = createFileRoute("/api/public/hooks/sla-scan")({
         try {
           const result = await scanBreaches(supabaseAdmin);
           return Response.json({ ok: true, ...result });
-        } catch (e: any) {
-          console.error("sla-scan failed:", e);
-          return Response.json({ ok: false, error: e.message }, { status: 500 });
+        } catch (error: unknown) {
+          console.error("sla-scan failed:", error);
+          return Response.json(
+            { ok: false, error: error instanceof Error ? error.message : String(error) },
+            { status: 500 },
+          );
         }
       },
       GET: async () => Response.json({ ok: true, hint: "POST to run scan" }),

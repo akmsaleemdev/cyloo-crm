@@ -2,7 +2,7 @@ import { Brand } from "@/components/brand";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import {
   listMarketplaceCatalog,
   listMyInstallations,
@@ -73,7 +74,7 @@ const CATEGORIES = [
   { id: "Automation", label: "Automation", icon: Zap },
 ] as const;
 
-export const catalogQO = queryOptions({
+const catalogQO = queryOptions({
   queryKey: ["marketplace", "catalog"],
   queryFn: () => listMarketplaceCatalog(),
   staleTime: 60_000,
@@ -102,8 +103,67 @@ export const Route = createFileRoute("/_authenticated/marketplace/")({
   notFoundComponent: () => <div className="p-6">Not found.</div>,
 });
 
-type Integration = any;
-type Installation = any;
+type Integration = Tables<"marketplace_integrations">;
+type Installation = Tables<"marketplace_installations"> & { integration: Integration };
+type IntegrationConfigField = {
+  key: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+  options?: string[];
+};
+type IntegrationChangelogEntry = { version?: string; date?: string; notes?: string };
+
+function jsonObject(value: Json): Record<string, Json> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const entries = Object.entries(value).filter(
+    (entry): entry is [string, Json] => entry[1] !== undefined,
+  );
+  return Object.fromEntries(entries) as Record<string, Json>;
+}
+
+function inputValue(value: Json | undefined): string {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
+function jsonArray(value: Json): Json[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function jsonStringArray(value: Json): string[] {
+  return jsonArray(value).filter((item): item is string => typeof item === "string");
+}
+
+function asConfigField(value: Json): IntegrationConfigField | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const key = value.key;
+  const label = value.label;
+  if (typeof key !== "string" || typeof label !== "string") return null;
+  return {
+    key,
+    label,
+    type: typeof value.type === "string" ? value.type : undefined,
+    required: value.required === true,
+    placeholder: typeof value.placeholder === "string" ? value.placeholder : undefined,
+    options: Array.isArray(value.options)
+      ? value.options.filter((option): option is string => typeof option === "string")
+      : undefined,
+  };
+}
+
+function asChangelogEntry(value: Json): IntegrationChangelogEntry | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return {
+    version: typeof value.version === "string" ? value.version : undefined,
+    date: typeof value.date === "string" ? value.date : undefined,
+    notes: typeof value.notes === "string" ? value.notes : undefined,
+  };
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
 
 function MarketplacePage() {
   return (
@@ -139,7 +199,7 @@ function MarketplaceBody() {
     queryKey: ["marketplace", "installations"],
     queryFn: () => loadInstallations(),
   });
-  const installed: Installation[] = installData?.installations ?? [];
+  const installed = useMemo(() => installData?.installations ?? [], [installData?.installations]);
   const installedIds = useMemo(() => new Set(installed.map((i) => i.integration_id)), [installed]);
 
   const [category, setCategory] = useState<string>("all");
@@ -167,7 +227,7 @@ function MarketplaceBody() {
     return sorted;
   }, [data.integrations, category, q, sort]);
 
-  const featured = data.integrations.filter((i: Integration) => i.featured).slice(0, 4);
+  const featured = data.integrations.filter((i) => i.featured).slice(0, 4);
   const recommended = data.integrations
     .filter((i: Integration) => i.recommended && !installedIds.has(i.id))
     .slice(0, 4);
@@ -235,7 +295,14 @@ function MarketplaceBody() {
                   className="pl-9"
                 />
               </div>
-              <Select value={sort} onValueChange={(v: any) => setSort(v)}>
+              <Select
+                value={sort}
+                onValueChange={(value) => {
+                  if (value === "popular" || value === "rating" || value === "newest") {
+                    setSort(value);
+                  }
+                }}
+              >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -481,24 +548,38 @@ function IntegrationDetailDialog({
   const uninstall = useServerFn(uninstallIntegration);
 
   const [busy, setBusy] = useState(false);
-  const [config, setConfig] = useState<Record<string, any>>({});
+  const [config, setConfig] = useState<Record<string, Json>>({});
   const [wizardStep, setWizardStep] = useState<"config" | "permissions" | "review">("config");
   const [scopes, setScopes] = useState<string[]>([]);
 
   const isInstalled = !!installation;
-  const schema: any[] = (integration?.config_schema as any[]) ?? [];
-  const allScopes: string[] = (integration?.scopes as string[]) ?? [];
+  const schema = useMemo(
+    () =>
+      integration
+        ? jsonArray(integration.config_schema)
+            .map(asConfigField)
+            .filter((field): field is IntegrationConfigField => field !== null)
+        : [],
+    [integration],
+  );
+  const allScopes = useMemo(
+    () => (integration ? jsonStringArray(integration.scopes) : []),
+    [integration],
+  );
 
   // Reset when integration changes.
-  useMemo(() => {
+  useEffect(() => {
     if (!integration) return;
-    setConfig(installation?.config ?? {});
-    setScopes(installation?.granted_scopes ?? allScopes);
+    setConfig(jsonObject(installation?.config ?? {}));
+    setScopes(installation ? jsonStringArray(installation.granted_scopes) : allScopes);
     setWizardStep("config");
-  }, [integration?.id]);
+  }, [integration, installation, allScopes]);
 
   if (!integration) return null;
-  const changelog: any[] = (integration.changelog as any[]) ?? [];
+  const selectedIntegration = integration;
+  const changelog = jsonArray(selectedIntegration.changelog)
+    .map(asChangelogEntry)
+    .filter((entry): entry is IntegrationChangelogEntry => entry !== null);
 
   const requiredMissing = schema
     .filter((f) => f.required)
@@ -507,12 +588,12 @@ function IntegrationDetailDialog({
   async function handleInstall() {
     setBusy(true);
     try {
-      await install({ data: { integrationId: integration.id, config, scopes } });
+      await install({ data: { integrationId: selectedIntegration.id, config, scopes } });
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
-      toast.success(`${integration.name} installed`);
+      toast.success(`${selectedIntegration.name} installed`);
       onClose();
-    } catch (e: any) {
-      toast.error(e.message ?? "Install failed");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Install failed"));
     } finally {
       setBusy(false);
     }
@@ -525,8 +606,8 @@ function IntegrationDetailDialog({
       await updateCfg({ data: { id: installation.id, config, scopes } });
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success("Configuration saved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Save failed");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Save failed"));
     } finally {
       setBusy(false);
     }
@@ -534,15 +615,15 @@ function IntegrationDetailDialog({
 
   async function handleUninstall() {
     if (!installation) return;
-    if (!confirm(`Uninstall ${integration.name}? Configuration will be removed.`)) return;
+    if (!confirm(`Uninstall ${selectedIntegration.name}? Configuration will be removed.`)) return;
     setBusy(true);
     try {
       await uninstall({ data: { id: installation.id } });
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success("Uninstalled");
       onClose();
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (e: unknown) {
+      toast.error(errorMessage(e, "Failed"));
     } finally {
       setBusy(false);
     }
@@ -606,7 +687,7 @@ function IntegrationDetailDialog({
                     </Label>
                     {field.type === "select" ? (
                       <Select
-                        value={config[field.key] ?? ""}
+                        value={inputValue(config[field.key])}
                         onValueChange={(v) => setConfig({ ...config, [field.key]: v })}
                       >
                         <SelectTrigger>
@@ -623,7 +704,7 @@ function IntegrationDetailDialog({
                     ) : (
                       <Input
                         placeholder={field.placeholder ?? ""}
-                        value={config[field.key] ?? ""}
+                        value={inputValue(config[field.key])}
                         onChange={(e) => setConfig({ ...config, [field.key]: e.target.value })}
                       />
                     )}
@@ -640,7 +721,7 @@ function IntegrationDetailDialog({
               <div className="rounded-control border p-3 bg-muted/40 text-sm space-y-2">
                 <div className="font-medium">Ready to install</div>
                 <div className="text-xs text-muted-foreground">
-                  {integration.name} will be installed with {scopes.length} permission
+                  {selectedIntegration.name} will be installed with {scopes.length} permission
                   {scopes.length === 1 ? "" : "s"} and {Object.keys(config).length} configuration
                   value{Object.keys(config).length === 1 ? "" : "s"}.
                 </div>
@@ -687,7 +768,7 @@ function IntegrationDetailDialog({
                     ) : (
                       <Sparkles className="w-4 h-4" />
                     )}
-                    Install {integration.name}
+                    Install {selectedIntegration.name}
                   </Button>
                 </>
               )}

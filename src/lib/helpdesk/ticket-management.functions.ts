@@ -21,7 +21,7 @@ async function getWorkspaceId(userId: string): Promise<string> {
 }
 
 async function logActivity(
-  supabase: any,
+  supabase: unknown,
   workspaceId: string,
   ticketId: string,
   actorId: string,

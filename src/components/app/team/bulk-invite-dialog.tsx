@@ -154,8 +154,15 @@ export function BulkInviteDialog({
       for (const r of inv?.data ?? [])
         if (r?.email) existingEmails.add(String(r.email).toLowerCase());
       for (const r of mem?.data ?? []) {
-        const prof = (r as any)?.profiles;
-        const em = Array.isArray(prof) ? prof[0]?.email : prof?.email;
+        const prof = (r as unknown as { profiles?: unknown })?.profiles;
+        const profile = Array.isArray(prof) ? prof[0] : prof;
+        const em =
+          profile &&
+          typeof profile === "object" &&
+          "email" in profile &&
+          typeof profile.email === "string"
+            ? profile.email
+            : undefined;
         if (em) existingEmails.add(String(em).toLowerCase());
       }
     } catch {

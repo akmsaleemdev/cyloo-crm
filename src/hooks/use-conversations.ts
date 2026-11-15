@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   keepPreviousData,
+  type InfiniteData,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -61,7 +62,6 @@ function useCountsDebugLogger(
   useEffect(() => {
     if (!isCountsDebugEnabled()) return;
     if (q.isFetching && !lastFetching.current) {
-      // eslint-disable-next-line no-console
       console.log("[counts] invalidated → fetching", {
         workspaceId,
         inboxId,
@@ -71,7 +71,7 @@ function useCountsDebugLogger(
     lastFetching.current = q.isFetching;
     if (q.dataUpdatedAt && q.dataUpdatedAt !== lastUpdatedAt.current) {
       lastUpdatedAt.current = q.dataUpdatedAt;
-      // eslint-disable-next-line no-console
+
       console.log("[counts] data updated", {
         workspaceId,
         inboxId,
@@ -174,6 +174,12 @@ export type ConversationRow = {
   } | null;
 };
 
+type ConversationListCache = ConversationRow[] | InfiniteData<ConversationRow[]>;
+type ConversationLabel = NonNullable<NonNullable<ConversationRow["labels"]>[number]>;
+type ConversationQueryRow = ConversationRow & {
+  label_assignments?: Array<{ label: ConversationLabel | null } | null> | null;
+};
+
 // Erase select-string literal types to keep tsc fast.
 const sel = (s: string): string => s;
 
@@ -201,15 +207,9 @@ type ListParams = {
 export function applyInboxScope<T>(
   q: T,
   opts: { workspaceId: string; inboxId?: string | null },
+  apply: (query: T, options: { workspaceId: string; inboxId?: string | null }) => T,
 ): T {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (q as any)
-    .eq("workspace_id", opts.workspaceId)
-    .is("deleted_at", null)
-    // Seeded/demo rows are flagged `is_demo` and must never reach the Inbox.
-    .eq("is_demo", false);
-  if (opts.inboxId) query = query.eq("inbox_id", opts.inboxId);
-  return query as T;
+  return apply(q, opts);
 }
 
 /** Infinite conversation list, workspace + inbox scoped. */
@@ -258,7 +258,19 @@ export function useConversations(params: ListParams) {
            assignee:profiles!conversations_assigned_to_profiles_fkey(id, display_name, avatar_url),
            label_assignments:conversation_label_assignments(label:conversation_labels(id, name, color))`),
       );
-      q = applyInboxScope(q, { workspaceId: workspaceId!, inboxId: params.inboxId });
+      q = applyInboxScope(
+        q,
+        { workspaceId: workspaceId!, inboxId: params.inboxId },
+        (query, scope) => {
+          let scoped = query
+            .eq("workspace_id", scope.workspaceId)
+            .is("deleted_at", null)
+            // Seeded/demo rows are flagged `is_demo` and must never reach the Inbox.
+            .eq("is_demo", false);
+          if (scope.inboxId) scoped = scoped.eq("inbox_id", scope.inboxId);
+          return scoped;
+        },
+      );
 
       // Filters
       switch (params.filter) {
@@ -424,10 +436,13 @@ export function useConversations(params: ListParams) {
       if (error) throw error;
 
       // Flatten label assignments
-      return (data ?? []).map((row: any) => ({
+      const rows = (data ?? []) as unknown as ConversationQueryRow[];
+      return rows.map((row) => ({
         ...row,
         labels:
-          row.label_assignments?.map((la: any) => la.label).filter((l: unknown) => l != null) ?? [],
+          row.label_assignments
+            ?.map((assignment) => assignment?.label)
+            .filter((label): label is ConversationLabel => label != null) ?? [],
       })) as ConversationRow[];
     },
     // Background refetch cadence is a per-workspace user preference; 0 = off
@@ -516,7 +531,6 @@ export function useConversationCounts(inboxId?: string | null) {
     queryFn: async () => {
       const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
       if (isCountsDebugEnabled()) {
-        // eslint-disable-next-line no-console
         console.log("[counts] refetch:start", { workspaceId, inboxId });
       }
       const { measureCountsRpc } = await import("@/lib/metrics/counts-metrics");
@@ -568,7 +582,7 @@ export function useConversationCounts(inboxId?: string | null) {
       };
       if (isCountsDebugEnabled()) {
         const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
-        // eslint-disable-next-line no-console
+
         console.log("[counts] refetch:done", {
           workspaceId,
           inboxId,
@@ -684,6 +698,14 @@ export function useChannelUnreadCounts(inboxId?: string | null) {
           .from("conversations")
           .select(sel("channel, unread_count, channel_account_id, metadata")),
         { workspaceId: workspaceId!, inboxId },
+        (query, scope) => {
+          let scoped = query
+            .eq("workspace_id", scope.workspaceId)
+            .is("deleted_at", null)
+            .eq("is_demo", false);
+          if (scope.inboxId) scoped = scoped.eq("inbox_id", scope.inboxId);
+          return scoped;
+        },
       )
         .eq("is_archived", false)
         .gt("unread_count", 0);
@@ -744,7 +766,7 @@ export function useTypingIndicators(conversationId: string | undefined) {
 
   // Rows carry a short TTL. Between refetches an expired row would keep the
   // "typing" label stuck on screen, so prune locally on a 1s tick.
-  const rows = Array.isArray(q.data) ? q.data : [];
+  const rows = useMemo(() => (Array.isArray(q.data) ? q.data : []), [q.data]);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!rows.length) return;
@@ -755,7 +777,7 @@ export function useTypingIndicators(conversationId: string | undefined) {
   const live = useMemo(() => {
     void tick;
     const now = Date.now();
-    return rows.filter((r: any) => !r?.expires_at || new Date(r.expires_at).getTime() > now);
+    return rows.filter((row) => !row.expires_at || new Date(row.expires_at).getTime() > now);
   }, [rows, tick]);
 
   return { ...q, data: live } as typeof q;
@@ -798,7 +820,7 @@ export function useWorkspaceTypingIndicators() {
     onChange: () => qc.invalidateQueries({ queryKey: ["typing", "workspace", workspaceId] }),
   });
 
-  const rows = Array.isArray(q.data) ? q.data : [];
+  const rows = useMemo(() => (Array.isArray(q.data) ? q.data : []), [q.data]);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!rows.length) return;
@@ -810,7 +832,7 @@ export function useWorkspaceTypingIndicators() {
     void tick;
     const now = Date.now();
     const map: Record<string, string[]> = {};
-    for (const r of rows as any[]) {
+    for (const r of rows) {
       if (!r?.conversation_id) continue;
       if (r.expires_at && new Date(r.expires_at).getTime() <= now) continue;
       (map[r.conversation_id] ??= []).push(r.user_id);
@@ -824,28 +846,27 @@ function patchConversationInCaches(
   qc: ReturnType<typeof useQueryClient>,
   workspaceId: string | undefined,
   conversationId: string,
-  patch: (row: any) => any,
+  patch: (row: ConversationRow) => ConversationRow,
 ): { restore: () => void; prev: ConversationRow | undefined } {
-  const snapshots: Array<[readonly unknown[], unknown]> = qc.getQueriesData({
+  const snapshots = qc.getQueriesData<ConversationListCache>({
     queryKey: ["conversations", workspaceId],
-  }) as Array<[readonly unknown[], unknown]>;
+  });
   let prev: ConversationRow | undefined;
-  qc.setQueriesData<any>({ queryKey: ["conversations", workspaceId] }, (data: any) => {
+  qc.setQueriesData<ConversationListCache>({ queryKey: ["conversations", workspaceId] }, (data) => {
     if (!data) return data;
-    const applyToArr = (arr: any[]) =>
-      (arr ?? []).map((c) => {
-        if (c?.id !== conversationId) return c;
-        if (!prev) prev = c as ConversationRow;
-        return patch(c);
+    const applyToRows = (rows: ConversationRow[]) =>
+      rows.map((row) => {
+        if (row.id !== conversationId) return row;
+        if (!prev) prev = row;
+        return patch(row);
       });
-    if (data.pages) return { ...data, pages: data.pages.map(applyToArr) };
-    if (Array.isArray(data)) return applyToArr(data);
-    return data;
+    if (Array.isArray(data)) return applyToRows(data);
+    return { ...data, pages: data.pages.map(applyToRows) };
   });
   return {
     prev,
     restore: () => {
-      for (const [key, value] of snapshots) qc.setQueryData(key as any, value);
+      for (const [key, value] of snapshots) qc.setQueryData(key, value);
     },
   };
 }
@@ -883,7 +904,7 @@ function applyCountDeltas(
   );
 
   return () => {
-    for (const [key, value] of snapshots) qc.setQueryData(key as any, value);
+    for (const [key, value] of snapshots) qc.setQueryData(key, value);
   };
 }
 
@@ -1212,11 +1233,13 @@ export function useMarkAsRead() {
             "assigned_to" | "is_archived" | "status" | "channel" | "channel_account_id" | "metadata"
           >
         | undefined = optimisticConversation;
-      const listCaches = qc.getQueriesData<any>({ queryKey: ["conversations", workspaceId] });
+      const listCaches = qc.getQueriesData<ConversationListCache>({
+        queryKey: ["conversations", workspaceId],
+      });
       for (const [, data] of listCaches) {
-        const pages = data?.pages ?? (Array.isArray(data) ? [data] : []);
+        const pages = data ? (Array.isArray(data) ? [data] : data.pages) : [];
         for (const page of pages) {
-          const hit = (page ?? []).find((c: any) => c?.id === conversationId);
+          const hit = page.find((conversation) => conversation.id === conversationId);
           if (hit) {
             if (typeof hit.unread_count === "number")
               prevUnread = Math.max(prevUnread, hit.unread_count);
@@ -1228,14 +1251,20 @@ export function useMarkAsRead() {
       }
 
       // Optimistically zero out unread on cached conversation rows.
-      qc.setQueriesData<any>({ queryKey: ["conversations", workspaceId] }, (data: any) => {
-        if (!data) return data;
-        const patch = (arr: any[]) =>
-          (arr ?? []).map((c) => (c?.id === conversationId ? { ...c, unread_count: 0 } : c));
-        if (data.pages) return { ...data, pages: data.pages.map(patch) };
-        if (Array.isArray(data)) return patch(data);
-        return data;
-      });
+      qc.setQueriesData<ConversationListCache>(
+        { queryKey: ["conversations", workspaceId] },
+        (data) => {
+          if (!data) return data;
+          const patch = (rows: ConversationRow[]) =>
+            rows.map((conversation) =>
+              conversation.id === conversationId
+                ? { ...conversation, unread_count: 0 }
+                : conversation,
+            );
+          if (Array.isArray(data)) return patch(data);
+          return { ...data, pages: data.pages.map(patch) };
+        },
+      );
 
       // Optimistically decrement counts.
       if (prevUnread > 0) {

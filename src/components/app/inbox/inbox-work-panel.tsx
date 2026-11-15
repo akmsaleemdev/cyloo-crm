@@ -258,7 +258,7 @@ function DeadlineGroup({
             key={`${item.kind}-${item.id}`}
             to="/projects/$projectId"
             params={{ projectId: item.projectId! }}
-            search={(prev: any) => prev}
+            search={{ taskId: undefined }}
             className="block rounded-control border border-border px-3 py-2 text-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="block truncate font-medium text-foreground">{item.title}</span>
@@ -270,7 +270,7 @@ function DeadlineGroup({
           <Link
             key={`${item.kind}-${item.id}`}
             to="/tasks"
-            search={(prev: any) => prev}
+            search={{ taskId: undefined }}
             className="block rounded-control border border-border px-3 py-2 text-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span className="block truncate font-medium text-foreground">{item.title}</span>

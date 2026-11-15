@@ -43,10 +43,9 @@ async function resolveTarget(opts: {
   const { supabase, workspaceId, messengerAccountId, recipientPsid, conversationId } = opts;
 
   // RLS ensures the caller belongs to this workspace.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: accRow, error: accErr } = await (
-    sbAny(supabase).from("messenger_accounts" as any) as any
-  )
+
+  const { data: accRow, error: accErr } = await sbAny(supabase)
+    .from("messenger_accounts")
     .select("id, workspace_id, page_id, status")
     .eq("id", messengerAccountId)
     .eq("workspace_id", workspaceId)
@@ -60,14 +59,15 @@ async function resolveTarget(opts: {
   const convId = conversationId ?? null;
 
   if (convId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: conv } = await (sbAny(supabase).from("conversations" as any) as any)
+    const { data: conv } = await sbAny(supabase)
+      .from("conversations")
       .select("id, contact_id, workspace_id, channel, external_conversation_id, metadata")
       .eq("id", convId)
       .maybeSingle();
     if (!conv || conv.workspace_id !== workspaceId) throw new Error("Conversation not found");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: lastInbound } = await (sbAny(supabase).from("messages" as any) as any)
+
+    const { data: lastInbound } = await sbAny(supabase)
+      .from("messages")
       .select("from_address")
       .eq("conversation_id", convId)
       .eq("direction", "inbound")
@@ -155,8 +155,8 @@ export const sendMessengerNow = createServerFn({ method: "POST" })
       try {
         // The echo webhook for this send may already have stored the row.
         if (result.messageId) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data: echoed } = await (sbAny(supabaseAdmin).from("messages") as any)
+          const { data: echoed } = await sbAny(supabaseAdmin)
+            .from("messages")
             .select("id")
             .eq("workspace_id", data.workspaceId)
             .eq("provider_message_id", result.messageId)
@@ -165,19 +165,21 @@ export const sendMessengerNow = createServerFn({ method: "POST" })
             return { ok: true as const, messageId: result.messageId, recipientPsid: target.psid };
           }
         }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (sbAny(supabaseAdmin).from("messages") as any).insert({
-          workspace_id: data.workspaceId,
-          conversation_id: target.conversationId,
-          direction: "outbound",
-          message_type: data.attachment ? data.attachment.type : "text",
-          body: data.text ?? "",
-          status: "sent",
-          provider: "messenger",
-          provider_message_id: result.messageId || null,
-          sender_user_id: context.userId,
-          metadata: data.attachment ? { attachment: data.attachment } : {},
-        });
+
+        await sbAny(supabaseAdmin)
+          .from("messages")
+          .insert({
+            workspace_id: data.workspaceId,
+            conversation_id: target.conversationId,
+            direction: "outbound",
+            message_type: data.attachment ? data.attachment.type : "text",
+            body: data.text ?? "",
+            status: "sent",
+            provider: "messenger",
+            provider_message_id: result.messageId || null,
+            sender_user_id: context.userId,
+            metadata: data.attachment ? { attachment: data.attachment } : {},
+          });
         await supabaseAdmin
           .from("conversations")
           .update({
@@ -216,10 +218,8 @@ export const scheduleMessengerSend = createServerFn({ method: "POST" })
       throw new Error("scheduledFor must be at least 30 seconds in the future");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: row, error } = await (
-      sbAny(context.supabase).from("scheduled_messages" as any) as any
-    )
+    const { data: row, error } = await sbAny(context.supabase)
+      .from("scheduled_messages")
       .insert({
         workspace_id: data.workspaceId,
         conversation_id: target.conversationId,
@@ -256,10 +256,8 @@ export const listMessengerScheduled = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: rows, error } = await (
-      sbAny(context.supabase).from("scheduled_messages" as any) as any
-    )
+    const { data: rows, error } = await sbAny(context.supabase)
+      .from("scheduled_messages")
       .select(
         "id, conversation_id, body, message_type, scheduled_for, status, sent_at, error, metadata, attachments, created_at",
       )
@@ -268,8 +266,8 @@ export const listMessengerScheduled = createServerFn({ method: "POST" })
       .order("scheduled_for", { ascending: true })
       .limit(data.limit ?? 100);
     if (error) throw new Error(error.message);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { rows: (rows ?? []) as any[] };
+
+    return { rows: rows ?? [] };
   });
 
 export const cancelMessengerScheduled = createServerFn({ method: "POST" })
@@ -278,8 +276,8 @@ export const cancelMessengerScheduled = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid(), workspaceId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (sbAny(context.supabase).from("scheduled_messages" as any) as any)
+    const { error } = await sbAny(context.supabase)
+      .from("scheduled_messages")
       .update({ status: "cancelled" })
       .eq("id", data.id)
       .eq("workspace_id", data.workspaceId)
@@ -300,8 +298,8 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const q: any = (sbAny(context.supabase).from("conversations" as any) as any)
+    const q = sbAny(context.supabase)
+      .from("conversations")
       .select(
         "id, contact_id, channel_account_id, last_message_at, last_message_preview, external_conversation_id, metadata",
       )
@@ -334,8 +332,8 @@ export const listMessengerConversationsForSend = createServerFn({ method: "POST"
 
     const contacts: Record<string, { name: string | null; phone: string | null }> = {};
     if (contactIds.length) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: contactRows } = await (sbAny(context.supabase).from("contacts" as any) as any)
+      const { data: contactRows } = await sbAny(context.supabase)
+        .from("contacts")
         .select("id, first_name, last_name, display_name, name, phone")
         .in("id", contactIds);
       for (const r of (contactRows ?? []) as Array<{

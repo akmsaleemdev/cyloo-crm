@@ -26,7 +26,7 @@ export default function TasksDashboard() {
           {(q.data ?? []).length === 0 ? (
             <Text style={{ color: t.colors.mutedFg }}>Nothing due — enjoy the calm.</Text>
           ) : (
-            (q.data ?? []).map((task: any) => {
+            (q.data ?? []).map((task) => {
               const due = task.due_date ? new Date(task.due_date) : null;
               const overdue = due && due.getTime() < Date.now();
               return (

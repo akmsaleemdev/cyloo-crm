@@ -7,6 +7,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 import { appChatModelDetails, appChatModelIds, isChatModelId } from "@/lib/ai/model-kind";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface AiSettings {
   workspace_id: string;
@@ -33,7 +34,7 @@ export interface AiSettings {
   retention_days: number;
   audit_enabled: boolean;
   training_opt_out: boolean;
-  config: Record<string, any>;
+  config: Record<string, Json>;
   updated_by: string | null;
   created_at: string;
   updated_at: string;
@@ -81,7 +82,6 @@ export const getAiSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }): Promise<AiSettings> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = sbAny(context.supabase);
     const existing = await sbAny(db)
       .from("ai_settings")
@@ -126,6 +126,8 @@ const settingsPatchSchema = z
   })
   .strict();
 
+export type AiSettingsPatch = z.infer<typeof settingsPatchSchema>;
+
 export const updateAiSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) =>
@@ -137,7 +139,6 @@ export const updateAiSettings = createServerFn({ method: "POST" })
       .parse(v),
   )
   .handler(async ({ data, context }): Promise<AiSettings> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = sbAny(context.supabase);
 
     // Ensure row exists
@@ -198,11 +199,12 @@ export const updateAiSettings = createServerFn({ method: "POST" })
     if (upd.error) throw new Error(upd.error.message);
 
     // Diff for audit log
-    const changes: Record<string, { from: any; to: any }> = {};
+    const changes: Record<string, Json> = {};
+    const previousValues = prev as unknown as Record<string, Json>;
     for (const [k, v] of Object.entries(data.patch)) {
-      const before = (prev as any)[k];
+      const before = previousValues[k] ?? null;
       if (JSON.stringify(before) !== JSON.stringify(v)) {
-        changes[k] = { from: before, to: v };
+        changes[k] = { from: before, to: v as Json };
       }
     }
     if (Object.keys(changes).length && prev.audit_enabled) {
@@ -263,7 +265,7 @@ export interface AiAuditLogEntry {
   actor_name: string | null;
   action: string;
   target: string | null;
-  changes: Record<string, any> | null;
+  changes: Record<string, Json> | null;
   created_at: string;
 }
 

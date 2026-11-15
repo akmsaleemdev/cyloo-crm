@@ -123,7 +123,7 @@ function RedemptionHistoryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All promotions</SelectItem>
-              {(promos.data ?? []).map((p: any) => (
+              {(promos.data ?? []).map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.name}
                   {p.code ? ` · ${p.code}` : ""}

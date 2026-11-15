@@ -16,6 +16,7 @@ import {
   rescheduleAppointment,
   bookingStats,
 } from "@/lib/booking/booking.functions";
+import type { EventTypeInput } from "@/lib/booking/booking.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -244,7 +245,7 @@ function OverviewTab() {
           <CardTitle className="text-base">Next 10 appointments</CardTitle>
         </CardHeader>
         <CardContent className="divide-y">
-          {(upcoming ?? []).slice(0, 10).map((a: any) => (
+          {(upcoming ?? []).slice(0, 10).map((a) => (
             <div key={a.id} className="py-3 flex items-center justify-between text-sm">
               <div>
                 <div className="font-medium">{a.customer_name}</div>
@@ -300,13 +301,14 @@ function EventTypesTab() {
   const [editing, setEditing] = useState<Partial<EventTypeRow> | null>(null);
 
   const save = useMutation({
-    mutationFn: (payload: any) => saveFn({ data: payload }),
+    mutationFn: (payload: EventTypeInput) => saveFn({ data: payload }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["booking-event-types"] });
       setEditing(null);
       toast.success("Saved");
     },
-    onError: (e: any) => toast.error(e.message ?? "Failed to save"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save"),
   });
 
   const remove = useMutation({
@@ -553,25 +555,37 @@ function EventTypesTab() {
               Cancel
             </Button>
             <Button
-              disabled={save.isPending}
-              onClick={() =>
+              disabled={save.isPending || !editing}
+              onClick={() => {
+                if (!editing) return;
                 save.mutate({
-                  id: editing?.id,
-                  name: editing?.name,
-                  slug: editing?.slug,
-                  description: editing?.description ?? null,
-                  duration_minutes: editing?.duration_minutes,
-                  buffer_before_minutes: editing?.buffer_before_minutes,
-                  buffer_after_minutes: editing?.buffer_after_minutes,
-                  min_notice_minutes: editing?.min_notice_minutes,
-                  max_advance_days: editing?.max_advance_days,
-                  location_kind: editing?.location_kind,
+                  id: editing.id,
+                  name: editing.name ?? "",
+                  slug: editing.slug ?? "",
+                  description: editing.description ?? null,
+                  duration_minutes: editing.duration_minutes ?? 30,
+                  buffer_before_minutes: editing.buffer_before_minutes ?? 0,
+                  buffer_after_minutes: editing.buffer_after_minutes ?? 0,
+                  min_notice_minutes: editing.min_notice_minutes ?? 0,
+                  max_advance_days: editing.max_advance_days ?? 30,
+                  location_kind:
+                    editing.location_kind === "online" ||
+                    editing.location_kind === "offline" ||
+                    editing.location_kind === "custom" ||
+                    editing.location_kind === "phone" ||
+                    editing.location_kind === "whatsapp" ||
+                    editing.location_kind === "video" ||
+                    editing.location_kind === "in_person" ||
+                    editing.location_kind === "zoom" ||
+                    editing.location_kind === "google_meet"
+                      ? editing.location_kind
+                      : "in_person",
                   location_details: {},
                   questions: [],
-                  color: editing?.color,
-                  is_active: editing?.is_active,
-                })
-              }
+                  color: editing.color ?? null,
+                  is_active: editing.is_active ?? true,
+                });
+              }}
             >
               {save.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Save
@@ -590,7 +604,7 @@ function AvailabilityTab() {
   const saveFn = useServerFn(saveSchedule);
   const qc = useQueryClient();
   const { data: rows } = useQuery({ queryKey: ["booking-schedules"], queryFn: () => listFn() });
-  const first: any = rows?.[0];
+  const first = rows?.[0];
 
   const [tz, setTz] = useState<string>(
     first?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -598,7 +612,7 @@ function AvailabilityTab() {
   const [slots, setSlots] = useState<
     Array<{ day_of_week: number; start_time: string; end_time: string }>
   >(
-    first?.booking_availability_slots?.map((s: any) => ({
+    first?.booking_availability_slots?.map((s) => ({
       day_of_week: s.day_of_week,
       start_time: s.start_time,
       end_time: s.end_time,
@@ -619,7 +633,8 @@ function AvailabilityTab() {
       qc.invalidateQueries({ queryKey: ["booking-schedules"] });
       toast.success("Schedule saved");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save schedule"),
   });
 
   const grid = useMemo(() => {
@@ -746,10 +761,16 @@ function AppointmentsTab() {
       toast.success("Marked no-show");
     },
   });
-  const [rescheduling, setRescheduling] = useState<any | null>(null);
+  const [rescheduling, setRescheduling] = useState<{
+    id: string;
+    start_at: string;
+    end_at: string;
+    customer_name?: string;
+  } | null>(null);
   const [newStart, setNewStart] = useState<string>("");
   const doReschedule = useMutation({
     mutationFn: () => {
+      if (!rescheduling) throw new Error("Select an appointment to reschedule");
       const start = new Date(newStart);
       const durMin =
         (new Date(rescheduling.end_at).getTime() - new Date(rescheduling.start_at).getTime()) /
@@ -764,7 +785,8 @@ function AppointmentsTab() {
       setRescheduling(null);
       toast.success("Rescheduled");
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to reschedule"),
   });
 
   return (
@@ -787,7 +809,7 @@ function AppointmentsTab() {
       </div>
       <Card>
         <CardContent className="p-0 divide-y">
-          {(rows ?? []).map((a: any) => (
+          {(rows ?? []).map((a) => (
             <div key={a.id} className="p-4 flex items-center justify-between text-sm">
               <div className="min-w-0 flex-1">
                 <div className="font-medium truncate">{a.customer_name}</div>

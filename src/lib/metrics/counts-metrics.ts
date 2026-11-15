@@ -89,7 +89,6 @@ async function flush() {
 
   const summary = summarize(samples);
   if (debugEnabled()) {
-    // eslint-disable-next-line no-console
     console.log("[metrics.counts] flush", summary);
   }
   // Expose latest window for debugging tools.
@@ -106,7 +105,6 @@ async function flush() {
   } catch (err) {
     consecutiveFlushFailures += 1;
     if (debugEnabled()) {
-      // eslint-disable-next-line no-console
       console.warn("[metrics.counts] flush failed", err);
     }
   }

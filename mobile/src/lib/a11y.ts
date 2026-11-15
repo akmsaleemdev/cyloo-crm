@@ -36,7 +36,9 @@ export function a11yImage(alt: string) {
 export async function announce(msg: string) {
   try {
     AccessibilityInfo.announceForAccessibility(msg);
-  } catch {}
+  } catch {
+    // Accessibility announcements are best-effort on unsupported devices.
+  }
 }
 
 export async function isScreenReaderOn(): Promise<boolean> {

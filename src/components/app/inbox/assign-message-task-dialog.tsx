@@ -111,20 +111,22 @@ export function AssignMessageTaskDialog({ open, onOpenChange, message, conversat
     mutationFn: async (input: Draft) => {
       if (!user?.id) throw new Error("Not signed in");
       if (!message) throw new Error("No message selected");
-      const { error } = await (sbAny(supabase).from("tasks") as any).insert({
-        workspace_id: conversation.workspace_id,
-        created_by: user.id,
-        owner_id: user.id,
-        assigned_to: user.id,
-        entity_type: "conversation",
-        entity_id: conversation.id,
-        title: input.title.trim(),
-        description: input.description.trim() || null,
-        priority: input.priority,
-        status: input.status,
-        due_at: input.due ? new Date(`${input.due}T09:00:00`).toISOString() : null,
-        custom_fields: { source_message_id: message.id },
-      });
+      const { error } = await sbAny(supabase)
+        .from("tasks")
+        .insert({
+          workspace_id: conversation.workspace_id,
+          created_by: user.id,
+          owner_id: user.id,
+          assigned_to: user.id,
+          entity_type: "conversation",
+          entity_id: conversation.id,
+          title: input.title.trim(),
+          description: input.description.trim() || null,
+          priority: input.priority,
+          status: input.status,
+          due_at: input.due ? new Date(`${input.due}T09:00:00`).toISOString() : null,
+          custom_fields: { source_message_id: message.id },
+        });
       if (error) throw error;
     },
     onSuccess: () => {

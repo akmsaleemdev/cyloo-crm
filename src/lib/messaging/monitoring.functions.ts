@@ -7,8 +7,65 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Json } from "@/integrations/supabase/types";
 
 const wsInput = z.object({ workspaceId: z.string().uuid() });
+
+type OutboxJobRow = {
+  id: string;
+  status: string;
+  attempts: number;
+  max_attempts: number;
+  next_attempt_at: string | null;
+  created_at: string;
+  sent_at: string | null;
+  failed_at: string | null;
+  last_error: string | null;
+  last_error_code: string | null;
+  to_address: string;
+  provider: string;
+  channel_account_id: string | null;
+  conversation_id: string | null;
+};
+
+type WebhookEventRow = {
+  id: string;
+  event_type: string | null;
+  provider: string;
+  processed: boolean;
+  signature_valid: boolean;
+  attempts: number;
+  received_at: string;
+  processed_at: string | null;
+  dead_letter_at: string | null;
+  last_error: string | null;
+  last_error_kind: string | null;
+  channel_account_id: string | null;
+  external_event_id: string | null;
+};
+
+type ProviderLogRow = {
+  id: string;
+  level: string;
+  provider: string;
+  scope: string;
+  message: string;
+  data: Json;
+  correlation_id: string | null;
+  created_at: string;
+  channel_account_id: string | null;
+};
+
+type ApiKeyUsageRow = {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  last_used_at: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+};
 
 // ---------------------------------------------------------------------------
 // Overview: KPIs across outbox, webhooks, syncs, accounts (24h window)
@@ -239,7 +296,7 @@ export const listOutboxJobs = createServerFn({ method: "POST" })
     if (data.status) q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { rows: rows ?? [] };
+    return { rows: (rows ?? []) as unknown as OutboxJobRow[] };
   });
 
 export const retryOutboxJob = createServerFn({ method: "POST" })
@@ -292,7 +349,7 @@ export const listWebhookEvents = createServerFn({ method: "POST" })
       q = q.or("processed.eq.false,dead_letter_at.not.is.null,signature_valid.eq.false");
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { rows: rows ?? [] };
+    return { rows: (rows ?? []) as unknown as WebhookEventRow[] };
   });
 
 export const retryWebhookEvent = createServerFn({ method: "POST" })
@@ -344,7 +401,7 @@ export const listProviderLogs = createServerFn({ method: "POST" })
     if (data.level) q = q.eq("level", data.level);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { rows: rows ?? [] };
+    return { rows: (rows ?? []) as unknown as ProviderLogRow[] };
   });
 
 // ---------------------------------------------------------------------------
@@ -362,7 +419,7 @@ export const listApiKeyUsage = createServerFn({ method: "POST" })
       .eq("id", data.workspaceId)
       .maybeSingle()) as unknown as { data: { organization_id: string | null } | null };
     const orgId = ws?.organization_id ?? null;
-    if (!orgId) return { rows: [] };
+    if (!orgId) return { rows: [] as ApiKeyUsageRow[] };
     const { data: rows, error } = await context.supabase
       .from("api_keys" as never)
       .select("id,name,prefix,scopes,last_used_at,expires_at,revoked_at,created_at")
@@ -370,5 +427,5 @@ export const listApiKeyUsage = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
-    return { rows: rows ?? [] };
+    return { rows: (rows ?? []) as unknown as ApiKeyUsageRow[] };
   });

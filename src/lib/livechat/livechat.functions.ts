@@ -72,10 +72,9 @@ export const getVisitor = createServerFn({ method: "POST" })
       .order("started_at", { ascending: false })
       .limit(50);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return JSON.parse(
       JSON.stringify({ visitor, events: events ?? [], contact, sessions: sessions ?? [] }),
-    ) as any;
+    );
   });
 
 export const mergeVisitorWithContact = createServerFn({ method: "POST" })

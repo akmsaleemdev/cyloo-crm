@@ -20,6 +20,11 @@ import { BuyNowButton } from "@/components/app/marketplace/buy-now-button";
 import { useEffect } from "react";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
 import { pluginManager } from "@/lib/plugins/manager";
+import type { Tables } from "@/integrations/supabase/types";
+
+type PluginRow = Tables<"plugins">;
+type PluginVersionRow = Tables<"plugin_versions">;
+type PluginReviewRow = Tables<"plugin_reviews">;
 
 export const Route = createFileRoute("/_authenticated/marketplace/plugins/$slug")({
   staticData: { breadcrumb: "Plugin Details" },
@@ -44,7 +49,8 @@ function PluginDetail() {
       toast.success("Plugin installed");
       qc.invalidateQueries({ queryKey: ["plugin-installed"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Install failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Install failed"),
   });
   const uninstall = useMutation({
     mutationFn: (pluginId: string) => uninstallPlugin({ data: { pluginId } }),
@@ -65,7 +71,9 @@ function PluginDetail() {
   }, [qc]);
 
   if (isLoading || !data) return <div className="p-6 text-muted-foreground">Loading</div>;
-  const { plugin, versions, reviews } = data;
+  const plugin = data.plugin as PluginRow;
+  const versions = data.versions as PluginVersionRow[];
+  const reviews = data.reviews as PluginReviewRow[];
   const latest = versions[0];
   const runnableRelease = versions.find((version) => version.is_stable && version.entry_url);
   const installation = (installed?.installations ?? []).find(
@@ -79,7 +87,7 @@ function PluginDetail() {
     <>
       <AppTopbar
         title={plugin.name}
-        subtitle={plugin.tagline}
+        subtitle={plugin.tagline ?? undefined}
         actions={
           <Link to="/marketplace/plugins">
             <Button variant="outline" size="sm">
@@ -186,7 +194,7 @@ function PluginDetail() {
           </CardContent>
         </Card>
 
-        {Array.isArray((plugin as any).screenshots) && (plugin as any).screenshots.length > 0 && (
+        {plugin.screenshots.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Screenshots</CardTitle>
@@ -194,7 +202,7 @@ function PluginDetail() {
             <CardContent>
               <ScrollArea orientation="horizontal" type="hover" className="w-full">
                 <div className="flex w-max gap-3 pb-2">
-                  {((plugin as any).screenshots as string[]).map((src, i) => (
+                  {plugin.screenshots.map((src, i) => (
                     <a key={i} href={src} target="_blank" rel="noreferrer" className="shrink-0">
                       <img
                         src={src}
@@ -242,7 +250,7 @@ function PluginDetail() {
             <CardTitle>Versions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {versions.map((v: any) => (
+            {versions.map((v) => (
               <div
                 key={v.id}
                 className="flex items-start justify-between border-b pb-3 last:border-0 last:pb-0"
@@ -284,7 +292,7 @@ function ReviewSection({
   onReviewed,
 }: {
   pluginId: string;
-  reviews: any[];
+  reviews: PluginReviewRow[];
   onReviewed: () => void;
 }) {
   const formatZoned = useZonedDateFormatter();
@@ -302,7 +310,8 @@ function ReviewSection({
       setBody("");
       onReviewed();
     },
-    onError: (e: any) => toast.error(e.message ?? "Failed to post review"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to post review"),
   });
   return (
     <Card>
@@ -337,7 +346,7 @@ function ReviewSection({
         {reviews.length === 0 ? (
           <p className="text-sm text-muted-foreground">Be the first to review this plugin.</p>
         ) : (
-          reviews.map((r: any) => (
+          reviews.map((r) => (
             <div key={r.id} className="border-b pb-3 last:border-0">
               <div className="flex items-center gap-2">
                 <div className="flex text-amber-500">

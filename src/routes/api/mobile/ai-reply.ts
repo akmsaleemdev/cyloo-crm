@@ -40,19 +40,19 @@ export const Route = createFileRoute("/api/mobile/ai-reply")({
 
         const { data: msgs } = await supabase
           .from("messages")
-          .select("sender_type, body, created_at")
+          .select("direction, body, created_at")
           .eq("conversation_id", body.conversation_id)
           .order("created_at", { ascending: false })
           .limit(15);
 
         const transcript = (msgs ?? [])
           .reverse()
-          .map((m: any) => `${m.sender_type === "agent" ? "Agent" : "Customer"}: ${m.body ?? ""}`)
+          .map((m) => `${m.direction === "outbound" ? "Agent" : "Customer"}: ${m.body ?? ""}`)
           .join("\n");
 
         try {
           const { platformName } = await getPlatformBranding();
-          const workspaceId = (convo as any).workspace_id as string;
+          const workspaceId = convo.workspace_id;
           const res = await runChat({
             workspaceId,
             feature: "mobile_reply_suggest",
@@ -71,8 +71,10 @@ export const Route = createFileRoute("/api/mobile/ai-reply")({
             },
           });
           return Response.json({ suggestion: res.content ?? "" });
-        } catch (e: any) {
-          return new Response(e?.message ?? "AI failed", { status: 500 });
+        } catch (error: unknown) {
+          return new Response(error instanceof Error ? error.message : "AI failed", {
+            status: 500,
+          });
         }
       },
     },

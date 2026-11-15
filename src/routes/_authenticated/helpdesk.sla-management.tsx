@@ -53,6 +53,7 @@ import {
   Building2,
   Zap,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   LineChart,
@@ -70,6 +71,94 @@ export const Route = createFileRoute("/_authenticated/helpdesk/sla-management")(
 });
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+
+type SlaDashboardRow = {
+  first_response_due_at: string | null;
+  resolution_due_at: string | null;
+  ticket: {
+    ticket_number: string | number | null;
+    subject: string | null;
+    priority: string | null;
+    status: string | null;
+  } | null;
+};
+
+type SlaPolicyView = {
+  id: string;
+  name: string;
+  priorities?: string[];
+  business_hours_only?: boolean;
+  is_active?: boolean;
+  first_response_minutes: number | null;
+  resolution_minutes: number | null;
+  response_minutes?: number | null;
+  priority_rank?: number;
+  escalation_rules?: SlaRuleView[];
+};
+
+type SlaPolicyForm = {
+  id?: string;
+  name: string;
+  first_response_minutes: number;
+  response_minutes?: number;
+  resolution_minutes: number;
+  priorities: string[];
+  business_hours_only: boolean;
+  is_active: boolean;
+  priority_rank: number;
+};
+
+type EscalationRuleForm = {
+  sla_policy_id: string;
+  level: number;
+  name: string;
+  trigger_type: "response_warning" | "response_breach" | "resolution_warning" | "resolution_breach";
+  minutes_offset: number;
+  notify_supervisor: boolean;
+  raise_priority: boolean;
+  is_active: boolean;
+  workflow_event?: string;
+};
+
+function isSlaTriggerType(value: string): value is EscalationRuleForm["trigger_type"] {
+  return ["response_warning", "response_breach", "resolution_warning", "resolution_breach"].some(
+    (triggerType) => triggerType === value,
+  );
+}
+
+type DaySchedule = { enabled: boolean; open: string; close: string };
+type BusinessHoursForm = {
+  timezone: string;
+  weekly_schedule: Record<string, DaySchedule>;
+  offline_message: string;
+};
+
+function parseWeeklySchedule(value: unknown): Record<string, DaySchedule> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([day, config]) => {
+      if (typeof config !== "object" || config === null || Array.isArray(config)) return [];
+      const row = config as Record<string, unknown>;
+      if (
+        typeof row.enabled !== "boolean" ||
+        typeof row.open !== "string" ||
+        typeof row.close !== "string"
+      ) {
+        return [];
+      }
+      return [[day, { enabled: row.enabled, open: row.open, close: row.close }]];
+    }),
+  );
+}
+
+type SlaRuleView = {
+  id: string;
+  level: number;
+  name: string;
+  trigger_type: string;
+  minutes_offset: number;
+  workflow_event?: string | null;
+};
 
 function SlaManagementPage() {
   return (
@@ -173,7 +262,7 @@ function DashboardTab() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y">
-            {(dash?.rows ?? []).slice(0, 30).map((r: any) => (
+            {(dash?.rows ?? []).slice(0, 30).map((r) => (
               <CountdownRow key={r.id} row={r} />
             ))}
             {(dash?.rows ?? []).length === 0 && (
@@ -191,7 +280,7 @@ function DashboardTab() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="divide-y">
-            {(events as any[]).slice(0, 15).map((e: any) => (
+            {events.slice(0, 15).map((e) => (
               <div key={e.id} className="flex items-center gap-3 p-3 text-sm">
                 <Badge
                   variant={
@@ -216,7 +305,7 @@ function DashboardTab() {
                 </span>
               </div>
             ))}
-            {(events as any[]).length === 0 && (
+            {events.length === 0 && (
               <div className="p-6 text-sm text-muted-foreground text-center">No events.</div>
             )}
           </div>
@@ -226,7 +315,7 @@ function DashboardTab() {
   );
 }
 
-function CountdownRow({ row }: { row: any }) {
+function CountdownRow({ row }: { row: SlaDashboardRow }) {
   const cd = useCountdown(row.resolution_due_at);
   const respCd = useCountdown(row.first_response_due_at);
   return (
@@ -260,7 +349,7 @@ function Stat({
   value,
   tone,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: number | string;
   tone: string;
@@ -299,10 +388,10 @@ function PoliciesTab() {
         <PolicyDialog />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {(policies as any[]).map((p: any) => (
+        {policies.map((p) => (
           <PolicyCard key={p.id} policy={p} />
         ))}
-        {(policies as any[]).length === 0 && (
+        {policies.length === 0 && (
           <div className="col-span-full text-sm text-muted-foreground text-center py-12 border rounded-control">
             No SLA policies yet.
           </div>
@@ -312,7 +401,7 @@ function PoliciesTab() {
   );
 }
 
-function PolicyCard({ policy }: { policy: any }) {
+function PolicyCard({ policy }: { policy: SlaPolicyView }) {
   const del = useServerFn(deleteSlaPolicy);
   const qc = useQueryClient();
   const remove = useMutation({
@@ -361,22 +450,21 @@ function PolicyCard({ policy }: { policy: any }) {
   );
 }
 
-function PolicyDialog({ policy }: { policy?: any }) {
+function PolicyDialog({ policy }: { policy?: SlaPolicyView }) {
   const upsert = useServerFn(upsertSlaPolicy);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<any>(
-    policy ?? {
-      name: "",
-      first_response_minutes: 60,
-      response_minutes: 60,
-      resolution_minutes: 480,
-      priorities: ["urgent"],
-      business_hours_only: true,
-      is_active: true,
-      priority_rank: 0,
-    },
-  );
+  const [form, setForm] = useState<SlaPolicyForm>(() => ({
+    id: policy?.id,
+    name: policy?.name ?? "",
+    first_response_minutes: policy?.first_response_minutes ?? 60,
+    response_minutes: policy?.response_minutes ?? 60,
+    resolution_minutes: policy?.resolution_minutes ?? 480,
+    priorities: policy?.priorities ?? ["urgent"],
+    business_hours_only: policy?.business_hours_only ?? true,
+    is_active: policy?.is_active ?? true,
+    priority_rank: policy?.priority_rank ?? 0,
+  }));
 
   const save = useMutation({
     mutationFn: () => upsert({ data: form }),
@@ -385,7 +473,7 @@ function PolicyDialog({ policy }: { policy?: any }) {
       qc.invalidateQueries({ queryKey: ["sla-policies"] });
       setOpen(false);
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e) => toast.error(e.message),
   });
 
   return (
@@ -472,12 +560,12 @@ function PolicyDialog({ policy }: { policy?: any }) {
   );
 }
 
-function EscalationRulesEditor({ policyId, rules }: { policyId: string; rules: any[] }) {
+function EscalationRulesEditor({ policyId, rules }: { policyId: string; rules: SlaRuleView[] }) {
   const upsert = useServerFn(upsertEscalationRule);
   const del = useServerFn(deleteEscalationRule);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<any>({
+  const [form, setForm] = useState<EscalationRuleForm>({
     sla_policy_id: policyId,
     level: 1,
     name: "",
@@ -538,7 +626,9 @@ function EscalationRulesEditor({ policyId, rules }: { policyId: string; rules: a
                 <Label>Trigger</Label>
                 <Select
                   value={form.trigger_type}
-                  onValueChange={(v) => setForm({ ...form, trigger_type: v })}
+                  onValueChange={(v) => {
+                    if (isSlaTriggerType(v)) setForm({ ...form, trigger_type: v });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -587,8 +677,8 @@ function EscalationRulesEditor({ policyId, rules }: { policyId: string; rules: a
       </div>
       <div className="space-y-1">
         {rules
-          .sort((a: any, b: any) => a.level - b.level)
-          .map((r: any) => (
+          .sort((a, b) => a.level - b.level)
+          .map((r) => (
             <div
               key={r.id}
               className="flex items-center gap-2 text-xs bg-background border rounded p-2"
@@ -630,20 +720,28 @@ function HoursTab() {
   const save = useServerFn(saveBusinessHours);
   const qc = useQueryClient();
   const { data: hours } = useQuery({ queryKey: ["business-hours"], queryFn: () => get() });
-  const [form, setForm] = useState<any>(null);
+  const [form, setForm] = useState<BusinessHoursForm | null>(null);
   useEffect(() => {
-    if (hours && !form) setForm(hours);
+    if (hours && !form) {
+      setForm({
+        timezone: hours.timezone,
+        weekly_schedule: parseWeeklySchedule(hours.weekly_schedule),
+        offline_message: hours.offline_message,
+      });
+    }
   }, [hours, form]);
 
   const mut = useMutation({
-    mutationFn: () =>
-      save({
+    mutationFn: () => {
+      if (!form) throw new Error("Business hours are still loading");
+      return save({
         data: {
           timezone: form.timezone,
           weekly_schedule: form.weekly_schedule,
           offline_message: form.offline_message,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success("Business hours saved");
       qc.invalidateQueries({ queryKey: ["business-hours"] });
@@ -729,7 +827,7 @@ function HolidaysTab() {
   const del = useServerFn(removeHoliday);
   const qc = useQueryClient();
   const { data: holidays = [] } = useQuery({ queryKey: ["sla-holidays"], queryFn: () => list() });
-  const [form, setForm] = useState<any>({ name: "", holiday_date: "", recurring_yearly: false });
+  const [form, setForm] = useState({ name: "", holiday_date: "", recurring_yearly: false });
 
   const addMut = useMutation({
     mutationFn: () => add({ data: form }),
@@ -777,7 +875,7 @@ function HolidaysTab() {
           </Button>
         </div>
         <div className="divide-y border rounded-control">
-          {(holidays as any[]).map((h: any) => (
+          {holidays.map((h) => (
             <div key={h.id} className="flex items-center gap-3 p-2 text-sm">
               <CalendarDays className="h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
@@ -794,7 +892,7 @@ function HolidaysTab() {
               </Button>
             </div>
           ))}
-          {(holidays as any[]).length === 0 && (
+          {holidays.length === 0 && (
             <div className="p-4 text-sm text-muted-foreground text-center">No holidays.</div>
           )}
         </div>
@@ -830,7 +928,7 @@ function ReportsTab() {
       <CardContent>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data as any[]}>
+            <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="day" />
               <YAxis allowDecimals={false} />

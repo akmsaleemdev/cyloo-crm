@@ -47,7 +47,7 @@ export async function inspectQuota(
       .gt("period_end", new Date().toISOString())
       .maybeSingle(),
   ]);
-  const view = capabilityView((subRes.data as any)?.plans ?? null);
+  const view = capabilityView(subRes.data?.plans?.[0] ?? null);
   const usedNumber = Number(quotaRes.data?.used ?? 0);
   const check = checkQuota(view, meter_code, usedNumber, requested);
   return {
@@ -159,7 +159,7 @@ export async function seedQuotasForSubscription(
   const orgCurrency = await resolveOrganizationCurrency(organization_id);
   const rows = Object.entries(limits).map(([meter_code, v]) => {
     const included = v === null || v === "unlimited" ? 0 : Number(v);
-    const meter = (metersRes.data ?? []).find((m: any) => m.code === meter_code);
+    const meter = (metersRes.data ?? []).find((m) => m.code === meter_code);
     return {
       organization_id,
       meter_code,

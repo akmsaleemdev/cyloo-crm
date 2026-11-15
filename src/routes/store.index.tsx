@@ -65,7 +65,7 @@ function PublicStore() {
   const [q, setQ] = useState("");
 
   const plugins = useMemo(() => {
-    const rows = (data?.plugins ?? []) as any[];
+    const rows = data?.plugins ?? [];
     const term = q.trim().toLowerCase();
     return term
       ? rows.filter((p) =>
@@ -96,7 +96,7 @@ function PublicStore() {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {plugins.map((p: any) => (
+        {plugins.map((p) => (
           <Card key={p.id} className="flex flex-col">
             <CardHeader className="space-y-2">
               <div className="flex items-start justify-between gap-2">

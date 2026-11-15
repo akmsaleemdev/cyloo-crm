@@ -51,14 +51,10 @@ export const getDeveloperOverview = createServerFn({ method: "GET" })
     ]);
 
     const activeKeys = (keys.data ?? []).filter(
-      (k: any) => !k.revoked_at && (!k.expires_at || new Date(k.expires_at) > new Date()),
+      (k) => !k.revoked_at && (!k.expires_at || new Date(k.expires_at) > new Date()),
     ).length;
-    const failedWebhooks = (events.data ?? []).filter(
-      (e: any) => !e.processed && e.attempts > 0,
-    ).length;
-    const invalidSignatures = (events.data ?? []).filter(
-      (e: any) => e.signature_valid === false,
-    ).length;
+    const failedWebhooks = (events.data ?? []).filter((e) => !e.processed && e.attempts > 0).length;
+    const invalidSignatures = (events.data ?? []).filter((e) => e.signature_valid === false).length;
 
     return {
       stats: {

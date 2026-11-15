@@ -444,7 +444,7 @@ function ProfileBody({
                     <Link
                       key={`crm-${t.id}`}
                       to="/tasks"
-                      search={(prev: any) => prev}
+                      search={{ taskId: undefined }}
                       className="block rounded-control border border-border p-2 text-sm hover:bg-muted transition-colors"
                     >
                       <div className="flex items-center gap-1.5">
@@ -478,7 +478,7 @@ function ProfileBody({
                       key={`pm-${t.id}`}
                       to="/projects/$projectId"
                       params={{ projectId: t.projectId }}
-                      search={(prev: any) => prev}
+                      search={{ taskId: undefined }}
                       className="block rounded-control border border-border p-2 text-sm hover:bg-muted transition-colors"
                     >
                       <div className="flex items-center gap-1.5">

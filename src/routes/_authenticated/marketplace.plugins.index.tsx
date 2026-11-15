@@ -39,6 +39,8 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import { useTenantCurrency } from "@/hooks/use-currency";
+import type { LucideIcon } from "lucide-react";
+import type { Tables } from "@/integrations/supabase/types";
 
 type CatKey =
   | "all"
@@ -56,7 +58,7 @@ type CatKey =
   | "themes"
   | "utilities";
 
-const CATEGORIES: { key: CatKey; label: string; icon: any }[] = [
+const CATEGORIES: { key: CatKey; label: string; icon: LucideIcon }[] = [
   { key: "all", label: "All", icon: LayoutGrid },
   { key: "crm", label: "CRM", icon: Users },
   { key: "ai", label: "AI", icon: Bot },
@@ -74,6 +76,10 @@ const CATEGORIES: { key: CatKey; label: string; icon: any }[] = [
 ];
 
 type PriceFilter = "any" | "free" | "paid";
+type PluginTab = "featured" | "popular" | "new" | "installed";
+type PluginRow = Tables<"plugins">;
+type InstalledPluginView = { plugin_id: string; plugins: PluginRow | null };
+const PLUGIN_TABS: readonly PluginTab[] = ["featured", "popular", "new", "installed"];
 
 export const Route = createFileRoute("/_authenticated/marketplace/plugins/")({
   staticData: { breadcrumb: "Plugin Marketplace" },
@@ -93,11 +99,11 @@ export const Route = createFileRoute("/_authenticated/marketplace/plugins/")({
 function PluginMarketplaceIndex() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CatKey>("all");
-  const [tab, setTab] = useState<"featured" | "popular" | "new" | "installed">("featured");
+  const [tab, setTab] = useState<PluginTab>("featured");
   const [price, setPrice] = useState<PriceFilter>("any");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
 
-  const sort = tab === "new" ? "new" : tab === "popular" ? "top" : "rated";
+  const sort: "new" | "top" | "rated" = tab === "new" ? "new" : tab === "popular" ? "top" : "rated";
 
   const { data, isLoading } = useQuery({
     queryKey: ["plugin-catalog", category, sort, search],
@@ -105,7 +111,7 @@ function PluginMarketplaceIndex() {
       listPluginCatalog({
         data: {
           category: category === "all" ? undefined : category,
-          sort: sort as any,
+          sort,
           search: search || undefined,
           limit: 100,
         },
@@ -116,32 +122,34 @@ function PluginMarketplaceIndex() {
     queryKey: ["plugin-installed"],
     queryFn: () => listMyInstalledPlugins({}),
   });
-  const installedIds = useMemo(
-    () => new Set((installedData?.installations ?? []).map((i: any) => i.plugin_id)),
+  const installations = useMemo(
+    () => (installedData?.installations ?? []) as InstalledPluginView[],
     [installedData],
   );
+  const installedIds = useMemo(
+    () => new Set(installations.map((item) => item.plugin_id)),
+    [installations],
+  );
 
-  const all = data?.plugins ?? [];
+  const all = useMemo(() => (data?.plugins ?? []) as PluginRow[], [data?.plugins]);
   const filtered = useMemo(() => {
-    return all.filter((p: any) => {
-      if (verifiedOnly && !p.is_verified) return false;
-      if (price === "free" && !(p.pricing_model === "free" || p.price_cents === 0)) return false;
-      if (price === "paid" && (p.pricing_model === "free" || p.price_cents === 0)) return false;
+    return all.filter((plugin) => {
+      if (verifiedOnly && !plugin.is_verified) return false;
+      if (price === "free" && !(plugin.pricing_model === "free" || plugin.price_cents === 0))
+        return false;
+      if (price === "paid" && (plugin.pricing_model === "free" || plugin.price_cents === 0))
+        return false;
       return true;
     });
   }, [all, price, verifiedOnly]);
 
   const brandName = useBrandName();
-  const featured = filtered.filter((p: any) => p.is_featured);
-  const popular = [...filtered].sort(
-    (a: any, b: any) => (b.install_count ?? 0) - (a.install_count ?? 0),
-  );
-  const fresh = [...filtered].sort(
-    (a: any, b: any) => +new Date(b.created_at) - +new Date(a.created_at),
-  );
-  const installedPlugins = (installedData?.installations ?? [])
-    .map((i: any) => i.plugins)
-    .filter(Boolean);
+  const featured = filtered.filter((plugin) => plugin.is_featured);
+  const popular = [...filtered].sort((a, b) => (b.install_count ?? 0) - (a.install_count ?? 0));
+  const fresh = [...filtered].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  const installedPlugins = installations
+    .map((item) => item.plugins)
+    .filter((plugin): plugin is PluginRow => plugin !== null);
 
   const visible =
     tab === "featured"
@@ -259,7 +267,12 @@ function PluginMarketplaceIndex() {
         </ScrollArea>
 
         {/* Tabs */}
-        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+        <Tabs
+          value={tab}
+          onValueChange={(value) => {
+            if (PLUGIN_TABS.some((candidate) => candidate === value)) setTab(value as PluginTab);
+          }}
+        >
           <TabsList>
             <TabsTrigger value="featured">
               <Sparkles className="size-4 mr-1.5" />
@@ -295,7 +308,7 @@ function PluginMarketplaceIndex() {
               <EmptyState tab={tab} />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {visible.map((p: any) => (
+                {visible.map((p) => (
                   <PluginCard key={p.id} plugin={p} installed={installedIds.has(p.id)} />
                 ))}
               </div>
@@ -307,7 +320,7 @@ function PluginMarketplaceIndex() {
   );
 }
 
-function PluginCard({ plugin: p, installed }: { plugin: any; installed: boolean }) {
+function PluginCard({ plugin: p, installed }: { plugin: PluginRow; installed: boolean }) {
   const tenantCurrency = useTenantCurrency();
   const isFree = p.pricing_model === "free" || p.price_cents === 0;
   return (

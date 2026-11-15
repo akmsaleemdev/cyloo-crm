@@ -165,7 +165,7 @@ export const createPortalSession = createServerFn({ method: "POST" })
 /*  small — top-level engine imports would pull the service-role client in.  */
 /* ------------------------------------------------------------------------- */
 
-async function assertOrgAdmin(supabase: any, org_id: string, user_id: string) {
+async function assertOrgAdmin(supabase: unknown, org_id: string, user_id: string) {
   const { data, error } = await sbAny(supabase).rpc("has_org_role", {
     _org_id: org_id,
     _user_id: user_id,

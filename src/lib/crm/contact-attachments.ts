@@ -34,8 +34,8 @@ export async function fetchContactAttachments(
     .limit(limit);
   if (crmError) throw crmError;
 
-  for (const row of (crmRows ?? []) as Array<Record<string, any>>) {
-    const f = (row.file ?? {}) as Record<string, any>;
+  for (const row of (crmRows ?? []) as Array<Record<string, unknown>>) {
+    const f = (row.file ?? {}) as Record<string, unknown>;
     items.push({
       id: String(row.id),
       file_name: (f.name as string) ?? "File",
@@ -70,7 +70,7 @@ export async function fetchContactAttachments(
       .limit(limit);
     if (mediaError) throw mediaError;
 
-    for (const row of (mediaRows ?? []) as Array<Record<string, any>>) {
+    for (const row of (mediaRows ?? []) as Array<Record<string, unknown>>) {
       if (row.message_id) seenMessageIds.add(String(row.message_id));
       if (row.is_deleted) continue;
       items.push({
@@ -106,7 +106,7 @@ export async function fetchContactAttachments(
       .limit(limit);
     if (msgError) throw msgError;
 
-    for (const row of (msgRows ?? []) as Array<Record<string, any>>) {
+    for (const row of (msgRows ?? []) as Array<Record<string, unknown>>) {
       const id = String(row.id);
       if (seenMessageIds.has(id)) continue;
       const meta = (row.metadata ?? {}) as Record<string, unknown>;

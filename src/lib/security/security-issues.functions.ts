@@ -105,14 +105,9 @@ export const getSecurityScan = createServerFn({ method: "GET" })
 
     const { resolveActiveWorkspaceId } = await import("@/lib/auth/active-workspace.server");
     const workspaceId = await resolveActiveWorkspaceId(supabase, userId);
-    const scopeWs = <T>(q: T) => {
+    const scopeWs = <T extends { eq(column: string, value: string): T }>(q: T): T => {
       if (!workspaceId) return q;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      try {
-        return (q as any).eq("workspace_id", workspaceId);
-      } catch {
-        return q;
-      }
+      return q.eq("workspace_id", workspaceId);
     };
     const r = createSignalReader(supabase);
 
@@ -124,10 +119,9 @@ export const getSecurityScan = createServerFn({ method: "GET" })
         )
       : [];
     const organizationId = orgRows[0]?.organization_id ?? null;
-    const scopeOrg = <T>(q: T) => {
+    const scopeOrg = <T extends { eq(column: string, value: string): T }>(q: T): T => {
       if (!organizationId) return q;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (q as any).eq("organization_id", organizationId);
+      return q.eq("organization_id", organizationId);
     };
 
     // --- Environment guards (server-only, read inside handler) ---

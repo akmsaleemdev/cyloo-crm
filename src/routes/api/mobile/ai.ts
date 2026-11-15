@@ -72,13 +72,16 @@ async function loadContext(
   if (body.conversation_id) {
     const { data: msgs } = await supabase
       .from("messages")
-      .select("sender_type, body, created_at")
+      .select("direction, body, created_at")
       .eq("conversation_id", body.conversation_id)
       .order("created_at", { ascending: false })
       .limit(30);
     const t = (msgs ?? [])
       .reverse()
-      .map((m: any) => `${m.sender_type === "agent" ? "Agent" : "Customer"}: ${m.body ?? ""}`)
+      .map(
+        (message) =>
+          `${message.direction === "outbound" ? "Agent" : "Customer"}: ${message.body ?? ""}`,
+      )
       .join("\n");
     if (t) parts.push(`Conversation:\n${t}`);
   }
@@ -93,14 +96,14 @@ async function loadContext(
     if (c) parts.push(`Contact: ${JSON.stringify(c)}`);
     const { data: acts } = await supabase
       .from("sales_activities")
-      .select("type, subject, description, created_at")
+      .select("type, title, description, created_at")
       .eq("entity_type", "contact")
       .eq("entity_id", body.contact_id)
       .order("created_at", { ascending: false })
       .limit(10);
     if (acts?.length)
       parts.push(
-        `Recent activity:\n${acts.map((a: any) => `- ${a.type}: ${a.subject ?? ""} ${a.description ?? ""}`).join("\n")}`,
+        `Recent activity:\n${acts.map((activity) => `- ${activity.type}: ${activity.title} ${activity.description ?? ""}`).join("\n")}`,
       );
   }
   if (body.deal_id) {
@@ -236,11 +239,13 @@ export const Route = createFileRoute("/api/mobile/ai")({
           });
           return Response.json({
             content: res.content ?? "",
-            model: (res as any).model,
-            usage: (res as any).usage,
+            model: res.model,
+            usage: res.usage,
           });
-        } catch (e: any) {
-          return new Response(e?.message ?? "AI failed", { status: 500 });
+        } catch (error: unknown) {
+          return new Response(error instanceof Error ? error.message : "AI failed", {
+            status: 500,
+          });
         }
       },
     },

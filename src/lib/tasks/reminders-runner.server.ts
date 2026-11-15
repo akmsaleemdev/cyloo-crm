@@ -6,7 +6,7 @@
  *
  * Server-only.
  */
-import { sbAny } from "@/lib/supabase/untyped";
+import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
 import { runProjectTaskReminders, runProjectDeadlineReminders } from "./project-reminders.server";
 import { createTaskReminderEmailDelivery } from "./reminder-email.server";
 
@@ -24,7 +24,7 @@ const OVERDUE_SLOTS = [15, 60, 240, 1440]; // 15m, 1h, 4h, 1d after due
 
 export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunResult> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const admin = supabaseAdmin as any;
+  const admin = sbAny(supabaseAdmin);
   const now = opts.now ?? new Date();
   const result: RunResult = {
     tasks_scanned: 0,
@@ -127,7 +127,17 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
       email_enabled: boolean;
     }
   >();
-  for (const r of (settingsRows ?? []) as any[]) settingsMap.set(r.user_id, r);
+  for (const r of (settingsRows ?? []) as Array<{
+    user_id: string;
+    enabled: boolean;
+    lead_minutes: number[];
+    notify_overdue: boolean;
+    overdue_repeat_minutes: number;
+    inapp_enabled: boolean;
+    email_enabled: boolean;
+  }>) {
+    settingsMap.set(r.user_id, r);
+  }
   const emailDelivery = [...settingsMap.values()].some(
     (setting) => setting.enabled && setting.email_enabled,
   )
@@ -207,7 +217,7 @@ export async function runTaskReminders(opts: { now?: Date } = {}): Promise<RunRe
 }
 
 async function fireReminder(
-  admin: any,
+  admin: UntypedClient,
   t: { id: string; title: string; due_at: string; workspace_id: string },
   organizationId: string,
   userId: string,

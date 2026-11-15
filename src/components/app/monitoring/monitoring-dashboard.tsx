@@ -49,6 +49,7 @@ import {
 } from "@/hooks/use-monitoring";
 
 export type TabId = "overview" | "api" | "webhooks" | "queues" | "logs" | "health" | "alerts";
+type MonitoringOverview = NonNullable<ReturnType<typeof useMonitoringOverview>["data"]>;
 
 const TABS: { id: TabId; label: string; icon: typeof Activity }[] = [
   { id: "overview", label: "Overview", icon: Activity },
@@ -111,11 +112,17 @@ export function MonitoringDashboard({ tab }: { tab: TabId }) {
 // Overview
 // ---------------------------------------------------------------------------
 
-function OverviewTab({ data, loading }: { data: any; loading: boolean }) {
+function OverviewTab({
+  data,
+  loading,
+}: {
+  data: MonitoringOverview | undefined;
+  loading: boolean;
+}) {
   if (loading || !data) return <SkeletonGrid />;
   const o = data.outbox;
   const w = data.webhooks;
-  const series = (data.timeSeries ?? []).map((b: any) => ({
+  const series = data.timeSeries.map((b) => ({
     hour: new Date(b.hour).toLocaleTimeString([], { hour: "2-digit" }),
     sent: b.sent,
     failed: b.failed,
@@ -240,7 +247,7 @@ function OverviewTab({ data, loading }: { data: any; loading: boolean }) {
         <MiniStat
           icon={Signal}
           label="Connected accounts"
-          value={`${(data.accounts ?? []).filter((a: any) => a.healthy).length}/${(data.accounts ?? []).length}`}
+          value={`${data.accounts.filter((account) => account.healthy).length}/${data.accounts.length}`}
           accent="success"
         />
       </div>
@@ -279,7 +286,7 @@ function ApiTab({ workspaceId }: { workspaceId: string | undefined }) {
             {(keys.data?.rows ?? []).length === 0 && (
               <EmptyState icon={KeyRound} label="No API keys yet" />
             )}
-            {(keys.data?.rows ?? []).map((k: any) => {
+            {(keys.data?.rows ?? []).map((k) => {
               const revoked = !!k.revoked_at;
               const expired = k.expires_at && new Date(k.expires_at) < new Date();
               return (
@@ -367,9 +374,9 @@ function WebhooksTab({ workspaceId }: { workspaceId: string | undefined }) {
             {(events.data?.rows ?? []).length === 0 && (
               <EmptyState icon={Webhook} label="No webhook events" />
             )}
-            {(events.data?.rows ?? []).map((e: any) => {
+            {(events.data?.rows ?? []).map((e) => {
               const ok = e.processed && e.signature_valid && !e.dead_letter_at;
-              const tone = e.dead_letter_at
+              const tone: "danger" | "warning" | "success" | "muted" = e.dead_letter_at
                 ? "danger"
                 : !e.signature_valid
                   ? "warning"
@@ -380,7 +387,7 @@ function WebhooksTab({ workspaceId }: { workspaceId: string | undefined }) {
                 <div key={e.id} className="flex items-start justify-between py-3 gap-4 text-sm">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge tone={tone as any}>{e.event_type ?? "event"}</Badge>
+                      <Badge tone={tone}>{e.event_type ?? "event"}</Badge>
                       <span className="text-xs text-muted-foreground">{e.provider}</span>
                       {e.attempts > 1 && (
                         <span className="text-[11px] text-muted-foreground">× {e.attempts}</span>
@@ -455,8 +462,8 @@ function QueuesTab({ workspaceId }: { workspaceId: string | undefined }) {
             {(jobs.data?.rows ?? []).length === 0 && (
               <EmptyState icon={Server} label="Nothing queued" />
             )}
-            {(jobs.data?.rows ?? []).map((j: any) => {
-              const tone =
+            {(jobs.data?.rows ?? []).map((j) => {
+              const tone: "danger" | "warning" | "success" | "muted" =
                 j.status === "failed"
                   ? "danger"
                   : j.status === "sent"
@@ -468,7 +475,7 @@ function QueuesTab({ workspaceId }: { workspaceId: string | undefined }) {
                 <div key={j.id} className="flex items-start justify-between py-3 gap-4 text-sm">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <Badge tone={tone as any}>{j.status}</Badge>
+                      <Badge tone={tone}>{j.status}</Badge>
                       <span className="font-mono text-xs">{j.to_address}</span>
                       <span className="text-[11px] text-muted-foreground">
                         attempt {j.attempts}/{j.max_attempts}
@@ -547,7 +554,7 @@ function LogsTab({ workspaceId }: { workspaceId: string | undefined }) {
             {(logs.data?.rows ?? []).length === 0 && (
               <EmptyState icon={FileText} label="No log entries" />
             )}
-            {(logs.data?.rows ?? []).map((l: any) => {
+            {(logs.data?.rows ?? []).map((l) => {
               const tone =
                 l.level === "error"
                   ? "text-destructive"
@@ -587,10 +594,10 @@ function LogsTab({ workspaceId }: { workspaceId: string | undefined }) {
 // Health
 // ---------------------------------------------------------------------------
 
-function HealthTab({ data, loading }: { data: any; loading: boolean }) {
+function HealthTab({ data, loading }: { data: MonitoringOverview | undefined; loading: boolean }) {
   if (loading || !data) return <SkeletonGrid />;
   const accounts = data.accounts ?? [];
-  const checks = [
+  const checks: { name: string; status: "healthy" | "degraded" | "critical"; detail: string }[] = [
     {
       name: "Message outbox",
       status: data.outbox.failureRate < 5 ? "healthy" : "degraded",
@@ -620,7 +627,7 @@ function HealthTab({ data, loading }: { data: any; loading: boolean }) {
           <div key={c.name} className="rounded-control border border-border bg-surface p-4">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium">{c.name}</div>
-              <StatusPill status={c.status as any} />
+              <StatusPill status={c.status} />
             </div>
             <div className="text-xs text-muted-foreground mt-2">{c.detail}</div>
           </div>
@@ -630,7 +637,7 @@ function HealthTab({ data, loading }: { data: any; loading: boolean }) {
       <Panel title="Connection status" subtitle="WhatsApp Business accounts">
         <div className="divide-y divide-border">
           {accounts.length === 0 && <EmptyState icon={Server} label="No channel accounts" />}
-          {accounts.map((a: any) => (
+          {accounts.map((a) => (
             <div key={a.id} className="flex items-center justify-between py-3 text-sm">
               <div className="flex items-center gap-3">
                 <span
@@ -666,7 +673,7 @@ function HealthTab({ data, loading }: { data: any; loading: boolean }) {
 // Alerts
 // ---------------------------------------------------------------------------
 
-function AlertsTab({ data, loading }: { data: any; loading: boolean }) {
+function AlertsTab({ data, loading }: { data: MonitoringOverview | undefined; loading: boolean }) {
   if (loading || !data) return <SkeletonGrid />;
   const alerts: { severity: "critical" | "warning" | "info"; title: string; detail: string }[] = [];
   if (data.outbox.failureRate >= 10)
@@ -699,12 +706,14 @@ function AlertsTab({ data, loading }: { data: any; loading: boolean }) {
       title: "High p95 latency",
       detail: `${data.outbox.p95}ms p95 send latency`,
     });
-  const unhealthyAccounts = (data.accounts ?? []).filter((a: any) => !a.healthy);
+  const unhealthyAccounts = data.accounts.filter((account) => !account.healthy);
   if (unhealthyAccounts.length)
     alerts.push({
       severity: "warning",
       title: `${unhealthyAccounts.length} account(s) unhealthy`,
-      detail: unhealthyAccounts.map((a: any) => a.display_name || a.phone_number).join(", "),
+      detail: unhealthyAccounts
+        .map((account) => account.display_name || account.phone_number)
+        .join(", "),
     });
   if (data.providerLogs.errors > 20)
     alerts.push({

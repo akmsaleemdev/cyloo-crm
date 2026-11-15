@@ -1,4 +1,4 @@
-import { sbAny } from "@/lib/supabase/untyped";
+import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
 /**
  * Billing Event Bus (in-process, typed).
  *
@@ -75,7 +75,7 @@ export async function emit<T>(
 
 /** Persist an event to `billing_events` for audit. Caller supplies a service-role client. */
 export async function persistEvent(
-  supabase: { from: (t: string) => any },
+  supabase: UntypedClient,
   evt: BillingEvent,
   extra: { subscription_id?: string | null; provider?: string | null } = {},
 ): Promise<void> {

@@ -93,21 +93,13 @@ function CampaignsPage() {
     const all = campaigns ?? [];
     return {
       active: all.filter(
-        (c) =>
-          !(c as any).archived_at &&
-          !["draft"].includes(c.status) &&
-          (c as any).approval_status !== "pending",
+        (c) => !c.archived_at && !["draft"].includes(c.status) && c.approval_status !== "pending",
       ).length,
       drafts: all.filter(
-        (c) =>
-          !(c as any).archived_at &&
-          c.status === "draft" &&
-          (c as any).approval_status !== "pending",
+        (c) => !c.archived_at && c.status === "draft" && c.approval_status !== "pending",
       ).length,
-      approval: all.filter(
-        (c) => (c as any).approval_status === "pending" && !(c as any).archived_at,
-      ).length,
-      archived: all.filter((c) => !!(c as any).archived_at).length,
+      approval: all.filter((c) => c.approval_status === "pending" && !c.archived_at).length,
+      archived: all.filter((c) => !!c.archived_at).length,
     };
   }, [campaigns]);
 
@@ -116,13 +108,12 @@ function CampaignsPage() {
     const bySearch = (c: CampaignRow) =>
       !search || c.name.toLowerCase().includes(search.toLowerCase());
     return all.filter((c) => {
-      const a = c as any;
       if (!bySearch(c)) return false;
-      if (tab === "archived") return !!a.archived_at;
-      if (a.archived_at) return false;
-      if (tab === "approval") return a.approval_status === "pending";
-      if (tab === "drafts") return c.status === "draft" && a.approval_status !== "pending";
-      return !["draft"].includes(c.status) && a.approval_status !== "pending";
+      if (tab === "archived") return !!c.archived_at;
+      if (c.archived_at) return false;
+      if (tab === "approval") return c.approval_status === "pending";
+      if (tab === "drafts") return c.status === "draft" && c.approval_status !== "pending";
+      return !["draft"].includes(c.status) && c.approval_status !== "pending";
     });
   }, [campaigns, search, tab]);
 
@@ -137,8 +128,8 @@ function CampaignsPage() {
       await duplicate({ data: { campaignId: id } });
       qc.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaign duplicated");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed to duplicate");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to duplicate");
     }
   };
 
@@ -146,11 +137,11 @@ function CampaignsPage() {
     try {
       await upsert.mutateAsync({
         id: c.id,
-        archived_at: archive ? new Date().toISOString() : (null as any),
-      } as any);
+        archived_at: archive ? new Date().toISOString() : null,
+      });
       toast.success(archive ? "Campaign archived" : "Campaign restored");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed");
     }
   };
 
@@ -162,10 +153,10 @@ function CampaignsPage() {
         approval_status: "approved",
         approved_at: new Date().toISOString(),
         status: c.scheduled_at ? "scheduled" : "running",
-      } as any);
+      });
       toast.success("Campaign approved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed");
     }
   };
 
@@ -267,8 +258,7 @@ function CampaignsPage() {
           <div className="rounded-control border border-border bg-surface shadow-sm">
             <div className="divide-y divide-border">
               {filtered.map((c) => {
-                const a = c as any;
-                const isPending = a.approval_status === "pending";
+                const isPending = c.approval_status === "pending";
                 return (
                   <div
                     key={c.id}
@@ -293,7 +283,7 @@ function CampaignsPage() {
                                 timeStyle: "short",
                               })}`
                             : ""}
-                          {a.is_recurring ? " · Recurring" : ""}
+                          {c.is_recurring ? " · Recurring" : ""}
                         </div>
                       </div>
                     </Link>
@@ -341,7 +331,7 @@ function CampaignsPage() {
                           <DropdownMenuItem onClick={() => handleDuplicate(c.id)}>
                             <Copy className="w-4 h-4" /> Duplicate
                           </DropdownMenuItem>
-                          {a.archived_at ? (
+                          {c.archived_at ? (
                             <DropdownMenuItem onClick={() => handleArchive(c, false)}>
                               <ArchiveRestore className="w-4 h-4" /> Restore
                             </DropdownMenuItem>

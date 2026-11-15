@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { listSchedules, upsertSchedule, deleteSchedule } from "@/lib/bi/bi.functions";
 import { useWorkspaceRole } from "@/hooks/use-workspace-role";
+import type { Tables } from "@/integrations/supabase/types";
 
 interface Props {
   workspaceId: string;
@@ -23,6 +24,7 @@ interface Props {
 type Frequency = "daily" | "weekly" | "monthly" | "quarterly" | "yearly" | "custom";
 type Delivery = "email" | "whatsapp" | "download";
 type Format = "pdf" | "csv" | "xlsx" | "json";
+type ScheduledReport = Tables<"bi_scheduled_reports">;
 
 const FREQUENCY_TO_CRON: Record<Exclude<Frequency, "custom">, string> = {
   daily: "0 8 * * *",
@@ -96,7 +98,7 @@ export function BiScheduledReports({ workspaceId, reports }: Props) {
           format,
           delivery,
           enabled: true,
-        } as any,
+        },
       }),
     onSuccess: () => {
       setShowForm(false);
@@ -108,7 +110,7 @@ export function BiScheduledReports({ workspaceId, reports }: Props) {
   });
 
   const toggleMut = useMutation({
-    mutationFn: (row: any) =>
+    mutationFn: (row: ScheduledReport) =>
       upsert({
         data: {
           id: row.id,
@@ -116,13 +118,13 @@ export function BiScheduledReports({ workspaceId, reports }: Props) {
           reportId: row.report_id,
           name: row.name,
           cron: row.cron,
-          frequency: row.frequency,
+          frequency: (row.frequency ?? "custom") as Frequency,
           recipients: row.recipients ?? [],
           whatsappRecipients: row.whatsapp_recipients ?? [],
-          format: row.format,
-          delivery: row.delivery,
+          format: row.format as Format,
+          delivery: row.delivery as Delivery,
           enabled: !row.enabled,
-        } as any,
+        },
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bi.schedules", workspaceId] }),
   });
@@ -261,7 +263,7 @@ export function BiScheduledReports({ workspaceId, reports }: Props) {
       )}
 
       <ul className="divide-y divide-border">
-        {(schedules ?? []).map((s: any) => {
+        {((schedules ?? []) as ScheduledReport[]).map((s) => {
           const freq = s.frequency ?? cronToFrequency(s.cron);
           const DeliveryIcon =
             s.delivery === "whatsapp" ? MessageSquare : s.delivery === "download" ? Download : Mail;

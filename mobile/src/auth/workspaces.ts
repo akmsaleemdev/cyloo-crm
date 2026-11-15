@@ -18,7 +18,7 @@ export async function listWorkspaces(userId: string): Promise<Workspace[]> {
     .select("role, workspaces:workspace_id (id, name, slug)")
     .eq("user_id", userId);
   if (error) throw error;
-  return (data ?? []).flatMap((row: any) =>
+  return (data ?? []).flatMap((row) =>
     row.workspaces
       ? [
           {

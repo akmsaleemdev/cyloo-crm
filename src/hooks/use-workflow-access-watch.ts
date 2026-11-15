@@ -93,9 +93,6 @@ export function useWorkflowAccessWatch(
   // Instant downgrade: react to the membership row changing under us.
   React.useEffect(() => {
     if (!workspaceId || revoked) return;
-    const channelApi = (supabase as { channel?: (name: string) => any }).channel;
-    if (typeof channelApi !== "function") return;
-
     const channel = supabase
       .channel(`workflow-access:${workspaceId}`)
       .on(

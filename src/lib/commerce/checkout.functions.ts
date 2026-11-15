@@ -7,6 +7,8 @@ import {
   type AppliedPromoAudit,
 } from "./promo-runtime";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 /**
  * Checkout & Cart server functions. Works across all supported communication
@@ -18,7 +20,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 const uuid = z.string().uuid();
 
 // ------------- helpers -------------
-async function recalcCart(supabase: any, cartId: string) {
+async function recalcCart(supabase: SupabaseClient<Database>, cartId: string) {
   const { data: cart } = await sbAny(supabase)
     .from("commerce_carts")
     .select("*")
@@ -84,7 +86,7 @@ async function recalcCart(supabase: any, cartId: string) {
       discount,
       shipping,
       total,
-      applied_promotions: appliedPromotions as any,
+      applied_promotions: appliedPromotions,
     })
     .eq("id", cartId);
 
@@ -92,7 +94,7 @@ async function recalcCart(supabase: any, cartId: string) {
 }
 
 async function getOrCreateActiveCart(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   workspaceId: string,
   opts: { contactId?: string; channel?: string; conversationId?: string },
 ) {
@@ -306,14 +308,14 @@ export const applyPromoCode = createServerFn({ method: "POST" })
     const code = data.code.trim().toUpperCase();
     await sbAny(context.supabase)
       .from("commerce_carts")
-      .update({ promo_code: code } as any)
+      .update({ promo_code: code })
       .eq("id", data.cartId);
     const totals = await recalcCart(context.supabase, data.cartId);
     if (!totals.applied_promotions.some((p) => p.code === code)) {
       // roll back — code did not evaluate to any active promotion
       await sbAny(context.supabase)
         .from("commerce_carts")
-        .update({ promo_code: null } as any)
+        .update({ promo_code: null })
         .eq("id", data.cartId);
       await recalcCart(context.supabase, data.cartId);
       throw new Error("Promo code is not valid for this cart");
@@ -327,7 +329,7 @@ export const removePromoCode = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await sbAny(context.supabase)
       .from("commerce_carts")
-      .update({ promo_code: null } as any)
+      .update({ promo_code: null })
       .eq("id", data.cartId);
     return recalcCart(context.supabase, data.cartId);
   });
@@ -346,12 +348,12 @@ export const listShippingRates = createServerFn({ method: "GET" })
       .eq("is_active", true);
     const zoneIds = (zones ?? [])
       .filter(
-        (z: any) =>
+        (zone) =>
           !data.country ||
-          (z.countries ?? []).includes(data.country) ||
-          (z.countries ?? []).length === 0,
+          (zone.countries ?? []).includes(data.country) ||
+          (zone.countries ?? []).length === 0,
       )
-      .map((z: any) => z.id);
+      .map((zone) => zone.id);
     if (!zoneIds.length) return [];
     const { data: rates } = await context.supabase
       .from("commerce_shipping_rates")
@@ -587,7 +589,10 @@ export const listSavedCarts = createServerFn({ method: "GET" })
   });
 
 // ------------- checkout / place order -------------
-async function nextOrderNumber(supabase: any, workspaceId: string): Promise<string> {
+async function nextOrderNumber(
+  supabase: SupabaseClient<Database>,
+  workspaceId: string,
+): Promise<string> {
   const { count } = await sbAny(supabase)
     .from("commerce_orders")
     .select("*", { count: "exact", head: true })
@@ -722,9 +727,9 @@ export const placeOrder = createServerFn({ method: "POST" })
         billing_address: data.billingAddress ?? data.shippingAddress,
         notes: data.notes ?? null,
         metadata: { payment_method: data.paymentMethod, guest: !!data.guest },
-        applied_promotions: appliedPromotions as any,
+        applied_promotions: appliedPromotions,
         placed_at: new Date().toISOString(),
-      } as any)
+      })
       .select("*")
       .single();
     if (orderErr) throw orderErr;

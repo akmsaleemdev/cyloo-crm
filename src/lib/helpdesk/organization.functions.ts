@@ -7,8 +7,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 
-async function getWorkspaceId(supabase: any, userId: string): Promise<string> {
-  const { data } = await supabase
+async function getWorkspaceId(supabase: unknown, userId: string): Promise<string> {
+  const { data } = await sbAny(supabase)
     .from("workspace_members")
     .select("workspace_id")
     .eq("user_id", userId)
@@ -117,31 +117,50 @@ export const upsertAgentSkill = createServerFn({ method: "POST" })
 
 /* ------------------------- ROUTING ENGINE ------------------------- */
 async function pickAgent(
-  supabase: any,
+  supabase: unknown,
   wsId: string,
-  queue: any,
+  queue: {
+    id: string;
+    strategy: string;
+    round_robin_cursor: number;
+    vip_only: boolean;
+    required_skills: string[];
+    required_languages: string[];
+  },
   ticket: { is_vip?: boolean; language?: string; required_skill?: string },
 ): Promise<string | null> {
-  const { data: agents } = await supabase
+  const { data: agents } = await sbAny(supabase)
     .from("agent_skills")
     .select("*")
     .eq("workspace_id", wsId)
     .eq("is_available", true);
   if (!agents || agents.length === 0) return null;
-  let pool = agents as any[];
+  let pool = agents as Array<{
+    user_id: string;
+    handles_vip: boolean;
+    skills: string[] | null;
+    languages: string[] | null;
+    current_load: number | null;
+    max_concurrent: number | null;
+  }>;
 
   if (queue.vip_only || ticket.is_vip) pool = pool.filter((a) => a.handles_vip);
   if ((queue.required_skills ?? []).length > 0)
     pool = pool.filter((a) =>
-      queue.required_skills.every((s: string) => (a.skills ?? []).includes(s)),
+      (queue.required_skills ?? []).every(
+        (s) => typeof s === "string" && (a.skills ?? []).includes(s),
+      ),
     );
-  if (ticket.required_skill)
-    pool = pool.filter((a) => (a.skills ?? []).includes(ticket.required_skill));
+  const requiredSkill = ticket.required_skill;
+  if (requiredSkill) pool = pool.filter((a) => (a.skills ?? []).includes(requiredSkill));
   if ((queue.required_languages ?? []).length > 0)
     pool = pool.filter((a) =>
-      queue.required_languages.some((l: string) => (a.languages ?? []).includes(l)),
+      (queue.required_languages ?? []).some(
+        (l) => typeof l === "string" && (a.languages ?? []).includes(l),
+      ),
     );
-  if (ticket.language) pool = pool.filter((a) => (a.languages ?? []).includes(ticket.language));
+  const requiredLanguage = ticket.language;
+  if (requiredLanguage) pool = pool.filter((a) => (a.languages ?? []).includes(requiredLanguage));
   pool = pool.filter((a) => (a.current_load ?? 0) < (a.max_concurrent ?? 10));
   if (pool.length === 0) return null;
 
@@ -153,7 +172,7 @@ async function pickAgent(
   // round_robin default
   const cursor = (queue.round_robin_cursor ?? 0) % pool.length;
   const picked = pool[cursor];
-  await supabase
+  await sbAny(supabase)
     .from("support_queues")
     .update({ round_robin_cursor: (queue.round_robin_cursor ?? 0) + 1 })
     .eq("id", queue.id);

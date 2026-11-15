@@ -182,13 +182,14 @@ export function MessengerAccountsPanel() {
       const w = window.open(url, "messenger-oauth", "width=640,height=760");
       if (!w) window.location.href = url;
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to start OAuth"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to start OAuth"),
   });
 
   // Pause delivery, keep every conversation / assignment / setting intact.
   const pauseMut = useMutation({
     mutationFn: (accountId: string) => pause({ data: { accountId } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       toast.success("Page disconnected", {
         description: res?.warning
           ? `Delivery paused. Meta said: ${res.warning}. Conversations and settings are preserved.`
@@ -196,14 +197,15 @@ export function MessengerAccountsPanel() {
       });
       refreshAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to disconnect"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to disconnect"),
   });
 
   // Restore delivery: reuse the stored token when Meta still accepts it,
   // otherwise fall back to a fresh OAuth pass.
   const reconnectMut = useMutation({
     mutationFn: (accountId: string) => reconnect({ data: { accountId } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       if (res?.ok) {
         toast.success("Page reconnected", {
           description: res.resubscribed
@@ -218,7 +220,8 @@ export function MessengerAccountsPanel() {
       });
       linkMut.mutate();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Reconnect failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Reconnect failed"),
   });
 
   const subscribeMut = useMutation({
@@ -228,7 +231,8 @@ export function MessengerAccountsPanel() {
       toast.success(vars.subscribe ? "Messenger delivery enabled" : "Messenger delivery paused");
       refreshAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Meta rejected the change"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Meta rejected the change"),
   });
 
   const deleteMut = useMutation({
@@ -237,11 +241,11 @@ export function MessengerAccountsPanel() {
       toast.success("Page removed");
       qc.invalidateQueries({ queryKey: ["messenger-accounts", ws?.id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
   const syncMut = useMutation({
     mutationFn: (accountId: string) => sync({ data: { accountId } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       const errCount = res?.errors?.length ?? 0;
       toast.success(
         `Synced ${res.conversations} conversation${res.conversations === 1 ? "" : "s"} · ${res.messagesInserted} new message${res.messagesInserted === 1 ? "" : "s"}` +
@@ -250,17 +254,19 @@ export function MessengerAccountsPanel() {
       qc.invalidateQueries({ queryKey: ["messenger-accounts", ws?.id] });
       qc.invalidateQueries({ queryKey: ["conversations"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Sync failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Sync failed"),
   });
 
   const verifyOneMut = useMutation({
     mutationFn: (accountId: string) => verifyOne({ data: { accountId } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       if (res?.ok) toast.success("Token is healthy");
       else toast.error(res?.reason ?? "Token check failed");
       refreshAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Verification failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Verification failed"),
   });
 
   const verifyAllMut = useMutation({
@@ -268,11 +274,12 @@ export function MessengerAccountsPanel() {
       if (!ws?.id) throw new Error("No workspace");
       return verifyAll({ data: { workspaceId: ws.id } });
     },
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       toast.success(`Checked ${res.checked} · ${res.ok} healthy · ${res.expired} need reconnect`);
       refreshAll();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Verification failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Verification failed"),
   });
 
   const accounts = (q.data?.accounts ?? []) as MessengerAccount[];

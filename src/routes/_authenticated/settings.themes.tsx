@@ -201,7 +201,7 @@ function AccentSection() {
       setPreviewAccent(null);
       toast.success("Accent saved — applied across the workspace");
     },
-    onError: (e: any) => {
+    onError: (e: Error & { failures?: string[] }) => {
       const failures: string[] | undefined = e?.failures;
       const best = suggestions[0];
       toast.error(e?.message ?? "Could not save the accent", {
@@ -536,7 +536,7 @@ export function ThemesSettings({ embedded = false }: { embedded?: boolean }) {
       toast.success("Theme activated");
       qc.invalidateQueries({ queryKey: ["active-theme"] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Activation failed"),
+    onError: (e: Error) => toast.error(e.message ?? "Activation failed"),
   });
 
   const resetAll = useMutation({
@@ -545,7 +545,7 @@ export function ThemesSettings({ embedded = false }: { embedded?: boolean }) {
       await qc.invalidateQueries({ queryKey: ["active-theme"] });
       toast.success("Selected theme removed");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Could not reset the theme"),
+    onError: (e: Error) => toast.error(e?.message ?? "Could not reset the theme"),
   });
 
   return (
@@ -589,7 +589,7 @@ export function ThemesSettings({ embedded = false }: { embedded?: boolean }) {
               </CardContent>
             </Card>
           )}
-          {(data?.themes ?? []).map((t: any) => {
+          {(data?.themes ?? []).map((t) => {
             const isActive = active?.installation?.theme_id === t.id;
             const swatches = Object.values(t.tokens ?? {}).slice(0, 5) as string[];
             return (

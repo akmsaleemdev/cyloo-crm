@@ -60,7 +60,7 @@ export interface LogEntry {
   ip: string | null;
   user_agent: string | null;
   message: string | null;
-  meta: Record<string, unknown>;
+  meta: Record<string, Json>;
 }
 
 export interface LogQueryInput {

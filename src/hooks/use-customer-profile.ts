@@ -101,7 +101,7 @@ export function useCustomerProfile(contactId: string | undefined) {
         profilesById = Object.fromEntries((profs ?? []).map((p) => [p.id, p]));
       }
       return {
-        ...(data as any),
+        ...data,
         owner: data.owner_id ? (profilesById[data.owner_id] ?? null) : null,
         agent: data.assigned_agent_id ? (profilesById[data.assigned_agent_id] ?? null) : null,
       } as CustomerProfile;
@@ -442,14 +442,15 @@ export function useContactCampaigns(contactId: string | undefined) {
     queryFn: async () => {
       // Only campaigns this contact actually received. Listing the workspace's
       // latest campaigns showed every customer the same unrelated history.
-      const { data, error } = await (supabase.from("campaign_recipients") as any)
+      const { data, error } = await supabase
+        .from("campaign_recipients")
         .select("id, status, sent_at, created_at, campaign:campaigns!inner(id, name, workspace_id)")
         .eq("contact_id", contactId!)
         .eq("campaign.workspace_id", active!.id)
         .order("created_at", { ascending: false })
         .limit(10);
       if (error) return [];
-      return ((data ?? []) as any[]).map((r) => ({
+      return (data ?? []).map((r) => ({
         id: r.id as string,
         name: (r.campaign?.name as string) ?? "Campaign",
         status: r.status as string,

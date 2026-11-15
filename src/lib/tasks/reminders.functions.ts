@@ -35,7 +35,7 @@ function missingEmailColumn(error: { code?: string; message?: string } | null): 
 export const getTaskReminderSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     const { data, error } = await sbAny(supabase)
       .from("task_reminder_settings")
       .select(
@@ -66,7 +66,7 @@ export const upsertTaskReminderSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => SettingsSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as any;
+    const { supabase, userId } = context;
     const leads = Array.from(new Set(data.lead_minutes)).sort((a, b) => b - a);
     const { error } = await sbAny(supabase).from("task_reminder_settings").upsert(
       {

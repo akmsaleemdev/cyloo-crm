@@ -80,6 +80,12 @@ import {
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useTenantTimezone, useZonedDateFormatter } from "@/hooks/use-timezone";
 import { formatInTimezone } from "@/lib/datetime/timezone";
+import type { Tables } from "@/integrations/supabase/types";
+
+type BillingDocumentRow = Tables<"billing_documents">;
+type BillingTemplateRow = Tables<"billing_document_templates">;
+type BillingTaxRateRow = Tables<"tax_rates">;
+type BillingDocumentHistoryRow = Tables<"billing_document_history">;
 
 export const Route = createFileRoute("/_authenticated/billing-documents")({
   beforeLoad: requireWorkspaceRole("owner", "admin"),
@@ -182,20 +188,23 @@ function BillingDocumentsPage() {
   const tplListFn = useServerFn(listDocumentTemplates);
   const ratesFn = useServerFn(listTaxRates);
 
-  const documents = useQuery({
+  const documents = useQuery<BillingDocumentRow[]>({
     queryKey: ["billing-documents", org?.id, tab, search],
     enabled: !!org?.id,
     queryFn: () =>
       listFn({ data: { organization_id: org!.id, type: tab, search: search || undefined } }),
   });
 
-  const templates = useQuery({
+  const templates = useQuery<BillingTemplateRow[]>({
     queryKey: ["billing-doc-templates", org?.id],
     enabled: !!org?.id,
     queryFn: () => tplListFn({ data: { organization_id: org!.id } }),
   });
 
-  const taxRates = useQuery({ queryKey: ["tax-rates"], queryFn: () => ratesFn() });
+  const taxRates = useQuery<BillingTaxRateRow[]>({
+    queryKey: ["tax-rates"],
+    queryFn: () => ratesFn(),
+  });
 
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["billing-documents"] });
@@ -265,7 +274,7 @@ function BillingDocumentsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {(documents.data ?? []).map((d: any) => (
+                      {(documents.data ?? []).map((d) => (
                         <TableRow
                           key={d.id}
                           className="cursor-pointer hover:bg-muted/50"
@@ -356,8 +365,8 @@ function NewDocumentDialog({
   onOpenChange: (v: boolean) => void;
   organizationId: string;
   defaultType: DocType;
-  templates: any[];
-  taxRates: any[];
+  templates: BillingTemplateRow[];
+  taxRates: BillingTaxRateRow[];
   onCreated: () => void;
 }) {
   const [type, setType] = useState<DocType>(defaultType);
@@ -426,14 +435,14 @@ function NewDocumentDialog({
           tax_exempt: taxExempt,
         },
       });
-      if (issue) await issueFn({ data: { id: (doc as any).id } });
+      if (issue) await issueFn({ data: { id: doc.id } });
       return doc;
     },
     onSuccess: () => {
       toast.success("Document created");
       onCreated();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
 
   return (
@@ -600,7 +609,7 @@ function NewDocumentDialog({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No tax</SelectItem>
-                    {taxRates.map((r: any) => (
+                    {taxRates.map((r) => (
                       <SelectItem key={r.id} value={r.id}>
                         {r.name} ({Number(r.rate_percent)}%)
                       </SelectItem>
@@ -703,12 +712,12 @@ function TemplatesDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
   organizationId: string;
-  templates: any[];
+  templates: BillingTemplateRow[];
   onChanged: () => void;
 }) {
   // An invoice template is created in the tenant currency, not dollars.
   const tenantCurrency = useTenantCurrency();
-  const [editing, setEditing] = useState<any>(
+  const [editing, setEditing] = useState<Partial<BillingTemplateRow>>(
     templates[0] ?? {
       organization_id: organizationId,
       name: "Default",
@@ -730,7 +739,7 @@ function TemplatesDialog({
       toast.success("Template saved");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
 
   return (
@@ -933,7 +942,11 @@ function DocumentDetail({
   const emailFn = useServerFn(markDocumentSent);
   const delFn = useServerFn(deleteBillingDocument);
 
-  const q = useQuery({ queryKey: ["billing-doc", id], queryFn: () => getFn({ data: { id } }) });
+  const q = useQuery<{
+    document: BillingDocumentRow;
+    history: BillingDocumentHistoryRow[];
+    template: BillingTemplateRow | null;
+  }>({ queryKey: ["billing-doc", id], queryFn: () => getFn({ data: { id } }) });
   const [emailTo, setEmailTo] = useState("");
   const [openEmail, setOpenEmail] = useState(false);
 
@@ -965,7 +978,7 @@ function DocumentDetail({
       q.refetch();
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
   const del = useMutation({
     mutationFn: () => delFn({ data: { id } }),
@@ -974,7 +987,7 @@ function DocumentDetail({
       onClose();
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) => toast.error(error instanceof Error ? error.message : "Failed"),
   });
 
   return (
@@ -1121,10 +1134,10 @@ function DocumentDetail({
             <div>
               <h4 className="text-sm font-semibold mb-2">Activity</h4>
               <ScrollArea className="h-40 border rounded-control p-2">
-                {(history as any[]).length === 0 && (
+                {history.length === 0 && (
                   <div className="text-xs text-muted-foreground">No activity yet.</div>
                 )}
-                {(history as any[]).map((h) => (
+                {history.map((h) => (
                   <div key={h.id} className="text-xs py-1 border-b last:border-b-0">
                     <span className="font-medium capitalize">{h.action}</span>
                     <span className="text-muted-foreground">

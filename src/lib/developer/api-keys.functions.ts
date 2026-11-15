@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { API_SCOPES, WILDCARD_SCOPE } from "@/lib/api/scopes";
 import { assertOrgRole } from "@/lib/rbac-org";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { sbAny } from "@/lib/supabase/untyped";
 
 /** Scopes a key may hold: any known API scope, or the "*" wildcard. */
@@ -27,7 +28,7 @@ export class ForbiddenOrgError extends Error {
  *   RPC and return that id.
  */
 export async function getCallerOrgId(
-  supabase: any,
+  supabase: unknown,
   userId: string,
   requestedOrgId?: string | null,
 ): Promise<string> {
@@ -36,7 +37,7 @@ export async function getCallerOrgId(
     const uuid = z.string().uuid().safeParse(requestedOrgId);
     if (!uuid.success) throw new ForbiddenOrgError(requestedOrgId);
 
-    const { data, error } = await supabase
+    const { data, error } = await sbAny(supabase)
       .from("organization_members")
       .select("organization_id")
       .eq("user_id", userId)
@@ -48,7 +49,7 @@ export async function getCallerOrgId(
   }
 
   // Fast path under the caller's RLS — no admin client needed when membership exists
-  const { data, error } = await supabase
+  const { data, error } = await sbAny(supabase)
     .from("organization_members")
     .select("organization_id")
     .eq("user_id", userId)
@@ -259,7 +260,7 @@ export const updateApiKey = createServerFn({ method: "POST" })
     const orgId = await getCallerOrgId(context.supabase, context.userId, data.organizationId);
     // Mutating key management requires an elevated org role (owner/admin).
     await assertOrgRole(context.supabase, context.userId, orgId);
-    const patch: Record<string, unknown> = {};
+    const patch: TablesUpdate<"api_keys"> = {};
     if (data.name !== undefined) patch.name = data.name;
     if (data.description !== undefined) patch.description = data.description;
     if (data.scopes !== undefined) patch.scopes = data.scopes;
@@ -271,7 +272,7 @@ export const updateApiKey = createServerFn({ method: "POST" })
     }
     const { error } = await context.supabase
       .from("api_keys")
-      .update(patch as any)
+      .update(patch)
       .eq("id", data.id)
       .eq("organization_id", orgId);
     if (error) throw error;
@@ -318,9 +319,9 @@ export const getApiKeyStats = createServerFn({ method: "POST" })
       .limit(10000);
     if (error) throw error;
     const total = rows?.length ?? 0;
-    const errors = (rows ?? []).filter((r: any) => r.status_code >= 400).length;
+    const errors = (rows ?? []).filter((row) => (row.status_code ?? 0) >= 400).length;
     const latencies = (rows ?? [])
-      .map((r: any) => r.latency_ms ?? 0)
+      .map((row) => row.latency_ms ?? 0)
       .filter((n) => n > 0)
       .sort((a, b) => a - b);
     const p95 = latencies[Math.floor(latencies.length * 0.95)] ?? 0;
@@ -344,7 +345,7 @@ export const listWebhookActivity = createServerFn({ method: "POST" })
       .select("workspace_id, workspaces:workspaces!inner(organization_id)")
       .eq("user_id", context.userId)
       .eq("workspaces.organization_id", orgId);
-    const ids = (workspaces ?? []).map((w: any) => w.workspace_id);
+    const ids = (workspaces ?? []).map((workspace) => workspace.workspace_id);
     if (ids.length === 0) return { orgId, secrets: [], events: [] };
 
     const [secrets, events] = await Promise.all([

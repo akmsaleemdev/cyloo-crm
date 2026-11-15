@@ -9,8 +9,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Json } from "@/integrations/supabase/types";
 import { BACKUP_ENGINE, requireBackupEngine } from "./engine";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type SB = any;
 
 /* -------------------------------------------------- types */
@@ -92,7 +93,7 @@ export type RestoreOperation = {
   restore_mode: "preview" | "in_place" | "new_workspace" | "point_in_time";
   point_in_time: string | null;
   status: BackupStatus;
-  preview_summary: Record<string, any>;
+  preview_summary: Record<string, Json>;
   affected_tables: string[];
   restored_rows: number;
   error: string | null;

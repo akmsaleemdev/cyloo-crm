@@ -2,6 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { guardCronRequest } from "@/lib/api/request-guards";
 import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import type { WorkflowGraph } from "@/lib/workflows/types";
+import { sbAny } from "@/lib/supabase/untyped";
+
+type LeasedWorkflowJob = {
+  id: string;
+  automation_id: string;
+  trigger_source: string | null;
+  input: Record<string, unknown> | null;
+  attempts: number | null;
+  max_attempts: number | null;
+};
 
 /**
  * Workflow queue processor.
@@ -27,7 +37,7 @@ export const Route = createFileRoute("/api/public/hooks/workflow-queue")({
 
         const admin = supabaseAdmin;
         const worker = `wf-worker-${crypto.randomUUID().slice(0, 8)}`;
-        const { data: jobs, error } = await (admin as any).rpc("wf_queue_lease", {
+        const { data: jobData, error } = await sbAny(admin).rpc("wf_queue_lease", {
           _worker: worker,
           _batch: BATCH,
           _lease_seconds: LEASE_SECONDS,
@@ -38,14 +48,15 @@ export const Route = createFileRoute("/api/public/hooks/workflow-queue")({
             headers: { "Content-Type": "application/json" },
           });
         }
-        if (!jobs || jobs.length === 0) {
+        const jobs = (jobData ?? []) as LeasedWorkflowJob[];
+        if (jobs.length === 0) {
           return Response.json({ processed: 0 });
         }
 
         const { executeAutomation } = await import("@/lib/workflows/engine.server");
         const results: Array<{ id: string; status: string }> = [];
 
-        for (const job of jobs as any[]) {
+        for (const job of jobs) {
           try {
             const { data: automation, error: loadErr } = await admin
               .from("automations")
@@ -63,7 +74,7 @@ export const Route = createFileRoute("/api/public/hooks/workflow-queue")({
             }
 
             const result = await executeAutomation({
-              supabase: admin as any,
+              supabase: admin,
               automation: {
                 id: automation.id,
                 workspace_id: automation.workspace_id,

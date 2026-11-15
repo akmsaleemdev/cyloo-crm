@@ -22,9 +22,19 @@ export interface ReadinessReport {
   generated_at: string;
 }
 
-async function count(supabase: any, table: string, filter?: (q: any) => any): Promise<number> {
-  let q = sbAny(supabase).from(table).select("id", { count: "exact", head: true });
-  if (filter) q = filter(q);
+interface CountQuery extends PromiseLike<{ count: number | null; error: unknown | null }> {
+  eq(column: string, value: unknown): CountQuery;
+  not(column: string, operator: string, value: unknown): CountQuery;
+  in(column: string, values: unknown[]): CountQuery;
+}
+
+async function count(
+  supabase: unknown,
+  table: string,
+  filter?: (q: CountQuery) => void,
+): Promise<number> {
+  const q = sbAny(supabase).from(table).select("id", { count: "exact", head: true }) as CountQuery;
+  filter?.(q);
   const { count: c, error } = await q;
   if (error) return 0;
   return c ?? 0;

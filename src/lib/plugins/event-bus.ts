@@ -21,7 +21,7 @@ type Subscription = {
   slug: string;
   event: BusEventName;
   kind: Kind;
-  fn: any;
+  fn: (...args: never[]) => unknown;
   priority: number;
 };
 
@@ -41,7 +41,13 @@ class EventBus {
     return this.add(slug, event, "middleware", fn, priority);
   }
 
-  private add(slug: string, event: BusEventName, kind: Kind, fn: any, priority: number) {
+  private add(
+    slug: string,
+    event: BusEventName,
+    kind: Kind,
+    fn: (...args: never[]) => unknown,
+    priority: number,
+  ) {
     const sub: Subscription = { id: this.nextId++, slug, event, kind, fn, priority };
     const list = this.subs.get(event) ?? [];
     list.push(sub);
@@ -77,7 +83,7 @@ class EventBus {
         .filter((s) => s.kind === "listen")
         .map(async (s) => {
           try {
-            await s.fn(payload);
+            await Reflect.apply(s.fn, undefined, [payload]);
           } catch (err) {
             console.error(`[event-bus] ${event} listener ${s.slug} failed:`, err);
           }
@@ -96,10 +102,10 @@ class EventBus {
     this.record(event, "filter");
     const list = this.subs.get(event);
     if (!list?.length) return payload;
-    let value: any = payload;
+    let value: T | null = payload;
     for (const s of list.filter((s) => s.kind === "filter")) {
       try {
-        value = await s.fn(value);
+        value = (await Reflect.apply(s.fn, undefined, [value])) as T | null;
         if (value === null) return null;
       } catch (err) {
         console.error(`[event-bus] ${event} filter ${s.slug} failed:`, err);
@@ -123,7 +129,7 @@ class EventBus {
       const sub = chain[idx];
       if (!sub) return void (await core());
       try {
-        await sub.fn(ctx, () => dispatch(idx + 1));
+        await Reflect.apply(sub.fn, undefined, [ctx, () => dispatch(idx + 1)]);
       } catch (err) {
         console.error(`[event-bus] ${event} middleware ${sub.slug} failed:`, err);
       }

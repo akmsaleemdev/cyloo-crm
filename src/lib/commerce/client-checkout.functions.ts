@@ -16,6 +16,7 @@ import {
   type AppliedPromoAudit,
 } from "./promo-runtime";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Tables } from "@/integrations/supabase/types";
 
 const uuid = z.string().uuid();
 
@@ -137,13 +138,13 @@ async function recalc(cartId: string) {
       discount,
       shipping,
       total,
-      applied_promotions: appliedPromotions as any,
-    } as any)
+      applied_promotions: appliedPromotions,
+    })
     .eq("id", cartId);
   return { subtotal, tax, discount, shipping, total, applied_promotions: appliedPromotions };
 }
 
-async function ensureActiveCart(ctx: Ctx) {
+async function ensureActiveCart(ctx: Ctx): Promise<Tables<"commerce_carts">> {
   const sb = await admin();
   const { data } = await sbAny(sb)
     .from("commerce_carts")
@@ -152,7 +153,7 @@ async function ensureActiveCart(ctx: Ctx) {
     .eq("contact_id", ctx.contactId)
     .eq("status", "active")
     .limit(1);
-  if (data && data.length) return data[0] as Record<string, unknown>;
+  if (data && data.length) return data[0] as Tables<"commerce_carts">;
   const { data: created, error } = await sbAny(sb)
     .from("commerce_carts")
     .insert({
@@ -163,25 +164,32 @@ async function ensureActiveCart(ctx: Ctx) {
     .select("*")
     .single();
   if (error) throw error;
-  return created as Record<string, unknown>;
+  return created as Tables<"commerce_carts">;
 }
 
 // -------- exposed portal fns --------
 
 export const myGetCart = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const c = await resolveContact(context.claims?.email ?? "");
-    const cart = await ensureActiveCart(c);
-    const sb = await admin();
-    const { data: items } = await sbAny(sb)
-      .from("commerce_cart_items")
-      .select("*")
-      .eq("cart_id", (cart as { id: string }).id)
-      .order("created_at");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { cart: cart as any, items: items ?? [], contact: c };
-  });
+  .handler(
+    async ({
+      context,
+    }): Promise<{
+      cart: Tables<"commerce_carts">;
+      items: Tables<"commerce_cart_items">[];
+      contact: Ctx;
+    }> => {
+      const c = await resolveContact(context.claims?.email ?? "");
+      const cart = await ensureActiveCart(c);
+      const sb = await admin();
+      const { data: items } = await sbAny(sb)
+        .from("commerce_cart_items")
+        .select("*")
+        .eq("cart_id", (cart as { id: string }).id)
+        .order("created_at");
+      return { cart, items: (items ?? []) as Tables<"commerce_cart_items">[], contact: c };
+    },
+  );
 
 export const myAddToCart = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -364,16 +372,10 @@ export const myApplyPromoCode = createServerFn({ method: "POST" })
     if (!cart || (cart as { contact_id: string | null }).contact_id !== c.contactId)
       throw new Error("Forbidden");
     const code = data.code.trim().toUpperCase();
-    await sbAny(sb)
-      .from("commerce_carts")
-      .update({ promo_code: code } as any)
-      .eq("id", data.cartId);
+    await sbAny(sb).from("commerce_carts").update({ promo_code: code }).eq("id", data.cartId);
     const totals = await recalc(data.cartId);
     if (!totals.applied_promotions.some((p) => p.code === code)) {
-      await sbAny(sb)
-        .from("commerce_carts")
-        .update({ promo_code: null } as any)
-        .eq("id", data.cartId);
+      await sbAny(sb).from("commerce_carts").update({ promo_code: null }).eq("id", data.cartId);
       await recalc(data.cartId);
       throw new Error("Promo code is not valid for this cart");
     }
@@ -393,10 +395,7 @@ export const myRemovePromoCode = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!cart || (cart as { contact_id: string | null }).contact_id !== c.contactId)
       throw new Error("Forbidden");
-    await sbAny(sb)
-      .from("commerce_carts")
-      .update({ promo_code: null } as any)
-      .eq("id", data.cartId);
+    await sbAny(sb).from("commerce_carts").update({ promo_code: null }).eq("id", data.cartId);
     return recalc(data.cartId);
   });
 
@@ -754,7 +753,7 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
         billing_address: data.billingAddress ?? data.shippingAddress,
         notes: data.notes ?? null,
         metadata: { payment_method: data.paymentMethod },
-        applied_promotions: appliedPromotions as any,
+        applied_promotions: appliedPromotions,
         placed_at: new Date().toISOString(),
       } as never)
       .select("*")

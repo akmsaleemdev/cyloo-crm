@@ -304,9 +304,8 @@ export const globalSearch = createServerFn({ method: "POST" })
           .limit(HIT_LIMIT)
       : Promise.resolve({ data: [] as unknown[] });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expand, contacts, companies, leads, deals, tasks, convs, campaigns, kb] =
-      (await Promise.all([
+      await Promise.all([
         expandP,
         contactsP,
         companiesP,
@@ -316,7 +315,7 @@ export const globalSearch = createServerFn({ method: "POST" })
         convsP,
         campaignsP,
         kbP,
-      ])) as any;
+      ]);
 
     const terms = expand.terms as string[];
 
@@ -427,29 +426,29 @@ export const globalSearch = createServerFn({ method: "POST" })
 
     const groups: Record<SearchScope, SearchHit[]> = {
       all: [],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       contact: (contacts.data ?? [])
         .map(mapContact)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       company: (companies.data ?? [])
         .map(mapCompany)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       lead: (leads.data ?? []).map(mapLead).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       deal: (deals.data ?? []).map(mapDeal).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       task: (tasks.data ?? []).map(mapTask).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       conversation: (convs.data ?? [])
         .map(mapConv)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       campaign: (campaigns.data ?? [])
         .map(mapCampaign)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       knowledge: (kb.data ?? []).map(mapKb).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
     };
 
@@ -680,8 +679,9 @@ export const updateSavedSearch = createServerFn({ method: "POST" })
     if (data.color !== undefined) patch.color = data.color;
     if (data.icon !== undefined) patch.icon = data.icon;
     if (data.touchLastUsed) patch.last_used_at = new Date().toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: row, error } = await (sbAny(supabase).from("saved_searches") as any)
+
+    const { data: row, error } = await sbAny(supabase)
+      .from("saved_searches")
       .update(patch)
       .eq("id", data.id)
       .select("*")

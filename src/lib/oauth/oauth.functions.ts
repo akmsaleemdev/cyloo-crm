@@ -8,10 +8,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import { sbAny } from "@/lib/supabase/untyped";
 
-async function getCallerOrgId(supabase: any, userId: string): Promise<string> {
-  const { data, error } = await supabase
+async function getCallerOrgId(supabase: unknown, userId: string): Promise<string> {
+  const { data, error } = await sbAny(supabase)
     .from("organization_members")
     .select("organization_id")
     .eq("user_id", userId)
@@ -138,7 +139,7 @@ export const updateOAuthClient = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const orgId = await getCallerOrgId(context.supabase, context.userId);
-    const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+    const patch: TablesUpdate<"oauth_clients"> = { updated_at: new Date().toISOString() };
     if (data.name !== undefined) patch.name = data.name;
     if (data.description !== undefined) patch.description = data.description;
     if (data.redirectUris) patch.redirect_uris = data.redirectUris;
@@ -146,7 +147,8 @@ export const updateOAuthClient = createServerFn({ method: "POST" })
     if (data.allowedGrantTypes) patch.allowed_grant_types = data.allowedGrantTypes;
     if (data.homepageUrl !== undefined) patch.homepage_url = data.homepageUrl || null;
     if (data.logoUrl !== undefined) patch.logo_url = data.logoUrl || null;
-    const { error } = await (sbAny(context.supabase).from("oauth_clients") as any)
+    const { error } = await sbAny(context.supabase)
+      .from("oauth_clients")
       .update(patch)
       .eq("id", data.id)
       .eq("organization_id", orgId);
@@ -349,20 +351,19 @@ export const listConnectedApps = createServerFn({ method: "GET" })
       .select("id, client_id, scopes, granted_at, revoked_at")
       .eq("user_id", context.userId)
       .is("revoked_at", null);
-    const ids = (consents ?? []).map((c: any) => c.client_id);
+    const ids = (consents ?? []).map((consent) => consent.client_id);
     if (!ids.length) return { apps: [] };
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     const { data: clients } = await supabaseAdmin
       .from("oauth_clients")
       .select("id, name, description, logo_url, homepage_url, client_type")
       .in("id", ids);
-    const byId: Record<string, any> = {};
-    for (const c of clients ?? []) byId[c.id] = c;
-    const apps = (consents ?? []).map((c: any) => ({
-      consent_id: c.id,
-      client: byId[c.client_id],
-      scopes: c.scopes,
-      granted_at: c.granted_at,
+    const byId = new Map((clients ?? []).map((client) => [client.id, client] as const));
+    const apps = (consents ?? []).map((consent) => ({
+      consent_id: consent.id,
+      client: byId.get(consent.client_id),
+      scopes: consent.scopes,
+      granted_at: consent.granted_at,
     }));
     return { apps };
   });
