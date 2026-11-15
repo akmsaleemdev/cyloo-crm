@@ -59,7 +59,7 @@ export const enqueueCampaign = createServerFn({ method: "POST" })
     await assertCampaignReady(supabase, campaign, { runAt: data.runAt ?? null });
 
     const wsId: string = campaign.workspace_id;
-    let contactIds: string[] = [];
+    let contactIds: string[];
 
     if (campaign.contact_list_id) {
       const { data: list, error: listError } = await supabase
