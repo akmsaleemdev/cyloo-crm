@@ -273,7 +273,7 @@ export const publishPluginVersion = createServerFn({ method: "POST" })
     z
       .object({
         pluginId: z.string().uuid(),
-        version: z.string().regex(/^\d+\.\d+\.\d+([+\-][\w.]+)?$/),
+        version: z.string().regex(/^\d+\.\d+\.\d+([+-][\w.]+)?$/),
         changelog: z.string().max(4000).optional(),
         manifest: z.record(z.string(), z.unknown()).default({}),
         entry_url: z

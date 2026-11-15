@@ -1,24 +1,13 @@
 /**
  * Payment Link Provider Abstraction Layer
  *
- * Supported providers: stripe, paypal, paddle, razorpay, paystack,
- * flutterwave, mollie, mercadopago, midtrans.
+ * Supported providers: stripe, paypal, paddle, razorpay, mollie.
  *
  * Add a new provider by implementing PaymentLinkProvider and registering it
  * in `./index.ts`. No callers need to change.
  */
 
-export const PAYMENT_PROVIDERS = [
-  "stripe",
-  "paypal",
-  "paddle",
-  "razorpay",
-  "paystack",
-  "flutterwave",
-  "mollie",
-  "mercadopago",
-  "midtrans",
-] as const;
+export const PAYMENT_PROVIDERS = ["stripe", "paypal", "paddle", "razorpay", "mollie"] as const;
 
 export type PaymentProviderId = (typeof PAYMENT_PROVIDERS)[number];
 

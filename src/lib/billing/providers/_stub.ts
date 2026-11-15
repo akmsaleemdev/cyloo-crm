@@ -1,8 +1,8 @@
 /**
  * Shared stub factory for not-yet-implemented gateway adapters.
  *
- * Every future provider (PayPal, Lemon Squeezy, Razorpay, Paystack,
- * Flutterwave, Mollie, Mercado Pago, Midtrans, Custom) uses this to satisfy
+ * Future providers (PayPal, Lemon Squeezy, Razorpay, Mollie, Custom)
+ * use this factory to satisfy
  * the `BillingProvider` contract with clear errors on unsupported calls,
  * while still declaring which capabilities the real provider will support.
  * Fill in real methods incrementally without touching call sites.

@@ -22,7 +22,6 @@ export type BillingWebhookEvent = {
 
 export type RouteResult = { handled: boolean; reason?: string };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function routeProviderEvent(
   supabase: any,
   event: BillingWebhookEvent,

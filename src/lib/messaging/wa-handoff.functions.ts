@@ -35,7 +35,7 @@ export interface WaHandoffAgent {
 
 export const getWaHandoffOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { workspaceId } = data;
@@ -144,7 +144,7 @@ const updateSchema = z.object({
 
 export const updateWaHandoffSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => updateSchema.parse(input))
+  .validator((input: unknown) => updateSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { error } = await sbAny(supabase)
@@ -179,7 +179,7 @@ const routeSchema = z.object({
 /** Manually route a WhatsApp conversation to the next eligible agent. */
 export const routeWaConversationToAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => routeSchema.parse(input))
+  .validator((input: unknown) => routeSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -221,7 +221,7 @@ const targetSchema = z.object({
  */
 export const assignWaHandoff = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => targetSchema.parse(input))
+  .validator((input: unknown) => targetSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 

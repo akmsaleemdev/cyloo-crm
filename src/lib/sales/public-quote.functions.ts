@@ -43,7 +43,7 @@ const QUOTE_COLUMNS =
 
 /** Public, token-gated read of a shared quote. Marks a sent quote as viewed. */
 export const getPublicQuote = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => tokenSchema.parse(d))
+  .validator((d: unknown) => tokenSchema.parse(d))
   .handler(async ({ data }): Promise<PublicQuote | null> => {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -111,7 +111,7 @@ export const getPublicQuote = createServerFn({ method: "GET" })
 
 /** Public accept (with typed signature) or decline of a shared quote. */
 export const signPublicQuote = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => signSchema.parse(d))
+  .validator((d: unknown) => signSchema.parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

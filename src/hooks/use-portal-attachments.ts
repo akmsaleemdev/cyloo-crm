@@ -221,7 +221,6 @@ export function usePortalAttachments(conversationId: string | null) {
           }
         }
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [],
   );

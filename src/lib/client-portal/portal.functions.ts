@@ -624,7 +624,7 @@ export const createPortalAttachmentUploadUrl = createServerFn({ method: "POST" }
       .maybeSingle();
     if (!conv) throw new Error("Conversation not found");
     const workspaceId = (conv as { workspace_id: string }).workspace_id;
-    const safe = data.file_name.replace(/[^\w.\-]/g, "_").slice(-120);
+    const safe = data.file_name.replace(/[^\w.-]/g, "_").slice(-120);
     const path = `${workspaceId}/${data.conversation_id}/portal/${Date.now()}-${crypto.randomUUID()}-${safe}`;
     const { data: signed, error } = await supabaseAdmin.storage
       .from("attachments")
@@ -2721,7 +2721,7 @@ Keep summary under 240 chars. Provide 2-4 concrete self-help steps. Only include
       };
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const raw = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: { summary?: string; steps?: string[]; article_slugs?: string[] } = {};
+    let parsed: { summary?: string; steps?: string[]; article_slugs?: string[] };
     try {
       parsed = JSON.parse(raw);
     } catch {

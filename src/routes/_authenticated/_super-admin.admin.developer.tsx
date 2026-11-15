@@ -85,8 +85,8 @@ function DeveloperInner() {
       toast.success("API key revoked");
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to revoke");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to revoke");
     }
   }
 
@@ -96,8 +96,8 @@ function DeveloperInner() {
       toast.success("Webhook queued for retry");
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to retry");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to retry");
     }
   }
 

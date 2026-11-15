@@ -160,7 +160,9 @@ export const connectTelegramBot = createServerFn({ method: "POST" })
           status_reason: (err as Error).message.slice(0, 500),
         } as never)
         .eq("id", account.id);
-      throw new Error(`Bot verified, but webhook registration failed: ${(err as Error).message}`);
+      throw new Error(`Bot verified, but webhook registration failed: ${(err as Error).message}`, {
+        cause: err,
+      });
     }
 
     return {

@@ -78,7 +78,7 @@ function quantile(sorted: number[], q: number): number | null {
 
 export const getWaChatbotAnalytics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => schema.parse(input))
+  .validator((input: unknown) => schema.parse(input))
   .handler(async ({ data, context }): Promise<WaAnalytics> => {
     const { supabase } = context;
     const since = new Date(Date.now() - data.days * 86_400_000);

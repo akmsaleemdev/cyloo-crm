@@ -19,16 +19,17 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user) return;
+    const userId = user.id;
     supabase
       .from("profiles")
       .select("full_name, phone")
-      .eq("id", user.id)
+      .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
-        setFullName((data as any)?.full_name ?? "");
-        setPhone((data as any)?.phone ?? "");
+        setFullName(data?.full_name ?? "");
+        setPhone(data?.phone ?? "");
       });
-  }, [user?.id]);
+  }, [user]);
 
   async function save() {
     if (!user) return;

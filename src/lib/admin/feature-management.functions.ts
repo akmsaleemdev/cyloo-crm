@@ -126,7 +126,6 @@ function toAuditAction(action: string): "create" | "update" | "delete" | "revoke
   return "update";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function audit(
   admin: any,
   actor: string,
@@ -413,7 +412,7 @@ export const validateLicense = createServerFn({ method: "POST" })
     const record = licenses[data.key];
     const now = new Date();
     let ok = false;
-    let message = "";
+    let message: string;
     if (!record) message = "License not found";
     else if (record.status === "revoked") message = "License revoked";
     else if (record.expires_at && new Date(record.expires_at) < now) {

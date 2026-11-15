@@ -14,7 +14,6 @@ export type BillingProviderId =
   | "paypal"
   | "lemonsqueezy"
   | "razorpay"
-  | "flutterwave"
   | "mollie"
   | "myfatoorah"
   | "paytabs"

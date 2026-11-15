@@ -12,7 +12,7 @@ import { sbAny } from "@/lib/supabase/untyped";
  * blocks trivial bots, and repeat submissions from the same email are throttled.
  */
 export const submitMarketingLead = createServerFn({ method: "POST" })
-  .inputValidator((input: LeadCaptureInput) => leadCaptureSchema.parse(input))
+  .validator((input: LeadCaptureInput) => leadCaptureSchema.parse(input))
   .handler(async ({ data }) => {
     // Honeypot filled → pretend success, store nothing.
     if (data.website) return { ok: true as const, duplicate: false };

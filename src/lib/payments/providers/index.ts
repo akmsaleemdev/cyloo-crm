@@ -7,7 +7,7 @@ import type { PaymentLinkProvider, PaymentProviderId } from "./types";
  *
  * Live SDK integrations should replace `makeStubProvider(...)` with a real
  * implementation of the PaymentLinkProvider interface. Callers never import
- * providers directly — always go through `getProvider(id)` below.
+ * providers directly â€” always go through `getProvider(id)` below.
  */
 const registry: Record<PaymentProviderId, PaymentLinkProvider> = {
   stripe: makeStubProvider({
@@ -39,44 +39,12 @@ const registry: Record<PaymentProviderId, PaymentLinkProvider> = {
     supportsRecurring: true,
     supportsRefunds: true,
   }),
-  paystack: makeStubProvider({
-    id: "paystack",
-    displayName: "Paystack",
-    currencies: ["NGN", "GHS", "ZAR", "KES", "USD"],
-    supportsPartial: true,
-    supportsRecurring: true,
-    supportsRefunds: true,
-  }),
-  flutterwave: makeStubProvider({
-    id: "flutterwave",
-    displayName: "Flutterwave",
-    currencies: ["NGN", "GHS", "KES", "ZAR", "USD", "EUR", "GBP"],
-    supportsPartial: true,
-    supportsRecurring: true,
-    supportsRefunds: true,
-  }),
   mollie: makeStubProvider({
     id: "mollie",
     displayName: "Mollie",
     currencies: ["EUR", "USD", "GBP"],
     supportsPartial: false,
     supportsRecurring: true,
-    supportsRefunds: true,
-  }),
-  mercadopago: makeStubProvider({
-    id: "mercadopago",
-    displayName: "Mercado Pago",
-    currencies: ["ARS", "BRL", "CLP", "COP", "MXN", "PEN", "UYU", "USD"],
-    supportsPartial: true,
-    supportsRecurring: true,
-    supportsRefunds: true,
-  }),
-  midtrans: makeStubProvider({
-    id: "midtrans",
-    displayName: "Midtrans",
-    currencies: ["IDR"],
-    supportsPartial: false,
-    supportsRecurring: false,
     supportsRefunds: true,
   }),
 };
@@ -86,8 +54,7 @@ export function getProvider(id: PaymentProviderId): PaymentLinkProvider {
 }
 
 export function listProviders(): PaymentLinkProvider[] {
-  // Keep retired adapters addressable for historical records, but exclude them from new payment-link selection.
-  return Object.values(registry).filter((p) => !["mercadopago", "paystack", "midtrans"].includes(p.id));
+  return Object.values(registry);
 }
 
 export * from "./types";

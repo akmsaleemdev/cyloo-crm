@@ -54,7 +54,7 @@ const WEBCHAT_CHANNELS = new Set(["webchat"]);
 
 export const diagnoseConversation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => Input.parse(raw))
+  .validator((raw: unknown) => Input.parse(raw))
   .handler(async ({ data, context }): Promise<ConversationDiagnostics> => {
     const db = context.supabase;
     const checks: DiagnosticCheck[] = [];

@@ -74,7 +74,7 @@ async function graphRequest<T>(
     },
   });
   const text = await res.text();
-  let body: unknown = null;
+  let body: unknown;
   try {
     body = text ? JSON.parse(text) : null;
   } catch {

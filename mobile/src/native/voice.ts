@@ -29,7 +29,9 @@ export async function startRecording(): Promise<Recording> {
     cancel: async () => {
       try {
         await rec.stopAndUnloadAsync();
-      } catch {}
+      } catch {
+        // Recording might already have stopped; cancellation is best-effort.
+      }
     },
   };
 }

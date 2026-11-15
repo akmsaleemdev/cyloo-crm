@@ -328,7 +328,7 @@ export const aiReplyAssistant = createServerFn({ method: "POST" })
       });
     } catch (error) {
       if (error instanceof AIError && error.type === "billing") {
-        throw new Error(PROVIDER_CREDITS_MESSAGE);
+        throw new Error(PROVIDER_CREDITS_MESSAGE, { cause: error });
       }
       throw error;
     }

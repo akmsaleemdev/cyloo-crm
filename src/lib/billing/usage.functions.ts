@@ -320,7 +320,7 @@ export const evaluateUsageAlerts = createServerFn({ method: "POST" })
       const meter = meterMap.get(a.meter_code);
       if (!meter) continue;
       const cap = meter.hard_limit ?? meter.included;
-      let hit = false;
+      let hit: boolean;
       let currentValue = meter.used;
       if (a.threshold_type === "percent") {
         if (!cap || cap <= 0) continue;

@@ -53,8 +53,8 @@ export default function Security() {
       setConfirmPin("");
       updatePrefs({ pinEnabled: true });
       Alert.alert("PIN saved");
-    } catch (e: any) {
-      Alert.alert("Invalid PIN", e?.message ?? "PIN must be 4–8 digits");
+    } catch (e: unknown) {
+      Alert.alert("Invalid PIN", e instanceof Error ? e.message : "PIN must be 4–8 digits");
     }
   }
 

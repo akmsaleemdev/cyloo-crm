@@ -104,7 +104,7 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     const workspaceId = await resolveActiveWorkspaceId(supabase, userId);
     const scopeWs = <T>(q: T) => {
       if (!workspaceId) return q;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       try {
         return (q as any).eq("workspace_id", workspaceId);
       } catch {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -19,7 +19,12 @@ export default function WorkspaceSwitcher() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const setActive = useAppStore((s) => s.setActiveWorkspace);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ userId: string; workspaceId: string } | null>(null);
+  const selected = user
+    ? selection?.userId === user.id
+      ? selection.workspaceId
+      : getActiveWorkspaceId(user.id)
+    : null;
 
   const q = useQuery({
     queryKey: ["workspaces", user?.id],
@@ -27,13 +32,9 @@ export default function WorkspaceSwitcher() {
     enabled: !!user,
   });
 
-  useEffect(() => {
-    if (user) setSelected(getActiveWorkspaceId(user.id));
-  }, [user]);
-
   function pick(id: string) {
     if (!user) return;
-    setSelected(id);
+    setSelection({ userId: user.id, workspaceId: id });
     setActiveWorkspace(user.id, id);
     setActive(id);
     // Invalidate everything workspace-scoped.

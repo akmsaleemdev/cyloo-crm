@@ -146,7 +146,9 @@ function writeSession(chatbotId: string, data: { sessionId: string; visitorToken
   try {
     if (data) window.localStorage.setItem(keyFor(chatbotId), JSON.stringify(data));
     else window.localStorage.removeItem(keyFor(chatbotId));
-  } catch {}
+  } catch {
+    // Storage access can be disabled by browser privacy settings.
+  }
 }
 function readOutbox(chatbotId: string): OutboxItem[] {
   if (typeof window === "undefined") return [];
@@ -160,7 +162,9 @@ function writeOutbox(chatbotId: string, items: OutboxItem[]) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(outboxKey(chatbotId), JSON.stringify(items));
-  } catch {}
+  } catch {
+    // Storage access can be disabled by browser privacy settings.
+  }
 }
 
 function formatBytes(n: number) {
@@ -196,7 +200,9 @@ function writeVisitor(chatbotId: string, v: VisitorIdentity | null) {
   try {
     if (v) window.localStorage.setItem(visitorKey(chatbotId), JSON.stringify(v));
     else window.localStorage.removeItem(visitorKey(chatbotId));
-  } catch {}
+  } catch {
+    // Storage access can be disabled by browser privacy settings.
+  }
 }
 
 /** Stable per-browser key so repeat visits map to a single visitor row. */
@@ -907,7 +913,9 @@ export function LiveChatWidget({
         mr.onstop = null;
         try {
           if (mr.state !== "inactive") mr.stop();
-        } catch {}
+        } catch {
+          // Storage access can be disabled by browser privacy settings.
+        }
         mr.stream.getTracks().forEach((t) => t.stop());
         mediaRecorderRef.current = null;
       }

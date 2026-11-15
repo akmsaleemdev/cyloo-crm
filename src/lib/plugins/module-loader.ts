@@ -112,12 +112,16 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       set(key, value) {
         try {
           localStorage.setItem(namespace + key, JSON.stringify(value));
-        } catch {}
+        } catch {
+          // Browser storage can reject writes when disabled or over quota.
+        }
       },
       remove(key) {
         try {
           localStorage.removeItem(namespace + key);
-        } catch {}
+        } catch {
+          // Browser storage can reject writes when disabled or over quota.
+        }
       },
     },
     ui: {
@@ -140,7 +144,7 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       const tag = `%c[plugin:${slug}]`;
       const style =
         level === "error" ? "color:#ef4444" : level === "warn" ? "color:#f59e0b" : "color:#3b82f6";
-      // eslint-disable-next-line no-console
+
       console[level](tag, style, ...args);
     },
   };
@@ -239,7 +243,9 @@ export async function deactivatePlugin(slug: string): Promise<void> {
   for (const off of entry.teardown) {
     try {
       off();
-    } catch {}
+    } catch {
+      // Plugin cleanup is best-effort; continue revoking permissions.
+    }
   }
   permissions.revoke(slug);
   loaded.delete(slug);

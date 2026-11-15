@@ -54,7 +54,6 @@ function toDateOnly(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function computeAvailability(
   supabase: SupabaseClient,
   eventTypeId: string,

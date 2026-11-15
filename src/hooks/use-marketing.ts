@@ -145,7 +145,7 @@ export function useUpsertCampaign() {
   return useMutation({
     mutationFn: async (input: Partial<CampaignRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("campaigns")
         .upsert(payload as any)
@@ -220,7 +220,7 @@ export function useUpsertSegment() {
   return useMutation({
     mutationFn: async (input: Partial<SegmentRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("customer_segments")
         .upsert(payload as any)
@@ -273,7 +273,7 @@ export function useRecordConsent() {
   return useMutation({
     mutationFn: async (input: Partial<ConsentRow>) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("consent_records")
         .insert(payload as any)

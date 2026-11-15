@@ -375,7 +375,7 @@ async function graphGet<T>(path: string, accessToken: string): Promise<T> {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
   const text = await res.text();
-  let body: unknown = null;
+  let body: unknown;
   try {
     body = text ? JSON.parse(text) : null;
   } catch {
@@ -403,7 +403,7 @@ async function graphPost<T>(
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  let parsed: unknown = null;
+  let parsed: unknown;
   try {
     parsed = text ? JSON.parse(text) : null;
   } catch {

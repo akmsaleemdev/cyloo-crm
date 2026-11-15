@@ -10,7 +10,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 import { BACKUP_ENGINE, requireBackupEngine } from "./engine";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 type SB = any;
 
 /* -------------------------------------------------- types */

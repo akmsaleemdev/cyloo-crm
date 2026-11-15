@@ -156,5 +156,16 @@ export default tseslint.config(
     },
   },
 
+  {
+    // TanStack Router route modules deliberately export Route, loaders, and
+    // other framework metadata alongside React components. Fast Refresh's
+    // generic export-only heuristic cannot classify these route exports.
+    // Keep the rule enabled for ordinary components and other modules.
+    files: ["src/routes/**/*.{ts,tsx}"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
+
   eslintPluginPrettier,
 );

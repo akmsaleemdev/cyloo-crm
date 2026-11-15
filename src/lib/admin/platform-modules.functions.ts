@@ -18,7 +18,6 @@ import { platformDefaultCurrency } from "@/lib/currency/resolve.server";
 /* Shared guards                                                              */
 /* -------------------------------------------------------------------------- */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertPlatformStaff(
   supabase: any,
   userId: string,

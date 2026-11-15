@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Instagram,
   PlugZap,
   Loader2,
   RefreshCw,
@@ -12,6 +11,7 @@ import {
   AlertTriangle,
   ShieldAlert,
 } from "lucide-react";
+import { FaInstagram as Instagram } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -104,7 +104,7 @@ export function InstagramAccountsPanel() {
       const w = window.open(url, "instagram-oauth", "width=640,height=760");
       if (!w) window.location.href = url;
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to start OAuth"),
+    onError: (e: Error) => toast.error(e.message || "Failed to start OAuth"),
   });
 
   const disconnectMut = useMutation({
@@ -113,7 +113,7 @@ export function InstagramAccountsPanel() {
       toast.success("Disconnected");
       qc.invalidateQueries({ queryKey: ["instagram-accounts", ws?.id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (e: Error) => toast.error(e.message || "Failed"),
   });
   const deleteMut = useMutation({
     mutationFn: (accountId: string) => del({ data: { accountId } }),
@@ -121,7 +121,7 @@ export function InstagramAccountsPanel() {
       toast.success("Account removed");
       qc.invalidateQueries({ queryKey: ["instagram-accounts", ws?.id] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (e: Error) => toast.error(e.message || "Failed"),
   });
 
   // Read-only view of the health report `ChannelHealthChecks` below already

@@ -83,12 +83,5 @@ export function useUnsavedChanges(dirty: boolean, label?: string) {
 
 /** Reactive read for components that want to render based on dirty state. */
 export function useHasUnsavedChanges(): boolean {
-  const [snapshot, setSnapshot] = React.useState(hasUnsavedChanges);
-  React.useEffect(() => {
-    const unsub = subscribe(() => setSnapshot(hasUnsavedChanges()));
-    return () => {
-      unsub();
-    };
-  }, []);
-  return snapshot;
+  return React.useSyncExternalStore(subscribe, hasUnsavedChanges, () => false);
 }

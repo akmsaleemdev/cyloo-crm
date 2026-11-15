@@ -35,7 +35,7 @@ export type TenantAccessLogInput = {
  */
 export const logTenantAccessEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: TenantAccessLogInput) => input)
+  .validator((input: TenantAccessLogInput) => input)
   .handler(async ({ data, context }) => {
     const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
     const { buildTenantAuditEvent } = await import("./tenant-audit-event");

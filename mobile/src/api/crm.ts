@@ -108,7 +108,7 @@ export async function listContacts(q?: string, owner?: "me" | null, meId?: strin
   if (owner === "me" && meId) query = query.eq("owner_id", meId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []).map((r: any): ContactRow => ({
+  return (data ?? []).map((r): ContactRow => ({
     ...r,
     company_name: r.company?.name ?? null,
   }));
@@ -217,8 +217,8 @@ export async function fetchCustomer360(contactId: string) {
     activities,
     notes,
     tasks,
-    deals: (deals.data ?? []) as any[],
-    conversations: (conversations.data ?? []) as any[],
+    deals: deals.data ?? [],
+    conversations: conversations.data ?? [],
   };
 }
 
@@ -232,8 +232,8 @@ export async function fetchCustomer360(contactId: string) {
 async function mutateOrQueue(
   op: "insert" | "update" | "delete",
   table: string,
-  payload: any,
-  match?: any,
+  payload: Record<string, unknown>,
+  match?: Record<string, unknown>,
 ) {
   const online = useAppStore.getState().networkOnline;
   if (!online) {
@@ -242,15 +242,15 @@ async function mutateOrQueue(
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
     if (error) throw error;
     return { queued: false } as const;
-  } catch (e: any) {
+  } catch (e: unknown) {
     // Treat fetch/network failures as offline; anything else re-throws.
-    if (String(e?.message ?? "").match(/Network request failed|fetch/i)) {
+    if (String(e instanceof Error ? e.message : "").match(/Network request failed|fetch/i)) {
       enqueue({ op, table, payload, match });
       return { queued: true } as const;
     }

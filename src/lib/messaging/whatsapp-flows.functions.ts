@@ -28,7 +28,7 @@ type FormRow = {
  */
 export const publishWhatsAppForm = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => FormIdSchema.parse(input))
+  .validator((input: unknown) => FormIdSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("whatsapp_forms")
@@ -90,7 +90,7 @@ export const publishWhatsAppForm = createServerFn({ method: "POST" })
 /** Deprecate the Flow at Meta and move the form back to draft. */
 export const unpublishWhatsAppForm = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => FormIdSchema.parse(input))
+  .validator((input: unknown) => FormIdSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("whatsapp_forms")

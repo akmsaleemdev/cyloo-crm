@@ -534,7 +534,6 @@ function rankBy(rows: any[], key: (r: any) => string): Array<{ key: string; coun
     .sort((a, b) => b.count - a.count);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function logAudit(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,

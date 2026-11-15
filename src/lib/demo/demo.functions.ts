@@ -24,7 +24,7 @@ const inputSchema = z.object({
  * to a `DEMO_ACCOUNTS` entry's own id/email, never an arbitrary user.
  */
 export const provisionDemoAccounts = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => inputSchema.parse(data ?? {}))
+  .validator((data: unknown) => inputSchema.parse(data ?? {}))
   .handler(async ({ data }) => {
     const { isServerDemoMode } = await import("./mode.server");
     if (!isServerDemoMode()) {

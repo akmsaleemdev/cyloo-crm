@@ -66,7 +66,6 @@ export function pushTenantBreadcrumb(
     }
   }
 
-  // eslint-disable-next-line no-console
   console.info(`[tenant] ${kind}: ${message}`, data ?? {});
   return crumb;
 }

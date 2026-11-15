@@ -282,7 +282,7 @@ export function CreateTaskDialog({ open, onOpenChange, conversation }: Props) {
                   mode="single"
                   selected={draft.due ? parseISO(draft.due) : undefined}
                   onSelect={(d) => setDraft({ ...draft, due: d ? format(d, "yyyy-MM-dd") : "" })}
-                  initialFocus
+                  autoFocus
                 />
                 {draft.due && (
                   <div className="border-t p-2">

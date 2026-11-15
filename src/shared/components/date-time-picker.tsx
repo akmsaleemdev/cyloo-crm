@@ -100,9 +100,15 @@ export function DateTimePicker({
             mode="single"
             selected={value}
             onSelect={setDate}
-            initialFocus
-            fromDate={fromDate}
-            toDate={toDate}
+            autoFocus
+            startMonth={
+              fromDate ? new Date(fromDate.getFullYear(), fromDate.getMonth()) : undefined
+            }
+            endMonth={toDate ? new Date(toDate.getFullYear(), toDate.getMonth()) : undefined}
+            hidden={[
+              ...(fromDate ? [{ before: fromDate }] : []),
+              ...(toDate ? [{ after: toDate }] : []),
+            ]}
             className={cn("p-3 pointer-events-auto")}
           />
           <div className="flex divide-x border-t sm:border-t-0 sm:border-l">

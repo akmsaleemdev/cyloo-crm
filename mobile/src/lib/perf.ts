@@ -14,13 +14,17 @@ export async function keepSplashUntilReady() {
   splashHeld = true;
   try {
     await SplashScreen.preventAutoHideAsync();
-  } catch {}
+  } catch {
+    // Splash-screen controls may be unavailable in development environments.
+  }
 }
 
 export async function hideSplash() {
   try {
     await SplashScreen.hideAsync();
-  } catch {}
+  } catch {
+    // Splash-screen controls may be unavailable in development environments.
+  }
 }
 
 /** Run heavy work after interactions settle. */

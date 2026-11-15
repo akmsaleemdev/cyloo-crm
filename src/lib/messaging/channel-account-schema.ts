@@ -49,7 +49,7 @@ export const channelAccountSchema = z.object({
   status: statusSchema.catch("disconnected"),
   status_reason: nullableString.default(null),
   metadata: z
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- keeps the
+
     // payload structurally serializable across the server-function boundary.
     .record(z.string(), z.any())
     .nullable()

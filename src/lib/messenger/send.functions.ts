@@ -43,7 +43,7 @@ async function resolveTarget(opts: {
   const { supabase, workspaceId, messengerAccountId, recipientPsid, conversationId } = opts;
 
   // RLS ensures the caller belongs to this workspace.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const { data: accRow, error: accErr } = await (
     sbAny(supabase).from("messenger_accounts" as any) as any
   )
@@ -216,7 +216,6 @@ export const scheduleMessengerSend = createServerFn({ method: "POST" })
       throw new Error("scheduledFor must be at least 30 seconds in the future");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: row, error } = await (
       sbAny(context.supabase).from("scheduled_messages" as any) as any
     )
@@ -256,7 +255,6 @@ export const listMessengerScheduled = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: rows, error } = await (
       sbAny(context.supabase).from("scheduled_messages" as any) as any
     )

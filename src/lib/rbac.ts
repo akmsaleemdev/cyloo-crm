@@ -26,7 +26,7 @@ export function requirePlatformRole(...allowed: PlatformRole[]) {
       const res = await getMyPlatformRole();
       role = res.role;
     } catch {
-      role = null;
+      // An unavailable role leaves the initialized null value in place.
     }
     if (!role || !allowed.includes(role)) {
       throw redirect({
@@ -67,7 +67,7 @@ export function requireWorkspaceRole(...allowed: WorkspaceRole[]) {
       role = res.role;
       status = res.status;
     } catch {
-      role = null;
+      // An unavailable role leaves the initialized null value in place.
     }
     if (!role || status === "suspended" || !allowed.includes(role)) {
       throw redirect({
@@ -106,7 +106,7 @@ export function requireOrgRole(...allowed: OrgRoleName[]) {
       const res = await getMyOrgRole({ data: { organizationId } });
       role = res.role;
     } catch {
-      role = null;
+      // An unavailable role leaves the initialized null value in place.
     }
     if (!role || !allowed.includes(role)) {
       throw redirect({

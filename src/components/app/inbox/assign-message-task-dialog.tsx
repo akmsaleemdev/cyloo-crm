@@ -313,7 +313,7 @@ export function AssignMessageTaskDialog({ open, onOpenChange, message, conversat
                   mode="single"
                   selected={draft.due ? parseISO(draft.due) : undefined}
                   onSelect={(d) => setDraft({ ...draft, due: d ? format(d, "yyyy-MM-dd") : "" })}
-                  initialFocus
+                  autoFocus
                 />
                 {draft.due && (
                   <div className="border-t p-2">

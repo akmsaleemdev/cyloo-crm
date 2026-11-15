@@ -120,7 +120,7 @@ const basicsSchema = z.object({
     .min(3, "Name must be at least 3 characters")
     .max(NAME_MAX, `Name must be under ${NAME_MAX} characters`)
     .regex(
-      /^[\p{L}\p{N}][\p{L}\p{N} \-_.,'&()\/]*$/u,
+      /^[\p{L}\p{N}][\p{L}\p{N} \-_.,'&()/]*$/u,
       "Use letters, numbers and simple punctuation only",
     ),
   description: z

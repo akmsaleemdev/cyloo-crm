@@ -1,4 +1,5 @@
 import { ScrollView, View, Text } from "react-native";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Screen } from "@/components/Screen";
@@ -12,6 +13,12 @@ export default function TasksDashboard() {
   const t = useTheme();
   const { user } = useAuth();
   const wid = useAppStore((s) => s.activeWorkspace);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
   const q = useQuery({
     queryKey: ["dashboard", "tasks", wid, user?.id],
     queryFn: () => fetchMyTasks(wid!, user!.id),
@@ -26,9 +33,9 @@ export default function TasksDashboard() {
           {(q.data ?? []).length === 0 ? (
             <Text style={{ color: t.colors.mutedFg }}>Nothing due — enjoy the calm.</Text>
           ) : (
-            (q.data ?? []).map((task: any) => {
+            (q.data ?? []).map((task) => {
               const due = task.due_date ? new Date(task.due_date) : null;
-              const overdue = due && due.getTime() < Date.now();
+              const overdue = due && due.getTime() < now;
               return (
                 <ListRow
                   key={task.id}

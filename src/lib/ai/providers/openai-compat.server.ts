@@ -169,7 +169,7 @@ export function createOpenAICompatProvider(opts: FactoryOpts): AIProvider {
       const toolCallsRaw = (msg.tool_calls as unknown[]) || [];
       const tool_calls = toolCallsRaw.map((tc) => {
         const t = tc as { id: string; function: { name: string; arguments: string } };
-        let args: Record<string, unknown> = {};
+        let args: Record<string, unknown>;
         try {
           args = JSON.parse(t.function.arguments);
         } catch {

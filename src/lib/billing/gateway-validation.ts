@@ -93,7 +93,7 @@ export function validateGatewayForm(
     errors.webhook_secret_name = "A webhook secret name is required when a webhook URL is set.";
 
   if (webhookUrl) {
-    let parsed: URL | null = null;
+    let parsed: URL | null;
     try {
       parsed = new URL(webhookUrl);
     } catch {

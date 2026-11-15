@@ -35,6 +35,7 @@ export type OrganizationRow = {
   phone: string | null;
   website: string | null;
   address: string | null;
+  country_code: string | null;
   timezone: string;
   currency: string;
   language: string;
@@ -180,7 +181,7 @@ export async function hydrateActiveOrgFromProfile(userId: string): Promise<void>
   if (typeof window === "undefined") return;
   if (!isValidOrgId(userId)) return;
   const perUserKey = `${ORG_KEY_LEGACY}:${userId}`;
-  let localRaw: string | null = null;
+  let localRaw: string | null;
   try {
     localRaw = window.localStorage.getItem(perUserKey);
   } catch {

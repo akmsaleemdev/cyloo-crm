@@ -7,13 +7,13 @@ import {
   Trash2,
   Power,
   PowerOff,
-  Instagram as InstagramIcon,
   FlaskConical,
   Activity,
   ArrowUp,
   ArrowDown,
   Layers,
 } from "lucide-react";
+import { FaInstagram as InstagramIcon } from "react-icons/fa6";
 import { InstagramCommentTestDialog } from "./instagram-comment-test-dialog";
 import { InstagramCommentActivityDialog } from "./instagram-comment-activity-dialog";
 import { toast } from "sonner";

@@ -34,7 +34,7 @@ type SessionRow = {
 
 export const backfillLivechatInbox = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((raw: unknown) => Input.parse(raw))
+  .validator((raw: unknown) => Input.parse(raw))
   .handler(async ({ data, context }) => {
     // RLS check: the caller must be able to see this workspace.
     const { data: ws, error: wsErr } = await context.supabase

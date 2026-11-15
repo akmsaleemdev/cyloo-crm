@@ -355,7 +355,7 @@ export const broadcastNotification = createServerFn({ method: "POST" })
     const admin = sbAny(supabaseAdmin);
 
     // Resolve target user ids via profiles/organization_members.
-    let userIds: string[] = [];
+    let userIds: string[];
     if (data.audience === "all") {
       const { data: rows, error: lookupErr } = await admin
         .from("profiles")

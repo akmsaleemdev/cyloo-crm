@@ -10,16 +10,17 @@
  * honour per-workspace white-label overrides.
  */
 const fromEnv =
-  (typeof import.meta !== "undefined" ? (import.meta as any).env?.VITE_BRAND_NAME : undefined) ??
-  (typeof process !== "undefined" ? process.env?.["VITE_BRAND_NAME"] : undefined);
+  (typeof import.meta !== "undefined"
+    ? (import.meta as ImportMeta & { env?: { VITE_BRAND_NAME?: string } }).env?.VITE_BRAND_NAME
+    : undefined) ?? (typeof process !== "undefined" ? process.env?.["VITE_BRAND_NAME"] : undefined);
 
 export const BRAND_NAME: string = (typeof fromEnv === "string" && fromEnv.trim()) || "CYLOO";
 
 function env(key: string): string | undefined {
   const v =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (typeof import.meta !== "undefined" ? (import.meta as any).env?.[key] : undefined) ??
-    (typeof process !== "undefined" ? process.env?.[key] : undefined);
+    (typeof import.meta !== "undefined"
+      ? (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.[key]
+      : undefined) ?? (typeof process !== "undefined" ? process.env?.[key] : undefined);
   return typeof v === "string" && v.trim() ? v.trim() : undefined;
 }
 

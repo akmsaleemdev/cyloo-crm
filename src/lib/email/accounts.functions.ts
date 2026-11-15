@@ -35,7 +35,7 @@ const emailField = z.string().trim().toLowerCase().email().max(255);
 
 export const listEmailAccounts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { workspaceId: string }) =>
+  .validator((input: { workspaceId: string }) =>
     z.object({ workspaceId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -50,7 +50,7 @@ export const listEmailAccounts = createServerFn({ method: "POST" })
 
 export const connectEmailAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       workspaceId: string;
       displayName: string;
@@ -131,7 +131,7 @@ function emailWebhookPath(accountId: string, secret: string): string {
 /** Inbound webhook path (with secret) for an account the caller can manage. */
 export const getEmailWebhookInfo = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     // RLS decides whether the caller may see this account at all.
     const { data: visible } = await context.supabase
@@ -154,7 +154,7 @@ export const getEmailWebhookInfo = createServerFn({ method: "POST" })
 
 export const updateEmailAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       displayName?: string;
@@ -220,7 +220,7 @@ export const updateEmailAccount = createServerFn({ method: "POST" })
 
 export const deleteEmailAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("email_accounts" as never)

@@ -81,7 +81,6 @@ export const getAiSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => z.object({ workspaceId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }): Promise<AiSettings> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = sbAny(context.supabase);
     const existing = await sbAny(db)
       .from("ai_settings")
@@ -137,7 +136,6 @@ export const updateAiSettings = createServerFn({ method: "POST" })
       .parse(v),
   )
   .handler(async ({ data, context }): Promise<AiSettings> => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = sbAny(context.supabase);
 
     // Ensure row exists

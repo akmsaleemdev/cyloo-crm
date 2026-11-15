@@ -116,6 +116,8 @@ export type QuoteFormInput = {
   company_id?: string | null;
   deal_id?: string | null;
   currency: string;
+  tax_country_code?: string | null;
+  tax_supply_type?: "intra_state" | "inter_state" | null;
   valid_until?: string | null;
   notes?: string | null;
   terms?: string | null;
@@ -188,7 +190,12 @@ export function useSaveQuote() {
         _kind: "quote",
         _workspace_id: wsId,
         _document_id: quoteId ?? null,
-        _header: { ...payload, quote_number: quoteNumber },
+        _header: {
+          ...payload,
+          quote_number: quoteNumber,
+          tax_country_code: input.tax_country_code,
+          tax_supply_type: input.tax_supply_type,
+        },
         _lines: input.lines,
       });
       if (error) throw error;

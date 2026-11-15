@@ -267,11 +267,11 @@ export async function fetchSalesDashboard(userId?: string): Promise<DashboardSta
     supabase.from("tasks").select("id").eq("status", "pending").limit(500),
   ]);
 
-  const openList = ((openDeals.data ?? []) as any[]).filter(
+  const openList = (openDeals.data ?? []).filter(
     (d) => !d.deal_stages?.is_won && !d.deal_stages?.is_lost,
   );
-  const wonList = ((openDeals.data ?? []) as any[]).filter((d) => d.deal_stages?.is_won);
-  const invsRows = (invoices.data ?? []) as any[];
+  const wonList = (openDeals.data ?? []).filter((d) => d.deal_stages?.is_won);
+  const invsRows = invoices.data ?? [];
   const overdue = invsRows.filter((i) => i.due_date && new Date(i.due_date) < now).length;
 
   return {
@@ -292,8 +292,8 @@ export async function fetchSalesDashboard(userId?: string): Promise<DashboardSta
 async function mutateOrQueue(
   op: "insert" | "update" | "delete",
   table: string,
-  payload: any,
-  match?: any,
+  payload: Record<string, unknown>,
+  match?: Record<string, unknown>,
 ) {
   const online = useAppStore.getState().networkOnline;
   if (!online) {
@@ -302,14 +302,14 @@ async function mutateOrQueue(
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
     if (error) throw error;
     return { queued: false } as const;
-  } catch (e: any) {
-    if (String(e?.message ?? "").match(/Network request failed|fetch/i)) {
+  } catch (e: unknown) {
+    if (String(e instanceof Error ? e.message : "").match(/Network request failed|fetch/i)) {
       enqueue({ op, table, payload, match });
       return { queued: true } as const;
     }

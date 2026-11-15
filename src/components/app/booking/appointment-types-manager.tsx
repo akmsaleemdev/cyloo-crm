@@ -431,7 +431,7 @@ export function AppointmentTypesManager() {
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        if (confirm("Delete this appointment type?")) r.id && remove.mutate(r.id);
+                        if (r.id && confirm("Delete this appointment type?")) remove.mutate(r.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4" />

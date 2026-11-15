@@ -157,6 +157,8 @@ export type InvoiceFormInput = {
   company_id?: string | null;
   deal_id?: string | null;
   currency: string;
+  tax_country_code?: string | null;
+  tax_supply_type?: "intra_state" | "inter_state" | null;
   issue_date: string;
   due_date?: string | null;
   notes?: string | null;
@@ -242,7 +244,12 @@ export function useSaveInvoice() {
         _kind: "invoice",
         _workspace_id: wsId,
         _document_id: invoiceId ?? null,
-        _header: { ...payload, invoice_number: invoiceNumber },
+        _header: {
+          ...payload,
+          invoice_number: invoiceNumber,
+          tax_country_code: input.tax_country_code,
+          tax_supply_type: input.tax_supply_type,
+        },
         _lines: input.lines,
       });
       if (error) throw error;

@@ -116,7 +116,7 @@ export async function handleWebhook(
   const correlationId = makeCorrelationId();
   const dedupeKey = `${provider}:${await sha256Hex(req.rawBody)}`;
 
-  let body: unknown = null;
+  let body: unknown;
   try {
     body = JSON.parse(req.rawBody);
   } catch {

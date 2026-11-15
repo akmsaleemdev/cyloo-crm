@@ -255,7 +255,6 @@ function createStorage(slug: string): PluginStorage {
 function createLogger(slug: string): PluginLogger {
   const tag = `[plugin:${slug}]`;
   const push = (level: string, message: string, meta?: unknown) => {
-    // eslint-disable-next-line no-console
     (console[level as "log"] ?? console.log)(tag, message, meta ?? "");
   };
   return {

@@ -15,7 +15,7 @@ export function useTypingChannel(conversationId: string, meUserId?: string) {
       config: { broadcast: { self: false } },
     });
     ch.on("broadcast", { event: "typing" }, (payload) => {
-      const uid = (payload.payload as any)?.user_id as string | undefined;
+      const uid = (payload.payload as { user_id?: string } | undefined)?.user_id;
       if (!uid) return;
       setTypingUsers((prev) => ({ ...prev, [uid]: Date.now() }));
     }).subscribe();

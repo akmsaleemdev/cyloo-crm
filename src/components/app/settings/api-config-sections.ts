@@ -4,13 +4,13 @@ import {
   Bot,
   ClipboardList,
   Code2,
-  Facebook,
+  UsersRound as Facebook,
   FileText,
   Flame,
   HeartPulse,
-  Instagram,
+  Camera as Instagram,
   Key,
-  Linkedin,
+  BriefcaseBusiness as Linkedin,
   Mail,
   MessageCircle,
   MessageSquare,
@@ -22,7 +22,7 @@ import {
   Send,
   ShieldCheck,
   Smartphone,
-  Youtube,
+  Clapperboard as Youtube,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 

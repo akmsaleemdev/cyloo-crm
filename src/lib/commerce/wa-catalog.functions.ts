@@ -369,9 +369,9 @@ export const runCatalogSync = createServerFn({ method: "POST" })
                 .eq("id", (p as any).id)
                 .is("retailer_id", null);
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             failed += batch.length;
-            errors.push(e?.message ?? String(e));
+            errors.push(e instanceof Error ? e.message : String(e));
             await sbAny(context.supabase)
               .from("products")
               .update({
@@ -417,8 +417,11 @@ export const runCatalogSync = createServerFn({ method: "POST" })
         reason: null,
         error: errorText,
       };
-    } catch (e: any) {
-      await finish({ status: "error", error: (e?.message ?? String(e)).slice(0, 500) });
+    } catch (e: unknown) {
+      await finish({
+        status: "error",
+        error: (e instanceof Error ? e.message : String(e)).slice(0, 500),
+      });
       throw e;
     }
   });
@@ -576,8 +579,11 @@ export const importFromMetaCatalog = createServerFn({ method: "POST" })
         details: { kind: "import", imported, linked },
       });
       return { ok: !failed, total: items.length, imported, linked, failed, error: errorText };
-    } catch (e: any) {
-      await finish({ status: "error", error: (e?.message ?? String(e)).slice(0, 500) });
+    } catch (e: unknown) {
+      await finish({
+        status: "error",
+        error: (e instanceof Error ? e.message : String(e)).slice(0, 500),
+      });
       throw e;
     }
   });

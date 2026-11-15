@@ -137,8 +137,8 @@ function CampaignsPage() {
       await duplicate({ data: { campaignId: id } });
       qc.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaign duplicated");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed to duplicate");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to duplicate");
     }
   };
 
@@ -149,8 +149,8 @@ function CampaignsPage() {
         archived_at: archive ? new Date().toISOString() : (null as any),
       } as any);
       toast.success(archive ? "Campaign archived" : "Campaign restored");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 
@@ -164,8 +164,8 @@ function CampaignsPage() {
         status: c.scheduled_at ? "scheduled" : "running",
       } as any);
       toast.success("Campaign approved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 

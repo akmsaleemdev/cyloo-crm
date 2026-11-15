@@ -89,8 +89,8 @@ function PluginManagementPage() {
         await fn(...args);
         toast.success(success);
         refresh();
-      } catch (e: any) {
-        toast.error(e?.message ?? "Action failed");
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : "Action failed");
       }
     };
 
@@ -401,7 +401,7 @@ function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () =>
       toast.success("Settings saved");
       onChanged();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Save failed"),
+    onError: (e: any) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
   return (
     <div className="space-y-3">
@@ -425,8 +425,8 @@ function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () =>
             try {
               const parsed = JSON.parse(text);
               save.mutate(parsed);
-            } catch (e: any) {
-              setErr("Invalid JSON: " + e.message);
+            } catch (e: unknown) {
+              setErr("Invalid JSON: " + (e instanceof Error ? e.message : String(e)));
             }
           }}
           disabled={save.isPending}
@@ -662,7 +662,7 @@ function BackupsTab({
       onChanged();
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Restore failed"),
+    onError: (e: any) => toast.error(e instanceof Error ? e.message : "Restore failed"),
   });
   const [reason, setReason] = useState("");
   const rows = data?.backups ?? [];

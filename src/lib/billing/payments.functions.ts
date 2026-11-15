@@ -151,6 +151,7 @@ export const refundPayment = createServerFn({ method: "POST" })
       const msg = e instanceof Error ? e.message : String(e);
       throw new Error(
         `Refund issued at provider but local record not updated (payment ${data.payment_id}): ${msg}`,
+        { cause: e },
       );
     }
 
