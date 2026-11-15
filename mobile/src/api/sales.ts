@@ -267,11 +267,11 @@ export async function fetchSalesDashboard(userId?: string): Promise<DashboardSta
     supabase.from("tasks").select("id").eq("status", "pending").limit(500),
   ]);
 
-  const openList = ((openDeals.data ?? []) as any[]).filter(
+  const openList = (openDeals.data ?? []).filter(
     (d) => !d.deal_stages?.is_won && !d.deal_stages?.is_lost,
   );
-  const wonList = ((openDeals.data ?? []) as any[]).filter((d) => d.deal_stages?.is_won);
-  const invsRows = (invoices.data ?? []) as any[];
+  const wonList = (openDeals.data ?? []).filter((d) => d.deal_stages?.is_won);
+  const invsRows = invoices.data ?? [];
   const overdue = invsRows.filter((i) => i.due_date && new Date(i.due_date) < now).length;
 
   return {
@@ -302,7 +302,7 @@ async function mutateOrQueue(
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
