@@ -42,8 +42,8 @@ function InstalledPluginsPage() {
     try {
       await fn();
       toast.success("Done");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Action failed");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Action failed"));
     } finally {
       setBusy(null);
     }
