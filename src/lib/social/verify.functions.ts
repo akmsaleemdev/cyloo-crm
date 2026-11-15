@@ -24,7 +24,7 @@ interface Probe {
 async function getJson(url: string, headers: Record<string, string> = {}) {
   const res = await fetch(url, { headers });
   const text = await res.text();
-  let json: Record<string, unknown> = {};
+  let json: Record<string, unknown>;
   try {
     json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
   } catch {
