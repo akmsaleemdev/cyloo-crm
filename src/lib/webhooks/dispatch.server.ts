@@ -129,11 +129,11 @@ export async function sendOneDelivery(
     // Cap body to avoid runaway storage.
     const raw = await res.text();
     response_body = raw.length > 8192 ? raw.slice(0, 8192) + "" : raw;
-  } catch (e: any) {
+  } catch (e: unknown) {
     error_message =
-      e?.name === "AbortError"
+      e instanceof Error && e.name === "AbortError"
         ? `timeout after ${endpoint.timeout_ms}ms`
-        : (e?.message ?? "network error");
+        : ((e instanceof Error ? e.message : "network error"));
   }
   const duration_ms = Date.now() - start;
   const ok = response_status !== null && response_status >= 200 && response_status < 300;
