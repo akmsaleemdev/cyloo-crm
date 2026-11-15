@@ -48,7 +48,7 @@ export async function fetchConversations(filter: InboxFilter, meUserId?: string)
 
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []).map((row: any): ConversationRow => ({
+  return (data ?? []).map((row): ConversationRow => ({
     id: row.id,
     subject: row.subject,
     channel: row.channel,
@@ -190,6 +190,6 @@ export async function fetchQuickReplies(limit = 20) {
     .select("id, name, body, channel")
     .eq("type", "quick_reply")
     .limit(limit);
-  if (error) return [] as any[];
+  if (error) return [];
   return data ?? [];
 }
