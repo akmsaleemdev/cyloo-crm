@@ -115,8 +115,8 @@ function WidgetBuilderPage() {
       />
       <div className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-muted-foreground flex items-center justify-between gap-4">
         <span>
-          Appearance এখন Chat Widgets-এ manage করা হয়। এই পেজের পরিবর্তন শুধু এই বটের নিজস্ব
-          সেটিংসে যায়।
+          Appearance এখন Chat Widgets-এ manage করা হয়। এই পেজের পরিবর্তন শুধু এই বটের নিজস্ব সেটিংসে
+          যায়।
         </span>
         <Button asChild variant="link" size="sm">
           <Link to="/widgets">Chat Widgets খুলুন</Link>

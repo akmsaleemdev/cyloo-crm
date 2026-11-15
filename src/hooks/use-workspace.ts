@@ -568,10 +568,10 @@ export function useResendInvitation(workspaceId: string | undefined) {
 export function useWorkspaceRealtime(workspaceId: string | undefined) {
   const qc = useQueryClient();
   // Import lazily to avoid SSR issues.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const enabled = typeof window !== "undefined" && !!workspaceId;
   // useEffect via React import — imported at top of file.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   useReactEffect(() => {
     if (!enabled || !workspaceId) return;
     const channel = supabase

@@ -34,8 +34,16 @@ import type { BillingProvider, BillingProviderId } from "./types";
 
 /** Visible but not implemented. Never permit checkout or enablement for these ids. */
 export const GCC_CATALOG_ONLY_IDS = [
-  "myfatoorah", "paytabs", "tap", "tabby", "tamara",
-  "hyperpay", "moyasar", "telr", "thawani", "amazon_payment_services",
+  "myfatoorah",
+  "paytabs",
+  "tap",
+  "tabby",
+  "tamara",
+  "hyperpay",
+  "moyasar",
+  "telr",
+  "thawani",
+  "amazon_payment_services",
 ] as const;
 
 export const RETIRED_GATEWAY_IDS = ["mercadopago", "paystack", "flutterwave", "midtrans"] as const;

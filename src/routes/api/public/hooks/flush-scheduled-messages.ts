@@ -63,7 +63,7 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                 if (!pageId || !psid || !messengerAccountId) {
                   throw new Error("Missing messenger routing metadata");
                 }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 const { data: tokRow } = await (
                   sbAny(supabaseAdmin).from("messenger_accounts" as any) as any
                 )
@@ -98,7 +98,6 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                 providerMessageId = sent.messageId || null;
               }
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const { data: msg, error: mErr } = await (
                 sbAny(supabaseAdmin).from("messages" as any) as any
               )

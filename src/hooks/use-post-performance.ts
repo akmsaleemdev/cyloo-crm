@@ -29,7 +29,6 @@ export function usePostMetrics() {
     queryKey: ["social-post-metrics", active?.id],
     enabled: !!active?.id,
     queryFn: async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await sbAny(supabase)
         .from("social_post_metrics")
         .select(

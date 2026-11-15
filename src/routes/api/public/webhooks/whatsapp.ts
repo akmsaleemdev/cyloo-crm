@@ -41,7 +41,7 @@ export const Route = createFileRoute("/api/public/webhooks/whatsapp")({
           } catch (err) {
             // Never let form ingestion failures block the ack — Meta retries
             // on non-2xx and we've already committed the envelope.
-            // eslint-disable-next-line no-console
+
             console.error("[whatsapp webhook] form submission ingest failed", err);
           }
         }

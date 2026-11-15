@@ -65,7 +65,6 @@ function retailerIdFor(p: { id: string; sku?: string | null; retailer_id?: strin
 }
 
 function toInboxProduct(r: Record<string, any>): InboxProduct {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
   return {
     id: r.id,
     name: r.name,

@@ -163,9 +163,7 @@ export const listGateways = createServerFn({ method: "GET" })
  */
 export const checkGatewaySetup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z.object({ provider_id: z.string().min(2).max(40) }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ provider_id: z.string().min(2).max(40) }).parse(input))
   .handler(async ({ data, context }) => {
     await assertSuperAdmin(context.supabase, context.userId);
 
@@ -193,7 +191,11 @@ export const checkGatewaySetup = createServerFn({ method: "POST" })
       .eq("provider_id", data.provider_id)
       .maybeSingle();
     if (error) throw new Error("Unable to read gateway configuration");
-    if (!row) return { status: "not_configured" as const, message: "Save the gateway configuration first." };
+    if (!row)
+      return {
+        status: "not_configured" as const,
+        message: "Save the gateway configuration first.",
+      };
 
     const config = row as {
       mode: "sandbox" | "live";
@@ -205,7 +207,8 @@ export const checkGatewaySetup = createServerFn({ method: "POST" })
     if (!secretName || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(secretName) || !process.env[secretName]) {
       return {
         status: "missing_secret" as const,
-        message: "The backend secret is missing. Add it to the server environment using the configured secret name.",
+        message:
+          "The backend secret is missing. Add it to the server environment using the configured secret name.",
       };
     }
     if (!config.webhook_secret_name || !process.env[config.webhook_secret_name]) {
@@ -222,7 +225,8 @@ export const checkGatewaySetup = createServerFn({ method: "POST" })
     }
     return {
       status: "configuration_ready" as const,
-      message: "Required configuration references are present. Provider API authentication, webhook verification and test transactions are still required.",
+      message:
+        "Required configuration references are present. Provider API authentication, webhook verification and test transactions are still required.",
     };
   });
 
@@ -240,8 +244,13 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
       throw new Error("This payment gateway has been permanently retired.");
     }
 
-    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
-      throw new Error("This gateway is not available for new payments until a verified adapter is implemented.");
+    if (
+      data.enabled &&
+      (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))
+    ) {
+      throw new Error(
+        "This gateway is not available for new payments until a verified adapter is implemented.",
+      );
     }
 
     if (!data.enabled) {
@@ -402,7 +411,10 @@ export const upsertGateway = createServerFn({ method: "POST" })
       throw new Error("This payment gateway has been permanently retired.");
     }
 
-    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
+    if (
+      data.enabled &&
+      (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))
+    ) {
       throw new Error("This gateway cannot be enabled until its real payment adapter is verified.");
     }
 

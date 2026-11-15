@@ -107,7 +107,6 @@ export function LiveChatWidgetPreview({ config, forceOpen }: Props) {
     if (!config.customJs || jsRunRef.current === config.customJs) return;
     jsRunRef.current = config.customJs;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
       new Function("widget", config.customJs)({ config, open });
     } catch (err) {
       console.warn("[widget-preview] custom JS error:", (err as Error).message);

@@ -263,7 +263,6 @@ async function listMetaFlows(
     const data = (res as { data?: Array<{ id: string; name: string }> }).data ?? [];
     return data;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn("[whatsapp-flows] listMetaFlows failed", err);
     return [];
   }

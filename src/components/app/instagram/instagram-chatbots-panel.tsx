@@ -1,14 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  Bot,
-  Loader2,
-  Plus,
-  Trash2,
-  Power,
-  PowerOff,
-  Sparkles,
-} from "lucide-react";
+import { Bot, Loader2, Plus, Trash2, Power, PowerOff, Sparkles } from "lucide-react";
 import { FaInstagram as InstagramIcon } from "react-icons/fa6";
 import { InstagramChatbotTestDialog } from "./instagram-chatbot-test-dialog";
 import { toast } from "sonner";

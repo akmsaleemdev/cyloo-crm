@@ -26,8 +26,9 @@ describe("country-aware tax presentation", () => {
   });
 
   it("uses IGST for inter-state supplies", () => {
-    expect(taxBreakdown("IN", 1000, 18, "inter_state"))
-      .toEqual([{ code: "IGST", rate: 18, amount: 180 }]);
+    expect(taxBreakdown("IN", 1000, 18, "inter_state")).toEqual([
+      { code: "IGST", rate: 18, amount: 180 },
+    ]);
   });
 
   it("does not silently choose between intra-state and inter-state", () => {

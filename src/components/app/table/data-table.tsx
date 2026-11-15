@@ -303,5 +303,5 @@ export function Pagination({
     </div>
   );
 }
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
 const _Check = Check; // keep icon import used

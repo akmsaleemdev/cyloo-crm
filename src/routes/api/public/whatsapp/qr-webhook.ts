@@ -217,7 +217,6 @@ async function dispatch(
         botPaused = res?.botPaused ?? false;
         conversationId = res?.conversationId ?? null;
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] inbox ingest failed", err);
       }
       if (botPaused) return;
@@ -225,7 +224,6 @@ async function dispatch(
         const { runAutoReplyForSession } = await import("@/lib/messaging/wa-auto-reply.server");
         await runAutoReplyForSession(db, sessionId, data ?? {}, { conversationId });
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] auto-reply failed", err);
       }
       return;
@@ -236,7 +234,6 @@ async function dispatch(
         const { applyWaMessageStatus } = await import("@/lib/messaging/wa-inbox.server");
         await applyWaMessageStatus(db, workspace_id ?? "", data ?? {});
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] status apply failed", err);
       }
       return;

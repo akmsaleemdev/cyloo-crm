@@ -7,13 +7,7 @@
  * in `./index.ts`. No callers need to change.
  */
 
-export const PAYMENT_PROVIDERS = [
-  "stripe",
-  "paypal",
-  "paddle",
-  "razorpay",
-  "mollie",
-] as const;
+export const PAYMENT_PROVIDERS = ["stripe", "paypal", "paddle", "razorpay", "mollie"] as const;
 
 export type PaymentProviderId = (typeof PAYMENT_PROVIDERS)[number];
 

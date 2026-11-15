@@ -90,7 +90,9 @@ export async function enabledGatewayIds(
   workspaceId?: string | null,
 ): Promise<string[]> {
   const ids = (await platformGateways(supabase))
-    .filter((r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id))
+    .filter(
+      (r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id),
+    )
     .map((r) => r.provider_id);
 
   const overrides = await workspaceOverrides(supabase, workspaceId);
@@ -105,8 +107,9 @@ export async function defaultGatewayId(
   supabase: Client,
   workspaceId?: string | null,
 ): Promise<string | null> {
-  const rows = (await platformGateways(supabase))
-    .filter((r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id));
+  const rows = (await platformGateways(supabase)).filter(
+    (r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id),
+  );
 
   const overrides = await workspaceOverrides(supabase, workspaceId);
   const available = rows.filter((r) => overrides.get(r.provider_id)?.enabled ?? true);

@@ -308,7 +308,6 @@ export function evalExpression(expr: string): unknown {
     /^(?:\s|[0-9.+\-*/%(),?:!<>=&|]|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|\btrue\b|\bfalse\b|\bnull\b)+$/;
   if (!allowed.test(src)) return src; // fallback: return raw string
   try {
-    // eslint-disable-next-line no-new-func
     const fn = new Function(`"use strict"; return (${src});`);
     return fn();
   } catch {

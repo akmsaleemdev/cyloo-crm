@@ -315,7 +315,6 @@ export const omnichannelSearch = createServerFn({ method: "POST" })
           })()
         : Promise.resolve({ data: [] });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [contacts, messages, deals, invoices, tasks, campaigns, kb, atts] = (await Promise.all([
       contactsP,
       messagesP,

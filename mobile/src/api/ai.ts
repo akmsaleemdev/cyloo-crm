@@ -50,7 +50,11 @@ export async function transcribeAudio(uri: string, mime = "audio/mp4"): Promise<
   const token = data.session?.access_token;
   const form = new FormData();
   // React Native FormData accepts { uri, name, type }.
-  form.append("file", { uri, name: mime.includes("wav") ? "a.wav" : "a.m4a", type: mime } as unknown as Blob);
+  form.append("file", {
+    uri,
+    name: mime.includes("wav") ? "a.wav" : "a.m4a",
+    type: mime,
+  } as unknown as Blob);
   const res = await fetch(`${env.API_BASE_URL}/api/mobile/ai-stt`, {
     method: "POST",
     headers: token ? { Authorization: `Bearer ${token}` } : {},

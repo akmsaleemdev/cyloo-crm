@@ -126,7 +126,6 @@ function toAuditAction(action: string): "create" | "update" | "delete" | "revoke
   return "update";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function audit(
   admin: any,
   actor: string,

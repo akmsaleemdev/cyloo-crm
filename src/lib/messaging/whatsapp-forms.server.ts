@@ -120,7 +120,7 @@ async function resolveFormId(workspaceId: string, ex: Extracted): Promise<string
   }
   // No match found — do NOT fall back to "most recent form" as that silently
   // misroutes submissions to the wrong form when flow_token is missing.
-  // eslint-disable-next-line no-console
+
   console.warn("[whatsapp-forms] Could not resolve form for submission", {
     workspaceId,
     flowToken: ex.flowToken,
@@ -172,7 +172,6 @@ export async function processWhatsAppFormSubmissions(rawBody: string): Promise<{
     if (error) {
       // 23505 = unique_violation → known duplicate, treat as success.
       if ((error as { code?: string }).code !== "23505") {
-        // eslint-disable-next-line no-console
         console.error("[whatsapp-forms] insert failed", error);
       }
       continue;
@@ -190,7 +189,6 @@ export async function processWhatsAppFormSubmissions(rawBody: string): Promise<{
       });
       if (rpcErr) throw rpcErr;
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("[whatsapp-forms] increment_form_submissions_count RPC failed", err);
     }
   }

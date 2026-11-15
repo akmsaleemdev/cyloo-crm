@@ -19,7 +19,6 @@ import { getRequest } from "@tanstack/react-start/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function resolveActiveWorkspaceId(
   supabase: any,
   userId: string,

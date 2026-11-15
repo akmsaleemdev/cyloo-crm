@@ -304,7 +304,6 @@ export const globalSearch = createServerFn({ method: "POST" })
           .limit(HIT_LIMIT)
       : Promise.resolve({ data: [] as unknown[] });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [expand, contacts, companies, leads, deals, tasks, convs, campaigns, kb] =
       (await Promise.all([
         expandP,
@@ -427,29 +426,29 @@ export const globalSearch = createServerFn({ method: "POST" })
 
     const groups: Record<SearchScope, SearchHit[]> = {
       all: [],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       contact: (contacts.data ?? [])
         .map(mapContact)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       company: (companies.data ?? [])
         .map(mapCompany)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       lead: (leads.data ?? []).map(mapLead).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       deal: (deals.data ?? []).map(mapDeal).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       task: (tasks.data ?? []).map(mapTask).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       conversation: (convs.data ?? [])
         .map(mapConv)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       campaign: (campaigns.data ?? [])
         .map(mapCampaign)
         .sort((a: SearchHit, b: SearchHit) => b.score - a.score),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       knowledge: (kb.data ?? []).map(mapKb).sort((a: SearchHit, b: SearchHit) => b.score - a.score),
     };
 

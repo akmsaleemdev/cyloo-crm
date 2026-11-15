@@ -110,7 +110,11 @@ export default function AIAssistantScreen() {
     } catch (e: unknown) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e instanceof Error ? e.message : "Mic failed"}` },
+        {
+          id: `err-${Date.now()}`,
+          role: "assistant",
+          content: `🎙️ ${e instanceof Error ? e.message : "Mic failed"}`,
+        },
       ]);
     }
   }, []);
@@ -130,7 +134,11 @@ export default function AIAssistantScreen() {
     } catch (e: unknown) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e instanceof Error ? e.message : "STT failed"}` },
+        {
+          id: `err-${Date.now()}`,
+          role: "assistant",
+          content: `🎙️ ${e instanceof Error ? e.message : "STT failed"}`,
+        },
       ]);
     } finally {
       setBusy(false);

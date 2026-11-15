@@ -33,7 +33,7 @@ export const recordCountsMetrics = createServerFn({ method: "POST" })
   .validator((data: CountsMetricsSample) => data)
   .handler(async ({ data }) => {
     // Structured log line — parseable and grep-friendly.
-    // eslint-disable-next-line no-console
+
     console.log("[metrics.counts]", JSON.stringify(data));
     return { ok: true as const };
   });

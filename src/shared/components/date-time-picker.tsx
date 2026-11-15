@@ -101,7 +101,9 @@ export function DateTimePicker({
             selected={value}
             onSelect={setDate}
             autoFocus
-            startMonth={fromDate ? new Date(fromDate.getFullYear(), fromDate.getMonth()) : undefined}
+            startMonth={
+              fromDate ? new Date(fromDate.getFullYear(), fromDate.getMonth()) : undefined
+            }
             endMonth={toDate ? new Date(toDate.getFullYear(), toDate.getMonth()) : undefined}
             hidden={[
               ...(fromDate ? [{ before: fromDate }] : []),

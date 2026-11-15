@@ -305,7 +305,6 @@ export async function deliverInboxMessage(args: {
       ) {
         // Native WhatsApp contact card instead of just the name as text.
         const card = ((msg.metadata ?? {}) as Record<string, any>)["contact_card"] as {
-          // eslint-disable-line @typescript-eslint/no-explicit-any
           name: string;
           phone?: string;
           email?: string;

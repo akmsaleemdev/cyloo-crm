@@ -140,7 +140,7 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       const tag = `%c[plugin:${slug}]`;
       const style =
         level === "error" ? "color:#ef4444" : level === "warn" ? "color:#f59e0b" : "color:#3b82f6";
-      // eslint-disable-next-line no-console
+
       console[level](tag, style, ...args);
     },
   };

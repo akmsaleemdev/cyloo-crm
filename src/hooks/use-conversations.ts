@@ -61,7 +61,6 @@ function useCountsDebugLogger(
   useEffect(() => {
     if (!isCountsDebugEnabled()) return;
     if (q.isFetching && !lastFetching.current) {
-      // eslint-disable-next-line no-console
       console.log("[counts] invalidated → fetching", {
         workspaceId,
         inboxId,
@@ -71,7 +70,7 @@ function useCountsDebugLogger(
     lastFetching.current = q.isFetching;
     if (q.dataUpdatedAt && q.dataUpdatedAt !== lastUpdatedAt.current) {
       lastUpdatedAt.current = q.dataUpdatedAt;
-      // eslint-disable-next-line no-console
+
       console.log("[counts] data updated", {
         workspaceId,
         inboxId,
@@ -516,7 +515,6 @@ export function useConversationCounts(inboxId?: string | null) {
     queryFn: async () => {
       const t0 = typeof performance !== "undefined" ? performance.now() : Date.now();
       if (isCountsDebugEnabled()) {
-        // eslint-disable-next-line no-console
         console.log("[counts] refetch:start", { workspaceId, inboxId });
       }
       const { measureCountsRpc } = await import("@/lib/metrics/counts-metrics");
@@ -568,7 +566,7 @@ export function useConversationCounts(inboxId?: string | null) {
       };
       if (isCountsDebugEnabled()) {
         const t1 = typeof performance !== "undefined" ? performance.now() : Date.now();
-        // eslint-disable-next-line no-console
+
         console.log("[counts] refetch:done", {
           workspaceId,
           inboxId,

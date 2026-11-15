@@ -2,7 +2,6 @@ import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
 import { sbAny } from "@/lib/supabase/untyped";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function severityFromLevel(level: string | null | undefined) {
   const l = (level ?? "").toLowerCase();
   if (["critical", "fatal"].includes(l)) return "critical";

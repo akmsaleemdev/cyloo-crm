@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Bot,
-  Send,
-  Sparkles,
-  Loader2,
-  RefreshCw,
-  User2,
-} from "lucide-react";
+import { Bot, Send, Sparkles, Loader2, RefreshCw, User2 } from "lucide-react";
 import { FaInstagram as InstagramIcon } from "react-icons/fa6";
 import { toast } from "sonner";
 import {

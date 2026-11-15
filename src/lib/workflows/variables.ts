@@ -246,7 +246,6 @@ export function evalInlineExpression(expr: string, vars: VariableBag): unknown {
     return resolvedCalls;
   }
   try {
-    // eslint-disable-next-line no-new-func
     return Function(`"use strict"; return (${resolvedCalls || "null"});`)();
   } catch {
     return resolvedCalls;
