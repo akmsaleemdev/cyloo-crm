@@ -250,7 +250,7 @@ export const savePlatformAiProvider = createServerFn({ method: "POST" })
     }
 
     // Create path — one workspace, or fan out to all workspaces
-    let workspaceIds: string[] = [];
+    let workspaceIds: string[];
     if (data.applyToAllWorkspaces) {
       const { data: ws } = await sbAny(supabaseAdmin).from("workspaces").select("id").limit(1000);
       workspaceIds = ((ws ?? []) as { id: string }[]).map((w) => w.id);
