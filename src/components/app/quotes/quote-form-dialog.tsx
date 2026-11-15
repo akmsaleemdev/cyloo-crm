@@ -25,7 +25,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getPlatformTaxDefaults } from "@/lib/billing/default-vat.functions";
 import { useActiveOrganization } from "@/hooks/use-organization";
-import { suggestedStandardRate, taxDisplayName, taxBreakdown } from "@/lib/billing/tax-jurisdiction";
+import {
+  suggestedStandardRate,
+  taxDisplayName,
+  taxBreakdown,
+} from "@/lib/billing/tax-jurisdiction";
 import {
   computeTotals,
   useSaveQuote,
@@ -72,12 +76,12 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
     staleTime: 60_000,
   });
   const tenantCountry = organization?.country_code ?? null;
-  const vatRate = tenantCountry === "IN"
-    ? (taxDefaults?.gstRate ?? 0)
-    : tenantCountry === "AE"
-      ? (taxDefaults?.vatRate ?? suggestedStandardRate(tenantCountry) ?? 0)
-      : (suggestedStandardRate(tenantCountry) ?? 0);
-
+  const vatRate =
+    tenantCountry === "IN"
+      ? (taxDefaults?.gstRate ?? 0)
+      : tenantCountry === "AE"
+        ? (taxDefaults?.vatRate ?? suggestedStandardRate(tenantCountry) ?? 0)
+        : (suggestedStandardRate(tenantCountry) ?? 0);
 
   const wsId = active?.id;
   const save = useSaveQuote();
@@ -87,7 +91,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
     tax_supply_type: null,
     title: "",
     currency: tenantCurrency,
-    lines: [emptyLine(vatRate)],
+    lines: [emptyLine()],
     contact_id: null,
     company_id: null,
     deal_id: null,
@@ -98,8 +102,11 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
     if (quote) {
       setForm({
         id: quote.id,
-        tax_country_code: (quote as typeof quote & {tax_country_code?: string | null}).tax_country_code ?? null,
-        tax_supply_type: (quote as typeof quote & {tax_supply_type?: "intra_state" | "inter_state" | null}).tax_supply_type ?? null,
+        tax_country_code:
+          (quote as typeof quote & { tax_country_code?: string | null }).tax_country_code ?? null,
+        tax_supply_type:
+          (quote as typeof quote & { tax_supply_type?: "intra_state" | "inter_state" | null })
+            .tax_supply_type ?? null,
         title: quote.title,
         currency: quote.currency,
         contact_id: quote.contact_id,
@@ -125,7 +132,7 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
         currency: tenantCurrency,
         tax_country_code: tenantCountry,
         tax_supply_type: null,
-        lines: [emptyLine(vatRate)],
+        lines: [emptyLine()],
         ...defaults,
       });
     }
@@ -239,7 +246,8 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
   }, [form.lines, taxCountry, indianSupply]);
 
   const submit = async () => {
-    if (!quote && !taxCountry) return toast.error("Select your organization's tax country under Organization → Locale");
+    if (!quote && !taxCountry)
+      return toast.error("Select your organization's tax country under Organization → Locale");
     if (taxCountry === "IN" && !form.tax_supply_type)
       return toast.error("Select intra-state or inter-state GST treatment");
     if (!form.title.trim()) return toast.error("Title is required");
@@ -493,20 +501,24 @@ export function QuoteFormDialog({ open, onOpenChange, quote, onSaved, defaults }
               onValueChange={(v) =>
                 setForm((previous) => ({
                   ...previous,
-                  tax_supply_type: v === "unknown" ? null : v as "intra_state" | "inter_state",
+                  tax_supply_type: v === "unknown" ? null : (v as "intra_state" | "inter_state"),
                 }))
               }
             >
-              <SelectTrigger><SelectValue placeholder="Choose supply treatment" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose supply treatment" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unknown">Select supply treatment</SelectItem>
-                <SelectItem value="intra_state">Within the same state — CGST + SGST/UTGST</SelectItem>
+                <SelectItem value="intra_state">
+                  Within the same state — CGST + SGST/UTGST
+                </SelectItem>
                 <SelectItem value="inter_state">Between states — IGST</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Determine supply treatment using supplier and place-of-supply rules. Different
-              goods and services may require different GST rates.
+              Determine supply treatment using supplier and place-of-supply rules. Different goods
+              and services may require different GST rates.
             </p>
           </div>
         )}

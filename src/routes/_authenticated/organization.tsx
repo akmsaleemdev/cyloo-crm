@@ -438,8 +438,8 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
     <div className="space-y-5 max-w-xl">
       <h2 className="font-bold text-xl">Locale</h2>
       <p className="text-sm text-muted-foreground">
-        Your organization country sets the tax terminology and initial tax defaults for new
-        sales documents. It does not automatically determine whether a supply is taxable.
+        Your organization country sets the tax terminology and initial tax defaults for new sales
+        documents. It does not automatically determine whether a supply is taxable.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         <div>
@@ -466,7 +466,21 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
             <option value="SG">Singapore</option>
             <option value="NZ">New Zealand</option>
             {form.country_code &&
-              !["AE","SA","IN","BH","OM","QA","KW","GB","US","CA","AU","SG","NZ"].includes(form.country_code) && (
+              ![
+                "AE",
+                "SA",
+                "IN",
+                "BH",
+                "OM",
+                "QA",
+                "KW",
+                "GB",
+                "US",
+                "CA",
+                "AU",
+                "SG",
+                "NZ",
+              ].includes(form.country_code) && (
                 <option value={form.country_code}>{form.country_code} — Other country</option>
               )}
           </select>
@@ -480,7 +494,12 @@ function LocaleSection({ org, canEdit }: { org: OrganizationRow; canEdit: boolea
             value={form.country_code}
             maxLength={2}
             disabled={!canEdit}
-            onChange={(e) => setForm({ ...form, country_code: e.target.value.toUpperCase().replace(/[^A-Z]/g, "") })}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                country_code: e.target.value.toUpperCase().replace(/[^A-Z]/g, ""),
+              })
+            }
           />
           {form.country_code && (
             <p className="mt-1 text-xs text-muted-foreground">

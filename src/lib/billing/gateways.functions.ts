@@ -236,6 +236,10 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
 
+    if (isRetiredGateway(data.provider_id)) {
+      throw new Error("This payment gateway has been permanently retired.");
+    }
+
     if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
       throw new Error("This gateway is not available for new payments until a verified adapter is implemented.");
     }
@@ -326,6 +330,10 @@ export const setGatewayMode = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (isRetiredGateway(data.provider_id)) {
+      throw new Error("This payment gateway has been permanently retired.");
+    }
     const { error } = await supabase
       .from("payment_gateway_settings")
       .upsert({ provider_id: data.provider_id, mode: data.mode, updated_by: userId } as never, {
@@ -389,6 +397,10 @@ export const upsertGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (isRetiredGateway(data.provider_id)) {
+      throw new Error("This payment gateway has been permanently retired.");
+    }
 
     if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
       throw new Error("This gateway cannot be enabled until its real payment adapter is verified.");

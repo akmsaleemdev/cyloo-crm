@@ -11,7 +11,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-import { listBillingProviders } from "./providers";
+import { isRetiredGateway, listBillingProviders } from "./providers";
 import { sbAny } from "@/lib/supabase/untyped";
 
 export type WorkspaceGateway = {
@@ -113,6 +113,10 @@ export const setWorkspaceGatewayOverride = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertWorkspaceAdmin(supabase, data.workspace_id, userId);
 
+    if (isRetiredGateway(data.provider_id)) {
+      throw new Error("This payment gateway has been permanently retired.");
+    }
+
     if (data.enabled === null) {
       // Inherit: drop the row unless it also carries the workspace default.
       const { data: row } = await supabase
@@ -182,6 +186,10 @@ export const setWorkspaceDefaultGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertWorkspaceAdmin(supabase, data.workspace_id, userId);
+
+    if (data.provider_id && isRetiredGateway(data.provider_id)) {
+      throw new Error("This payment gateway has been permanently retired.");
+    }
 
     // Only one default per workspace (enforced by a partial unique index too).
     const { error: clearErr } = await supabase

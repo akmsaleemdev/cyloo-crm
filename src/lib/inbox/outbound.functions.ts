@@ -11,7 +11,7 @@ const DeliverSchema = z.object({ messageId: z.string().uuid() });
 
 export const deliverOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => DeliverSchema.parse(input))
+  .validator((input: unknown) => DeliverSchema.parse(input))
   .handler(async ({ data, context }) => {
     // RLS check: the caller must be able to see the message in their workspace.
     const { data: visible, error } = await context.supabase
@@ -29,7 +29,7 @@ export const deliverOutboundMessage = createServerFn({ method: "POST" })
 /** A confirmed failed receipt may be resent; clear its old provider ID first. */
 export const retryFailedOutboundMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => DeliverSchema.parse(input))
+  .validator((input: unknown) => DeliverSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { data: visible, error: readError } = await context.supabase
       .from("messages")
@@ -70,7 +70,7 @@ const ReactSchema = z.object({ messageId: z.string().uuid(), emoji: z.string().m
 /** Push a reaction toggled in the UI out to the message's external channel. */
 export const deliverReaction = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ReactSchema.parse(input))
+  .validator((input: unknown) => ReactSchema.parse(input))
   .handler(async ({ data, context }) => {
     // RLS check: the caller must be able to see the message in their workspace.
     const { data: visible, error } = await context.supabase
@@ -90,7 +90,7 @@ const ResumeSchema = z.object({ conversationId: z.string().uuid() });
 /** Re-deliver messages left stuck at `queued` (e.g. a dropped send request). */
 export const resumeQueuedMessages = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ResumeSchema.parse(input))
+  .validator((input: unknown) => ResumeSchema.parse(input))
   .handler(async ({ data, context }) => {
     // RLS check: caller must be able to see the conversation in their workspace.
     const { data: visible, error } = await context.supabase

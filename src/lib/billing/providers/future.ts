@@ -52,19 +52,6 @@ export const razorpayProvider = createStubProvider({
   },
 });
 
-/** Flutterwave — Africa + global payouts. */
-export const flutterwaveProvider = createStubProvider({
-  id: "flutterwave",
-  displayName: "Flutterwave",
-  supports: {
-    checkout: true,
-    payments: true,
-    refunds: true,
-    partial_refunds: true,
-    webhooks: true,
-  },
-});
-
 /** Mollie — European cards + local payment methods (iDEAL, Bancontact, SEPA). */
 export const mollieProvider = createStubProvider({
   id: "mollie",

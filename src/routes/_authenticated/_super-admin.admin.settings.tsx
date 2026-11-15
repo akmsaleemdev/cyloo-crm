@@ -1573,10 +1573,7 @@ function BillingPanel() {
               onChange={(e) => patch({ default_vat_rate: Number(e.target.value) })}
               aria-invalid={Boolean(platformFieldErrors("billing", d).default_vat_rate)}
             />
-            <FieldError
-              show
-              message={platformFieldErrors("billing", d).default_vat_rate}
-            />
+            <FieldError show message={platformFieldErrors("billing", d).default_vat_rate} />
           </Field>
         </div>
         <Field label="Company address">

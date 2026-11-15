@@ -9,10 +9,46 @@ export type IndiaSupplyType = "intra_state" | "inter_state" | "unknown";
 
 const GST_COUNTRIES = new Set(["IN", "AU", "NZ", "SG"]);
 const VAT_COUNTRIES = new Set([
-  "AE", "SA", "BH", "OM", "GB", "IE", "DE", "FR", "IT", "ES", "PT",
-  "NL", "BE", "AT", "SE", "DK", "FI", "NO", "PL", "CZ", "HU",
-  "RO", "BG", "HR", "GR", "CY", "MT", "LU", "LV", "LT", "EE",
-  "SK", "SI", "ZA", "KE", "NG", "GH", "EG", "TR", "CH",
+  "AE",
+  "SA",
+  "BH",
+  "OM",
+  "GB",
+  "IE",
+  "DE",
+  "FR",
+  "IT",
+  "ES",
+  "PT",
+  "NL",
+  "BE",
+  "AT",
+  "SE",
+  "DK",
+  "FI",
+  "NO",
+  "PL",
+  "CZ",
+  "HU",
+  "RO",
+  "BG",
+  "HR",
+  "GR",
+  "CY",
+  "MT",
+  "LU",
+  "LV",
+  "LT",
+  "EE",
+  "SK",
+  "SI",
+  "ZA",
+  "KE",
+  "NG",
+  "GH",
+  "EG",
+  "TR",
+  "CH",
 ]);
 
 export function taxDisplayName(country: string | null | undefined): string {
@@ -30,9 +66,12 @@ export function taxDisplayName(country: string | null | undefined): string {
  */
 export function suggestedStandardRate(country: string | null | undefined): number | null {
   switch (country?.toUpperCase()) {
-    case "AE": return 5;
-    case "SA": return 15;
-    default: return null;
+    case "AE":
+      return 5;
+    case "SA":
+      return 15;
+    default:
+      return null;
   }
 }
 
@@ -42,17 +81,30 @@ export function taxBreakdown(
   totalRate: number,
   indiaSupply: IndiaSupplyType = "unknown",
 ): TaxBreakdown[] {
-  if (!Number.isFinite(taxableAmount) || !Number.isFinite(totalRate) || totalRate < 0 || totalRate > 100)
+  if (
+    !Number.isFinite(taxableAmount) ||
+    !Number.isFinite(totalRate) ||
+    totalRate < 0 ||
+    totalRate > 100
+  )
     throw new Error("Invalid tax calculation inputs");
   const code = taxDisplayName(country);
   if (country?.toUpperCase() !== "IN") {
-    return [{ code, rate: totalRate, amount: Number((taxableAmount * totalRate / 100).toFixed(2)) }];
+    return [
+      { code, rate: totalRate, amount: Number(((taxableAmount * totalRate) / 100).toFixed(2)) },
+    ];
   }
   if (indiaSupply === "unknown")
     throw new Error("Select the India supply type to calculate CGST/SGST or IGST");
   if (indiaSupply === "inter_state")
-    return [{ code: "IGST", rate: totalRate, amount: Number((taxableAmount * totalRate / 100).toFixed(2)) }];
-  const total = Number((taxableAmount * totalRate / 100).toFixed(2));
+    return [
+      {
+        code: "IGST",
+        rate: totalRate,
+        amount: Number(((taxableAmount * totalRate) / 100).toFixed(2)),
+      },
+    ];
+  const total = Number(((taxableAmount * totalRate) / 100).toFixed(2));
   const cgst = Number((total / 2).toFixed(2));
   return [
     { code: "CGST", rate: totalRate / 2, amount: cgst },

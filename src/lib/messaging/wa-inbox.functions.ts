@@ -17,7 +17,7 @@ const sendSchema = z.object({
 
 export const sendWaAgentReply = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => sendSchema.parse(input))
+  .validator((input: unknown) => sendSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -84,7 +84,7 @@ const pauseSchema = z.object({
 /** Pause/resume the auto-reply bot for a single conversation (agent takeover). */
 export const setWaBotPaused = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => pauseSchema.parse(input))
+  .validator((input: unknown) => pauseSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
     const { data: convo, error } = await supabase

@@ -26,7 +26,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getPlatformTaxDefaults } from "@/lib/billing/default-vat.functions";
 import { useActiveOrganization } from "@/hooks/use-organization";
-import { suggestedStandardRate, taxDisplayName, taxBreakdown } from "@/lib/billing/tax-jurisdiction";
+import {
+  suggestedStandardRate,
+  taxDisplayName,
+  taxBreakdown,
+} from "@/lib/billing/tax-jurisdiction";
 import {
   computeInvoiceTotals,
   useSaveInvoice,
@@ -86,13 +90,12 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
     staleTime: 60_000,
   });
   const tenantCountry = organization?.country_code ?? null;
-  const vatRate = tenantCountry === "IN"
-    ? (taxDefaults?.gstRate ?? 0)
-    : tenantCountry === "AE"
-      ? (taxDefaults?.vatRate ?? suggestedStandardRate(tenantCountry) ?? 0)
-      : (suggestedStandardRate(tenantCountry) ?? 0);
-
-
+  const vatRate =
+    tenantCountry === "IN"
+      ? (taxDefaults?.gstRate ?? 0)
+      : tenantCountry === "AE"
+        ? (taxDefaults?.vatRate ?? suggestedStandardRate(tenantCountry) ?? 0)
+        : (suggestedStandardRate(tenantCountry) ?? 0);
 
   const [form, setForm] = useState<InvoiceFormInput>({
     tax_country_code: tenantCountry,
@@ -100,7 +103,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
     currency: tenantCurrency,
     issue_date: today(),
     due_date: inDays(30),
-    lines: [emptyLine(vatRate)],
+    lines: [emptyLine()],
     contact_id: null,
     company_id: null,
     deal_id: null,
@@ -113,8 +116,12 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
       const cf = (invoice.custom_fields as Record<string, unknown>) ?? {};
       setForm({
         id: invoice.id,
-        tax_country_code: (invoice as typeof invoice & {tax_country_code?: string | null}).tax_country_code ?? null,
-        tax_supply_type: (invoice as typeof invoice & {tax_supply_type?: "intra_state" | "inter_state" | null}).tax_supply_type ?? null,
+        tax_country_code:
+          (invoice as typeof invoice & { tax_country_code?: string | null }).tax_country_code ??
+          null,
+        tax_supply_type:
+          (invoice as typeof invoice & { tax_supply_type?: "intra_state" | "inter_state" | null })
+            .tax_supply_type ?? null,
         currency: invoice.currency,
         contact_id: invoice.contact_id,
         company_id: invoice.company_id,
@@ -144,7 +151,7 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
         tax_supply_type: null,
         issue_date: today(),
         due_date: inDays(30),
-        lines: [emptyLine(vatRate)],
+        lines: [emptyLine()],
         recurring: null,
         ...defaults,
       });
@@ -254,7 +261,8 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
   }, [form.lines, taxCountry, indianSupply]);
 
   const submit = async () => {
-    if (!invoice && !taxCountry) return toast.error("Select your organization's tax country under Organization → Locale");
+    if (!invoice && !taxCountry)
+      return toast.error("Select your organization's tax country under Organization → Locale");
     if (taxCountry === "IN" && !form.tax_supply_type)
       return toast.error("Select intra-state or inter-state GST treatment");
     if (!form.lines.length) return toast.error("At least one line item");
@@ -519,20 +527,24 @@ export function InvoiceFormDialog({ open, onOpenChange, invoice, onSaved, defaul
               onValueChange={(v) =>
                 setForm((previous) => ({
                   ...previous,
-                  tax_supply_type: v === "unknown" ? null : v as "intra_state" | "inter_state",
+                  tax_supply_type: v === "unknown" ? null : (v as "intra_state" | "inter_state"),
                 }))
               }
             >
-              <SelectTrigger><SelectValue placeholder="Choose supply treatment" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose supply treatment" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="unknown">Select supply treatment</SelectItem>
-                <SelectItem value="intra_state">Within the same state — CGST + SGST/UTGST</SelectItem>
+                <SelectItem value="intra_state">
+                  Within the same state — CGST + SGST/UTGST
+                </SelectItem>
                 <SelectItem value="inter_state">Between states — IGST</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              Determine supply treatment using supplier and place-of-supply rules. Different
-              goods and services may require different GST rates.
+              Determine supply treatment using supplier and place-of-supply rules. Different goods
+              and services may require different GST rates.
             </p>
           </div>
         )}

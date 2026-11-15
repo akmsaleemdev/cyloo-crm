@@ -12,7 +12,6 @@ const PROVIDER_DOMAINS: Record<string, string> = {
   paypal: "paypal.com",
   lemonsqueezy: "lemonsqueezy.com",
   razorpay: "razorpay.com",
-  flutterwave: "flutterwave.com",
   mollie: "mollie.com",
   myfatoorah: "myfatoorah.com",
   paytabs: "paytabs.com",

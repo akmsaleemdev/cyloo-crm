@@ -31,7 +31,7 @@ export interface MetricRefreshResult {
 
 export const refreshSocialMetrics = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => input.parse(v))
+  .validator((v: unknown) => input.parse(v))
   .handler(async ({ data, context }) => {
     const { data: isMember } = await sbAny(context.supabase).rpc(
       "is_workspace_member" as never,

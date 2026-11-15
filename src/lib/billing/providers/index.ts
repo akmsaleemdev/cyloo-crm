@@ -7,12 +7,11 @@
  *   3. Ensure any required secrets are added via `add_secret`.
  *
  * Consumers call `getBillingProvider(id)` and interact only with the
- * `BillingProvider` interface — never with a specific gateway SDK.
+ * `BillingProvider` interface â€” never with a specific gateway SDK.
  */
 
 import {
   customProvider,
-  flutterwaveProvider,
   lemonsqueezyProvider,
   mollieProvider,
   paypalProvider,
@@ -39,7 +38,7 @@ export const GCC_CATALOG_ONLY_IDS = [
   "hyperpay", "moyasar", "telr", "thawani", "amazon_payment_services",
 ] as const;
 
-export const RETIRED_GATEWAY_IDS = ["mercadopago", "paystack", "midtrans"] as const;
+export const RETIRED_GATEWAY_IDS = ["mercadopago", "paystack", "flutterwave", "midtrans"] as const;
 
 export function isCatalogOnlyGateway(id: string): boolean {
   return (GCC_CATALOG_ONLY_IDS as readonly string[]).includes(id);
@@ -56,7 +55,6 @@ const providers: Record<string, BillingProvider> = {
   paypal: paypalProvider,
   lemonsqueezy: lemonsqueezyProvider,
   razorpay: razorpayProvider,
-  flutterwave: flutterwaveProvider,
   mollie: mollieProvider,
   myfatoorah: myfatoorahProvider,
   paytabs: paytabsProvider,

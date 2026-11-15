@@ -63,7 +63,7 @@ const phoneField = z
 
 export const listSmsAccounts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { workspaceId: string }) =>
+  .validator((input: { workspaceId: string }) =>
     z.object({ workspaceId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -80,7 +80,7 @@ export const listSmsAccounts = createServerFn({ method: "POST" })
 
 export const connectSmsAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       workspaceId: string;
       displayName: string;
@@ -147,7 +147,7 @@ export const connectSmsAccount = createServerFn({ method: "POST" })
 
 export const updateSmsAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       id: string;
       displayName?: string;
@@ -210,7 +210,7 @@ export const updateSmsAccount = createServerFn({ method: "POST" })
 
 export const deleteSmsAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
       .from("sms_accounts" as never)

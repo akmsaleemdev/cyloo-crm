@@ -20,11 +20,14 @@ export const getPlatformTaxDefaults = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error("Unable to load the platform VAT default");
     const value = data?.value;
-    const settings = value && typeof value === "object" && !Array.isArray(value)
-      ? value as Record<string, unknown> : {};
+    const settings =
+      value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : {};
     const validRate = (input: unknown): number | null =>
       typeof input === "number" && Number.isFinite(input) && input >= 0 && input <= 100
-        ? input : null;
+        ? input
+        : null;
     return {
       vatRate: validRate(settings.default_vat_rate),
       gstRate: validRate(settings.default_gst_rate),

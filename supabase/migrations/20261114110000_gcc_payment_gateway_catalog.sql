@@ -1,5 +1,5 @@
 -- GCC gateway catalog: add provider settings disabled pending verified adapters and merchant approval.
--- Retain legacy settings and all transaction/history records; never delete financial history.
+-- Preserve payment transaction and audit history; remove only retired gateway configuration rows.
 INSERT INTO public.payment_gateway_settings (provider_id, enabled, is_default, mode, notes) VALUES
   ('myfatoorah', false, false, 'sandbox', 'GCC P0: adapter and merchant onboarding pending'),
   ('paytabs', false, false, 'sandbox', 'GCC P0: adapter and merchant onboarding pending'),
@@ -13,7 +13,33 @@ INSERT INTO public.payment_gateway_settings (provider_id, enabled, is_default, m
   ('amazon_payment_services', false, false, 'sandbox', 'GCC P1: adapter and merchant onboarding pending')
 ON CONFLICT (provider_id) DO NOTHING;
 
--- Legacy providers must not initiate new transactions. Preserve existing rows for reconciliation.
-UPDATE public.payment_gateway_settings
-SET enabled = false, is_default = false
-WHERE provider_id IN ('mercadopago', 'paystack', 'midtrans');
+-- Retired providers are removed from the gateway configuration catalog.
+-- Permanently remove unsupported payment gateway configurations.
+DELETE FROM public.payment_gateway_settings
+WHERE provider_id IN (
+  'mercadopago',
+  'paystack',
+  'flutterwave',
+  'midtrans'
+);
+-- Prevent retired providers from being recreated in platform settings.
+ALTER TABLE public.payment_gateway_settings
+  ADD CONSTRAINT payment_gateway_settings_no_retired_providers
+  CHECK (provider_id NOT IN (
+    'mercadopago', 'paystack', 'flutterwave', 'midtrans'
+  ));
+
+-- Remove retired workspace configurations before enforcing the constraint.
+DELETE FROM public.workspace_payment_gateway_settings
+WHERE provider_id IN (
+  'mercadopago',
+  'paystack',
+  'flutterwave',
+  'midtrans'
+);
+-- Prevent retired providers from being configured directly by workspaces.
+ALTER TABLE public.workspace_payment_gateway_settings
+  ADD CONSTRAINT workspace_payment_gateway_settings_no_retired_providers
+  CHECK (provider_id NOT IN (
+    'mercadopago', 'paystack', 'flutterwave', 'midtrans'
+  ));
