@@ -1,20 +1,18 @@
 import { useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType, CSSProperties } from "react";
 import {
   MessageCircle,
-  Instagram,
-  Facebook,
   Send,
   Mail,
   MessageSquare,
   Phone,
   Hash,
-  Slack,
   Users,
   Circle,
   Plus,
   Trash2,
 } from "lucide-react";
+import { FaInstagram as Instagram, FaFacebookF as Facebook, FaSlack as Slack } from "react-icons/fa6";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +40,9 @@ import {
   useDetachIdentity,
 } from "@/hooks/use-identity-engine";
 
-const CHANNEL_ICONS: Record<string, LucideIcon> = {
+type ChannelIconComponent = ComponentType<{ className?: string; style?: CSSProperties }>;
+
+const CHANNEL_ICONS: Record<string, ChannelIconComponent> = {
   whatsapp_cloud: MessageCircle,
   whatsapp_qr: MessageCircle,
   instagram: Instagram,
