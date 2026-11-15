@@ -111,7 +111,7 @@ export function ConversationWindow({ conversation }: Props) {
         phone?: string;
         email?: string;
         existingContactId?: string | null;
-      }[] = [];
+      }[];
       try {
         extracted = extractContactCards(m.metadata);
       } catch {
