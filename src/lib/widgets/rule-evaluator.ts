@@ -47,9 +47,9 @@ function inBusinessHours(
 ): { ok: boolean; local: string } {
   const now = new Date(nowIso);
   const timeZone = tz && tz.trim() ? tz.trim() : "UTC";
-  let hh = 0,
-    mm = 0,
-    local = "";
+  let hh: number;
+  let mm: number;
+  let local: string;
   try {
     const parts = new Intl.DateTimeFormat("en-GB", {
       timeZone,
