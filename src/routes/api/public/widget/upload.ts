@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/public/widget/upload")({
         const s = sess as { id: string; workspace_id: string; status: string };
         if (s.status === "closed") return json(410, { error: "Session closed" });
 
-        const safeName = file.name.replace(/[^\w.\-]+/g, "_").slice(0, 120) || "file";
+        const safeName = file.name.replace(/[^\w.-]+/g, "_").slice(0, 120) || "file";
         const path = `${s.workspace_id}/${sessionId}/${randomUUID()}-${safeName}`;
         const buf = new Uint8Array(await file.arrayBuffer());
 
