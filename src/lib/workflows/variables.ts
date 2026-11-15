@@ -201,7 +201,7 @@ function applyPipe(value: unknown, pipe: string): unknown {
 /** Evaluate ${...} arithmetic with variable references — no arbitrary JS. */
 export function evalInlineExpression(expr: string, vars: VariableBag): unknown {
   // Substitute identifiers first
-  const substituted = expr.replace(/[a-zA-Z_][a-zA-Z0-9_.$\[\]]*/g, (ident) => {
+  const substituted = expr.replace(/[a-zA-Z_][a-zA-Z0-9_.$[\]]*/g, (ident) => {
     // Skip function names — resolved via FUNCTION_LIBRARY below
     if (/^(date|math|str)\./.test(ident)) return ident;
     const v = getPath(vars, ident);
