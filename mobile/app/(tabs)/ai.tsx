@@ -81,13 +81,13 @@ export default function AIAssistantScreen() {
           { id: `a-${Date.now()}`, role: "assistant", content: assistantContent },
         ]);
         setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
-      } catch (e: any) {
+      } catch (e: unknown) {
         setMessages((m) => [
           ...m,
           {
             id: `err-${Date.now()}`,
             role: "assistant",
-            content: `⚠️ ${e?.message ?? "AI failed"}`,
+            content: `⚠️ ${e instanceof Error ? e.message : "AI failed"}`,
           },
         ]);
       } finally {
@@ -107,10 +107,10 @@ export default function AIAssistantScreen() {
       await rec.startAsync();
       setRecording(rec);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e?.message ?? "Mic failed"}` },
+        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e instanceof Error ? e.message : "Mic failed"}` },
       ]);
     }
   }, []);
@@ -127,10 +127,10 @@ export default function AIAssistantScreen() {
       if (!info.exists || (info.size ?? 0) < 2048) throw new Error("Recording too short");
       const text = await transcribeAudio(uri, Platform.OS === "ios" ? "audio/mp4" : "audio/m4a");
       if (text) await send(text);
-    } catch (e: any) {
+    } catch (e: unknown) {
       setMessages((m) => [
         ...m,
-        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e?.message ?? "STT failed"}` },
+        { id: `err-${Date.now()}`, role: "assistant", content: `🎙️ ${e instanceof Error ? e.message : "STT failed"}` },
       ]);
     } finally {
       setBusy(false);
@@ -155,14 +155,14 @@ export default function AIAssistantScreen() {
         sound.setOnPlaybackStatusUpdate((s) => {
           if ("didJustFinish" in s && s.didJustFinish) setSpeaking(null);
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         setSpeaking(null);
         setMessages((m) => [
           ...m,
           {
             id: `err-${Date.now()}`,
             role: "assistant",
-            content: `🔊 ${e?.message ?? "TTS failed"}`,
+            content: `🔊 ${e instanceof Error ? e.message : "TTS failed"}`,
           },
         ]);
       }
