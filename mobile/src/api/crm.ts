@@ -108,7 +108,7 @@ export async function listContacts(q?: string, owner?: "me" | null, meId?: strin
   if (owner === "me" && meId) query = query.eq("owner_id", meId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []).map((r: any): ContactRow => ({
+  return (data ?? []).map((r): ContactRow => ({
     ...r,
     company_name: r.company?.name ?? null,
   }));
@@ -217,8 +217,8 @@ export async function fetchCustomer360(contactId: string) {
     activities,
     notes,
     tasks,
-    deals: (deals.data ?? []) as any[],
-    conversations: (conversations.data ?? []) as any[],
+    deals: deals.data ?? [],
+    conversations: conversations.data ?? [],
   };
 }
 
@@ -242,7 +242,7 @@ async function mutateOrQueue(
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
