@@ -2721,7 +2721,7 @@ Keep summary under 240 chars. Provide 2-4 concrete self-help steps. Only include
       };
     const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
     const raw = json.choices?.[0]?.message?.content ?? "{}";
-    let parsed: { summary?: string; steps?: string[]; article_slugs?: string[] } = {};
+    let parsed: { summary?: string; steps?: string[]; article_slugs?: string[] };
     try {
       parsed = JSON.parse(raw);
     } catch {
