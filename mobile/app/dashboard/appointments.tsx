@@ -24,7 +24,7 @@ export default function AppointmentsDashboard() {
           {(q.data ?? []).length === 0 ? (
             <Text style={{ color: t.colors.mutedFg }}>No upcoming appointments.</Text>
           ) : (
-            (q.data ?? []).map((appt: any) => {
+            (q.data ?? []).map((appt) => {
               const start = new Date(appt.start_at);
               return (
                 <ListRow
