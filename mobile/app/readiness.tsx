@@ -5,7 +5,7 @@
  *   permissions · a11y · updates · security posture.
  * Rendered at /readiness.
  */
-import { useEffect, useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { View, Text, ScrollView, RefreshControl, StyleSheet, Pressable } from "react-native";
 import * as Application from "expo-application";
 import * as Device from "expo-device";
@@ -168,21 +168,16 @@ export default function ReadinessScreen() {
   const { user } = useAuth();
   const theme = useTheme();
   const { isTablet } = useResponsive();
-  const [checks, setChecks] = useState<Check[]>([]);
-  const [busy, setBusy] = useState(false);
-
-  const load = useCallback(async () => {
-    setBusy(true);
-    try {
-      setChecks(await runChecks(user?.id));
-    } finally {
-      setBusy(false);
-    }
-  }, [user?.id]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  const readiness = useQuery({
+    queryKey: ["mobile-readiness", user?.id],
+    queryFn: () => runChecks(user?.id),
+    staleTime: 0,
+  });
+  const checks = readiness.data ?? [];
+  const busy = readiness.isFetching;
+  const load = () => {
+    void readiness.refetch();
+  };
 
   const fail = checks.filter((c) => c.status === "fail").length;
   const warn = checks.filter((c) => c.status === "warn").length;
