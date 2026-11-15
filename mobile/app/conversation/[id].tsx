@@ -134,7 +134,8 @@ export default function ConversationScreen() {
       qc.invalidateQueries({ queryKey: ["messages", conversationId] });
       qc.invalidateQueries({ queryKey: ["conversations"] });
     },
-    onError: (e: any) => Alert.alert("Send failed", (e instanceof Error ? e.message : "Unknown error")),
+    onError: (e: Error) =>
+      Alert.alert("Send failed", e instanceof Error ? e.message : "Unknown error"),
   });
 
   async function attachImage() {
@@ -558,7 +559,7 @@ function QuickReplyPicker({
   onPick,
 }: {
   open: boolean;
-  replies: any[];
+  replies: Awaited<ReturnType<typeof fetchQuickReplies>>;
   onClose: () => void;
   onPick: (body: string) => void;
 }) {
@@ -613,9 +614,13 @@ function CustomerSidebar({
 }: {
   open: boolean;
   onClose: () => void;
-  contact: any;
-  conversation: any;
-  notes: any[];
+  contact: Awaited<ReturnType<typeof fetchContact>> | null | undefined;
+  conversation: {
+    channel: string | null;
+    status: string | null;
+    assignee_id: string | null;
+  } | null | undefined;
+  notes: Awaited<ReturnType<typeof fetchNotes>>;
 }) {
   const t = useTheme();
   return (
