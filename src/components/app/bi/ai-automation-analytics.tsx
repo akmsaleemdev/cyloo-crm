@@ -384,7 +384,7 @@ export function AiAutomationAnalytics({ workspaceId }: { workspaceId: string }) 
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(v: number) => fmtNum(v)}
+                        formatter={(v) => fmtNum(Number(v ?? 0))}
                         contentStyle={{
                           background: "hsl(var(--popover))",
                           border: "1px solid hsl(var(--border))",
@@ -504,7 +504,7 @@ export function AiAutomationAnalytics({ workspaceId }: { workspaceId: string }) 
                         stroke="hsl(var(--muted-foreground))"
                       />
                       <Tooltip
-                        formatter={(v: number) => fmtCurrency(v)}
+                        formatter={(v) => fmtCurrency(Number(v ?? 0))}
                         contentStyle={{
                           background: "hsl(var(--popover))",
                           border: "1px solid hsl(var(--border))",
@@ -790,7 +790,7 @@ export function AiAutomationAnalytics({ workspaceId }: { workspaceId: string }) 
                     stroke="hsl(var(--muted-foreground))"
                   />
                   <Tooltip
-                    formatter={(v: number) => fmtHours(v)}
+                    formatter={(v) => fmtHours(Number(v ?? 0))}
                     contentStyle={{
                       background: "hsl(var(--popover))",
                       border: "1px solid hsl(var(--border))",

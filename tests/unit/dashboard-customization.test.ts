@@ -7,7 +7,8 @@
  * preference serialization, and default layouts.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import type {} from "vitest/jsdom";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   DEFAULT_DASHBOARD_WIDGETS,
   loadDashboardPreferences,
@@ -21,7 +22,14 @@ describe("Dashboard Preferences & Customization Engine", () => {
   const testWorkspaceId = "ws_test_enterprise_123";
 
   beforeEach(() => {
-    localStorage.clear();
+    // Use the browser storage from jsdom even when Node supplies its own global.
+    const storage = jsdom.window.localStorage;
+    storage.clear();
+    vi.stubGlobal("localStorage", storage);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("should have valid default dashboard widgets", () => {
