@@ -455,7 +455,7 @@ export async function processInboundEmail(
       }
       const bytes = Buffer.from(att.content, "base64");
       if (!bytes.byteLength || bytes.byteLength > MAX_ATTACHMENT_BYTES) continue;
-      const safe = att.name.replace(/[^\w.\-]/g, "_").slice(-120);
+      const safe = att.name.replace(/[^\w.-]/g, "_").slice(-120);
       const path = `${account.workspace_id}/email-media/${crypto.randomUUID()}-${safe}`;
       const up = await admin.storage
         .from("attachments")
