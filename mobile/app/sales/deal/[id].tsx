@@ -29,6 +29,10 @@ import {
 } from "@/api/sales";
 import { listTasks, listNotes, addNote, completeTask } from "@/api/crm";
 
+function followUpDueDate(days: number): string {
+  return new Date(Date.now() + days * 864e5).toISOString();
+}
+
 export default function DealDetail() {
   const t = useTheme();
   const { user } = useAuth();
@@ -101,7 +105,7 @@ export default function DealDetail() {
 
   const addFollowUp = async (days: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const due = new Date(Date.now() + days * 864e5).toISOString();
+    const due = followUpDueDate(days);
     await createFollowUpTask({
       title: `Follow up on ${d.name}`,
       due_date: due,
