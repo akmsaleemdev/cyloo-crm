@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -72,7 +72,7 @@ export default function CRM() {
   });
 
   const active = { contacts, companies, leads, deals, tasks }[tab];
-  const pendingCount = useMemo(() => pendingOutbox().length, [online]);
+  const pendingCount = pendingOutbox().length;
 
   return (
     <Screen>
