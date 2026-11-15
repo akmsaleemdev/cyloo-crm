@@ -639,8 +639,8 @@ function CreateEndpointDialog() {
                   setIssued(r.signing_secret);
                   setOpen(false);
                   qc.invalidateQueries({ queryKey: ["webhooks", "endpoints"] });
-                } catch (e: any) {
-                  toast.error(e.message ?? "Failed");
+                } catch (e: unknown) {
+                  toast.error((e instanceof Error ? e.message : "Failed"));
                 } finally {
                   setBusy(false);
                 }
