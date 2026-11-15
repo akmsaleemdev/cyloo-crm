@@ -144,7 +144,7 @@ export function BirthdayPicker({
           disabled={{ after: today }}
           startMonth={new Date(fromYear, 0, 1)}
           endMonth={new Date(toYear, 11, 31)}
-          initialFocus
+          autoFocus
           className={cn("p-3 pointer-events-auto")}
         />
         {value && (
