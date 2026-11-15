@@ -119,7 +119,7 @@ export function DownloadCenter({ workspaceId }: Props) {
                 </td>
               </tr>
             )}
-            {(runs ?? []).map((r: any) => {
+            {(runs ?? []).map((r) => {
               const started = r.started_at ? new Date(r.started_at).getTime() : null;
               const finished = r.finished_at ? new Date(r.finished_at).getTime() : null;
               const duration =
