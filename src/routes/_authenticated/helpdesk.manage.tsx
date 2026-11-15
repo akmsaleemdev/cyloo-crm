@@ -164,7 +164,8 @@ function TicketManagementPage() {
   const toggleMulti = (key: keyof Filters, value: string) =>
     setFilters((f) => {
       const arr = new Set(f[key] as string[]);
-      arr.has(value) ? arr.delete(value) : arr.add(value);
+      if (arr.has(value)) arr.delete(value);
+      else arr.add(value);
       setPage(1);
       return { ...f, [key]: Array.from(arr) };
     });
@@ -177,7 +178,8 @@ function TicketManagementPage() {
   const toggleOne = (id: string) => {
     setSelected((prev) => {
       const s = new Set(prev);
-      s.has(id) ? s.delete(id) : s.add(id);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
       return s;
     });
   };
