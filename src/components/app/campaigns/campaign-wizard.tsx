@@ -354,8 +354,8 @@ export function CampaignWizard({
       if (!signed?.signedUrl) throw new Error("Could not create a media preview URL.");
       patch({ media_url: signed.signedUrl });
       toast.success("Media uploaded");
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Upload failed"));
     } finally {
       setUploading(false);
     }
@@ -370,8 +370,8 @@ export function CampaignWizard({
         await upsert.mutateAsync({ id: (initial as any)?.id, ...buildPayload("draft") });
         toast.success("Saved as draft");
         onOpenChange(false);
-      } catch (e: any) {
-        toast.error(e.message ?? "Failed to save");
+      } catch (e: unknown) {
+        toast.error((e instanceof Error ? e.message : "Failed to save"));
       } finally {
         // Released in `finally` so a failed save can be retried at once.
         setSaving(null);
@@ -404,8 +404,8 @@ export function CampaignWizard({
           );
         }
         onOpenChange(false);
-      } catch (e: any) {
-        toast.error(e.message ?? "Failed to launch");
+      } catch (e: unknown) {
+        toast.error((e instanceof Error ? e.message : "Failed to launch"));
       } finally {
         setSaving(null);
       }
