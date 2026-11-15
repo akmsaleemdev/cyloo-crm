@@ -368,7 +368,7 @@ export const syncPlatformProviderModels = createServerFn({ method: "POST" })
     const kind = p.kind as AIProviderKind;
     const kindInfo = PROVIDER_KINDS.find((k) => k.kind === kind);
 
-    let discovered: { id: string; name?: string }[] = [];
+    let discovered: { id: string; name?: string }[];
     let source = "catalog";
     try {
       const impl = getAIProvider(kind);
