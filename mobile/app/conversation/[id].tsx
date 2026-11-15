@@ -134,7 +134,7 @@ export default function ConversationScreen() {
       qc.invalidateQueries({ queryKey: ["messages", conversationId] });
       qc.invalidateQueries({ queryKey: ["conversations"] });
     },
-    onError: (e: any) => Alert.alert("Send failed", e?.message ?? "Unknown error"),
+    onError: (e: any) => Alert.alert("Send failed", (e instanceof Error ? e.message : "Unknown error")),
   });
 
   async function attachImage() {
@@ -185,8 +185,8 @@ export default function ConversationScreen() {
       try {
         await startRecording();
         setRecording(true);
-      } catch (e: any) {
-        Alert.alert("Cannot record", e?.message ?? "Microphone unavailable");
+      } catch (e: unknown) {
+        Alert.alert("Cannot record", (e instanceof Error ? e.message : "Microphone unavailable"));
       }
       return;
     }
@@ -207,8 +207,8 @@ export default function ConversationScreen() {
           },
         ],
       });
-    } catch (e: any) {
-      Alert.alert("Upload failed", e?.message ?? "Try again");
+    } catch (e: unknown) {
+      Alert.alert("Upload failed", (e instanceof Error ? e.message : "Try again"));
     }
   }
 
@@ -217,8 +217,8 @@ export default function ConversationScreen() {
     try {
       const s = await suggestReply(conversationId);
       if (s) setInput((cur) => (cur ? `${cur} ${s}` : s));
-    } catch (e: any) {
-      Alert.alert("AI reply failed", e?.message ?? "Try again");
+    } catch (e: unknown) {
+      Alert.alert("AI reply failed", (e instanceof Error ? e.message : "Try again"));
     } finally {
       setAiLoading(false);
     }
@@ -709,8 +709,8 @@ async function uploadFile(
     });
     if (error) throw error;
     return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
-  } catch (e: any) {
-    Alert.alert("Upload failed", e?.message ?? "Try again");
+  } catch (e: unknown) {
+    Alert.alert("Upload failed", (e instanceof Error ? e.message : "Try again"));
     return null;
   }
 }
