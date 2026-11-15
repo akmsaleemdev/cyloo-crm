@@ -179,7 +179,7 @@ export const generateCustomerInsight = createServerFn({ method: "POST" })
     };
     const raw = payload.choices?.[0]?.message?.content ?? "{}";
 
-    let parsed: Partial<CustomerInsight> = {};
+    let parsed: Partial<CustomerInsight>;
     try {
       parsed = JSON.parse(raw) as Partial<CustomerInsight>;
     } catch {
