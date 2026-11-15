@@ -23,7 +23,7 @@ export async function resolveActiveWorkspaceId(
   supabase: any,
   userId: string,
 ): Promise<string | null> {
-  let requested: string | null = null;
+  let requested: string | null;
   try {
     requested = getRequest()?.headers.get("x-cyloo-workspace-id") ?? null;
   } catch {
