@@ -511,8 +511,8 @@ function IntegrationDetailDialog({
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success(`${integration.name} installed`);
       onClose();
-    } catch (e: any) {
-      toast.error(e.message ?? "Install failed");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Install failed"));
     } finally {
       setBusy(false);
     }
@@ -525,8 +525,8 @@ function IntegrationDetailDialog({
       await updateCfg({ data: { id: installation.id, config, scopes } });
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success("Configuration saved");
-    } catch (e: any) {
-      toast.error(e.message ?? "Save failed");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Save failed"));
     } finally {
       setBusy(false);
     }
@@ -541,8 +541,8 @@ function IntegrationDetailDialog({
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success("Uninstalled");
       onClose();
-    } catch (e: any) {
-      toast.error(e.message ?? "Failed");
+    } catch (e: unknown) {
+      toast.error((e instanceof Error ? e.message : "Failed"));
     } finally {
       setBusy(false);
     }
