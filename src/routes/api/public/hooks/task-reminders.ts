@@ -19,8 +19,8 @@ export const Route = createFileRoute("/api/public/hooks/task-reminders")({
           const { runClientProjectUpdates } = await import("@/lib/inbox/client-updates.server");
           const clientUpdates = await runClientProjectUpdates(supabaseAdmin);
           return Response.json({ ok: true, ...result, client_updates: clientUpdates });
-        } catch (e: any) {
-          return new Response(JSON.stringify({ ok: false, error: e?.message ?? String(e) }), {
+        } catch (e: unknown) {
+          return new Response(JSON.stringify({ ok: false, error: (e instanceof Error ? e.message : String(e)) }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });
