@@ -37,7 +37,7 @@ export function SegmentedControl<T extends string>({
   const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
     const enabled = options.map((o, i) => ({ o, i })).filter(({ o }) => !o.disabled);
     const currentEnabledIdx = enabled.findIndex(({ i }) => i === index);
-    let nextIdx = currentEnabledIdx;
+    let nextIdx: number;
     if (e.key === "ArrowRight" || e.key === "ArrowDown") {
       nextIdx = (currentEnabledIdx + 1) % enabled.length;
     } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
