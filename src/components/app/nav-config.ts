@@ -60,7 +60,7 @@ import {
   Share2,
   IdCard,
   Mail,
-  Instagram,
+  Camera as Instagram,
   FolderKanban,
   Kanban,
 } from "lucide-react";
