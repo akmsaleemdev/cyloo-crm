@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Instagram,
   PlugZap,
   Loader2,
   RefreshCw,
@@ -12,6 +11,7 @@ import {
   AlertTriangle,
   ShieldAlert,
 } from "lucide-react";
+import { FaInstagram as Instagram } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
