@@ -1,5 +1,5 @@
 import { ScrollView, Text } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, type Href } from "expo-router";
 import { Screen } from "@/components/Screen";
 import { ListRow, SectionCard } from "@/components/DashboardKit";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -65,7 +65,7 @@ export default function QuickReports() {
               key={r.id}
               title={r.title}
               subtitle={r.subtitle}
-              onPress={() => router.push(r.to as any)}
+              onPress={() => router.push(r.to as Href)}
             />
           ))}
         </SectionCard>
