@@ -243,7 +243,7 @@ export function TaskEditDialog({
                       onSelect={(d) =>
                         setDraft({ ...draft, due: d ? format(d, "yyyy-MM-dd") : "" })
                       }
-                      initialFocus
+                      autoFocus
                     />
                     {draft.due && (
                       <div className="border-t p-2">
