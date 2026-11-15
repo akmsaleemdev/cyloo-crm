@@ -139,7 +139,9 @@ export function resetDashboardPreferences(workspaceId: string): DashboardWidgetC
   if (typeof window !== "undefined") {
     try {
       localStorage.removeItem(`${PREFS_KEY_PREFIX}${workspaceId}`);
-    } catch {}
+    } catch {
+      // Preferences may already be cleared or storage may be unavailable.
+    }
   }
   return DEFAULT_DASHBOARD_WIDGETS;
 }
