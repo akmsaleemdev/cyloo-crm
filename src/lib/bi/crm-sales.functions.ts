@@ -328,7 +328,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     const avgLtv = totalCustomers ? totalRevenue / totalCustomers : 0;
 
     // CAC estimate: uses campaign spend if available
-    let totalSpend = 0;
+    let totalSpend: number;
     try {
       const { data: campaigns } = await supabase
         .from("campaigns")
