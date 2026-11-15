@@ -302,13 +302,17 @@ function safeJsonParse(text: string): unknown {
     .trim();
   try {
     return JSON.parse(trimmed);
-  } catch {}
+  } catch {
+    // Try extracting a JSON object from surrounding model text.
+  }
   const s = trimmed.indexOf("{"),
     e = trimmed.lastIndexOf("}");
   if (s >= 0 && e > s) {
     try {
       return JSON.parse(trimmed.slice(s, e + 1));
-    } catch {}
+    } catch {
+    // Try extracting a JSON object from surrounding model text.
+  }
   }
   return null;
 }
