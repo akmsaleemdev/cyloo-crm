@@ -308,8 +308,8 @@ async function mutateOrQueue(
     else ({ error } = await t.delete().match(match ?? {}));
     if (error) throw error;
     return { queued: false } as const;
-  } catch (e: any) {
-    if (String(e?.message ?? "").match(/Network request failed|fetch/i)) {
+  } catch (e: unknown) {
+    if (String((e instanceof Error ? e.message : "")).match(/Network request failed|fetch/i)) {
       enqueue({ op, table, payload, match });
       return { queued: true } as const;
     }
