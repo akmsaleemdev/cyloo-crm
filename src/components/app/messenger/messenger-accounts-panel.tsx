@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Facebook,
   PlugZap,
   Loader2,
   Unplug,
@@ -18,6 +17,7 @@ import {
   Inbox,
   XCircle,
 } from "lucide-react";
+import { FaFacebookF as Facebook } from "react-icons/fa6";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
