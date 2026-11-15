@@ -94,7 +94,7 @@ export const createMediaUploadUrl = createServerFn({ method: "POST" })
       data.activeOrgId,
     );
 
-    const safeName = data.filename.replace(/[^\w.\-]/g, "_").slice(-120);
+    const safeName = data.filename.replace(/[^\w.-]/g, "_").slice(-120);
     // Prefix the object path with the org id so storage layout is naturally
     // partitioned per-tenant. Downstream storage RLS can `starts_with` on
     // `<orgId>/` to enforce tenant boundaries.
