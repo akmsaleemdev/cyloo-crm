@@ -232,8 +232,8 @@ export async function fetchCustomer360(contactId: string) {
 async function mutateOrQueue(
   op: "insert" | "update" | "delete",
   table: string,
-  payload: any,
-  match?: any,
+  payload: Record<string, unknown>,
+  match?: Record<string, unknown>,
 ) {
   const online = useAppStore.getState().networkOnline;
   if (!online) {
