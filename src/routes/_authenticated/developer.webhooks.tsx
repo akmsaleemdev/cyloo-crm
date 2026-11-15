@@ -640,7 +640,7 @@ function CreateEndpointDialog() {
                   setOpen(false);
                   qc.invalidateQueries({ queryKey: ["webhooks", "endpoints"] });
                 } catch (e: unknown) {
-                  toast.error((e instanceof Error ? e.message : "Failed"));
+                  toast.error(e instanceof Error ? e.message : "Failed");
                 } finally {
                   setBusy(false);
                 }

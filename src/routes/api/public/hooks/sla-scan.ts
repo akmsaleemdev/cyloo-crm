@@ -18,7 +18,10 @@ export const Route = createFileRoute("/api/public/hooks/sla-scan")({
           return Response.json({ ok: true, ...result });
         } catch (e: unknown) {
           console.error("sla-scan failed:", e);
-          return Response.json({ ok: false, error: e instanceof Error ? e.message : "Scan failed" }, { status: 500 });
+          return Response.json(
+            { ok: false, error: e instanceof Error ? e.message : "Scan failed" },
+            { status: 500 },
+          );
         }
       },
       GET: async () => Response.json({ ok: true, hint: "POST to run scan" }),

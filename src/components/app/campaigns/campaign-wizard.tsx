@@ -355,7 +355,7 @@ export function CampaignWizard({
       patch({ media_url: signed.signedUrl });
       toast.success("Media uploaded");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Upload failed"));
+      toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -371,7 +371,7 @@ export function CampaignWizard({
         toast.success("Saved as draft");
         onOpenChange(false);
       } catch (e: unknown) {
-        toast.error((e instanceof Error ? e.message : "Failed to save"));
+        toast.error(e instanceof Error ? e.message : "Failed to save");
       } finally {
         // Released in `finally` so a failed save can be retried at once.
         setSaving(null);
@@ -405,7 +405,7 @@ export function CampaignWizard({
         }
         onOpenChange(false);
       } catch (e: unknown) {
-        toast.error((e instanceof Error ? e.message : "Failed to launch"));
+        toast.error(e instanceof Error ? e.message : "Failed to launch");
       } finally {
         setSaving(null);
       }

@@ -311,8 +311,8 @@ function safeJsonParse(text: string): unknown {
     try {
       return JSON.parse(trimmed.slice(s, e + 1));
     } catch {
-    // Try extracting a JSON object from surrounding model text.
-  }
+      // Try extracting a JSON object from surrounding model text.
+    }
   }
   return null;
 }

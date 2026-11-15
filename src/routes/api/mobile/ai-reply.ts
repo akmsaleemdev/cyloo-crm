@@ -72,7 +72,7 @@ export const Route = createFileRoute("/api/mobile/ai-reply")({
           });
           return Response.json({ suggestion: res.content ?? "" });
         } catch (e: unknown) {
-          return new Response((e instanceof Error ? e.message : "AI failed"), { status: 500 });
+          return new Response(e instanceof Error ? e.message : "AI failed", { status: 500 });
         }
       },
     },

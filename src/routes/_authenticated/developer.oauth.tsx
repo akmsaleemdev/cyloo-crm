@@ -387,7 +387,7 @@ function CreateClientDialog() {
                     });
                     setIssued({ client_id: res.client_id, client_secret: res.client_secret });
                   } catch (e: unknown) {
-                    toast.error((e instanceof Error ? e.message : "Failed to create client"));
+                    toast.error(e instanceof Error ? e.message : "Failed to create client");
                   } finally {
                     setBusy(false);
                   }

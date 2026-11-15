@@ -512,7 +512,7 @@ function IntegrationDetailDialog({
       toast.success(`${integration.name} installed`);
       onClose();
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Install failed"));
+      toast.error(e instanceof Error ? e.message : "Install failed");
     } finally {
       setBusy(false);
     }
@@ -526,7 +526,7 @@ function IntegrationDetailDialog({
       qc.invalidateQueries({ queryKey: ["marketplace", "installations"] });
       toast.success("Configuration saved");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Save failed"));
+      toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
       setBusy(false);
     }
@@ -542,7 +542,7 @@ function IntegrationDetailDialog({
       toast.success("Uninstalled");
       onClose();
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed"));
+      toast.error(e instanceof Error ? e.message : "Failed");
     } finally {
       setBusy(false);
     }

@@ -86,7 +86,7 @@ function DeveloperInner() {
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed to revoke"));
+      toast.error(e instanceof Error ? e.message : "Failed to revoke");
     }
   }
 
@@ -97,7 +97,7 @@ function DeveloperInner() {
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed to retry"));
+      toast.error(e instanceof Error ? e.message : "Failed to retry");
     }
   }
 

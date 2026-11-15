@@ -138,7 +138,7 @@ function CampaignsPage() {
       qc.invalidateQueries({ queryKey: ["campaigns"] });
       toast.success("Campaign duplicated");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed to duplicate"));
+      toast.error(e instanceof Error ? e.message : "Failed to duplicate");
     }
   };
 
@@ -150,7 +150,7 @@ function CampaignsPage() {
       } as any);
       toast.success(archive ? "Campaign archived" : "Campaign restored");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed"));
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 
@@ -165,7 +165,7 @@ function CampaignsPage() {
       } as any);
       toast.success("Campaign approved");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Failed"));
+      toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 

@@ -133,7 +133,9 @@ export async function sendOneDelivery(
     error_message =
       e instanceof Error && e.name === "AbortError"
         ? `timeout after ${endpoint.timeout_ms}ms`
-        : ((e instanceof Error ? e.message : "network error"));
+        : e instanceof Error
+          ? e.message
+          : "network error";
   }
   const duration_ms = Date.now() - start;
   const ok = response_status !== null && response_status >= 200 && response_status < 300;

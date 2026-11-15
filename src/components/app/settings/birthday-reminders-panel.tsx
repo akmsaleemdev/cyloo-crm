@@ -64,7 +64,7 @@ export function BirthdayRemindersPanel() {
       });
       toast.success("Birthday reminders saved");
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Could not save"));
+      toast.error(e instanceof Error ? e.message : "Could not save");
     }
   };
 
@@ -76,7 +76,7 @@ export function BirthdayRemindersPanel() {
         `Scan complete · ${res.contacts_matched} matched · ${res.notifications_created} alerts sent`,
       );
     } catch (e: unknown) {
-      toast.error((e instanceof Error ? e.message : "Run failed"));
+      toast.error(e instanceof Error ? e.message : "Run failed");
     }
   };
 

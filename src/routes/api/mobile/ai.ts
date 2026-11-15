@@ -240,7 +240,7 @@ export const Route = createFileRoute("/api/mobile/ai")({
             usage: (res as any).usage,
           });
         } catch (e: unknown) {
-          return new Response((e instanceof Error ? e.message : "AI failed"), { status: 500 });
+          return new Response(e instanceof Error ? e.message : "AI failed", { status: 500 });
         }
       },
     },

@@ -250,7 +250,7 @@ async function mutateOrQueue(
     return { queued: false } as const;
   } catch (e: unknown) {
     // Treat fetch/network failures as offline; anything else re-throws.
-    if (String((e instanceof Error ? e.message : "")).match(/Network request failed|fetch/i)) {
+    if (String(e instanceof Error ? e.message : "").match(/Network request failed|fetch/i)) {
       enqueue({ op, table, payload, match });
       return { queued: true } as const;
     }

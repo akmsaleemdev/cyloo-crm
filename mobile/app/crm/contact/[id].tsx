@@ -425,7 +425,7 @@ function EditContactModal({
                   Alert.alert("Saved offline", "Changes will sync when you reconnect.");
                 onSaved();
               } catch (e: unknown) {
-                Alert.alert("Save failed", (e instanceof Error ? e.message : "Unknown error"));
+                Alert.alert("Save failed", e instanceof Error ? e.message : "Unknown error");
               } finally {
                 setSaving(false);
               }

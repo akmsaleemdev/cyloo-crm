@@ -187,7 +187,7 @@ export default function ConversationScreen() {
         await startRecording();
         setRecording(true);
       } catch (e: unknown) {
-        Alert.alert("Cannot record", (e instanceof Error ? e.message : "Microphone unavailable"));
+        Alert.alert("Cannot record", e instanceof Error ? e.message : "Microphone unavailable");
       }
       return;
     }
@@ -209,7 +209,7 @@ export default function ConversationScreen() {
         ],
       });
     } catch (e: unknown) {
-      Alert.alert("Upload failed", (e instanceof Error ? e.message : "Try again"));
+      Alert.alert("Upload failed", e instanceof Error ? e.message : "Try again");
     }
   }
 
@@ -219,7 +219,7 @@ export default function ConversationScreen() {
       const s = await suggestReply(conversationId);
       if (s) setInput((cur) => (cur ? `${cur} ${s}` : s));
     } catch (e: unknown) {
-      Alert.alert("AI reply failed", (e instanceof Error ? e.message : "Try again"));
+      Alert.alert("AI reply failed", e instanceof Error ? e.message : "Try again");
     } finally {
       setAiLoading(false);
     }
@@ -615,11 +615,14 @@ function CustomerSidebar({
   open: boolean;
   onClose: () => void;
   contact: Awaited<ReturnType<typeof fetchContact>> | null | undefined;
-  conversation: {
-    channel: string | null;
-    status: string | null;
-    assignee_id: string | null;
-  } | null | undefined;
+  conversation:
+    | {
+        channel: string | null;
+        status: string | null;
+        assignee_id: string | null;
+      }
+    | null
+    | undefined;
   notes: Awaited<ReturnType<typeof fetchNotes>>;
 }) {
   const t = useTheme();
@@ -715,7 +718,7 @@ async function uploadFile(
     if (error) throw error;
     return supabase.storage.from("message-attachments").getPublicUrl(path).data.publicUrl;
   } catch (e: unknown) {
-    Alert.alert("Upload failed", (e instanceof Error ? e.message : "Try again"));
+    Alert.alert("Upload failed", e instanceof Error ? e.message : "Try again");
     return null;
   }
 }

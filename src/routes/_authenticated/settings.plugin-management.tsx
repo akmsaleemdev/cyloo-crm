@@ -90,7 +90,7 @@ function PluginManagementPage() {
         toast.success(success);
         refresh();
       } catch (e: unknown) {
-        toast.error((e instanceof Error ? e.message : "Action failed"));
+        toast.error(e instanceof Error ? e.message : "Action failed");
       }
     };
 
@@ -401,7 +401,7 @@ function SettingsTab({ install: i, onChanged }: { install: any; onChanged: () =>
       toast.success("Settings saved");
       onChanged();
     },
-    onError: (e: any) => toast.error((e instanceof Error ? e.message : "Save failed")),
+    onError: (e: any) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
   return (
     <div className="space-y-3">
@@ -662,7 +662,7 @@ function BackupsTab({
       onChanged();
       onClose();
     },
-    onError: (e: any) => toast.error((e instanceof Error ? e.message : "Restore failed")),
+    onError: (e: any) => toast.error(e instanceof Error ? e.message : "Restore failed"),
   });
   const [reason, setReason] = useState("");
   const rows = data?.backups ?? [];

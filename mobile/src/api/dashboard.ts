@@ -168,7 +168,8 @@ export async function fetchSalesAnalytics(workspaceId: string) {
       .eq("status", "lost")
       .gte("closed_at", since),
   ]);
-  const sum = (rows: Array<{ amount: number | null }> | null) => (rows ?? []).reduce((s, r) => s + Number(r.amount ?? 0), 0);
+  const sum = (rows: Array<{ amount: number | null }> | null) =>
+    (rows ?? []).reduce((s, r) => s + Number(r.amount ?? 0), 0);
   return {
     pipelineValue: sum(pipeline.data),
     pipelineCount: (pipeline.data ?? []).length,

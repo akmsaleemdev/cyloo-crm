@@ -914,8 +914,8 @@ export function LiveChatWidget({
         try {
           if (mr.state !== "inactive") mr.stop();
         } catch {
-    // Storage access can be disabled by browser privacy settings.
-  }
+          // Storage access can be disabled by browser privacy settings.
+        }
         mr.stream.getTracks().forEach((t) => t.stop());
         mediaRecorderRef.current = null;
       }

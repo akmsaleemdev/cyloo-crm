@@ -253,7 +253,7 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
             result.emails_skipped++;
           }
         } catch (e: unknown) {
-          result.errors.push(`email ${c.id}: ${(e instanceof Error ? e.message : String(e))}`);
+          result.errors.push(`email ${c.id}: ${e instanceof Error ? e.message : String(e)}`);
           result.emails_skipped++;
         }
       }
