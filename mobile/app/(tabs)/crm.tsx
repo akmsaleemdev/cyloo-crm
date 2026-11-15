@@ -153,8 +153,8 @@ export default function CRM() {
 
       <FlatList
         style={{ marginTop: t.spacing.sm }}
-        data={(active?.data ?? []) as any[]}
-        keyExtractor={(i: any) => i.id}
+        data={(active?.data ?? []) as (ContactRow | CompanyRow | LeadRow | DealRow | TaskRow)[]}
+        keyExtractor={(i) => i.id}
         refreshControl={
           <RefreshControl
             refreshing={!!active?.isRefetching}
