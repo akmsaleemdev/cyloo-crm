@@ -316,7 +316,7 @@ function ConversationsPage() {
                   selected={dateRange.from ? { from: dateRange.from, to: dateRange.to } : undefined}
                   onSelect={(r) => setDateRange({ from: r?.from, to: r?.to })}
                   numberOfMonths={2}
-                  initialFocus
+                  autoFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
                 <div className="flex justify-between border-t border-border p-2">
