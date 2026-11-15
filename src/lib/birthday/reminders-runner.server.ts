@@ -252,8 +252,8 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
             // historical sends.
             result.emails_skipped++;
           }
-        } catch (e: any) {
-          result.errors.push(`email ${c.id}: ${e?.message ?? String(e)}`);
+        } catch (e: unknown) {
+          result.errors.push(`email ${c.id}: ${(e instanceof Error ? e.message : String(e))}`);
           result.emails_skipped++;
         }
       }
