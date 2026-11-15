@@ -403,7 +403,7 @@ async function graphPost<T>(
     body: JSON.stringify(body),
   });
   const text = await res.text();
-  let parsed: unknown = null;
+  let parsed: unknown;
   try {
     parsed = text ? JSON.parse(text) : null;
   } catch {
