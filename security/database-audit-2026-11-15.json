@@ -268,10 +268,7 @@
   },
   "roleAssignmentNullBypass": "fixed; live regression passed",
   "sslEnforcement": true,
-  "networkAllowedCidrs": [
-    "0.0.0.0/0",
-    "::/0"
-  ],
+  "networkAllowedCidrs": ["0.0.0.0/0", "::/0"],
   "backupStatus": {
     "managedBackups": 0,
     "pitr": false,
