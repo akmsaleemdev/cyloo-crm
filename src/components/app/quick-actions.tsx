@@ -17,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
@@ -26,7 +25,7 @@ export function QuickActions() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-1.5 h-8">
+        <Button variant="outline" size="sm" className="gap-1.5 h-8" aria-label="Create">
           <Plus className="h-4 w-4 text-primary" />
           <span className="hidden sm:inline font-medium text-xs">Create</span>
         </Button>
@@ -36,40 +35,38 @@ export function QuickActions() {
           Quick create
         </DropdownMenuLabel>
         <DropdownMenuItem asChild>
-          <Link to="/leads" className="gap-2 cursor-pointer">
+          <Link to="/leads" search={{ create: true }} className="gap-2 cursor-pointer">
             <Target className="h-4 w-4 text-primary" /> New lead
-            <DropdownMenuShortcut>L</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/contacts" className="gap-2 cursor-pointer">
+          <Link to="/contacts" search={{ create: true }} className="gap-2 cursor-pointer">
             <Users className="h-4 w-4 text-primary" /> New contact
-            <DropdownMenuShortcut>N</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/deals" className="gap-2 cursor-pointer">
+          <Link to="/deals" search={{ create: true }} className="gap-2 cursor-pointer">
             <Handshake className="h-4 w-4 text-primary" /> New deal
-            <DropdownMenuShortcut>D</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/tasks" search={{ taskId: undefined }} className="gap-2 cursor-pointer">
+          <Link
+            to="/tasks"
+            search={{ create: true, taskId: undefined }}
+            className="gap-2 cursor-pointer"
+          >
             <CheckSquare className="h-4 w-4 text-primary" /> New task
-            <DropdownMenuShortcut>T</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/contracts" className="gap-2 cursor-pointer">
             <FileText className="h-4 w-4 text-primary" /> New contract
-            <DropdownMenuShortcut>K</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/inbox" className="gap-2 cursor-pointer">
             <MessagesSquare className="h-4 w-4 text-emerald-500" /> New conversation
-            <DropdownMenuShortcut>C</DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

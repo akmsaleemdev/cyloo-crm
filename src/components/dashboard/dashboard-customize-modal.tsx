@@ -1,11 +1,10 @@
 import React from "react";
-import { Reorder, motion, AnimatePresence } from "framer-motion";
+import { Reorder, useDragControls } from "framer-motion";
 import {
   GripVertical,
   Eye,
   EyeOff,
   RotateCcw,
-  Sparkles,
   Check,
   ChevronUp,
   ChevronDown,
@@ -14,7 +13,6 @@ import {
   Maximize2,
 } from "lucide-react";
 import {
-  Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -88,160 +86,177 @@ export function DashboardCustomizeModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-3 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <LayoutGrid className="w-5 h-5" />
-              </div>
-              <div>
-                <DialogTitle className="text-lg font-semibold">
-                  Customize Dashboard Layout
-                </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Drag items to reorder, adjust card widths, or hide widgets you don't use.
-                </DialogDescription>
-              </div>
+    <DialogContent className="flex max-h-[min(85dvh,48rem)] w-[calc(100%-1rem)] max-w-xl flex-col gap-0 overflow-hidden rounded-surface p-0 motion-reduce:data-[state=open]:animate-none motion-reduce:data-[state=closed]:animate-none">
+      <DialogHeader className="border-b border-border px-3 pb-3 pt-4 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="hidden size-9 shrink-0 rounded-lg bg-primary/10 text-primary sm:flex items-center justify-center">
+              <LayoutGrid className="w-5 h-5" />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-xs text-muted-foreground hover:text-foreground gap-1.5 h-8"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset Defaults
-            </Button>
+            <div>
+              <DialogTitle className="text-left text-base font-semibold sm:text-lg">
+                Customize Dashboard Layout
+              </DialogTitle>
+              <DialogDescription className="mt-0.5 text-left text-xs text-muted-foreground">
+                Drag items to reorder, adjust card widths, or hide widgets you don't use.
+              </DialogDescription>
+            </div>
           </div>
-        </DialogHeader>
-
-        {/* Scrollable drag & drop list */}
-        <div className="flex-1 overflow-y-auto p-6 py-4 space-y-2.5">
-          <Reorder.Group
-            axis="y"
-            values={localWidgets}
-            onReorder={setLocalWidgets}
-            className="space-y-2.5"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="text-xs text-muted-foreground hover:text-foreground gap-1.5 h-8"
           >
-            {localWidgets.map((widget, index) => (
-              <Reorder.Item key={widget.id} value={widget} className="select-none touch-none">
-                <div
-                  className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${
-                    widget.visible
-                      ? "bg-card border-border shadow-xs hover:border-primary/40"
-                      : "bg-muted/40 border-border/50 opacity-60"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    {/* Drag Handle */}
-                    <div
-                      className="cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-foreground p-1 rounded-md hover:bg-muted"
-                      title="Drag to reorder"
+            <RotateCcw className="w-3.5 h-3.5" />
+            Reset Defaults
+          </Button>
+        </div>
+      </DialogHeader>
+
+      {/* Scrollable drag & drop list */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-6">
+        <Reorder.Group
+          axis="y"
+          values={localWidgets}
+          onReorder={setLocalWidgets}
+          className="space-y-2.5"
+        >
+          {localWidgets.map((widget, index) => (
+            <ReorderWidget key={widget.id} widget={widget}>
+              <div
+                className={`grid min-w-0 items-center gap-2 rounded-control border p-2.5 transition-colors sm:flex sm:justify-between sm:p-3 ${
+                  widget.visible
+                    ? "bg-card border-border shadow-xs hover:border-primary/40"
+                    : "bg-muted/40 border-border/50 opacity-60"
+                }`}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {/* Accessible Keyboard Reorder Buttons */}
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() => moveWidget(index, "up")}
+                      className="grid size-7 place-items-center rounded-control text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-30"
+                      aria-label={`Move ${widget.title} up`}
                     >
-                      <GripVertical className="w-4 h-4" />
-                    </div>
-
-                    {/* Accessible Keyboard Reorder Buttons */}
-                    <div className="flex flex-col gap-0.5">
-                      <button
-                        type="button"
-                        disabled={index === 0}
-                        onClick={() => moveWidget(index, "up")}
-                        className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
-                        aria-label={`Move ${widget.title} up`}
-                      >
-                        <ChevronUp className="w-3 h-3" />
-                      </button>
-                      <button
-                        type="button"
-                        disabled={index === localWidgets.length - 1}
-                        onClick={() => moveWidget(index, "down")}
-                        className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
-                        aria-label={`Move ${widget.title} down`}
-                      >
-                        <ChevronDown className="w-3 h-3" />
-                      </button>
-                    </div>
-
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground truncate">
-                          {widget.title}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] uppercase py-0 px-1.5 font-normal"
-                        >
-                          {widget.category}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate max-w-xs">
-                        {widget.description}
-                      </p>
-                    </div>
+                      <ChevronUp className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === localWidgets.length - 1}
+                      onClick={() => moveWidget(index, "down")}
+                      className="grid size-7 place-items-center rounded-control text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-30"
+                      aria-label={`Move ${widget.title} down`}
+                    >
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                    {/* Sizing toggle */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => cycleSize(widget.id)}
-                      className="h-8 px-2.5 text-xs font-normal capitalize gap-1.5"
-                      title={`Current size: ${widget.size}. Click to cycle.`}
-                    >
-                      {widget.size === "compact" && (
-                        <Columns className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
-                      {widget.size === "medium" && (
-                        <LayoutGrid className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
-                      {widget.size === "full" && (
-                        <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
-                      )}
-                      <span>{widget.size}</span>
-                    </Button>
-
-                    {/* Visibility Toggle */}
-                    <Button
-                      type="button"
-                      variant={widget.visible ? "secondary" : "ghost"}
-                      size="sm"
-                      onClick={() => toggleVisibility(widget.id)}
-                      className="h-8 w-8 p-0"
-                      aria-label={widget.visible ? "Hide widget" : "Show widget"}
-                    >
-                      {widget.visible ? (
-                        <Eye className="w-4 h-4 text-primary" />
-                      ) : (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </Button>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium leading-snug text-foreground">
+                        {widget.title}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="hidden px-1.5 py-0 text-[10px] font-normal uppercase sm:inline-flex"
+                      >
+                        {widget.category}
+                      </Badge>
+                    </div>
+                    <p className="text-xs leading-snug text-muted-foreground">
+                      {widget.description}
+                    </p>
                   </div>
                 </div>
-              </Reorder.Item>
-            ))}
-          </Reorder.Group>
-        </div>
 
-        <DialogFooter className="p-4 px-6 border-t border-border bg-muted/20 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            Changes are saved to your current workspace preferences.
-          </span>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button size="sm" onClick={handleApply} className="gap-1.5">
-              <Check className="w-4 h-4" />
-              Save Layout
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+                <div className="flex shrink-0 items-center justify-end gap-2">
+                  {/* Sizing toggle */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => cycleSize(widget.id)}
+                    className="h-8 px-2.5 text-xs font-normal capitalize gap-1.5"
+                    title={`Current size: ${widget.size}. Click to cycle.`}
+                  >
+                    {widget.size === "compact" && (
+                      <Columns className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    {widget.size === "medium" && (
+                      <LayoutGrid className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    {widget.size === "full" && (
+                      <Maximize2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    <span>{widget.size}</span>
+                  </Button>
+
+                  {/* Visibility Toggle */}
+                  <Button
+                    type="button"
+                    variant={widget.visible ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => toggleVisibility(widget.id)}
+                    className="h-8 w-8 p-0"
+                    aria-label={`${widget.visible ? "Hide" : "Show"} ${widget.title}`}
+                  >
+                    {widget.visible ? (
+                      <Eye className="w-4 h-4 text-primary" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </ReorderWidget>
+          ))}
+        </Reorder.Group>
+      </div>
+
+      <DialogFooter className="flex flex-col gap-2 border-t border-border bg-muted/20 p-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <span className="text-xs text-muted-foreground">
+          Changes are saved to your current workspace preferences.
+        </span>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button size="sm" onClick={handleApply} className="gap-1.5">
+            <Check className="w-4 h-4" />
+            Save Layout
+          </Button>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  );
+}
+
+function ReorderWidget({
+  widget,
+  children,
+}: {
+  widget: DashboardWidgetConfig;
+  children: React.ReactNode;
+}) {
+  const controls = useDragControls();
+  return (
+    <Reorder.Item
+      value={widget}
+      dragListener={false}
+      dragControls={controls}
+      className="flex min-w-0 items-center gap-1 [&>div:last-child]:flex-1"
+    >
+      <div
+        onPointerDown={(event) => controls.start(event)}
+        className="touch-none cursor-grab rounded-control p-1 text-muted-foreground active:cursor-grabbing"
+        aria-hidden="true"
+      >
+        <GripVertical className="size-4" />
+      </div>
+      {children}
+    </Reorder.Item>
   );
 }

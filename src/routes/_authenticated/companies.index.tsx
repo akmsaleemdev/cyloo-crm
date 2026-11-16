@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -62,7 +62,10 @@ import { CompanyFormDialog } from "@/components/app/companies/company-form-dialo
 import { PermissionGate } from "@/components/app/permission-gate";
 import { useCanAct } from "@/hooks/use-permissions";
 
+import { useCreateShortcut, validateCreateShortcut } from "@/hooks/use-create-shortcut";
+
 export const Route = createFileRoute("/_authenticated/companies/")({
+  validateSearch: validateCreateShortcut,
   staticData: { breadcrumb: "Companies" },
   head: () => ({
     meta: [
@@ -103,6 +106,11 @@ function CompaniesPage() {
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openForm, setOpenForm] = useState(false);
+  const openNew = useCallback(() => {
+    setEditing(null);
+    setOpenForm(true);
+  }, []);
+  useCreateShortcut("/companies", true, openNew);
   const [editing, setEditing] = useState<CompanyRow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<CompanyRow | null>(null);
 

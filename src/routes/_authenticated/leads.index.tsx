@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useLocation } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,7 +74,10 @@ import { useZonedDateFormatter } from "@/hooks/use-timezone";
 import { LeadFormDialog } from "@/components/app/leads/lead-form-dialog";
 import { ConvertLeadDialog } from "@/components/app/leads/convert-lead-dialog";
 
+import { useCreateShortcut, validateCreateShortcut } from "@/hooks/use-create-shortcut";
+
 export const Route = createFileRoute("/_authenticated/leads/")({
+  validateSearch: validateCreateShortcut,
   staticData: { breadcrumb: "Leads" },
   head: () => ({
     meta: [
@@ -102,6 +105,11 @@ export function LeadsPage() {
   const [filters, setFilters] = useState<Omit<LeadFilters, "search" | "converted">>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [openForm, setOpenForm] = useState(false);
+  const openNew = useCallback(() => {
+    setEditing(null);
+    setOpenForm(true);
+  }, []);
+  useCreateShortcut("/leads", true, openNew);
   const [editing, setEditing] = useState<LeadRow | null>(null);
   const [converting, setConverting] = useState<LeadRow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<LeadRow | null>(null);

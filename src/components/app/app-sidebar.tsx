@@ -201,15 +201,15 @@ export function AppSidebar() {
         data-collapsed={sidebarCollapsed || undefined}
         data-nav-mode={navMode}
         className={cn(
-          "group/sidebar flex shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-[width] duration-300 ease-out",
-          "sticky top-0 h-screen self-start",
+          "group/sidebar flex shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border motion-safe:transition-[width] motion-safe:duration-200 motion-safe:ease-emphasized",
+          "sticky top-0 h-dvh self-start",
           sidebarCollapsed ? "w-[60px]" : "w-64",
         )}
       >
         {/* Brand Header */}
         <div
           className={cn(
-            "flex items-center justify-between h-12 border-b border-sidebar-border transition-all",
+            "flex items-center justify-between h-12 border-b border-sidebar-border",
             sidebarCollapsed ? "justify-center px-2" : "px-3.5",
           )}
         >
@@ -253,7 +253,10 @@ export function AppSidebar() {
         {/* Navigation */}
         <ScrollAreaPrimitive.Root className="relative flex-1 min-h-0 overflow-hidden">
           <ScrollAreaPrimitive.Viewport className="h-full w-full">
-            <nav className={cn("py-4", sidebarCollapsed ? "px-2 space-y-4" : "px-3 space-y-0.5")}>
+            <nav
+              aria-label="Main navigation"
+              className={cn("py-3", sidebarCollapsed ? "px-2 space-y-2" : "px-3 space-y-0.5")}
+            >
               <NestedNavGroup>
                 {groups.map((group) => {
                   const items = NAV_ITEMS.filter((n) => n.group === group.id)
@@ -475,7 +478,7 @@ function SidebarLink({
   const Icon = item.icon;
   const reduceMotion = useReducedMotion();
   const linkClass = cn(
-    "group relative flex items-center rounded-control text-sm transition-all",
+    "group relative flex items-center rounded-control text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring",
     collapsed ? "mx-auto h-10 w-10 justify-center p-0" : "gap-3 px-3 py-2",
     active
       ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
@@ -493,7 +496,7 @@ function SidebarLink({
         />
       )}
       <motion.span
-        whileHover={reduceMotion ? undefined : { rotate: -6, scale: 1.08 }}
+        whileHover={reduceMotion ? undefined : { y: -1 }}
         whileTap={reduceMotion ? undefined : { scale: 0.94 }}
         transition={{ duration: 0.16 }}
         className="shrink-0"
@@ -527,14 +530,25 @@ function SidebarLink({
     </>
   );
   const content = item.external ? (
-    <a href={item.to} target="_blank" rel="noopener noreferrer" className={linkClass}>
+    <a
+      href={item.to}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={collapsed ? item.label : undefined}
+      className={linkClass}
+    >
       {inner}
     </a>
   ) : (
     // `hash` carries the in-page deep link (Social Studio tabs etc). Without
     // it every Social Studio entry rendered as a bare /social link, so all six
     // sub-items navigated to the same place.
-    <Link to={item.to} hash={item.hash} className={linkClass}>
+    <Link
+      to={item.to}
+      hash={item.hash}
+      aria-label={collapsed ? item.label : undefined}
+      className={linkClass}
+    >
       {inner}
     </Link>
   );

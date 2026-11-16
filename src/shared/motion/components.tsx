@@ -1,41 +1,95 @@
 "use client";
-import { AnimatePresence, motion, type HTMLMotionProps } from "framer-motion";
-import type { ReactNode } from "react";
-import { useRouterState } from "@tanstack/react-router";
-import { variants, gestures, EASE } from "./tokens";
-import { useSafeVariants } from "./hooks";
+import { AnimatePresence, animate, motion, type HTMLMotionProps } from "framer-motion";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { useRouter, useRouterState } from "@tanstack/react-router";
+import { DISTANCE, TRANSITION, variants, gestures, EASE } from "./tokens";
+import { useReducedMotionSafe, useSafeVariants } from "./hooks";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------- Page/Route ------------------------------ */
 
 /**
- * Wrap route content to fade the current page in / out on navigation. Place
- * inside the route component, keyed by pathname.
- *
- *   <PageTransition><YourPage /></PageTransition>
+ * Animate the committed route in place. Keeping the outlet mounted lets the
+ * router retain matching layouts, scroll restoration and focused controls.
  */
 export function PageTransition({
   children,
   className,
+  immersive,
 }: {
   children: ReactNode;
   className?: string;
+  immersive: boolean;
 }) {
-  const pathname = useRouterState({ select: (r) => r.location.pathname });
-  const v = useSafeVariants(variants.page);
+  const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.resolvedLocation?.pathname });
+  const ref = useRef<HTMLDivElement>(null);
+  const previousPath = useRef(pathname);
+  const reduceMotion = useReducedMotionSafe();
+
+  useLayoutEffect(() => {
+    if (reduceMotion) return;
+    let exit: ReturnType<typeof animate> | undefined;
+    let page: HTMLElement | null = null;
+
+    const stopExit = () => {
+      exit?.stop();
+      if (page) page.style.removeProperty("opacity");
+      page = null;
+      exit = undefined;
+    };
+
+    const unsubscribeLoad = router.subscribe("onBeforeLoad", ({ pathChanged }) => {
+      stopExit();
+      if (!pathChanged) return;
+      page = ref.current?.querySelector<HTMLElement>("main:not([style*='opacity'])") ?? null;
+      if (page) exit = animate(page, { opacity: [1, 0.84] }, TRANSITION.snap);
+    });
+    const unsubscribeResolved = router.subscribe("onResolved", stopExit);
+    return () => {
+      unsubscribeLoad();
+      unsubscribeResolved();
+      stopExit();
+    };
+  }, [reduceMotion, router]);
+
+  useLayoutEffect(() => {
+    const routeChanged = previousPath.current !== pathname;
+    previousPath.current = pathname;
+    const outlet = ref.current;
+    if (!outlet || !routeChanged || reduceMotion) return;
+    const main = immersive
+      ? null
+      : outlet.querySelector<HTMLElement>("main:not([style*='opacity']):not([style*='transform'])");
+    const element = main ?? outlet;
+
+    // A transform would change the containing block of full-height route overlays.
+    const keyframes = !main
+      ? { opacity: [0.8, 1] }
+      : {
+          opacity: [0.8, 1],
+          y: [DISTANCE.sm, 0],
+        };
+    const animation = animate(element, keyframes, TRANSITION.page);
+    const clearStyles = () => {
+      element.style.removeProperty("opacity");
+      element.style.removeProperty("transform");
+    };
+    let cancelled = false;
+    void animation.then(() => {
+      if (!cancelled) clearStyles();
+    });
+    return () => {
+      cancelled = true;
+      animation.stop();
+      clearStyles();
+    };
+  }, [immersive, pathname, reduceMotion]);
+
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        variants={v}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className={cn("min-h-full", className)}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div ref={ref} className={className}>
+      {children}
+    </div>
   );
 }
 

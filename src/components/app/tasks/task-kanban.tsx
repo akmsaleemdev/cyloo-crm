@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import {
   type TaskBoardStatus,
   type TaskBoardPriority,
 } from "@/hooks/use-task-board";
+import { useCreateShortcut } from "@/hooks/use-create-shortcut";
 import { TaskEditDialog } from "./task-edit-dialog";
 
 const COLUMNS: { status: TaskBoardStatus; label: string; dot: string }[] = [
@@ -78,11 +79,13 @@ export function TaskKanban() {
     return m;
   }, [visible]);
 
-  const openNew = () => {
+  const openNew = useCallback(() => {
     setEditingId(null);
     setCreating(true);
     setDialogOpen(true);
-  };
+  }, []);
+
+  useCreateShortcut("/tasks", Boolean(workspaceId) && !isLoading && !isError, openNew);
 
   const openEdit = (t: TaskBoardRow) => {
     setCreating(false);

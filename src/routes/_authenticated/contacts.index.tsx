@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { ActionBar } from "@/components/app/action-bar";
 import { Button } from "@/components/ui/button";
@@ -82,7 +82,10 @@ import { PermissionGate } from "@/components/app/permission-gate";
 import { useCanAct } from "@/hooks/use-permissions";
 import { useDebouncedValue } from "@/shared/hooks/use-debounced-value";
 
+import { useCreateShortcut, validateCreateShortcut } from "@/hooks/use-create-shortcut";
+
 export const Route = createFileRoute("/_authenticated/contacts/")({
+  validateSearch: validateCreateShortcut,
   head: () => ({
     meta: [
       { title: "Contacts" },
@@ -149,6 +152,8 @@ export function ContactsPage() {
     dir: "desc",
   });
   const [creating, setCreating] = useState(false);
+  const openNewContact = useCallback(() => setCreating(true), []);
+  useCreateShortcut("/contacts", true, openNewContact);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);

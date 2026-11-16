@@ -131,7 +131,7 @@ export function NestedNavItem({
         isChild &&
           isLeaf &&
           "gap-2 pl-2 pr-1.5 text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        isChild && isLeaf && (touch ? "h-10 text-[14px]" : "h-8 text-[13px]"),
+        isChild && isLeaf && (touch ? "h-11 text-[14px]" : "h-8 text-[13px]"),
         (activeSelf || (hasChildren && activeDescendant && !open)) &&
           "bg-sidebar-accent text-sidebar-accent-foreground",
         isCategory && activeDescendant && !open && "bg-transparent text-sidebar-accent-foreground",
@@ -172,7 +172,7 @@ export function NestedNavItem({
           {hasChildren && (
             <ChevronRight
               className={cn(
-                "shrink-0 transition-transform duration-200 opacity-50 group-hover:opacity-90",
+                "shrink-0 motion-safe:transition-transform duration-200 opacity-50 group-hover:opacity-90",
                 isCategory ? "h-3 w-3" : "h-3.5 w-3.5",
                 open && "rotate-90 opacity-100",
               )}

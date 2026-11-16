@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppTopbar } from "@/components/app/app-topbar";
+import { validateCreateShortcut } from "@/hooks/use-create-shortcut";
 import { TaskKanban } from "@/components/app/tasks/task-kanban";
 
 export const Route = createFileRoute("/_authenticated/tasks")({
   validateSearch: (search: Record<string, unknown>) => ({
+    ...validateCreateShortcut(search),
     taskId: typeof search.taskId === "string" ? search.taskId : undefined,
   }),
   component: TasksPage,

@@ -9,6 +9,7 @@ import { QuickActions } from "./quick-actions";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { docsUrl } from "@/lib/docs/links";
 import { SHOW_RESOURCE_LINKS } from "@/lib/docs/visibility";
+import { cn } from "@/lib/utils";
 import { useEffect, useRef, type ReactNode } from "react";
 
 type Props = {
@@ -18,6 +19,7 @@ type Props = {
   showBreadcrumbs?: boolean;
   showPageHeader?: boolean;
   showSidebarToggle?: boolean;
+  dashboard?: boolean;
 };
 
 /**
@@ -32,6 +34,7 @@ export function AppTopbar({
   showBreadcrumbs = true,
   showPageHeader = true,
   showSidebarToggle = true,
+  dashboard = false,
 }: Props) {
   const { setCommandOpen, sidebarCollapsed, toggleSidebar, navMode, setTopbarActionsNode } =
     useLayout();
@@ -63,11 +66,16 @@ export function AppTopbar({
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-30 border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-30 border-b border-border/70 bg-background supports-[backdrop-filter]:bg-background/90 supports-[backdrop-filter]:backdrop-blur-sm"
     >
       {/* Row 1 — controls */}
-      <div className="flex h-12 items-center gap-2 px-3 lg:px-6">
-        <MobileNav />
+      <div
+        className={cn(
+          "flex min-h-12 items-center gap-1 px-2 sm:gap-2 sm:px-3 lg:px-6",
+          dashboard && "mx-auto max-w-[100rem] xl:px-8",
+        )}
+      >
+        <MobileNav showBrand={dashboard} />
 
         {navMode === "full" && showSidebarToggle && (
           <button
@@ -86,7 +94,7 @@ export function AppTopbar({
 
         <button
           onClick={() => setCommandOpen(true)}
-          className="hidden md:flex flex-1 max-w-lg items-center gap-2 rounded-xl border border-border/60 bg-surface/80 px-3 h-8 text-xs text-muted-foreground transition-all hover:bg-surface-elevated hover:border-border focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="hidden min-w-0 md:flex flex-1 max-w-lg items-center gap-2 rounded-xl border border-border/60 bg-surface/80 px-3 h-8 text-xs text-muted-foreground transition-all hover:bg-surface-elevated hover:border-border focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           aria-label="Open command palette"
         >
           <Search className="h-3.5 w-3.5 text-muted-foreground/70" />
@@ -101,13 +109,13 @@ export function AppTopbar({
         {/* Mobile-only search icon */}
         <button
           onClick={() => setCommandOpen(true)}
-          className="md:hidden grid h-9 w-9 place-items-center rounded-control text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="md:hidden grid h-11 w-9 shrink-0 place-items-center rounded-control text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus-visible:outline-2 focus-visible:outline-ring"
           aria-label="Search"
         >
           <Search className="h-4 w-4" />
         </button>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex min-w-0 items-center gap-0.5 sm:gap-1 max-md:[&>button]:min-h-11 max-md:[&>button]:shrink-0">
           {SHOW_RESOURCE_LINKS && (
             <a
               href={docsUrl()}
@@ -125,33 +133,57 @@ export function AppTopbar({
           <QuickActions />
           <ThemeSwitcher />
           <NotificationCenter />
-          <div className="mx-1 h-6 w-px bg-border" aria-hidden />
+          <div className="mx-1 hidden h-6 w-px bg-border sm:block" aria-hidden />
           <UserMenu />
         </div>
       </div>
 
       {/* Row 2 — page title + breadcrumbs + actions, 8/4 grid on large screens */}
       {showPageHeader && (
-        <div className="grid grid-cols-1 gap-2 border-t border-border/50 px-4 py-3 lg:grid-cols-12 lg:items-center lg:px-6">
-          <div className="min-w-0 lg:col-span-8">
-            {showBreadcrumbs && <Breadcrumbs />}
-            <div className="mt-1 flex min-w-0 items-baseline gap-3">
-              <h1 className="shrink-0 font-display text-lg font-semibold lg:text-xl">{title}</h1>
+        <div className={cn("border-t border-border/50", dashboard && "bg-background/90")}>
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-2 px-4 py-3 lg:grid-cols-12 lg:items-center lg:px-6",
+              dashboard && "mx-auto max-w-[100rem] px-3 sm:px-6 sm:py-4 xl:px-8",
+            )}
+          >
+            <div className="min-w-0 lg:col-span-8">
+              {showBreadcrumbs && <Breadcrumbs />}
+              <div
+                className={cn(
+                  "mt-1 flex min-w-0 flex-wrap items-baseline gap-x-3",
+                  dashboard && "block",
+                )}
+              >
+                <h1
+                  className={cn(
+                    "min-w-0 break-words font-display text-lg font-semibold lg:text-xl",
+                    dashboard && "text-2xl tracking-tight sm:text-3xl lg:text-3xl",
+                  )}
+                >
+                  {title}
+                </h1>
+                {subtitle && (
+                  <p
+                    className={cn(
+                      "hidden min-w-0 break-words text-xs text-muted-foreground sm:block",
+                      dashboard && "mt-0.5 sm:text-sm",
+                    )}
+                  >
+                    {subtitle}
+                  </p>
+                )}
+              </div>
               {subtitle && (
-                <p className="hidden min-w-0 flex-1 truncate text-xs text-muted-foreground sm:block">
-                  {subtitle}
-                </p>
+                <p className="break-words text-xs text-muted-foreground sm:hidden">{subtitle}</p>
               )}
             </div>
-            {subtitle && (
-              <p className="sm:hidden truncate text-xs text-muted-foreground">{subtitle}</p>
-            )}
-          </div>
-          <div
-            ref={setTopbarActionsNode}
-            className="flex flex-wrap items-center gap-2 lg:col-span-4 lg:justify-end empty:hidden"
-          >
-            {actions}
+            <div
+              ref={setTopbarActionsNode}
+              className="flex flex-wrap items-center gap-2 lg:col-span-4 lg:justify-end empty:hidden"
+            >
+              {actions}
+            </div>
           </div>
         </div>
       )}

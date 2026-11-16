@@ -1,6 +1,6 @@
 import { BRAND_NAME } from "@/lib/branding/brand";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,10 @@ import { PipelineManager } from "@/components/app/deals/pipeline-manager";
 import { PipelineAnalytics } from "@/components/app/deals/pipeline-analytics";
 import { toast } from "sonner";
 
+import { useCreateShortcut, validateCreateShortcut } from "@/hooks/use-create-shortcut";
+
 export const Route = createFileRoute("/_authenticated/deals/")({
+  validateSearch: validateCreateShortcut,
   staticData: { breadcrumb: "Deals" },
   head: () => ({
     meta: [
@@ -61,12 +64,16 @@ export const Route = createFileRoute("/_authenticated/deals/")({
 
 function DealsPage() {
   const { active } = useCurrentWorkspace();
-  const { data: pipelines, isLoading: pipesLoading } = usePipelinesFull();
+  const { data: pipelines, isLoading: pipesLoading, isError: pipesError } = usePipelinesFull();
   const [pipelineId, setPipelineId] = useState<string | null>(null);
   const activePipelineId =
     pipelineId ?? pipelines?.find((p) => p.is_default)?.id ?? pipelines?.[0]?.id ?? null;
   const activePipeline = pipelines?.find((p) => p.id === activePipelineId) ?? null;
-  const { data: stages } = useStagesFull(activePipelineId);
+  const {
+    data: stages,
+    isPending: stagesPending,
+    isError: stagesError,
+  } = useStagesFull(activePipelineId);
   const { data: members } = useWorkspaceMembers(active?.id);
 
   const [search, setSearch] = useState("");
@@ -78,6 +85,18 @@ function DealsPage() {
   const [openManager, setOpenManager] = useState(false);
   const [view, setView] = useState<"board" | "analytics">("board");
   const createDefault = useCreateDefaultPipeline();
+  const canCreateDeal = Boolean(stages?.length);
+  const openNewDeal = useCallback(() => {
+    if (canCreateDeal) setOpenCreate(true);
+    else if (pipesError || stagesError) toast.error("Could not load pipeline stages.");
+    else toast.info("Set up a pipeline with at least one stage to create a deal.");
+  }, [canCreateDeal, pipesError, stagesError]);
+
+  useCreateShortcut(
+    "/deals",
+    Boolean(active) && !pipesLoading && (!activePipelineId || !stagesPending),
+    openNewDeal,
+  );
 
   // Live updates
   useDealsRealtime(active?.id, activePipelineId);
@@ -167,7 +186,7 @@ function DealsPage() {
             <Button size="sm" variant="outline" onClick={() => setOpenManager(true)}>
               <Settings2 className="w-4 h-4 mr-1.5" /> Manage pipelines
             </Button>
-            <Button size="sm" onClick={() => setOpenCreate(true)} disabled={!stages?.length}>
+            <Button size="sm" onClick={() => setOpenCreate(true)} disabled={!canCreateDeal}>
               <Plus className="w-4 h-4 mr-1.5" /> New deal
             </Button>
           </>

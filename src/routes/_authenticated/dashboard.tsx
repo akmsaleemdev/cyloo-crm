@@ -1,9 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { DISTANCE, DURATION, TRANSITION, useReducedMotionSafe, variants } from "@/shared/motion";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Users,
@@ -16,7 +19,6 @@ import {
   Handshake,
   MessagesSquare,
   Sparkles,
-  Plus,
   ArrowRight,
   TrendingUp,
   AlertTriangle,
@@ -24,9 +26,10 @@ import {
   Calendar,
   Zap,
   Flame,
-  LayoutGrid,
   SlidersHorizontal,
 } from "lucide-react";
+import { contactDisplayName, contactInitials } from "@/hooks/use-contacts";
+import { companyInitials } from "@/hooks/use-companies";
 import { useDashboardData } from "@/hooks/use-dashboard";
 import { useDashboardTasks } from "@/hooks/use-dashboard-tasks";
 import { useDashboardPipeline, type DashboardPipelineData } from "@/hooks/use-dashboard-pipeline";
@@ -41,7 +44,9 @@ import {
   type DashboardWidgetConfig,
 } from "@/components/dashboard/dashboard-preferences";
 import { DashboardCustomizeModal } from "@/components/dashboard/dashboard-customize-modal";
-import { PageTransition, StaggerContainer, StaggerItem, MotionCard } from "@/components/ui/motion";
+import { MotionCard } from "@/components/ui/motion";
+let hasEnteredDashboard = false;
+
 const leadDisplayName = (l: {
   first_name: string | null;
   last_name: string | null;
@@ -52,9 +57,6 @@ const leadDisplayName = (l: {
   l.email ||
   l.company_name ||
   "Unnamed lead";
-import { contactDisplayName, contactInitials } from "@/hooks/use-contacts";
-import { companyInitials } from "@/hooks/use-companies";
-import { customerInitials } from "@/hooks/use-customers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -70,7 +72,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function DashboardPage() {
-  const nav = useNavigate();
+  const reduceMotion = useReducedMotionSafe();
+  const [animateEntrance] = useState(() => !hasEnteredDashboard);
+  useEffect(() => {
+    hasEnteredDashboard = true;
+  }, []);
   const { active } = useCurrentWorkspace();
   const d = useDashboardData();
   const tasks = useDashboardTasks();
@@ -103,6 +109,14 @@ function DashboardPage() {
     loadDashboardPreferences(active?.id ?? "default"),
   );
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const pipelineVisible = widgets.some((w) => w.id === "widget-pipeline-funnel" && w.visible);
+  const tasksVisible = widgets.some((w) => w.id === "widget-upcoming-tasks" && w.visible);
+
+  function scrollToWidget(id: string) {
+    const widget = document.getElementById(id);
+    widget?.focus({ preventScroll: true });
+    widget?.scrollIntoView({ behavior: reduceMotion ? "instant" : "smooth", block: "start" });
+  }
 
   useEffect(() => {
     setWidgets(loadDashboardPreferences(active?.id ?? "default"));
@@ -118,96 +132,62 @@ function DashboardPage() {
     setWidgets(defaults);
   };
 
-  // Helper to resolve CSS grid column span from widget size
-  const getColSpanClass = (size: DashboardWidgetConfig["size"]) => {
-    switch (size) {
-      case "compact":
-        return "col-span-1";
-      case "medium":
-        return "col-span-1 lg:col-span-2";
-      case "full":
-      default:
-        return "col-span-full";
-    }
-  };
-
   return (
-    <PageTransition>
+    <Dialog open={customizeOpen} onOpenChange={setCustomizeOpen}>
       <AppTopbar
         title="Dashboard"
         subtitle="Your CRM at a glance — live"
+        dashboard
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCustomizeOpen(true)}
-              className="gap-1.5 h-8 text-xs font-medium border-border/80 hover:bg-muted"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm" className="min-h-11 gap-2 sm:min-h-9">
+              <SlidersHorizontal className="size-4 text-primary" />
               Customize Layout
             </Button>
-          </div>
+          </DialogTrigger>
         }
       />
       <main
-        className="dashboard-page px-4 lg:px-8 py-6 max-w-7xl w-full mx-auto space-y-6"
+        className="dashboard-page @container mx-auto w-full min-w-0 max-w-[100rem] px-3 py-4 sm:px-6 sm:py-6 xl:px-8"
         style={{ backgroundColor: "var(--dashboard-background, transparent)" }}
       >
-        <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-4 @4xl:grid-cols-6 @4xl:gap-5">
           {widgets
             .filter((w) => w.visible)
-            .map((widget) => {
-              const spanClass = getColSpanClass(widget.size);
+            .map((widget, index) => {
+              const panelProps = { size: widget.size, index, reduceMotion, animateEntrance };
 
               switch (widget.id) {
                 case "widget-quick-actions":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="flex flex-wrap gap-2 p-1">
-                        <QuickAction
-                          icon={Target}
-                          label="New Lead"
-                          onClick={() => nav({ to: "/leads" })}
-                        />
-                        <QuickAction
-                          icon={Users}
-                          label="New Contact"
-                          onClick={() => nav({ to: "/contacts" })}
-                        />
-                        <QuickAction
-                          icon={Building2}
-                          label="New Company"
-                          onClick={() => nav({ to: "/companies" })}
-                        />
-                        <QuickAction
-                          icon={Handshake}
-                          label="New Deal"
-                          onClick={() => nav({ to: "/deals" })}
-                        />
-                        <QuickAction
-                          icon={Calendar}
-                          label="New Task"
-                          onClick={() => nav({ to: "/tasks", search: { taskId: undefined } })}
-                        />
-                        <QuickAction
-                          icon={MessagesSquare}
-                          label="Open Inbox"
-                          onClick={() => nav({ to: "/inbox" })}
-                        />
-                        <QuickAction
-                          icon={Sparkles}
-                          label="AI Studio"
-                          onClick={() => nav({ to: "/ai-studio" })}
-                        />
-                      </div>
-                    </StaggerItem>
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <section
+                        aria-labelledby="dashboard-actions"
+                        className="rounded-surface border border-border bg-surface p-3 shadow-sm sm:p-4"
+                      >
+                        <h2 id="dashboard-actions" className="mb-3 text-sm font-semibold">
+                          Quick actions
+                        </h2>
+                        <div className="grid grid-cols-2 gap-2 @sm/panel:grid-cols-3 @xl/panel:grid-cols-4 @4xl/panel:grid-cols-7">
+                          <QuickAction icon={Target} label="New Lead" to="/leads" />
+                          <QuickAction icon={Users} label="New Contact" to="/contacts" />
+                          <QuickAction icon={Building2} label="New Company" to="/companies" />
+                          <QuickAction icon={Handshake} label="New Deal" to="/deals" />
+                          <QuickAction icon={Calendar} label="New Task" to="/tasks" />
+                          <QuickAction icon={MessagesSquare} label="Open Inbox" to="/inbox" />
+                          <QuickAction icon={Sparkles} label="AI Studio" to="/ai-studio" />
+                        </div>
+                      </section>
+                    </DashboardPanel>
                   );
 
                 case "widget-kpi-summary":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <div
+                        aria-label="Key performance indicators"
+                        className="grid grid-cols-1 gap-2.5 @min-[20rem]/panel:grid-cols-2 @3xl/panel:grid-cols-4 @3xl/panel:gap-4"
+                      >
                         <StatCard
                           icon={Target}
                           tone="accent"
@@ -216,7 +196,9 @@ function DashboardPage() {
                           hint={
                             d.assignedLeadsCount.isError
                               ? "Assigned leads unavailable"
-                              : `${d.assignedLeadsCount.data ?? 0} assigned to you`
+                              : d.assignedLeadsCount.isSuccess
+                                ? `${d.assignedLeadsCount.data} assigned to you`
+                                : undefined
                           }
                           loading={d.newLeadsCount.isPending}
                           error={d.newLeadsCount.isError}
@@ -258,10 +240,11 @@ function DashboardPage() {
                           loading={pipeline.isPending}
                           error={pipeline.isError}
                           compact={pipelineTotals.length > 1}
-                          onClick={() =>
-                            document
-                              .getElementById("dashboard-pipeline-summary")
-                              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                          to={pipelineVisible ? undefined : "/deals"}
+                          onClick={
+                            pipelineVisible
+                              ? () => scrollToWidget("dashboard-pipeline-summary")
+                              : undefined
                           }
                         />
                         <StatCard
@@ -276,25 +259,28 @@ function DashboardPage() {
                           }
                           loading={tasks.isPending}
                           error={tasks.isError}
-                          to={taskCardTo}
+                          to={taskCardTo ?? (!tasksVisible ? "/tasks" : undefined)}
                           onClick={
-                            tasks.data?.crmUpcomingCount && tasks.data.projectUpcomingCount
-                              ? () =>
-                                  document
-                                    .getElementById("dashboard-upcoming-tasks")
-                                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                            tasksVisible &&
+                            tasks.data?.crmUpcomingCount &&
+                            tasks.data.projectUpcomingCount
+                              ? () => scrollToWidget("dashboard-upcoming-tasks")
                               : undefined
                           }
                         />
                       </div>
-                    </StaggerItem>
+                    </DashboardPanel>
                   );
 
                 case "widget-pipeline-funnel":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div id="dashboard-pipeline-summary" className="lg:col-span-2">
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <div className="grid min-w-0 grid-cols-1 gap-4 @2xl/panel:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] @4xl/panel:gap-5">
+                        <div
+                          id="dashboard-pipeline-summary"
+                          tabIndex={-1}
+                          className="min-w-0 scroll-mt-[calc(var(--topbar-height)+1rem)]"
+                        >
                           <PipelineSummary
                             data={pipeline.data}
                             loading={pipeline.isPending}
@@ -328,13 +314,13 @@ function DashboardPage() {
                           }}
                         />
                       </div>
-                    </StaggerItem>
+                    </DashboardPanel>
                   );
 
                 case "widget-recent-leads":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <div className="grid min-w-0 grid-cols-1 gap-4 @2xl/panel:grid-cols-2 @4xl/panel:gap-5">
                         <Widget
                           title="New Leads"
                           subtitle="Captured in the last 7 days"
@@ -433,13 +419,13 @@ function DashboardPage() {
                           )}
                         </Widget>
                       </div>
-                    </StaggerItem>
+                    </DashboardPanel>
                   );
 
                 case "widget-recent-conversations":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <div className="grid min-w-0 grid-cols-1 gap-4 @2xl/panel:grid-cols-2 @4xl/panel:gap-5">
                         <Widget
                           title="Recently Added Contacts"
                           subtitle="Fresh people in your CRM"
@@ -550,13 +536,13 @@ function DashboardPage() {
                           )}
                         </Widget>
                       </div>
-                    </StaggerItem>
+                    </DashboardPanel>
                   );
 
                 case "widget-upcoming-tasks":
                   return (
-                    <StaggerItem key={widget.id} className={spanClass}>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <DashboardPanel key={widget.id} {...panelProps}>
+                      <div className="grid min-w-0 grid-cols-1 gap-4 @2xl/panel:grid-cols-2 @4xl/panel:gap-5">
                         <Widget
                           title="Today's Activities"
                           subtitle="Everything that happened today"
@@ -594,7 +580,11 @@ function DashboardPage() {
                           )}
                         </Widget>
 
-                        <div id="dashboard-upcoming-tasks">
+                        <div
+                          id="dashboard-upcoming-tasks"
+                          tabIndex={-1}
+                          className="min-w-0 scroll-mt-[calc(var(--topbar-height)+1rem)]"
+                        >
                           <Widget
                             title="Upcoming Tasks"
                             subtitle="CRM and project work, sorted by due date"
@@ -605,19 +595,22 @@ function DashboardPage() {
                                 <Link
                                   to="/tasks"
                                   search={{ taskId: undefined }}
-                                  className="text-accent hover:underline"
+                                  className="text-foreground underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
                                 >
                                   View CRM tasks ({tasks.data.crmUpcomingCount})
                                 </Link>
                               )}
                               {!!tasks.data?.projectUpcomingCount && (
-                                <Link to="/projects/tasks" className="text-accent hover:underline">
+                                <Link
+                                  to="/projects/tasks"
+                                  className="text-foreground underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+                                >
                                   View Project tasks ({tasks.data.projectUpcomingCount})
                                 </Link>
                               )}
                               <Link
                                 to="/settings/task-reminders"
-                                className="text-accent hover:underline"
+                                className="text-foreground underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
                               >
                                 Reminder settings
                               </Link>
@@ -675,14 +668,17 @@ function DashboardPage() {
                           </Widget>
                         </div>
                       </div>
-                    </StaggerItem>
+                    </DashboardPanel>
                   );
 
                 default:
                   return null;
               }
             })}
-        </StaggerContainer>
+        </div>
+        {!widgets.some((widget) => widget.visible) && (
+          <Empty text="All widgets are hidden. Use Customize Layout to show widgets." />
+        )}
       </main>
 
       {/* Dashboard Customization Modal */}
@@ -693,25 +689,78 @@ function DashboardPage() {
         onSaveWidgets={handleSaveWidgets}
         onResetDefaults={handleResetWidgets}
       />
-    </PageTransition>
+    </Dialog>
   );
 }
 
 /* ---------------- Reusable pieces ---------------- */
 
+const dashboardPanelMotion = {
+  hidden: { opacity: 0, y: DISTANCE.sm },
+  visible: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { ...TRANSITION.page, delay: Math.min(index, 4) * 0.035, staggerChildren: 0.035 },
+  }),
+};
+
+const widgetWidths = {
+  compact: "@4xl:col-span-2",
+  medium: "@4xl:col-span-4",
+  full: "@4xl:col-span-6",
+};
+
+function DashboardPanel({
+  size,
+  index,
+  reduceMotion,
+  animateEntrance,
+  children,
+}: {
+  size: DashboardWidgetConfig["size"];
+  index: number;
+  reduceMotion: boolean;
+  animateEntrance: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      layout={reduceMotion ? false : "position"}
+      initial={animateEntrance && !reduceMotion ? "hidden" : false}
+      animate="visible"
+      variants={dashboardPanelMotion}
+      transition={{ layout: TRANSITION.page }}
+      className={`@container/panel min-w-0 ${widgetWidths[size]}`}
+      custom={index}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function QuickAction({
   icon: Icon,
   label,
-  onClick,
+  to,
 }: {
-  icon: typeof Plus;
+  icon: typeof Users;
   label: string;
-  onClick: () => void;
+  to: "/leads" | "/contacts" | "/companies" | "/deals" | "/tasks" | "/inbox" | "/ai-studio";
 }) {
+  const create = to !== "/inbox" && to !== "/ai-studio";
   return (
-    <Button variant="outline" size="sm" onClick={onClick} className="gap-1.5">
-      <Icon className="w-4 h-4" /> {label}
-    </Button>
+    <motion.div className="min-w-0" variants={variants.card}>
+      <Button
+        variant="outline"
+        asChild
+        className="min-h-11 w-full min-w-0 justify-start gap-1.5 whitespace-normal px-2 text-left text-xs leading-tight motion-safe:active:scale-[0.98]"
+      >
+        <Link to={to} search={create ? { create: true } : undefined}>
+          <Icon className="size-4 shrink-0 text-primary" aria-hidden />
+          <span className="min-w-0">{label}</span>
+        </Link>
+      </Button>
+    </motion.div>
   );
 }
 
@@ -747,48 +796,70 @@ function StatCard({
     amber: "bg-amber-500/10 text-amber-600",
   }[tone];
   const content = (
-    <MotionCard interactive className="rounded-control p-5 group">
-      <div className="flex items-start justify-between">
-        <div className={`w-10 h-10 rounded-control grid place-items-center ${toneClass}`}>
-          <Icon className="w-5 h-5" />
+    <MotionCard
+      interactive={Boolean(to || onClick)}
+      className="group h-full min-w-0 rounded-surface p-3 sm:p-4"
+    >
+      <div className="flex min-w-0 items-center gap-2">
+        <div className={`grid size-8 shrink-0 place-items-center rounded-control ${toneClass}`}>
+          <Icon className="size-4" aria-hidden />
         </div>
+        <span className="text-xs font-medium leading-snug text-muted-foreground">{label}</span>
         {(to || onClick) && (
-          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition" />
+          <ArrowRight
+            aria-hidden
+            className="ml-auto hidden size-3.5 shrink-0 text-muted-foreground motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5 @lg/panel:block"
+          />
         )}
       </div>
-      <div className="mt-4">
+      <div className="mt-3">
         <div
           className={
             compact
-              ? "text-lg font-display font-semibold break-words"
-              : "text-3xl font-display font-semibold"
+              ? "break-words font-display text-lg font-semibold tabular-nums"
+              : "break-words font-display text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl"
           }
         >
           {loading ? (
-            <span className="text-sm text-muted-foreground animate-pulse">Loading…</span>
+            <div role="status" className="flex min-h-12 flex-col justify-center gap-2">
+              <span className="sr-only">Loading…</span>
+              <Skeleton aria-hidden className="h-5 w-2/5 bg-muted motion-reduce:animate-none" />
+              <Skeleton aria-hidden className="h-2.5 w-3/5 bg-muted motion-reduce:animate-none" />
+            </div>
           ) : error ? (
             <span className="text-sm text-destructive">Could not load</span>
           ) : (
             value
           )}
         </div>
-        <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
         {!loading && !error && hint && (
-          <div className="text-[11px] text-muted-foreground mt-2">{hint}</div>
+          <div className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</div>
         )}
       </div>
     </MotionCard>
   );
-  return to ? (
-    <Link to={to} hash={hash}>
-      {content}
-    </Link>
-  ) : onClick ? (
-    <button type="button" onClick={onClick} className="w-full text-left">
-      {content}
-    </button>
-  ) : (
-    content
+  return (
+    <motion.div className="min-w-0" variants={variants.card}>
+      {to ? (
+        <Link
+          to={to}
+          hash={hash}
+          className="block h-full min-w-0 rounded-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {content}
+        </Link>
+      ) : onClick ? (
+        <button
+          type="button"
+          onClick={onClick}
+          className="block h-full w-full min-w-0 rounded-surface text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {content}
+        </button>
+      ) : (
+        content
+      )}
+    </motion.div>
   );
 }
 
@@ -808,20 +879,23 @@ function Widget({
   hash?: string;
 }) {
   return (
-    <section className="rounded-control border border-border bg-surface shadow-sm overflow-hidden">
-      <header className="px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
+    <section className="flex h-full min-w-0 flex-col rounded-surface border border-border bg-surface shadow-sm">
+      <header className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b border-border/70 px-4 py-3.5">
         <div className="flex items-center gap-2 min-w-0">
-          <Icon className="w-6 h-6 text-muted-foreground shrink-0" />
+          <span className="grid size-8 shrink-0 place-items-center rounded-control bg-muted text-muted-foreground">
+            <Icon className="size-4" aria-hidden />
+          </span>
           <div className="min-w-0">
-            <h3 className="font-display font-semibold text-sm">{title}</h3>
-            {subtitle && <p className="text-[11px] text-muted-foreground">{subtitle}</p>}
+            <h2 className="font-display text-sm font-semibold">{title}</h2>
+            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
         {to && (
           <Link
             to={to}
             hash={hash}
-            className="text-xs text-accent hover:underline shrink-0 inline-flex items-center gap-1"
+            aria-label={`View all: ${title}`}
+            className="inline-flex min-h-8 shrink-0 items-center gap-1 rounded-control px-1 text-xs font-medium text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring"
           >
             View all <ArrowRight className="w-3 h-3" />
           </Link>
@@ -833,12 +907,16 @@ function Widget({
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="p-8 text-center text-sm text-muted-foreground">{text}</div>;
+  return <div className="px-4 py-6 text-center text-sm text-muted-foreground">{text}</div>;
 }
 
 function Loading() {
   return (
-    <div className="p-8 text-center text-sm text-muted-foreground animate-pulse">Loading…</div>
+    <div role="status" className="space-y-3 px-4 py-5">
+      <span className="sr-only">Loading…</span>
+      <Skeleton aria-hidden className="h-3 w-2/3 bg-muted motion-reduce:animate-none" />
+      <Skeleton aria-hidden className="h-3 w-2/5 bg-muted motion-reduce:animate-none" />
+    </div>
   );
 }
 
@@ -893,6 +971,7 @@ function PipelineSummary({
   onRetry: () => void;
   tenantCurrency: string;
 }) {
+  const reduceMotion = useReducedMotionSafe();
   const stages = data?.stages ?? [];
   const max = Math.max(...stages.map((stage) => stage.count), 1);
 
@@ -913,15 +992,15 @@ function PipelineSummary({
           )}
           {stages.map((s) => (
             <div key={s.id}>
-              <div className="flex items-center justify-between text-xs mb-1">
-                <span className="font-medium flex items-center gap-2">
+              <div className="mb-1 grid grid-cols-2 items-start gap-2 text-xs">
+                <span className="flex min-w-0 items-center gap-2 break-words font-medium">
                   <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: s.color || "hsl(var(--accent))" }}
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ background: s.color || "var(--accent)" }}
                   />
                   {data.pipelines.length > 1 ? `${s.pipelineName} · ${s.name}` : s.name}
                 </span>
-                <span className="text-muted-foreground text-right">
+                <span className="min-w-0 break-words text-right tabular-nums text-muted-foreground">
                   {s.count} ·{" "}
                   {s.totals.length
                     ? s.totals
@@ -936,10 +1015,11 @@ function PipelineSummary({
               </div>
               <div className="h-2 rounded-full bg-muted overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-accent to-primary transition-all"
-                  initial={{ width: 0, opacity: 0.6 }}
-                  animate={{ width: `${(s.count / max) * 100}%`, opacity: 1 }}
-                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  className="h-full origin-left bg-gradient-to-r from-accent to-primary"
+                  style={{ width: `${(s.count / max) * 100}%` }}
+                  initial={reduceMotion ? false : { scaleX: 0 }}
+                  animate={{ scaleX: 1 }}
+                  transition={{ ...TRANSITION.page, duration: reduceMotion ? 0 : DURATION.slow }}
                 />
               </div>
             </div>
@@ -1012,14 +1092,14 @@ function AIInsights({
     });
 
   return (
-    <section className="rounded-control border border-border bg-gradient-to-br from-surface via-surface to-accent/5 shadow-sm overflow-hidden">
-      <header className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <div className="w-7 h-7 rounded-control bg-gradient-to-br from-accent to-primary grid place-items-center">
-          <Sparkles className="w-3.5 h-3.5 text-white" />
+    <section className="h-full min-w-0 rounded-surface border border-border bg-surface shadow-sm">
+      <header className="flex items-center gap-2 border-b border-border/70 px-4 py-3.5">
+        <div className="grid size-8 shrink-0 place-items-center rounded-control bg-primary/10 text-primary">
+          <Sparkles className="size-4" />
         </div>
         <div>
-          <h3 className="font-display font-semibold text-sm">AI Insights</h3>
-          <p className="text-[11px] text-muted-foreground">Automatic signals from your workspace</p>
+          <h2 className="font-display text-sm font-semibold">AI Insights</h2>
+          <p className="text-xs text-muted-foreground">Automatic signals from your workspace</p>
         </div>
       </header>
       {loading ? (
@@ -1029,10 +1109,7 @@ function AIInsights({
       ) : (
         <ul className="p-3 space-y-2">
           {insights.map((i, idx) => (
-            <li
-              key={idx}
-              className="flex items-start gap-3 p-3 rounded-control hover:bg-muted/40 transition"
-            >
+            <li key={idx} className="flex items-start gap-3 rounded-control bg-muted/40 p-3">
               <div className={`w-8 h-8 rounded-control grid place-items-center shrink-0 ${i.tone}`}>
                 <i.icon className="w-4 h-4" />
               </div>
@@ -1059,7 +1136,3 @@ function timeAgo(iso: string): string {
   if (dd < 7) return `${dd}d`;
   return new Date(iso).toLocaleDateString([], { month: "short", day: "numeric" });
 }
-
-// silence unused-import lint for icons imported for type refs only
-void Plus;
-void customerInitials;

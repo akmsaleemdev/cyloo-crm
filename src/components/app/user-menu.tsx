@@ -50,8 +50,11 @@ export function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-control pl-2 pr-1 py-2 hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <Avatar className="h-9 w-9">
+      <DropdownMenuTrigger
+        aria-label="Account menu"
+        className="flex items-center gap-2 rounded-control p-0 md:py-1 md:pl-2 md:pr-1 hover:bg-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Avatar className="size-8 md:size-9">
           <AvatarImage src={avatarUrl} alt={name} />
           <AvatarFallback className="bg-gradient-accent text-sm font-semibold text-accent-foreground">
             {initial}

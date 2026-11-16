@@ -1,4 +1,6 @@
 import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
+import { MotionConfig } from "framer-motion";
+import { PageTransition } from "@/shared/motion";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppFooter } from "@/components/app/app-footer";
@@ -80,42 +82,45 @@ function AuthenticatedLayout() {
     location.pathname === "/inbox" || location.pathname.startsWith("/admin") || isFlowBuilder;
 
   return (
-    <LayoutProvider>
-      <RealtimeMessagingProvider>
-        <ThemeApplier />
-        <div
-          className={cn(
-            "flex bg-background text-foreground",
-            immersiveRoute ? "h-dvh min-h-0 overflow-hidden" : "min-h-dvh",
-          )}
-        >
-          <AppSidebar />
+    <MotionConfig reducedMotion="user">
+      <LayoutProvider>
+        <RealtimeMessagingProvider>
+          <ThemeApplier />
           <div
             className={cn(
-              "flex-1 min-w-0 flex flex-col",
-              immersiveRoute && "h-dvh min-h-0 overflow-hidden",
+              "flex bg-background text-foreground",
+              immersiveRoute ? "h-dvh min-h-0 overflow-hidden" : "min-h-dvh",
             )}
           >
-            <UnsupportedProviderBanner />
+            <AppSidebar />
             <div
               className={cn(
-                "flex-1 flex flex-col min-w-0",
-                immersiveRoute && "min-h-0 overflow-hidden",
+                "flex-1 min-w-0 flex flex-col",
+                immersiveRoute && "h-dvh min-h-0 overflow-hidden",
               )}
             >
-              <PlatformFeatureRouteGate path={location.pathname}>
-                <RoutePermissionGate path={location.pathname}>
-                  <Outlet />
-                </RoutePermissionGate>
-              </PlatformFeatureRouteGate>
-            </div>
+              <UnsupportedProviderBanner />
+              <PageTransition
+                immersive={immersiveRoute}
+                className={cn(
+                  "flex-1 flex flex-col min-w-0",
+                  immersiveRoute && "min-h-0 overflow-hidden",
+                )}
+              >
+                <PlatformFeatureRouteGate path={location.pathname}>
+                  <RoutePermissionGate path={location.pathname}>
+                    <Outlet />
+                  </RoutePermissionGate>
+                </PlatformFeatureRouteGate>
+              </PageTransition>
 
-            {!immersiveRoute && <AppFooter />}
+              {!immersiveRoute && <AppFooter />}
+            </div>
+            <CommandPalette />
           </div>
-          <CommandPalette />
-        </div>
-      </RealtimeMessagingProvider>
-    </LayoutProvider>
+        </RealtimeMessagingProvider>
+      </LayoutProvider>
+    </MotionConfig>
   );
 }
 
