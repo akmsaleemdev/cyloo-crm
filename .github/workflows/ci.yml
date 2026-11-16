@@ -164,8 +164,12 @@ jobs:
       - name: Run E2E smoke tests
         run: npm run test:smoke
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # Public-page smoke checks use unreachable loopback data and no live credentials.
+          SUPABASE_URL: http://127.0.0.1:1
+          VITE_SUPABASE_URL: http://127.0.0.1:1
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_smoke_example
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_smoke_example
+          SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_smoke_example
 
       - name: Upload test results
         if: always()
