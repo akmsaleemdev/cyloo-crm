@@ -142,15 +142,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: .output/
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 7
-
   # ─── E2E Tests (Playwright) ────────────────────────────────────────
   e2e:
     name: E2E Tests
@@ -169,12 +160,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .output/
 
       - name: Run E2E smoke tests
         run: npm run test:smoke
