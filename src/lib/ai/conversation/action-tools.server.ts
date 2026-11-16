@@ -17,6 +17,8 @@ import { z } from "zod";
 import type { ToolContext } from "./tools.server";
 import { sbAny } from "@/lib/supabase/untyped";
 import { resolveWorkspaceCurrency } from "@/lib/currency/resolve.server";
+import { postgrestLiteral } from "@/lib/api/postgrest-filters";
+import { validateCrmPatch } from "./crm-tool-validation";
 
 /** Wrap an executor with audit logging + uniform error handling. */
 function auditable<Args, Out>(ctx: ToolContext, name: string, fn: (args: Args) => Promise<Out>) {
@@ -512,12 +514,15 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
         reference: z.string(),
       }),
       execute: auditable(ctx, "check_order", async (a) => {
-        const q = a.reference.trim();
+        const q = z.string().trim().min(1).max(200).parse(a.reference);
+        const filters = [`invoice_number.eq.${postgrestLiteral(q)}`];
+        if (z.string().uuid().safeParse(q).success) filters.push(`id.eq.${q}`);
         const { data, error } = await ctx.supabase
           .from("invoices" as never)
           .select("id,invoice_number,status,total,amount_paid,amount_due,currency,due_date")
           .eq("workspace_id", ctx.workspaceId)
-          .or(`id.eq.${q},invoice_number.eq.${q}`)
+          .is("deleted_at", null)
+          .or(filters.join(","))
           .limit(1)
           .maybeSingle();
         if (error) throw new Error(error.message);
@@ -536,6 +541,8 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
         fields: z.record(z.string(), z.unknown()),
       }),
       execute: auditable(ctx, "update_crm", async (a) => {
+        const patch = validateCrmPatch(a.entity, a.fields);
+        const recordId = z.string().uuid().parse(a.id);
         const table = (
           {
             contact: "contacts",
@@ -546,9 +553,10 @@ export function buildActionTools(ctx: ToolContext): ToolSet {
         )[a.entity];
         const { data, error } = await ctx.supabase
           .from(table as never)
-          .update(a.fields as never)
-          .eq("id", a.id)
+          .update(patch as never)
+          .eq("id", recordId)
           .eq("workspace_id", ctx.workspaceId)
+          .is("deleted_at", null)
           .select("id")
           .single();
         if (error) throw new Error(error.message);

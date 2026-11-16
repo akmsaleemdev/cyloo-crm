@@ -358,28 +358,3 @@ export function useRevokeOtherSessions() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sessions", "mine"] }),
   });
 }
-
-/* ---------- Record login event (best effort, called after sign-in) ---------- */
-export async function recordLoginEvent(
-  event: LoginEvent,
-  extra?: {
-    failure_reason?: string;
-    device?: string;
-  },
-) {
-  try {
-    const { data: u } = await supabase.auth.getUser();
-    if (!u.user) return;
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent : null;
-    await anyClient.rpc("record_login_attempt", {
-      _user_id: u.user.id,
-      _event: event,
-      _ip: null,
-      _user_agent: ua,
-      _device: extra?.device ?? null,
-      _failure_reason: extra?.failure_reason ?? null,
-    });
-  } catch {
-    // best effort
-  }
-}

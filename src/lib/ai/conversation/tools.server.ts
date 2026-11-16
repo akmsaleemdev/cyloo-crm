@@ -11,6 +11,7 @@ import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ACTION_TOOL_CATALOG, buildActionTools } from "./action-tools.server";
+import { postgrestLiteral } from "@/lib/api/postgrest-filters";
 
 export interface ToolContext {
   supabase: SupabaseClient;
@@ -84,12 +85,16 @@ export function buildConversationTools(ctx: ToolContext, enabled?: string[]): To
         query: z.string().describe("Phone number, email, or customer id."),
       }),
       execute: async ({ query }) => {
-        const q = query.trim();
+        const q = z.string().trim().min(1).max(200).parse(query);
+        const literal = postgrestLiteral(q);
+        const filters = [`email.eq.${literal}`, `phone.eq.${literal}`];
+        if (z.string().uuid().safeParse(q).success) filters.push(`id.eq.${q}`);
         const { data } = await ctx.supabase
-          .from("customers" as never)
-          .select("id,name,email,phone,company")
+          .from("contacts" as never)
+          .select("id,name,email,phone,company_id")
           .eq("workspace_id", ctx.workspaceId)
-          .or(`email.eq.${q},phone.eq.${q},id.eq.${q}`)
+          .is("deleted_at", null)
+          .or(filters.join(","))
           .limit(3);
         return { matches: data ?? [] };
       },

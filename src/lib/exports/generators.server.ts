@@ -19,7 +19,15 @@ function stringify(value: unknown): string {
 
 function toCsv(result: DatasetResult): Uint8Array {
   const escape = (v: unknown) => {
-    const s = stringify(v);
+    const raw = stringify(v);
+    // CSV quoting does not stop spreadsheet formula execution. Preserve
+    // numeric values while forcing untrusted formula-like text to text cells.
+    const s =
+      // Control prefixes are intentional: spreadsheet apps may skip them.
+      // eslint-disable-next-line no-control-regex
+      typeof v !== "number" && (/^[\s\u0000-\u001f]*[=+@-]/.test(raw) || /^[\t\r\n]/.test(raw))
+        ? `'${raw}`
+        : raw;
     if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
     return s;
   };
@@ -46,7 +54,14 @@ async function toExcel(result: DatasetResult): Promise<Uint8Array> {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet(result.title.slice(0, 30) || "Export");
   worksheet.addRow(result.columns);
-  const rows = result.rows.map((row) => result.columns.map((column) => row[column] ?? ""));
+  const rows = result.rows.map((row) =>
+    result.columns.map((column) => {
+      const value = row[column];
+      // ExcelJS accepts executable formula objects. Database JSON must become
+      // display text, never be passed through as an ExcelJS cell descriptor.
+      return typeof value === "number" || typeof value === "boolean" ? value : stringify(value);
+    }),
+  );
   worksheet.addRows(rows);
   result.columns.forEach((column, index) => {
     worksheet.getColumn(index + 1).width = Math.min(

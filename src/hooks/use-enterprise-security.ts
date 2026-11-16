@@ -252,19 +252,6 @@ export async function logSecurityEvent(params: {
   });
 }
 
-// ---------- Rate Limit (client-side gate; server enforces canonically) ----------
-export async function checkRateLimit(bucketKey: string, limit: number, windowSeconds = 60) {
-  const { data, error } = await db.rpc("enforce_rate_limit", {
-    _bucket_key: bucketKey,
-    _limit: limit,
-    _window_seconds: windowSeconds,
-    _workspace_id: null,
-  });
-  if (error) throw error;
-  const row = Array.isArray(data) ? data[0] : data;
-  return row as { allowed: boolean; remaining: number; reset_at: string };
-}
-
 // ---------- Webhook Signing Rotation ----------
 export function useWebhookSigningSecrets() {
   const { data: ws } = useCurrentWorkspace();

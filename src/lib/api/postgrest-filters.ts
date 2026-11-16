@@ -34,3 +34,8 @@ export function orIlike(columns: string[], input: string): string | null {
   if (!pattern) return null;
   return columns.map((c) => `${c}.ilike.${pattern}`).join(",");
 }
+
+/** Quote an exact-match value inside a raw PostgREST logical expression. */
+export function postgrestLiteral(input: string): string {
+  return `"${input.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}

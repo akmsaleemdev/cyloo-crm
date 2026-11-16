@@ -1,0 +1,101 @@
+{
+  "verification": {
+    "invalid_indexes": 0,
+    "client_truncate_grants": 0,
+    "unvalidated_constraints": 0,
+    "test_workspaces_remaining": 0,
+    "auditPrefixedIndexesTotal": 83,
+    "addedForeignKeyIndexes": 356,
+    "addedUniqueIndexes": 2,
+    "databaseBytes": 62863027,
+    "additionalFkIndexes": 274
+  },
+  "migrationHashes": [
+    {
+      "version": "20261115172400",
+      "name": "database_security_audit_hardening",
+      "normalized_hash": "35a95de0823c8a8cdee91a57228b314b"
+    },
+    {
+      "version": "20261115172428",
+      "name": "database_rls_performance",
+      "normalized_hash": "d4ecef122839fe7f7601d7081e1a447b"
+    },
+    {
+      "version": "20261115172528",
+      "name": "database_tenant_foreign_key_indexes",
+      "normalized_hash": "e826d936281e2b71fee1e93067584de0"
+    },
+    {
+      "version": "20261115172845",
+      "name": "database_workspace_integrity",
+      "normalized_hash": "43794401dec46dc4af934d9cf4deacd3"
+    },
+    {
+      "version": "20261115173756",
+      "name": "database_workspace_integrity_indexes",
+      "normalized_hash": "838c4f1ce34f075b45ef240c6b49f4f7"
+    },
+    {
+      "version": "20261115184241",
+      "name": "database_policy_consolidation",
+      "normalized_hash": "57079ce9f7ed361f6d33479d0ef25846"
+    },
+    {
+      "version": "20261115184254",
+      "name": "database_remaining_foreign_key_indexes",
+      "normalized_hash": "3910945db46f8d43d48ec78f440ffc64"
+    },
+    {
+      "version": "20261116065221",
+      "name": "database_role_assignment_authorization",
+      "normalized_hash": "0be951d39bcc570d6eaecf2bfc566c75"
+    },
+    {
+      "version": "20261116070304",
+      "name": "database_login_attempt_rpc_privilege",
+      "normalized_hash": "f8ba20393ea5adf80b7ebe30867f1c3e"
+    }
+  ],
+  "typecheck": "passed",
+  "nativeTypecheck": "passed",
+  "automatedSuite": {
+    "files": 40,
+    "tests": 209,
+    "status": "passed"
+  },
+  "dependencyAudit": {
+    "production": 0,
+    "development": {
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    }
+  },
+  "liveSql": "passed: tenant checks and non-member role assignment; fixtures rolled back",
+  "productionBuild": "passed",
+  "changedFileLint": "passed",
+  "policyConsolidation": {
+    "groups": 105,
+    "predicates": 513,
+    "untouchedPolicies": 492
+  },
+  "sslEnforcement": true,
+  "backupStatus": {
+    "managedBackups": 0,
+    "pitr": false,
+    "localEncryptedLogicalBackup": true,
+    "localBackupFile": "cyloo-mfothsalhfinquaqzlcm-20261116T072207Z-602158c886184c94b109df71c49e8bbd.dump.age",
+    "localBackupBytes": 4769554,
+    "localBackupSha256": "a06fea4401e239135916b831e11c149185643d7005a232f1c8f795a5e39945de",
+    "archiveReadable": true,
+    "encryptedRoundTrip": true,
+    "offsiteCopy": false,
+    "isolatedRestore": false
+  },
+  "targetedTests": {
+    "files": 5,
+    "passed": 26
+  },
+  "privilegedLoginEventRpc": "service_role only"
+}
