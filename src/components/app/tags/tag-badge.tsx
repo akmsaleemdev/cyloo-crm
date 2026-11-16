@@ -4,7 +4,7 @@ import { Sparkles, Wand2, Star, X } from "lucide-react";
 import type { TagRow } from "@/hooks/use-tags";
 
 interface Props {
-  tag: TagRow;
+  tag: Pick<TagRow, "id" | "name" | "color" | "is_favorite" | "is_smart" | "is_ai_generated">;
   onRemove?: () => void;
   className?: string;
   size?: "sm" | "md";

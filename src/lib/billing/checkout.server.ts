@@ -9,7 +9,7 @@
 
 import { getBillingProvider } from "./providers";
 import type { BillingProviderId } from "./providers/types";
-import { sbAny } from "@/lib/supabase/untyped";
+import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
 
 export type CheckoutInput = {
   organization_id: string;
@@ -37,8 +37,7 @@ export type CheckoutResult = { id: string; url: string; provider: BillingProvide
  * Failures are logged and never break the billing flow.
  */
 export async function insertBillingEvent(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   row: {
     organization_id: string;
     provider: string;
@@ -78,7 +77,7 @@ export async function insertBillingEvent(
 }
 
 export async function resolveCheckoutTarget(
-  supabase: any,
+  supabase: UntypedClient,
   args: { plan_code: string; workspace_id?: string | null; provider?: string | null },
 ) {
   const { resolvePlanGatewayTarget } = await import("./plan-gateways.server");
@@ -91,7 +90,7 @@ export async function resolveCheckoutTarget(
 }
 
 export async function createGatewayCheckout(
-  supabase: any,
+  supabase: UntypedClient,
   data: CheckoutInput,
 ): Promise<CheckoutResult> {
   const target = await resolveCheckoutTarget(supabase, {

@@ -18,6 +18,12 @@
 
 import type { TemplateSendPayload } from "@/lib/messaging/template-send-payload";
 import { sbAny } from "@/lib/supabase/untyped";
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
 import {
   claimOutboundMessage,
   deliveryMetadata,
@@ -129,9 +135,7 @@ export async function deliverInboxMessage(args: {
   userId: string;
 }): Promise<DeliverResult> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const admin = supabaseAdmin as unknown as {
-    from: (t: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  };
+  const admin = sbAny(supabaseAdmin);
 
   const { data: msgRaw } = await admin
     .from("messages")
@@ -283,9 +287,9 @@ export async function deliverInboxMessage(args: {
       } else if (msg.message_type === "location") {
         // The composer stores the pin in metadata and leaves body empty, so the
         // text/media path below reported it as an empty message.
-        const loc = ((msg.metadata ?? {}) as Record<string, any>)["location"] ?? {};
-        const latitude = Number(loc.lat ?? loc.latitude);
-        const longitude = Number(loc.lng ?? loc.longitude);
+        const location = asRecord(asRecord(msg.metadata).location);
+        const latitude = Number(location.lat ?? location.latitude);
+        const longitude = Number(location.lng ?? location.longitude);
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
           return markFailed("Location has no coordinates.");
         }
@@ -295,17 +299,18 @@ export async function deliverInboxMessage(args: {
           location: {
             latitude,
             longitude,
-            ...(loc.label || loc.name ? { name: String(loc.label ?? loc.name) } : {}),
-            ...(loc.address ? { address: String(loc.address) } : {}),
+            ...(location.label || location.name
+              ? { name: String(location.label ?? location.name) }
+              : {}),
+            ...(location.address ? { address: String(location.address) } : {}),
           },
         };
       } else if (
         msg.message_type === "contact" &&
-        ((msg.metadata ?? {}) as Record<string, any>)["contact_card"]?.name // eslint-disable-line @typescript-eslint/no-explicit-any
+        typeof asRecord(asRecord(msg.metadata).contact_card).name === "string"
       ) {
         // Native WhatsApp contact card instead of just the name as text.
-        const card = ((msg.metadata ?? {}) as Record<string, any>)["contact_card"] as {
-          // eslint-disable-line @typescript-eslint/no-explicit-any
+        const card = asRecord(asRecord(msg.metadata).contact_card) as {
           name: string;
           phone?: string;
           email?: string;
@@ -506,7 +511,7 @@ export async function deliverInboxMessage(args: {
 
   const media = msg.media_url ? { url: msg.media_url, kind: mediaKind(msg.media_type) } : null;
   const text = msg.body?.trim() ? msg.body : null;
-  const msgMeta = (msg.metadata ?? {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const msgMeta = asRecord(msg.metadata);
   const isTelegramLocation = channel === "telegram" && msg.message_type === "location";
   const isTelegramPoll = channel === "telegram" && msg.message_type === "poll";
   const isTelegramSticker = channel === "telegram" && msg.message_type === "sticker";
@@ -539,7 +544,7 @@ export async function deliverInboxMessage(args: {
       const { sendTelegramMessage, callTelegram } = await import("@/lib/telegram/send.server");
       const card = msgMeta["contact_card"] as { name?: string; phone?: string } | undefined;
       if (isTelegramLocation) {
-        const loc = msgMeta["location"] ?? {};
+        const loc = asRecord(msgMeta["location"]);
         const latitude = Number(loc.lat ?? loc.latitude);
         const longitude = Number(loc.lng ?? loc.longitude);
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
@@ -841,9 +846,7 @@ export async function deliverReaction(args: {
   emoji: string;
 }): Promise<DeliverResult> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const admin = supabaseAdmin as unknown as {
-    from: (t: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  };
+  const admin = sbAny(supabaseAdmin);
 
   const { data: msgRaw } = await admin
     .from("messages")
@@ -990,9 +993,7 @@ export async function deliverQueuedMessages(args: {
   limit?: number;
 }): Promise<{ attempted: number; sent: number; failed: number }> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const admin = supabaseAdmin as unknown as {
-    from: (t: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  };
+  const admin = sbAny(supabaseAdmin);
 
   const { data: rows } = await admin
     .from("messages")

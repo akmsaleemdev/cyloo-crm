@@ -109,6 +109,7 @@ const eventTypeSchema = z.object({
   confirmation_message: z.string().max(2000).optional().nullable(),
   is_active: z.boolean().default(true),
 });
+export type EventTypeInput = z.input<typeof eventTypeSchema>;
 
 export const saveEventType = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

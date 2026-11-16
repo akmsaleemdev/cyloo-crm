@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 export type DripPreset =
   "welcome" | "followup" | "abandoned" | "promotional" | "birthday" | "anniversary";
 

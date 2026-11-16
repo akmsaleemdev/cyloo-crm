@@ -42,7 +42,7 @@ function targetMonthDay(baseISO: string, offsetDays: number): { key: string; dat
 
 export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunResult> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const admin = supabaseAdmin as any;
+  const admin = sbAny(supabaseAdmin);
 
   const today = opts.today ?? new Date().toISOString().slice(0, 10);
   const result: RunResult = {
@@ -156,14 +156,14 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
           .select("email")
           .eq("id", c.owner_id)
           .maybeSingle();
-        ownerEmail = (prof as any)?.email ?? null;
+        ownerEmail = prof?.email ?? null;
       } else {
         const { data: admins } = await admin
           .from("workspace_members")
           .select("user_id")
           .eq("workspace_id", s.workspace_id)
           .in("role", ["owner", "admin"]);
-        recipientIds = (admins ?? []).map((r: any) => r.user_id).filter(Boolean);
+        recipientIds = (admins ?? []).map((row) => row.user_id).filter(Boolean);
       }
 
       // 3. In-app notifications (one per recipient), guarded by unique log
@@ -252,8 +252,10 @@ export async function runBirthdayReminders(opts: RunOptions = {}): Promise<RunRe
             // historical sends.
             result.emails_skipped++;
           }
-        } catch (e: any) {
-          result.errors.push(`email ${c.id}: ${e?.message ?? String(e)}`);
+        } catch (error: unknown) {
+          result.errors.push(
+            `email ${c.id}: ${error instanceof Error ? error.message : String(error)}`,
+          );
           result.emails_skipped++;
         }
       }

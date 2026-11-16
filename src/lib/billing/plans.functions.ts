@@ -15,6 +15,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Json } from "@/integrations/supabase/types";
 import { sbAny } from "@/lib/supabase/untyped";
 
 /* -------------------------------------------------------------------------- */
@@ -31,6 +32,20 @@ const planTierEnum = z.enum([
   "custom",
 ]);
 const planIntervalEnum = z.enum(["month", "year", "lifetime"]);
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
+
+function jsonRecord(value: Json): Record<string, Json | undefined> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
 
 const planInputShape = z.object({
   code: z
@@ -48,8 +63,8 @@ const planInputShape = z.object({
   currency: z.string().length(3).default("USD"),
   interval: planIntervalEnum,
   trial_days: z.number().int().min(0).max(365).default(0),
-  features: z.record(z.string(), z.any()).default({}),
-  limits: z.record(z.string(), z.any()).default({}),
+  features: z.record(z.string(), jsonSchema).default({}),
+  limits: z.record(z.string(), jsonSchema).default({}),
   is_active: z.boolean().default(true),
   is_public: z.boolean().default(true),
   is_custom: z.boolean().default(false),
@@ -129,8 +144,8 @@ export const recommendPlan = createServerFn({ method: "GET" })
     // Aggregate by month client-side (small volume).
     const monthly = new Map<string, number>();
     for (const row of usage.data ?? []) {
-      const m = String((row as any).occurred_at).slice(0, 7);
-      monthly.set(m, (monthly.get(m) ?? 0) + Number((row as any).quantity ?? 0));
+      const m = row.occurred_at.slice(0, 7);
+      monthly.set(m, (monthly.get(m) ?? 0) + Number(row.quantity ?? 0));
     }
     const peak = Math.max(0, ...monthly.values());
     const projected = Math.ceil(peak * 1.25);
@@ -143,12 +158,12 @@ export const recommendPlan = createServerFn({ method: "GET" })
       .eq("interval", "month")
       .order("price_cents", { ascending: true });
 
-    const candidates = (plans.data ?? []).filter((p: any) => {
-      const cap = Number((p.limits as any)?.messages_per_month ?? -1);
+    const candidates = (plans.data ?? []).filter((p) => {
+      const limits = jsonRecord(p.limits);
+      const cap = Number(limits.messages_per_month ?? -1);
       return cap === -1 || cap >= projected;
     });
-    const pick =
-      candidates[0] ?? (plans.data ?? []).find((p: any) => p.tier === "professional") ?? null;
+    const pick = candidates[0] ?? (plans.data ?? []).find((p) => p.tier === "professional") ?? null;
     return {
       recommended_plan: pick,
       observed_peak: peak,
@@ -169,7 +184,7 @@ export const upsertPlan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("plans")
-      .upsert(data as any, { onConflict: "code" })
+      .upsert(data, { onConflict: "code" })
       .select("*")
       .single();
     if (error) throw error;
@@ -205,7 +220,7 @@ export const deletePlan = createServerFn({ method: "POST" })
 /*  Subscription lifecycle actions (org owner/admin)                           */
 /* -------------------------------------------------------------------------- */
 
-async function assertOrgAdmin(supabase: any, org_id: string, user_id: string) {
+async function assertOrgAdmin(supabase: unknown, org_id: string, user_id: string) {
   const { data, error } = await sbAny(supabase).rpc("has_org_role", {
     _org_id: org_id,
     _user_id: user_id,
@@ -286,7 +301,7 @@ export const changePlan = createServerFn({ method: "POST" })
 
     if (data.at_period_end && existing.data?.current_period_end) {
       // Schedule change via metadata; actual switch happens at renewal.
-      const meta = { ...((existing.data.metadata as any) ?? {}), pending_plan_id: plan.data.id };
+      const meta = { ...jsonRecord(existing.data.metadata ?? {}), pending_plan_id: plan.data.id };
       const { data: row, error } = await context.supabase
         .from("subscriptions")
         .update({ metadata: meta })
@@ -340,13 +355,13 @@ export const cancelSubscriptionForOrg = createServerFn({ method: "POST" })
     const patch = data.at_period_end
       ? {
           cancel_at: existing.data.current_period_end ?? now,
-          metadata: { ...((existing.data.metadata as any) ?? {}), cancel_reason: data.reason },
+          metadata: { ...jsonRecord(existing.data.metadata ?? {}), cancel_reason: data.reason },
         }
       : {
           status: "canceled" as const,
           canceled_at: now,
           cancel_at: now,
-          metadata: { ...((existing.data.metadata as any) ?? {}), cancel_reason: data.reason },
+          metadata: { ...jsonRecord(existing.data.metadata ?? {}), cancel_reason: data.reason },
         };
 
     const { data: row, error } = await context.supabase

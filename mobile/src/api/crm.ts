@@ -93,6 +93,18 @@ export type ActivityRow = {
   deal_id: string | null;
 };
 
+type ContactWithCompany = Omit<ContactRow, "company_name"> & {
+  company: { name: string | null } | null;
+};
+type CustomerDeal = Pick<DealRow, "id" | "name" | "amount" | "currency" | "stage_id">;
+type CustomerConversation = {
+  id: string;
+  subject: string | null;
+  channel: string;
+  status: string;
+  last_message_at: string | null;
+};
+
 // ---------- Reads ----------
 
 export async function listContacts(q?: string, owner?: "me" | null, meId?: string) {
@@ -108,9 +120,10 @@ export async function listContacts(q?: string, owner?: "me" | null, meId?: strin
   if (owner === "me" && meId) query = query.eq("owner_id", meId);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []).map((r: any): ContactRow => ({
-    ...r,
-    company_name: r.company?.name ?? null,
+  const contacts = (data ?? []) as ContactWithCompany[];
+  return contacts.map((contact): ContactRow => ({
+    ...contact,
+    company_name: contact.company?.name ?? null,
   }));
 }
 
@@ -217,8 +230,8 @@ export async function fetchCustomer360(contactId: string) {
     activities,
     notes,
     tasks,
-    deals: (deals.data ?? []) as any[],
-    conversations: (conversations.data ?? []) as any[],
+    deals: (deals.data ?? []) as CustomerDeal[],
+    conversations: (conversations.data ?? []) as CustomerConversation[],
   };
 }
 
@@ -232,26 +245,27 @@ export async function fetchCustomer360(contactId: string) {
 async function mutateOrQueue(
   op: "insert" | "update" | "delete",
   table: string,
-  payload: any,
-  match?: any,
+  payload: object,
+  match?: Record<string, unknown>,
 ) {
   const online = useAppStore.getState().networkOnline;
   if (!online) {
-    enqueue({ op, table, payload, match });
+    enqueue({ op, table, payload: payload as Record<string, unknown>, match });
     return { queued: true } as const;
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: unknown = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
     if (error) throw error;
     return { queued: false } as const;
-  } catch (e: any) {
+  } catch (e: unknown) {
     // Treat fetch/network failures as offline; anything else re-throws.
-    if (String(e?.message ?? "").match(/Network request failed|fetch/i)) {
-      enqueue({ op, table, payload, match });
+    const message = e instanceof Error ? e.message : String(e);
+    if (/Network request failed|fetch/i.test(message)) {
+      enqueue({ op, table, payload: payload as Record<string, unknown>, match });
       return { queued: true } as const;
     }
     throw e;

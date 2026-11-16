@@ -118,6 +118,8 @@ function isoDaysAgo(days: number) {
 
 function Analytics() {
   const money = useCurrencyFormatter({ locale: "en-US", maximumFractionDigits: 2 });
+  const reportMoney = (value: unknown) =>
+    money(typeof value === "number" ? value : Number(value) || 0);
   const { active: workspace } = useCurrentWorkspace();
   const qc = useQueryClient();
   const [days, setDays] = useState(30);
@@ -389,7 +391,9 @@ function Analytics() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => download("daily.csv", toCSV(c.daily as any))}
+                  onClick={() =>
+                    download("daily.csv", toCSV(c.daily as unknown as Record<string, unknown>[]))
+                  }
                 >
                   <Download className="h-3 w-3 " /> CSV
                 </Button>
@@ -441,7 +445,7 @@ function Analytics() {
                 columns={[
                   ["name", "Product"],
                   ["qty", "Units"],
-                  ["revenue", "Revenue", money],
+                  ["revenue", "Revenue", reportMoney],
                 ]}
               />
               <ReportCard
@@ -450,7 +454,7 @@ function Analytics() {
                 columns={[
                   ["name", "Category"],
                   ["qty", "Units"],
-                  ["revenue", "Revenue", money],
+                  ["revenue", "Revenue", reportMoney],
                 ]}
               />
             </div>
@@ -475,7 +479,7 @@ function Analytics() {
               columns={[
                 ["name", "Customer"],
                 ["orders", "Orders"],
-                ["revenue", "Revenue", money],
+                ["revenue", "Revenue", reportMoney],
               ]}
             />
           </TabsContent>
@@ -508,7 +512,7 @@ function Analytics() {
                 columns={[
                   ["channel", "Channel"],
                   ["orders", "Orders"],
-                  ["revenue", "Revenue", money],
+                  ["revenue", "Revenue", reportMoney],
                 ]}
               />
             </div>
@@ -518,7 +522,7 @@ function Analytics() {
               columns={[
                 ["agent", "Agent"],
                 ["orders", "Orders"],
-                ["revenue", "Revenue", money],
+                ["revenue", "Revenue", reportMoney],
               ]}
             />
           </TabsContent>
@@ -530,7 +534,7 @@ function Analytics() {
               columns={[
                 ["code", "Code"],
                 ["uses", "Uses"],
-                ["discount", "Discount", money],
+                ["discount", "Discount", reportMoney],
               ]}
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -557,9 +561,17 @@ function Analytics() {
   );
 }
 
-type Col = [string, string, ((v: any) => string)?];
+type Col = [string, string, ((v: unknown) => string)?];
 
-function ReportCard({ title, rows, columns }: { title: string; rows: any[]; columns: Col[] }) {
+function ReportCard({
+  title,
+  rows,
+  columns,
+}: {
+  title: string;
+  rows: Record<string, unknown>[];
+  columns: Col[];
+}) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">

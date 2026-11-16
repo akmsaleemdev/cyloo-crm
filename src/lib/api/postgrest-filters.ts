@@ -13,6 +13,8 @@ export function sanitizeSearchTerm(input: string, maxLength = 100): string {
     input
       .replace(/[,.()":*%\\]/g, " ")
       // Control characters have no place in a filter string either.
+      // Strip control characters before composing a PostgREST expression.
+      // eslint-disable-next-line no-control-regex
       .replace(/[\u0000-\u001f\u007f]/g, " ")
       .replace(/\s+/g, " ")
       .trim()
@@ -31,4 +33,9 @@ export function orIlike(columns: string[], input: string): string | null {
   const pattern = ilikePattern(input);
   if (!pattern) return null;
   return columns.map((c) => `${c}.ilike.${pattern}`).join(",");
+}
+
+/** Quote an exact-match value inside a raw PostgREST logical expression. */
+export function postgrestLiteral(input: string): string {
+  return `"${input.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }

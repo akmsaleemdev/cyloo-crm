@@ -1,7 +1,8 @@
 import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
+import { sbAny } from "@/lib/supabase/untyped";
 
 export async function fetchPendingConversations(workspaceId?: string, limit = 25) {
-  let query = (supabaseAdmin as any)
+  let query = sbAny(supabaseAdmin)
     .from("conversation_intelligence")
     .select("conversation_id,workspace_id")
     .eq("needs_reanalysis", true)

@@ -9,9 +9,9 @@ export function hashParams(input: unknown): string {
     .slice(0, 32);
 }
 
-interface AdminClient {
-  from: (t: string) => any;
-}
+import type { UntypedClient } from "@/lib/supabase/untyped";
+
+type AdminClient = UntypedClient;
 
 export async function readCache<T>(
   admin: AdminClient,

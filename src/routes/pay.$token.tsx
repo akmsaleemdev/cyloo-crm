@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreditCard, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sbAny } from "@/lib/supabase/untyped";
 
 export const Route = createFileRoute("/pay/$token")({
   component: PayPage,
@@ -19,7 +20,7 @@ function PayPage() {
     queryFn: async () => {
       // Public payment links are read through a SECURITY DEFINER helper that
       // returns only non-sensitive fields for one exact token (no customer PII).
-      const { data, error } = await (supabase as any).rpc("get_public_payment_link", {
+      const { data, error } = await sbAny(supabase).rpc("get_public_payment_link", {
         _token: token,
       });
       if (error) throw error;

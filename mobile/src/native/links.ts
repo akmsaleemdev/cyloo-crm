@@ -29,7 +29,7 @@ export function useDeepLinks() {
     const handle = (url: string | null) => {
       if (!url) return;
       const path = parseDeepLink(url);
-      if (path) router.push(path as any);
+      if (path) router.push(path as never);
     };
     Linking.getInitialURL().then(handle);
     const sub = Linking.addEventListener("url", (e) => handle(e.url));

@@ -18,12 +18,11 @@ import { platformDefaultCurrency } from "@/lib/currency/resolve.server";
 /* Shared guards                                                              */
 /* -------------------------------------------------------------------------- */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function assertPlatformStaff(
-  supabase: any,
+  supabase: unknown,
   userId: string,
 ): Promise<"superadmin" | "support"> {
-  const { data, error } = await supabase
+  const { data, error } = await sbAny(supabase)
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
@@ -35,8 +34,7 @@ async function assertPlatformStaff(
   ) as "superadmin" | "support";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertSuperAdmin(supabase: any, userId: string) {
+async function assertSuperAdmin(supabase: unknown, userId: string) {
   const role = await assertPlatformStaff(supabase, userId);
   if (role !== "superadmin") throw new Error("Forbidden: superadmin role required for this action");
 }
@@ -120,7 +118,7 @@ export const getPlatformSubscriptions = createServerFn({ method: "GET" })
     // sensible fallback — resolved once rather than per row.
     const fallbackCurrency = (await platformDefaultCurrency()) ?? "USD";
 
-    const rows: PlatformSubscriptionRow[] = (subsRes.data ?? []).map((r: Record<string, any>) => {
+    const rows: PlatformSubscriptionRow[] = (subsRes.data ?? []).map((r) => {
       const org = Array.isArray(r.organizations) ? r.organizations[0] : r.organizations;
       const plan = Array.isArray(r.plans) ? r.plans[0] : r.plans;
       const seats = Number(r.seats ?? 1);
@@ -369,46 +367,42 @@ export const getWhatsAppPlatform = createServerFn({ method: "GET" })
       tplByAccount.set(t.channel_account_id, entry);
     }
 
-    const accounts: WhatsAppAccountRow[] = (accountsRes.data ?? []).map(
-      (a: Record<string, any>) => ({
-        id: a.id,
-        workspace_id: a.workspace_id,
-        workspace_name: wsName.get(a.workspace_id) ?? "—",
-        display_name: a.display_name,
-        phone_number: a.phone_number,
-        phone_number_id: a.phone_number_id,
-        waba_id: a.waba_id,
-        business_id: a.business_id,
-        status: a.status,
-        status_reason: a.status_reason,
-        provider: a.provider,
-        // Secrets are never returned — only whether they are configured.
-        has_access_token: Boolean(a.access_token_secret_name),
-        has_app_secret: Boolean(a.app_secret_name),
-        has_verify_token: Boolean(a.verify_token),
-        webhook_signature_algo: a.webhook_signature_algo,
-        last_verified_at: a.last_verified_at,
-        created_at: a.created_at,
-        templates: tplByAccount.get(a.id) ?? { total: 0, approved: 0, pending: 0, rejected: 0 },
-      }),
-    );
+    const accounts: WhatsAppAccountRow[] = (accountsRes.data ?? []).map((a) => ({
+      id: a.id,
+      workspace_id: a.workspace_id,
+      workspace_name: wsName.get(a.workspace_id) ?? "—",
+      display_name: a.display_name,
+      phone_number: a.phone_number,
+      phone_number_id: a.phone_number_id,
+      waba_id: a.waba_id,
+      business_id: a.business_id,
+      status: a.status,
+      status_reason: a.status_reason,
+      provider: a.provider,
+      // Secrets are never returned — only whether they are configured.
+      has_access_token: Boolean(a.access_token_secret_name),
+      has_app_secret: Boolean(a.app_secret_name),
+      has_verify_token: Boolean(a.verify_token),
+      webhook_signature_algo: a.webhook_signature_algo,
+      last_verified_at: a.last_verified_at,
+      created_at: a.created_at,
+      templates: tplByAccount.get(a.id) ?? { total: 0, approved: 0, pending: 0, rejected: 0 },
+    }));
 
-    const sessions: WhatsAppQrSessionRow[] = (sessionsRes.data ?? []).map(
-      (s: Record<string, any>) => ({
-        id: s.id,
-        workspace_id: s.workspace_id,
-        workspace_name: wsName.get(s.workspace_id) ?? "—",
-        status: s.status,
-        phone_number: s.phone_number,
-        display_name: s.display_name,
-        device_platform: s.device_platform,
-        error_message: s.error_message,
-        last_seen_at: s.last_seen_at,
-        connected_at: s.connected_at,
-        expires_at: s.expires_at,
-        created_at: s.created_at,
-      }),
-    );
+    const sessions: WhatsAppQrSessionRow[] = (sessionsRes.data ?? []).map((s) => ({
+      id: s.id,
+      workspace_id: s.workspace_id,
+      workspace_name: wsName.get(s.workspace_id) ?? "—",
+      status: s.status,
+      phone_number: s.phone_number,
+      display_name: s.display_name,
+      device_platform: s.device_platform,
+      error_message: s.error_message,
+      last_seen_at: s.last_seen_at,
+      connected_at: s.connected_at,
+      expires_at: s.expires_at,
+      created_at: s.created_at,
+    }));
 
     const outbox = (outboxRes.data ?? []) as Array<{ status: string }>;
     const sent = outbox.filter((m) => ["sent", "delivered", "read"].includes(m.status)).length;
@@ -529,7 +523,7 @@ export const getAiProviderRegistry = createServerFn({ method: "POST" })
     );
 
     const modelsByProvider = new Map<string, AiProviderRow["models"]>();
-    for (const m of (modelRes.data ?? []) as Array<Record<string, any>>) {
+    for (const m of modelRes.data ?? []) {
       const list = modelsByProvider.get(m.provider_id) ?? [];
       list.push({
         id: m.id,
@@ -542,7 +536,7 @@ export const getAiProviderRegistry = createServerFn({ method: "POST" })
     }
 
     const healthByProvider = new Map<string, AiProviderRow["health"]>();
-    for (const h of (healthRes.data ?? []) as Array<Record<string, any>>) {
+    for (const h of healthRes.data ?? []) {
       healthByProvider.set(h.provider_id, {
         status: h.status,
         latency_ms: h.latency_ms,
@@ -553,7 +547,7 @@ export const getAiProviderRegistry = createServerFn({ method: "POST" })
     }
 
     const usageByProvider = new Map<string, AiProviderRow["usage30d"]>();
-    for (const u of (usageRes.data ?? []) as Array<Record<string, any>>) {
+    for (const u of usageRes.data ?? []) {
       if (!u.provider_id) continue;
       const entry = usageByProvider.get(u.provider_id) ?? {
         requests: 0,
@@ -568,7 +562,7 @@ export const getAiProviderRegistry = createServerFn({ method: "POST" })
       usageByProvider.set(u.provider_id, entry);
     }
 
-    const providers: AiProviderRow[] = (provRes.data ?? []).map((p: Record<string, any>) => ({
+    const providers: AiProviderRow[] = (provRes.data ?? []).map((p) => ({
       id: p.id,
       workspace_id: p.workspace_id,
       workspace_name: wsName.get(p.workspace_id) ?? "—",

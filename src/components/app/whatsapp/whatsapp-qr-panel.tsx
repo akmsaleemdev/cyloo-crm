@@ -131,7 +131,7 @@ export function WhatsAppQrPanel() {
 
   const startM = useMutation({
     mutationFn: () => startFn({ data: { workspaceId: ws!.id } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       setActiveSessionId(res.id);
       invalidate();
       if (!res.worker_available) {
@@ -154,7 +154,7 @@ export function WhatsAppQrPanel() {
 
   const reconnectM = useMutation({
     mutationFn: (id: string) => reconnectFn({ data: { sessionId: id } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       invalidate();
       setActiveSessionId(res.id);
       if (!res.worker_available)
@@ -187,7 +187,7 @@ export function WhatsAppQrPanel() {
 
   const revokeAllM = useMutation({
     mutationFn: () => revokeAllFn({ data: { workspaceId: ws!.id } }),
-    onSuccess: (res: any) => {
+    onSuccess: (res) => {
       invalidate();
       toast.success(`Revoked ${res.revoked} session${res.revoked === 1 ? "" : "s"}`);
     },
@@ -578,7 +578,7 @@ function QrDialog({
     let timer: ReturnType<typeof setTimeout> | undefined;
     async function tick() {
       try {
-        const res: any = await poll({ data: { sessionId } });
+        const res = await poll({ data: { sessionId } });
         if (!alive) return;
         setState({
           qr: res.qr,

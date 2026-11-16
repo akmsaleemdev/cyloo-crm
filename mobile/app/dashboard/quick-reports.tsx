@@ -65,7 +65,7 @@ export default function QuickReports() {
               key={r.id}
               title={r.title}
               subtitle={r.subtitle}
-              onPress={() => router.push(r.to as any)}
+              onPress={() => router.push(r.to as never)}
             />
           ))}
         </SectionCard>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ import {
 } from "@/api/crm";
 
 type Tab = "contacts" | "companies" | "leads" | "deals" | "tasks";
+type CrmRow = ContactRow | CompanyRow | LeadRow | DealRow | TaskRow;
 
 export default function CRM() {
   const t = useTheme();
@@ -72,7 +73,7 @@ export default function CRM() {
   });
 
   const active = { contacts, companies, leads, deals, tasks }[tab];
-  const pendingCount = useMemo(() => pendingOutbox().length, [online]);
+  const pendingCount = pendingOutbox().length;
 
   return (
     <Screen>
@@ -151,10 +152,10 @@ export default function CRM() {
         </View>
       </ScrollView>
 
-      <FlatList
+      <FlatList<CrmRow>
         style={{ marginTop: t.spacing.sm }}
-        data={(active?.data ?? []) as any[]}
-        keyExtractor={(i: any) => i.id}
+        data={active?.data ?? []}
+        keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl
             refreshing={!!active?.isRefetching}

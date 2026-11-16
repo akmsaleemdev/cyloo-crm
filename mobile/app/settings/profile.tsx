@@ -12,23 +12,24 @@ import { supabase } from "@/api/supabase";
 export default function Profile() {
   const t = useTheme();
   const { user } = useAuth();
+  const userId = user?.id;
   const { role } = useRole();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
     supabase
       .from("profiles")
       .select("full_name, phone")
-      .eq("id", user.id)
+      .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => {
-        setFullName((data as any)?.full_name ?? "");
-        setPhone((data as any)?.phone ?? "");
+        setFullName(data?.full_name ?? "");
+        setPhone(data?.phone ?? "");
       });
-  }, [user?.id]);
+  }, [userId]);
 
   async function save() {
     if (!user) return;

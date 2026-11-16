@@ -1,0 +1,288 @@
+{
+  "project": "mfothsalhfinquaqzlcm",
+  "date": "2026-11-16",
+  "baseline": {
+    "security": [
+      {
+        "name": "rls_enabled_no_policy",
+        "count": 9,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "function_search_path_mutable",
+        "count": 3,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+      },
+      {
+        "name": "extension_in_public",
+        "count": 1,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public"
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "count": 24,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "count": 59,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "count": 1,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "performance": [
+      {
+        "name": "unindexed_foreign_keys",
+        "count": 350,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys"
+      },
+      {
+        "name": "auth_rls_initplan",
+        "count": 671,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0003_auth_rls_initplan"
+      },
+      {
+        "name": "no_primary_key",
+        "count": 1,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0004_no_primary_key"
+      },
+      {
+        "name": "unused_index",
+        "count": 418,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "count": 202,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+      },
+      {
+        "name": "duplicate_index",
+        "count": 4,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0009_duplicate_index"
+      }
+    ],
+    "health": []
+  },
+  "after": {
+    "security": [
+      {
+        "name": "rls_enabled_no_policy",
+        "count": 9,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+      },
+      {
+        "name": "extension_in_public",
+        "count": 1,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public"
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "count": 5,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "count": 43,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "count": 1,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+      }
+    ],
+    "performance": [
+      {
+        "name": "no_primary_key",
+        "count": 1,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0004_no_primary_key"
+      },
+      {
+        "name": "unused_index",
+        "count": 770,
+        "level": "INFO",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index"
+      },
+      {
+        "name": "multiple_permissive_policies",
+        "count": 7,
+        "level": "WARN",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0006_multiple_permissive_policies"
+      }
+    ],
+    "health": []
+  },
+  "overview": [
+    {
+      "audit": {
+        "ssl": "on",
+        "cron": [
+          {
+            "name": "wa-process-outbox",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-process-webhooks",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-process-scheduled",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-run-scheduled-syncs",
+            "active": true,
+            "schedule": "*/5 * * * *"
+          },
+          {
+            "name": "wa-cleanup-media",
+            "active": true,
+            "schedule": "17 * * * *"
+          },
+          {
+            "name": "whatsapp-qr-sessions-cleanup",
+            "active": true,
+            "schedule": "*/5 * * * *"
+          },
+          {
+            "name": "flush-scheduled-messages",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "export-jobs-dispatch",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "billing-daily-revenue-rollup",
+            "active": true,
+            "schedule": "15 0 * * *"
+          },
+          {
+            "name": "billing-automation-15min",
+            "active": true,
+            "schedule": "*/15 * * * *"
+          },
+          {
+            "name": "sla-breach-scanner",
+            "active": true,
+            "schedule": "*/5 * * * *"
+          },
+          {
+            "name": "birthday-reminders-daily",
+            "active": true,
+            "schedule": "0 8 * * *"
+          },
+          {
+            "name": "task-reminders-every-5min",
+            "active": true,
+            "schedule": "*/5 * * * *"
+          },
+          {
+            "name": "wacrm-run-scheduled-syncs",
+            "active": true,
+            "schedule": "*/2 * * * *"
+          },
+          {
+            "name": "wacrm-workflow-queue",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-campaign-dispatch",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-drip-tick",
+            "active": true,
+            "schedule": "* * * * *"
+          },
+          {
+            "name": "wa-social-inbox-sync",
+            "active": true,
+            "schedule": "*/5 * * * *"
+          }
+        ],
+        "db_size": "57 MB",
+        "postgres": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+        "without_rls": 0,
+        "public_tables": 391,
+        "invalid_indexes": 0,
+        "financial_floats": null,
+        "long_transactions": 0,
+        "public_storage_buckets": 0,
+        "unvalidated_constraints": 0,
+        "test_workspaces_remaining": 0
+      }
+    }
+  ],
+  "changedPolicies": 699,
+  "addedForeignKeyIndexes": 356,
+  "removedDuplicateIndexes": 4,
+  "liveBehavioralRegression": "passed; fixtures rolled back",
+  "addedUniqueIndexes": 2,
+  "automatedTests": {
+    "files": 39,
+    "passed": 207
+  },
+  "finalVerification": {
+    "invalidIndexes": 0,
+    "unvalidatedConstraints": 0,
+    "clientMaintenanceGrants": 0,
+    "testWorkspacesRemaining": 0,
+    "databaseBytes": 62863027,
+    "additionalForeignKeyIndexes": 274
+  },
+  "policyConsolidation": {
+    "groups": 105,
+    "predicatesPreserved": 513,
+    "untouchedPolicies": 492
+  },
+  "roleAssignmentNullBypass": "fixed; live regression passed",
+  "sslEnforcement": true,
+  "networkAllowedCidrs": ["0.0.0.0/0", "::/0"],
+  "backupStatus": {
+    "managedBackups": 0,
+    "pitr": false,
+    "localEncryptedLogicalBackup": true,
+    "localBackupBytes": 4767846,
+    "localBackupSha256": "1bbc787320856463be7d0b1c044830995e356078ebfe85e8273e603eb81177a1",
+    "archiveReadable": true,
+    "encryptedRoundTrip": true,
+    "offsiteCopy": false,
+    "isolatedRestore": false
+  },
+  "targetedTests": {
+    "files": 5,
+    "passed": 26
+  },
+  "privilegedLoginEventRpc": "service_role only"
+}

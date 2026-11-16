@@ -16,6 +16,7 @@ import { computeDiscount, validateCoupon, type CouponRow } from "./coupon-engine
 import { emit, persistEvent } from "./events";
 import { computeTax, type TaxRateRow } from "./tax-engine";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Tables } from "@/integrations/supabase/types";
 
 export interface DraftInvoiceInput {
   organization_id: string;
@@ -50,7 +51,7 @@ export async function draftInvoice(
   ]);
   if (subRes.error) throw subRes.error;
   const sub = subRes.data;
-  const plan = (sub as any).plans;
+  const plan = sub.plans as Tables<"plans">;
   const currency: string = plan.currency;
   const seats: number = sub.seats ?? 1;
 
@@ -139,12 +140,12 @@ export async function draftInvoice(
 
   // Tax.
   const taxRates = await sbAny(supabase).from("tax_rates").select("*");
-  const country = custRes.data?.billing_address
-    ? (custRes.data.billing_address as any).country
-    : null;
-  const region = custRes.data?.billing_address
-    ? (custRes.data.billing_address as any).region
-    : null;
+  const billingAddress = custRes.data?.billing_address as {
+    country?: string;
+    region?: string;
+  } | null;
+  const country = billingAddress?.country ?? null;
+  const region = billingAddress?.region ?? null;
   const tax = computeTax(
     subtotal_cents - discount_cents,
     { country, region, tax_id: custRes.data?.tax_id ?? null },

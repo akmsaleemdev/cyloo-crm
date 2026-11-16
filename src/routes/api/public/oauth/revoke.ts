@@ -29,7 +29,8 @@ export const Route = createFileRoute("/api/public/oauth/revoke")({
             ? ["oauth_refresh_tokens", "oauth_access_tokens"]
             : ["oauth_access_tokens", "oauth_refresh_tokens"];
         for (const t of tables) {
-          const res = await (sbAny(supabaseAdmin).from(t as any) as any)
+          const res = await sbAny(supabaseAdmin)
+            .from(t as never)
             .update({ revoked_at: now })
             .eq("token_hash", hash)
             .eq("client_id", auth.client.id)

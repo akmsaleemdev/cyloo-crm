@@ -53,7 +53,7 @@ export type CustomFieldDefinition = {
   deleted_at: string | null;
 };
 
-const anyFrom = (t: string) => sbAny(supabase).from(t as any) as any;
+const anyFrom = (table: string) => sbAny(supabase).from(table as never);
 
 export const CUSTOM_FIELD_ENTITIES: { value: CustomFieldEntity; label: string }[] = [
   { value: "contact", label: "Contacts" },

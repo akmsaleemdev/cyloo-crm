@@ -302,13 +302,17 @@ function safeJsonParse(text: string): unknown {
     .trim();
   try {
     return JSON.parse(trimmed);
-  } catch {}
+  } catch {
+    // Continue by trying to parse the JSON object embedded in the response.
+  }
   const s = trimmed.indexOf("{"),
     e = trimmed.lastIndexOf("}");
   if (s >= 0 && e > s) {
     try {
       return JSON.parse(trimmed.slice(s, e + 1));
-    } catch {}
+    } catch {
+      // Invalid model output is handled by the null fallback below.
+    }
   }
   return null;
 }

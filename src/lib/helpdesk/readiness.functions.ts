@@ -5,7 +5,6 @@
  */
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sbAny } from "@/lib/supabase/untyped";
 
 export type CheckStatus = "pass" | "warn" | "fail" | "info";
 export interface ReadinessCheck {
@@ -22,9 +21,27 @@ export interface ReadinessReport {
   generated_at: string;
 }
 
-async function count(supabase: any, table: string, filter?: (q: any) => any): Promise<number> {
-  let q = sbAny(supabase).from(table).select("id", { count: "exact", head: true });
-  if (filter) q = filter(q);
+interface CountQuery extends PromiseLike<{ count: number | null; error: unknown | null }> {
+  eq(column: string, value: unknown): CountQuery;
+  not(column: string, operator: string, value: unknown): CountQuery;
+  in(column: string, values: unknown[]): CountQuery;
+}
+
+interface CountClient {
+  from(table: string): {
+    select(columns: string, options: { count: "exact"; head: true }): CountQuery;
+  };
+}
+
+async function count(
+  supabase: unknown,
+  table: string,
+  filter?: (q: CountQuery) => void,
+): Promise<number> {
+  // This aggregate does not return row shapes. Avoid instantiating the full
+  // generated database schema for a dynamic table-name count query.
+  const q = (supabase as CountClient).from(table).select("id", { count: "exact", head: true });
+  filter?.(q);
   const { count: c, error } = await q;
   if (error) return 0;
   return c ?? 0;

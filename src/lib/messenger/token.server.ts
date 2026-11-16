@@ -119,8 +119,9 @@ export async function markMessengerAccountExpired(
   reason: string,
 ): Promise<void> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sbAny(supabaseAdmin).from("messenger_accounts" as any) as any)
+
+  await sbAny(supabaseAdmin)
+    .from("messenger_accounts" as never)
     .update({
       status: "expired",
       status_reason: reason.slice(0, 500),
@@ -141,8 +142,9 @@ export async function markMessengerAccountConnected(
   };
   if (patch.expiresAt !== null) update.token_expires_at = patch.expiresAt;
   if (patch.scopes) update.scopes = patch.scopes;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sbAny(supabaseAdmin).from("messenger_accounts" as any) as any)
+
+  await sbAny(supabaseAdmin)
+    .from("messenger_accounts" as never)
     .update(update)
     .eq("id", accountId);
 }

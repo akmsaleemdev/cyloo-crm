@@ -52,6 +52,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/helpdesk/organization")({
   head: () => ({ meta: [{ title: "Support Organization" }] }),
@@ -66,6 +67,60 @@ const STRATEGIES = [
   { value: "language", label: "Language", icon: Languages },
   { value: "manual", label: "Manual", icon: Users },
 ];
+type QueueStrategy = (typeof STRATEGIES)[number]["value"];
+type QueueRow = Tables<"support_queues">;
+type QueueTicketView = Pick<Tables<"queue_tickets">, "id" | "status"> & {
+  ticket?: { ticket_number: string | null; subject: string | null } | null;
+};
+type QueueForm = {
+  id?: string;
+  name: string;
+  description: string | null;
+  color: string;
+  strategy: QueueStrategy;
+  required_skills: string[];
+  required_languages: string[];
+  vip_only: boolean;
+  is_active: boolean;
+  priority: number;
+  max_open_per_agent: number;
+};
+type AgentSkillView = Tables<"agent_skills"> & {
+  profile?: {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    email: string | null;
+  } | null;
+};
+type AgentSkillInput = {
+  user_id: string;
+  skills?: string[];
+  languages?: string[];
+  handles_vip?: boolean;
+  max_concurrent?: number;
+  is_available?: boolean;
+};
+type WorkspaceMemberView = {
+  user_id: string;
+  role: string;
+  profile?: Array<{
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    email: string | null;
+  }> | null;
+};
+type TeamInboxView = Tables<"inboxes"> & {
+  members?: Array<{
+    user_id: string;
+    role: string;
+    profile: { display_name: string | null; avatar_url: string | null } | null;
+  }>;
+};
+type MentionView = Tables<"ticket_mentions"> & {
+  ticket?: { ticket_number: string | null; subject: string | null } | null;
+};
 
 function OrganizationPage() {
   return (
@@ -104,7 +159,10 @@ function OrganizationPage() {
 function QueuesTab() {
   const list = useServerFn(listQueues);
   const qc = useQueryClient();
-  const { data: queues = [] } = useQuery({ queryKey: ["support-queues"], queryFn: () => list() });
+  const { data: queues = [] } = useQuery<QueueRow[]>({
+    queryKey: ["support-queues"],
+    queryFn: () => list(),
+  });
 
   useEffect(() => {
     const ch = supabase
@@ -127,7 +185,7 @@ function QueuesTab() {
         <QueueDialog />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        {queues.map((q: any) => (
+        {queues.map((q) => (
           <QueueCard key={q.id} queue={q} />
         ))}
         {queues.length === 0 && (
@@ -140,16 +198,16 @@ function QueuesTab() {
   );
 }
 
-function QueueCard({ queue }: { queue: any }) {
+function QueueCard({ queue }: { queue: QueueRow }) {
   const listTickets = useServerFn(listQueueTickets);
   const del = useServerFn(deleteQueue);
   const qc = useQueryClient();
-  const { data: tickets = [] } = useQuery({
+  const { data: tickets = [] } = useQuery<QueueTicketView[]>({
     queryKey: ["queue-tickets", queue.id],
     queryFn: () => listTickets({ data: { queue_id: queue.id } }),
   });
-  const waiting = tickets.filter((t: any) => t.status === "waiting").length;
-  const assigned = tickets.filter((t: any) => t.status === "assigned").length;
+  const waiting = tickets.filter((ticket) => ticket.status === "waiting").length;
+  const assigned = tickets.filter((ticket) => ticket.status === "assigned").length;
   const Strategy = STRATEGIES.find((s) => s.value === queue.strategy);
 
   const removeMut = useMutation({
@@ -223,23 +281,38 @@ function QueueCard({ queue }: { queue: any }) {
   );
 }
 
-function QueueDialog({ queue }: { queue?: any }) {
+function QueueDialog({ queue }: { queue?: QueueRow }) {
   const upsert = useServerFn(upsertQueue);
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<any>(
-    queue ?? {
-      name: "",
-      description: "",
-      color: "#075E54",
-      strategy: "round_robin",
-      required_skills: [],
-      required_languages: [],
-      vip_only: false,
-      is_active: true,
-      priority: 0,
-      max_open_per_agent: 10,
-    },
+  const [form, setForm] = useState<QueueForm>(
+    queue
+      ? {
+          ...queue,
+          strategy: STRATEGIES.some((item) => item.value === queue.strategy)
+            ? (queue.strategy as QueueStrategy)
+            : "manual",
+          description: queue.description,
+          color: queue.color ?? "#075E54",
+          required_skills: queue.required_skills ?? [],
+          required_languages: queue.required_languages ?? [],
+          vip_only: queue.vip_only ?? false,
+          is_active: queue.is_active ?? true,
+          priority: queue.priority ?? 0,
+          max_open_per_agent: queue.max_open_per_agent ?? 10,
+        }
+      : {
+          name: "",
+          description: null,
+          color: "#075E54",
+          strategy: "round_robin",
+          required_skills: [],
+          required_languages: [],
+          vip_only: false,
+          is_active: true,
+          priority: 0,
+          max_open_per_agent: 10,
+        },
   );
 
   const save = useMutation({
@@ -249,7 +322,8 @@ function QueueDialog({ queue }: { queue?: any }) {
       qc.invalidateQueries({ queryKey: ["support-queues"] });
       setOpen(false);
     },
-    onError: (e: any) => toast.error(e.message),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Unable to save queue"),
   });
 
   return (
@@ -286,7 +360,10 @@ function QueueDialog({ queue }: { queue?: any }) {
               <Label>Routing Strategy</Label>
               <Select
                 value={form.strategy}
-                onValueChange={(v) => setForm({ ...form, strategy: v })}
+                onValueChange={(value) => {
+                  const strategy = STRATEGIES.find((item) => item.value === value)?.value;
+                  if (strategy) setForm({ ...form, strategy });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -371,21 +448,24 @@ function SkillsTab() {
   const upsert = useServerFn(upsertAgentSkill);
   const qc = useQueryClient();
 
-  const { data: skills = [] } = useQuery({ queryKey: ["agent-skills"], queryFn: () => list() });
-  const { data: memberList = [] } = useQuery({
+  const { data: skills = [] } = useQuery<AgentSkillView[]>({
+    queryKey: ["agent-skills"],
+    queryFn: () => list(),
+  });
+  const { data: memberList = [] } = useQuery<WorkspaceMemberView[]>({
     queryKey: ["ws-members"],
     queryFn: () => members(),
   });
 
   const save = useMutation({
-    mutationFn: (data: any) => upsert({ data }),
+    mutationFn: (data: AgentSkillInput) => upsert({ data }),
     onSuccess: () => {
       toast.success("Saved");
       qc.invalidateQueries({ queryKey: ["agent-skills"] });
     },
   });
 
-  const byUser = new Map(skills.map((s: any) => [s.user_id, s]));
+  const byUser = new Map(skills.map((skill) => [skill.user_id, skill] as const));
 
   return (
     <Card>
@@ -393,13 +473,16 @@ function SkillsTab() {
         <CardTitle className="text-base">Agent Skills, Languages & VIP</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {memberList.map((m: any) => {
-          const row: any = byUser.get(m.user_id) ?? {
+        {memberList.map((m) => {
+          const profile = m.profile?.[0];
+          const saved = byUser.get(m.user_id);
+          const row: AgentSkillInput = {
             user_id: m.user_id,
-            skills: [],
-            languages: [],
-            handles_vip: false,
-            is_available: true,
+            skills: saved?.skills ?? [],
+            languages: saved?.languages ?? [],
+            handles_vip: saved?.handles_vip ?? false,
+            is_available: saved?.is_available ?? true,
+            max_concurrent: saved?.max_concurrent ?? undefined,
           };
           return (
             <div
@@ -408,11 +491,11 @@ function SkillsTab() {
             >
               <div className="md:col-span-2 flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-muted grid place-items-center text-xs">
-                  {(m.profile?.display_name ?? m.profile?.email ?? "?").slice(0, 2).toUpperCase()}
+                  {(profile?.display_name ?? profile?.email ?? "?").slice(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <div className="text-sm font-medium">
-                    {m.profile?.display_name ?? m.profile?.email}
+                    {profile?.display_name ?? profile?.email}
                   </div>
                   <div className="text-xs text-muted-foreground">{m.role}</div>
                 </div>
@@ -471,11 +554,14 @@ function SkillsTab() {
 /* --------------------------- TEAM INBOX --------------------------- */
 function TeamInboxTab() {
   const list = useServerFn(listTeamInboxes);
-  const { data: inboxes = [] } = useQuery({ queryKey: ["team-inboxes"], queryFn: () => list() });
+  const { data: inboxes = [] } = useQuery<TeamInboxView[]>({
+    queryKey: ["team-inboxes"],
+    queryFn: () => list(),
+  });
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {inboxes.map((ib: any) => (
+      {inboxes.map((ib) => (
         <Card key={ib.id}>
           <CardHeader className="flex-row items-center gap-3 space-y-0">
             <div
@@ -496,7 +582,7 @@ function TeamInboxTab() {
               Team ({(ib.members ?? []).length})
             </div>
             <div className="flex flex-wrap gap-2">
-              {(ib.members ?? []).map((m: any) => (
+              {(ib.members ?? []).map((m) => (
                 <Badge key={m.user_id} variant="secondary" className="gap-1">
                   <Users className="h-3 w-3" />
                   {m.profile?.display_name ?? "Member"} · {m.role}
@@ -521,7 +607,10 @@ function MentionsTab() {
   const list = useServerFn(listMyMentions);
   const markRead = useServerFn(markMentionRead);
   const qc = useQueryClient();
-  const { data: mentions = [] } = useQuery({ queryKey: ["my-mentions"], queryFn: () => list() });
+  const { data: mentions = [] } = useQuery<MentionView[]>({
+    queryKey: ["my-mentions"],
+    queryFn: () => list(),
+  });
 
   useEffect(() => {
     const ch = supabase
@@ -543,7 +632,7 @@ function MentionsTab() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {mentions.map((m: any) => (
+        {mentions.map((m) => (
           <div
             key={m.id}
             className={`border rounded-control p-3 flex items-start justify-between gap-3 ${m.read_at ? "opacity-60" : ""}`}

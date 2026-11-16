@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/hooks/billing/rollup")({
           .from("subscriptions")
           .select("organization_id")
           .in("status", ["active", "trialing", "past_due"]);
-        const uniqueOrgs = [...new Set((orgs.data ?? []).map((r: any) => r.organization_id))];
+        const uniqueOrgs = [...new Set((orgs.data ?? []).map((r) => r.organization_id))];
 
         const global = await computeRevenueSnapshot(supabaseAdmin, {});
         await persistRevenueSnapshot(supabaseAdmin, global, null);

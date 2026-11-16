@@ -142,13 +142,6 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-output
-          path: .output/
-          retention-days: 7
-
   # ─── E2E Tests (Playwright) ────────────────────────────────────────
   e2e:
     name: E2E Tests
@@ -168,17 +161,15 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: .output/
-
       - name: Run E2E smoke tests
         run: npm run test:smoke
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # Public-page smoke checks use unreachable loopback data and no live credentials.
+          SUPABASE_URL: http://127.0.0.1:1
+          VITE_SUPABASE_URL: http://127.0.0.1:1
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_smoke_example
+          VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_smoke_example
+          SUPABASE_SERVICE_ROLE_KEY: sb_secret_ci_smoke_example
 
       - name: Upload test results
         if: always()

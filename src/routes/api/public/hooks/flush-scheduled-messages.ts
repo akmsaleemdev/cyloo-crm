@@ -22,9 +22,8 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
           const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
 
           const nowIso = new Date().toISOString();
-          const { data: due, error } = await supabaseAdmin
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .from("scheduled_messages" as any)
+          const { data: due, error } = await sbAny(supabaseAdmin)
+            .from("scheduled_messages")
             .select("*")
             .eq("status", "pending")
             .lte("scheduled_for", nowIso)
@@ -63,10 +62,9 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                 if (!pageId || !psid || !messengerAccountId) {
                   throw new Error("Missing messenger routing metadata");
                 }
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { data: tokRow } = await (
-                  sbAny(supabaseAdmin).from("messenger_accounts" as any) as any
-                )
+
+                const { data: tokRow } = await sbAny(supabaseAdmin)
+                  .from("messenger_accounts")
                   .select("access_token_ciphertext, page_id, status")
                   .eq("id", messengerAccountId)
                   .maybeSingle();
@@ -98,10 +96,8 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
                 providerMessageId = sent.messageId || null;
               }
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const { data: msg, error: mErr } = await (
-                sbAny(supabaseAdmin).from("messages" as any) as any
-              )
+              const { data: msg, error: mErr } = await sbAny(supabaseAdmin)
+                .from("messages")
                 .insert({
                   workspace_id: row.workspace_id,
                   conversation_id: row.conversation_id,
@@ -122,8 +118,8 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
 
               if (mErr) throw mErr;
 
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (sbAny(supabaseAdmin).from("scheduled_messages" as any) as any)
+              await sbAny(supabaseAdmin)
+                .from("scheduled_messages")
                 .update({
                   status: "sent",
                   sent_at: new Date().toISOString(),
@@ -134,8 +130,9 @@ export const Route = createFileRoute("/api/public/hooks/flush-scheduled-messages
               results.push({ id: row.id, status: "sent" });
             } catch (e) {
               const msg = (e as Error).message ?? String(e);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (sbAny(supabaseAdmin).from("scheduled_messages" as any) as any)
+
+              await sbAny(supabaseAdmin)
+                .from("scheduled_messages")
                 .update({ status: "failed", error: msg })
                 .eq("id", row.id);
               results.push({ id: row.id, status: "failed", error: msg });

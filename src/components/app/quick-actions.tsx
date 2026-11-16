@@ -54,7 +54,7 @@ export function QuickActions() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to="/tasks" search={(prev: any) => prev} className="gap-2 cursor-pointer">
+          <Link to="/tasks" search={{ taskId: undefined }} className="gap-2 cursor-pointer">
             <CheckSquare className="h-4 w-4 text-primary" /> New task
             <DropdownMenuShortcut>T</DropdownMenuShortcut>
           </Link>

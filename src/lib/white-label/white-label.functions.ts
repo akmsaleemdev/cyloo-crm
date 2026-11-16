@@ -7,9 +7,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Json } from "@/integrations/supabase/types";
 
-async function activeWorkspaceId(supabase: any, userId: string): Promise<string | null> {
-  const { data, error } = await supabase
+async function activeWorkspaceId(supabase: unknown, userId: string): Promise<string | null> {
+  const { data, error } = await sbAny(supabase)
     .from("workspace_members")
     .select("workspace_id")
     .eq("user_id", userId)
@@ -21,12 +22,12 @@ async function activeWorkspaceId(supabase: any, userId: string): Promise<string 
 }
 
 async function requireActiveWorkspaceId(
-  supabase: any,
+  supabase: unknown,
   userId: string,
   requested?: string | null,
 ): Promise<string> {
   if (requested) {
-    const { data, error } = await supabase
+    const { data, error } = await sbAny(supabase)
       .from("workspace_members")
       .select("workspace_id")
       .eq("workspace_id", requested)
@@ -223,8 +224,8 @@ export const upsertWhiteLabel = createServerFn({ method: "POST" })
     const domainChanged =
       changes.custom_domain !== undefined && changes.custom_domain !== before?.custom_domain;
     const pending: Record<string, unknown> = { ...changes };
-    let saved: any = null;
-    let error: any = null;
+    let saved: Record<string, Json> | null = null;
+    let error: { message?: string } | null = null;
     for (let attempt = 0; attempt < 4; attempt++) {
       ({ data: saved, error } = await sbAny(context.supabase)
         .from("white_label_configs")

@@ -41,7 +41,7 @@ export async function createHarnessMembers(specs: MemberSpec[]) {
       email,
       password,
       email_confirm: true,
-      user_metadata: { rls_harness: true, run_id: runId },
+      app_metadata: { rls_harness: true, run_id: runId },
     });
     if (error || !data.user) throw new Error(`user_create_${spec.label}: ${error?.message}`);
     const userId = data.user.id;

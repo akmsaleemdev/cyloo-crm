@@ -15,7 +15,7 @@ function publicClient() {
   return createClient(process.env.SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      fetch: (input: any, init: any) => {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
         const h = new Headers(init?.headers);
         if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
           h.delete("Authorization");
@@ -26,8 +26,8 @@ function publicClient() {
   });
 }
 
-async function activeWorkspaceId(supabase: any, userId: string): Promise<string> {
-  const { data } = await supabase
+async function activeWorkspaceId(supabase: unknown, userId: string): Promise<string> {
+  const { data } = await sbAny(supabase)
     .from("workspace_members")
     .select("workspace_id")
     .eq("user_id", userId)
@@ -206,7 +206,9 @@ export const listMyInstalledPlugins = createServerFn({ method: "GET" })
     const workspaceId = await activeWorkspaceId(context.supabase, context.userId);
     const { data, error } = await context.supabase
       .from("plugin_installations")
-      .select("*, plugins(*), plugin_versions(*)")
+      .select(
+        "*, plugins(*), plugin_versions!plugin_installations_version_id_fkey(*), plugin_license_activations!plugin_license_activations_installation_id_fkey(plugin_licenses!plugin_license_activations_license_id_fkey(license_key))",
+      )
       .eq("workspace_id", workspaceId)
       .neq("status", "uninstalled")
       .order("installed_at", { ascending: false });
@@ -273,7 +275,7 @@ export const publishPluginVersion = createServerFn({ method: "POST" })
     z
       .object({
         pluginId: z.string().uuid(),
-        version: z.string().regex(/^\d+\.\d+\.\d+([+\-][\w.]+)?$/),
+        version: z.string().regex(/^\d+\.\d+\.\d+([-+][\w.]+)?$/),
         changelog: z.string().max(4000).optional(),
         manifest: z.record(z.string(), z.unknown()).default({}),
         entry_url: z
@@ -300,7 +302,7 @@ export const publishPluginVersion = createServerFn({ method: "POST" })
         plugin_id: data.pluginId,
         version: data.version,
         changelog: data.changelog,
-        manifest: data.manifest as any,
+        manifest: data.manifest as import("@/integrations/supabase/types").Json,
         entry_url: data.entry_url,
         permissions: data.permissions,
         min_app_version: data.min_app_version,

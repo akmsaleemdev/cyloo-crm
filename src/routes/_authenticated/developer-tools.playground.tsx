@@ -77,7 +77,6 @@ function Playground() {
       registered,
     };
     try {
-      // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
       const fn = new Function(
         "ctx",
         `${code}; return typeof run === "function" ? run(ctx) : (module && module.exports && module.exports.default ? module.exports.default(ctx) : undefined);`,

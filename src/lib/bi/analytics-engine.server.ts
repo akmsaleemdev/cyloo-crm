@@ -127,11 +127,9 @@ const BINDINGS: Record<MetricKey, MetricBinding> = {
   },
 };
 
-interface AdminClient {
-  from: (t: string) => {
-    select: (s: string, opts?: { count?: "exact"; head?: boolean }) => any;
-  };
-}
+import type { UntypedClient } from "@/lib/supabase/untyped";
+
+type AdminClient = UntypedClient;
 
 export async function runMetric(
   supabaseAdmin: AdminClient,

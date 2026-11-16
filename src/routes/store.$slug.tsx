@@ -22,7 +22,7 @@ export const Route = createFileRoute("/store/$slug")({
   ),
   notFoundComponent: () => <main className="p-10 text-center">Listing not found</main>,
   head: ({ loaderData }) => {
-    const p: any = (loaderData as any)?.plugin;
+    const p = loaderData?.plugin;
     const title = p ? `${p.name} — ${BRAND_NAME} Store` : `${BRAND_NAME} Store`;
     const description = p?.tagline ?? "Plugin details, pricing and installation steps.";
     return {
@@ -42,7 +42,7 @@ export const Route = createFileRoute("/store/$slug")({
 function PublicListing() {
   const brandName = useBrandName();
   const platformCurrency = useTenantCurrency();
-  const { plugin, versions } = Route.useLoaderData() as any;
+  const { plugin, versions } = Route.useLoaderData();
 
   return (
     <main className="mx-auto w-full max-w-4xl p-6 space-y-8">
@@ -118,7 +118,7 @@ function PublicListing() {
         <section className="space-y-2">
           <h2 className="text-xl font-medium">Releases</h2>
           <ul className="text-sm text-muted-foreground space-y-1">
-            {versions.slice(0, 5).map((v: any) => (
+            {versions.slice(0, 5).map((v) => (
               <li key={v.id}>
                 v{v.version} —{" "}
                 {v.published_at ? new Date(v.published_at).toLocaleDateString() : "unreleased"}

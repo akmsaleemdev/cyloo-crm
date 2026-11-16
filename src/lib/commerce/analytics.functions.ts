@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const filterSchema = z.object({
@@ -30,7 +32,7 @@ type OrderRow = {
 };
 
 async function loadWindow(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   workspaceId: string,
   from: string,
   to: string,
@@ -76,11 +78,11 @@ async function loadWindow(
       .lte("created_at", to),
   ]);
 
-  const orders: OrderRow[] = (ordersRes.data ?? []) as any;
-  const items: any[] = itemsRes.data ?? [];
-  const carts: any[] = cartsRes.data ?? [];
-  const links: any[] = linksRes.data ?? [];
-  const promos: any[] = promosRes.data ?? [];
+  const orders = (ordersRes.data ?? []) as OrderRow[];
+  const items = itemsRes.data ?? [];
+  const carts = cartsRes.data ?? [];
+  const links = linksRes.data ?? [];
+  const promos = promosRes.data ?? [];
 
   // Enrich items with product category
   const productIds = Array.from(
@@ -92,7 +94,7 @@ async function loadWindow(
       .from("products")
       .select("id,category,category_id,product_categories(name)")
       .in("id", productIds);
-    (prods ?? []).forEach((p: any) => {
+    (prods ?? []).forEach((p) => {
       catByProduct[p.id] = p.product_categories?.name ?? p.category ?? "Uncategorized";
     });
   }
@@ -107,7 +109,7 @@ async function loadWindow(
       .from("contacts")
       .select("id,name,display_name")
       .in("id", contactIds);
-    (cs ?? []).forEach((c: any) => {
+    (cs ?? []).forEach((c) => {
       contactMap[c.id] = c.display_name ?? c.name ?? "Customer";
     });
   }
@@ -123,7 +125,7 @@ async function loadWindow(
       .from("conversations")
       .select("id,assigned_to")
       .in("id", convIds);
-    (convs ?? []).forEach((c: any) => {
+    (convs ?? []).forEach((c) => {
       agentByConv[c.id] = c.assigned_to;
       if (c.assigned_to) agentIds.add(c.assigned_to);
     });
@@ -134,7 +136,7 @@ async function loadWindow(
       .from("profiles")
       .select("id,full_name,email")
       .in("id", Array.from(agentIds));
-    (profs ?? []).forEach((p: any) => {
+    (profs ?? []).forEach((p) => {
       agentMap[p.id] = p.full_name ?? p.email ?? "Agent";
     });
   }

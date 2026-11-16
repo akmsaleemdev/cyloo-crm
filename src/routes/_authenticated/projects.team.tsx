@@ -235,7 +235,7 @@ function ProjectTeamPage() {
                   <Link
                     to="/projects/$projectId"
                     params={{ projectId: project.id }}
-                    search={(prev: any) => prev}
+                    search={{ taskId: undefined }}
                   >
                     Open project
                   </Link>

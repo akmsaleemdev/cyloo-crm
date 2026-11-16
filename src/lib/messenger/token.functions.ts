@@ -26,8 +26,9 @@ export const verifyMessengerAccount = createServerFn({ method: "POST" })
 
     // Read the encrypted token via admin (never crosses the RPC boundary).
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: tokRow } = await (sbAny(supabaseAdmin).from("messenger_accounts" as any) as any)
+
+    const { data: tokRow } = await sbAny(supabaseAdmin)
+      .from("messenger_accounts")
       .select("access_token_ciphertext")
       .eq("id", data.accountId)
       .maybeSingle();
@@ -80,8 +81,8 @@ export const verifyAllMessengerAccounts = createServerFn({ method: "POST" })
     let ok = 0;
     let expired = 0;
     for (const row of rows ?? []) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: tokRow } = await (sbAny(supabaseAdmin).from("messenger_accounts" as any) as any)
+      const { data: tokRow } = await sbAny(supabaseAdmin)
+        .from("messenger_accounts")
         .select("access_token_ciphertext")
         .eq("id", row.id)
         .maybeSingle();

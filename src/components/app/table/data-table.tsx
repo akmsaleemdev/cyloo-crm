@@ -60,12 +60,16 @@ export function DataTable<T extends { id: string }>({
 
   function toggleAll(v: boolean) {
     const next = new Set(selected);
-    for (const r of rows) v ? next.add(r.id) : next.delete(r.id);
+    for (const r of rows) {
+      if (v) next.add(r.id);
+      else next.delete(r.id);
+    }
     onSelectionChange(next);
   }
   function toggleRow(id: string, v: boolean) {
     const next = new Set(selected);
-    v ? next.add(id) : next.delete(id);
+    if (v) next.add(id);
+    else next.delete(id);
     onSelectionChange(next);
   }
   function clickSort(id: string) {
@@ -108,7 +112,8 @@ export function DataTable<T extends { id: string }>({
                     onCheckedChange={(v) => {
                       setVisible((s) => {
                         const n = new Set(s);
-                        v ? n.add(c.id) : n.delete(c.id);
+                        if (v) n.add(c.id);
+                        else n.delete(c.id);
                         return n;
                       });
                     }}
@@ -303,5 +308,5 @@ export function Pagination({
     </div>
   );
 }
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
 const _Check = Check; // keep icon import used

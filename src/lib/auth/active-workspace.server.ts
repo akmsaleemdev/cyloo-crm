@@ -16,12 +16,12 @@
  * Server-only. Import it dynamically from inside a handler.
  */
 import { getRequest } from "@tanstack/react-start/server";
+import { sbAny } from "@/lib/supabase/untyped";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function resolveActiveWorkspaceId(
-  supabase: any,
+  supabase: unknown,
   userId: string,
 ): Promise<string | null> {
   let requested: string | null = null;
@@ -32,7 +32,7 @@ export async function resolveActiveWorkspaceId(
   }
 
   if (requested && UUID.test(requested)) {
-    const { data } = await supabase
+    const { data } = await sbAny(supabase)
       .from("workspace_members")
       .select("workspace_id")
       .eq("user_id", userId)
@@ -41,21 +41,23 @@ export async function resolveActiveWorkspaceId(
     if (data?.workspace_id) return data.workspace_id as string;
   }
 
-  const { data: rows } = await supabase
+  const { data: rows } = await sbAny(supabase)
     .from("workspace_members")
     .select("workspace_id, workspaces(organization_id, created_at)")
     .eq("user_id", userId)
     .limit(50);
   const list = (rows ?? []) as Array<{
     workspace_id: string;
-    workspaces: { organization_id: string | null; created_at: string } | null;
+    workspaces: Array<{ organization_id: string | null; created_at: string }>;
   }>;
   if (list.length === 0) return null;
   list.sort((a, b) => {
-    const ao = a.workspaces?.organization_id ? 0 : 1;
-    const bo = b.workspaces?.organization_id ? 0 : 1;
+    const aWorkspace = a.workspaces[0];
+    const bWorkspace = b.workspaces[0];
+    const ao = aWorkspace?.organization_id ? 0 : 1;
+    const bo = bWorkspace?.organization_id ? 0 : 1;
     if (ao !== bo) return ao - bo; // org-linked workspaces first
-    return (a.workspaces?.created_at ?? "").localeCompare(b.workspaces?.created_at ?? "");
+    return (aWorkspace?.created_at ?? "").localeCompare(bWorkspace?.created_at ?? "");
   });
   return list[0].workspace_id;
 }

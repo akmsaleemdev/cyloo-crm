@@ -140,9 +140,8 @@ interface RematchTotals {
   total_skipped: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function runRematch(
-  sb: any,
+  sb: ReturnType<typeof sbAny>,
   workspaceId: string,
   opts: RematchOptions,
 ): Promise<RematchTotals> {

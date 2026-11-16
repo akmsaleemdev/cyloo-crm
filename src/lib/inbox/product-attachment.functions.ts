@@ -64,21 +64,26 @@ function retailerIdFor(p: { id: string; sku?: string | null; retailer_id?: strin
   return p.sku && p.sku.trim() ? p.sku.trim() : `wdf_${p.id.slice(0, 12)}`;
 }
 
-function toInboxProduct(r: Record<string, any>): InboxProduct {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+function toInboxProduct(r: Record<string, unknown>): InboxProduct {
+  if (typeof r.id !== "string" || typeof r.name !== "string") {
+    throw new Error("Product result is missing its identifier or name");
+  }
+  const asString = (value: unknown) => (typeof value === "string" ? value : null);
   return {
     id: r.id,
     name: r.name,
-    sku: r.sku ?? null,
-    retailer_id: r.retailer_id ?? null,
+    sku: asString(r.sku),
+    retailer_id: asString(r.retailer_id),
     price: r.price == null ? null : Number(r.price),
     sale_price: r.sale_price == null ? null : Number(r.sale_price),
-    currency: r.currency ?? null,
-    image_url: r.image_url ?? null,
-    category: r.category ?? null,
-    tags: Array.isArray(r.tags) ? r.tags : null,
-    is_featured: r.is_featured ?? null,
-    wa_catalog_status: r.wa_catalog_status ?? null,
+    currency: asString(r.currency),
+    image_url: asString(r.image_url),
+    category: asString(r.category),
+    tags: Array.isArray(r.tags)
+      ? r.tags.filter((tag): tag is string => typeof tag === "string")
+      : null,
+    is_featured: typeof r.is_featured === "boolean" ? r.is_featured : null,
+    wa_catalog_status: asString(r.wa_catalog_status),
     link: productLink(r.metadata),
   };
 }

@@ -88,7 +88,7 @@ export function TenantAccentProvider({ children }: { children: ReactNode }) {
 
   const { data, isLoading } = useQuery({
     queryKey: ["white-label", workspaceId],
-    queryFn: () => getWhiteLabel({ data: { workspaceId } } as any),
+    queryFn: () => getWhiteLabel({ data: { workspaceId } }),
     // Cache the resolved theme rather than dropping it on every remount.
     // With staleTime/gcTime at 0 the config was evicted whenever this
     // provider remounted (e.g. navigating into /admin and back), so the

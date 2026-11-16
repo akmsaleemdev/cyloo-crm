@@ -27,6 +27,19 @@ interface NotifyRow {
   dedupe_key: string;
 }
 
+interface BillingNotificationData {
+  total_cents?: number;
+  currency?: string | null;
+  invoice_id?: string;
+  meter_code?: string;
+  amount_cents?: number;
+  attempt_id?: string;
+  number?: string;
+  due_date?: string;
+  subscription_id?: string;
+  suggested_plan?: string;
+}
+
 /** Map notification kind -> boolean config column. */
 const KIND_CONFIG_FLAG: Record<string, string> = {
   "subscription.trial_ending": "notify_trial_ending",
@@ -75,15 +88,17 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
   if (wired) return;
   wired = true;
 
-  const mapping: Array<[BillingEventType, (evt: BillingEvent<any>) => NotifyRow]> = [
+  const mapping: Array<
+    [BillingEventType, (evt: BillingEvent<BillingNotificationData>) => NotifyRow]
+  > = [
     [
       "invoice.issued",
       (e) => ({
         organization_id: e.organization_id,
         kind: "invoice.issued",
         subject: `New invoice issued`,
-        body: `A new invoice for ${formatMoney(e.data.total_cents, e.data.currency)} is now available.`,
-        payload: e.data,
+        body: `A new invoice for ${e.data.total_cents ?? 0} cents is now available.`,
+        payload: { ...e.data },
         related_invoice_id: e.data.invoice_id ?? null,
         dedupe_key: `invoice.issued:${e.data.invoice_id}`,
       }),
@@ -95,7 +110,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "invoice.paid",
         subject: `Payment received`,
         body: `Thanks — your invoice has been paid in full.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_invoice_id: e.data.invoice_id ?? null,
         dedupe_key: `invoice.paid:${e.data.invoice_id}`,
       }),
@@ -107,7 +122,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "invoice.payment_failed",
         subject: `Payment failed — action required`,
         body: `We couldn't collect payment for your latest invoice. Please update your payment method.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_invoice_id: e.data.invoice_id ?? null,
         dedupe_key: `invoice.payment_failed:${e.data.invoice_id}:${todayKey()}`,
       }),
@@ -119,7 +134,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "subscription.canceled",
         subject: `Subscription canceled`,
         body: `Your subscription has been canceled. You'll retain access until the end of your billing period.`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `subscription.canceled:${e.organization_id}:${todayKey()}`,
       }),
     ],
@@ -130,7 +145,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "subscription.trial_ending",
         subject: `Your trial is ending soon`,
         body: `Add a payment method to keep your workspace active.`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `subscription.trial_ending:${e.organization_id}:${todayKey()}`,
       }),
     ],
@@ -141,7 +156,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "quota.approaching",
         subject: `You're approaching a plan limit`,
         body: `Usage for "${e.data.meter_code}" is above 80% for this period.`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `quota.approaching:${e.data.meter_code}:${todayKey()}`,
       }),
     ],
@@ -152,7 +167,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "quota.exceeded",
         subject: `Plan limit reached`,
         body: `You've reached your plan limit for "${e.data.meter_code}". Upgrade to keep going.`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `quota.exceeded:${e.data.meter_code}:${todayKey()}`,
       }),
     ],
@@ -163,7 +178,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "payment.succeeded",
         subject: `Payment received`,
         body: `Your payment of ${formatMoney(e.data.amount_cents ?? 0, e.data.currency ?? null)} was processed successfully.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_invoice_id: e.data.invoice_id ?? null,
         dedupe_key: `payment.succeeded:${e.data.attempt_id ?? e.data.invoice_id}:${todayKey()}`,
       }),
@@ -175,7 +190,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "invoice.due",
         subject: `Invoice due soon`,
         body: `Invoice ${e.data.number ?? ""} is due on ${e.data.due_date ?? "soon"}. Please review and pay.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_invoice_id: e.data.invoice_id ?? null,
         dedupe_key: `invoice.due:${e.data.invoice_id}:${todayKey()}`,
       }),
@@ -187,7 +202,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "subscription.renewed",
         subject: `Subscription renewed`,
         body: `Your subscription has been renewed for another period.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_subscription_id: e.data.subscription_id ?? null,
         dedupe_key: `subscription.renewed:${e.data.subscription_id}:${todayKey()}`,
       }),
@@ -199,7 +214,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "subscription.expired",
         subject: `Subscription expired`,
         body: `Your subscription has expired. Reactivate to restore full access.`,
-        payload: e.data,
+        payload: { ...e.data },
         related_subscription_id: e.data.subscription_id ?? null,
         dedupe_key: `subscription.expired:${e.data.subscription_id}:${todayKey()}`,
       }),
@@ -211,7 +226,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "usage.limit_reached",
         subject: `Usage limit reached`,
         body: `You've hit 100% of your allowance for "${e.data.meter_code}".`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `usage.limit_reached:${e.data.meter_code}:${todayKey()}`,
       }),
     ],
@@ -222,7 +237,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
         kind: "upgrade.recommended",
         subject: `Consider upgrading your plan`,
         body: `Based on recent usage, upgrading to ${e.data.suggested_plan ?? "a higher plan"} would save you money and unlock more capacity.`,
-        payload: e.data,
+        payload: { ...e.data },
         dedupe_key: `upgrade.recommended:${e.organization_id}:${todayKey().slice(0, 7)}`,
       }),
     ],
@@ -231,7 +246,7 @@ export function subscribeBillingNotifications(supabase: SupabaseClient): void {
   for (const [type, build] of mapping) {
     on(type, async (evt) => {
       try {
-        await enqueueNotification(supabase, build(evt as BillingEvent<any>));
+        await enqueueNotification(supabase, build(evt as BillingEvent<BillingNotificationData>));
       } catch (err) {
         console.error(`[billing.notifications] enqueue failed for ${type}:`, err);
       }

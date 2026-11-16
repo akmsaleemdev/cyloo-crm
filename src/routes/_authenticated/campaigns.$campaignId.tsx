@@ -353,7 +353,7 @@ function RecipientsTab({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {recipients.slice(0, 200).map((r: any) => (
+            {recipients.slice(0, 200).map((r) => (
               <tr key={r.id}>
                 <td className="px-4 py-2">
                   {r.contact
@@ -420,7 +420,7 @@ function AnalyticsTab({ campaignId }: { campaignId: string }) {
       <div className="rounded-control border border-border bg-surface shadow-sm">
         <div className="px-4 py-3 border-b border-border font-medium">Event timeline</div>
         <div className="divide-y divide-border max-h-[400px] overflow-auto">
-          {(events ?? []).slice(0, 100).map((e: any) => (
+          {(events ?? []).slice(0, 100).map((e) => (
             <div key={e.id} className="p-3 flex items-center gap-3 text-sm">
               <span className="text-xs px-2 py-0.5 rounded-control bg-muted capitalize">
                 {e.event_type}
@@ -429,7 +429,7 @@ function AnalyticsTab({ campaignId }: { campaignId: string }) {
                 {formatZoned(new Date(e.created_at), { dateStyle: "medium", timeStyle: "short" })}
               </span>
               <span className="text-muted-foreground text-xs truncate">
-                {JSON.stringify(e.payload ?? {})}
+                {JSON.stringify(e.metadata ?? {})}
               </span>
             </div>
           ))}

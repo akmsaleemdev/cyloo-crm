@@ -19,7 +19,7 @@ export type HookName = CatalogEvent | string;
 export function addAction(
   slug: string,
   name: HookName,
-  fn: (payload: any) => void | Promise<void>,
+  fn: (payload: unknown) => void | Promise<void>,
   priority = 10,
 ) {
   return eventBus.on(slug, `action:${name}`, fn, priority);
@@ -32,7 +32,7 @@ export async function doAction(name: HookName, payload: unknown = {}) {
 export function addBeforeAction(
   slug: string,
   name: HookName,
-  fn: (payload: any) => void | Promise<void>,
+  fn: (payload: unknown) => void | Promise<void>,
   priority = 10,
 ) {
   return eventBus.on(slug, `action:before:${name}`, fn, priority);
@@ -41,7 +41,7 @@ export function addBeforeAction(
 export function addAfterAction(
   slug: string,
   name: HookName,
-  fn: (payload: any) => void | Promise<void>,
+  fn: (payload: unknown) => void | Promise<void>,
   priority = 10,
 ) {
   return eventBus.on(slug, `action:after:${name}`, fn, priority);
@@ -73,7 +73,7 @@ export function addFilter<T = unknown>(
   fn: (v: T) => T | Promise<T> | null,
   priority = 10,
 ) {
-  return eventBus.filter<T>(slug, `filter:${name}`, fn as any, priority);
+  return eventBus.filter<T>(slug, `filter:${name}`, fn, priority);
 }
 export async function applyFilters<T>(name: HookName, value: T): Promise<T | null> {
   return eventBus.emitFiltered<T>(`filter:${name}`, value);

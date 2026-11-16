@@ -49,6 +49,8 @@ const DEFAULT_MESSAGE: Record<SecurityDenialCode, string> = {
 export const MAX_SECURITY_HEADER_LENGTH = 4096;
 
 /** Rejects control characters / CR-LF injection attempts inside header values. */
+// Explicitly reject control bytes to prevent header injection.
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
 
 export interface SecurityDenialOptions {

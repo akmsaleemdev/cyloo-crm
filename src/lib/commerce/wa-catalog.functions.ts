@@ -17,6 +17,7 @@ import {
 } from "@/lib/commerce/wa-catalog.server";
 import { sbAny } from "@/lib/supabase/untyped";
 import { resolveWorkspaceCurrency } from "@/lib/currency/resolve.server";
+import type { Database } from "@/integrations/supabase/types";
 
 const ws = z.object({ workspaceId: z.string().uuid() });
 
@@ -241,15 +242,15 @@ export const runCatalogSync = createServerFn({ method: "POST" })
             .from(table)
             .select("id, name")
             .in("id", uniq);
-          return new Map(((rows ?? []) as any[]).map((r) => [r.id as string, r.name as string]));
+          return new Map((rows ?? []).map((r) => [r.id as string, r.name as string]));
         };
         const brandNames = await lookupNames(
           "commerce_brands",
-          products.map((p: any) => p.brand_id),
+          products.map((p) => p.brand_id ?? ""),
         );
         const categoryNames = await lookupNames(
           "product_categories",
-          products.map((p: any) => p.category_id),
+          products.map((p) => p.category_id ?? ""),
         );
 
         const { data: sender } = await sbAny(context.supabase)
@@ -259,17 +260,17 @@ export const runCatalogSync = createServerFn({ method: "POST" })
           .eq("phone_number_id", cfg?.phone_number_id ?? "")
           .maybeSingle();
 
-        const prepared = products.map((p: any) => {
+        const prepared = products.map((p) => {
           const enriched = {
             ...p,
-            brand_name: brandNames.get(p.brand_id) ?? null,
-            category_name: categoryNames.get(p.category_id) ?? null,
+            brand_name: brandNames.get(p.brand_id ?? "") ?? null,
+            category_name: categoryNames.get(p.category_id ?? "") ?? null,
           };
           const item = mapProductToMeta(
             enriched,
             cfg,
             catalogFallbackCurrency,
-            waChatLink((sender as any)?.phone_number, p.name),
+            waChatLink(sender?.phone_number, p.name),
           );
           return { p, item, missing: missingCatalogFields(item) };
         });
@@ -305,9 +306,11 @@ export const runCatalogSync = createServerFn({ method: "POST" })
             // Meta rejects malformed items up front in `validation_status`
             // instead of queueing them, so those never get a handle.
             const rejected = new Map<string, string>();
-            for (const v of (res?.validation_status ?? []) as any[]) {
-              const msgs = ((v?.errors ?? []) as any[])
-                .map((e) => e?.message)
+            for (const v of res?.validation_status ?? []) {
+              const msgs = (v?.errors ?? [])
+                .map((e: unknown) =>
+                  typeof e === "object" && e !== null && "message" in e ? e.message : undefined,
+                )
                 .filter(Boolean)
                 .join("; ");
               if (v?.retailer_id && msgs) rejected.set(String(v.retailer_id), msgs);
@@ -321,13 +324,13 @@ export const runCatalogSync = createServerFn({ method: "POST" })
                   cfg!.catalog_id!,
                   token!,
                   requests.map((r) => r.retailer_id),
-                ).catch((e: any) => {
-                  lookupErrors.push(String(e?.message ?? e).slice(0, 300));
+                ).catch((e: unknown) => {
+                  lookupErrors.push((e instanceof Error ? e.message : String(e)).slice(0, 300));
                   return null;
                 });
             const now = new Date().toISOString();
             for (const p of batch) {
-              const rid = retailerIdFor(p as any);
+              const rid = retailerIdFor(p);
               const listed = inCatalog?.get(rid);
               const itemError =
                 rejected.get(rid) ??
@@ -339,24 +342,22 @@ export const runCatalogSync = createServerFn({ method: "POST" })
                   : null);
               if (itemError) {
                 failed += 1;
-                errors.push(`${(p as any).name}: ${itemError}`);
-                await markProduct((p as any).id, {
+                errors.push(`${p.name}: ${itemError}`);
+                await markProduct(p.id, {
                   wa_catalog_status: "error",
                   wa_catalog_error: itemError.slice(0, 400),
                 });
               } else if (!result.done && !listed) {
                 // Still queued at Meta: neither confirmed nor rejected yet.
                 failed += 1;
-                errors.push(
-                  `${(p as any).name}: Meta is still processing — run sync again to confirm.`,
-                );
-                await markProduct((p as any).id, {
+                errors.push(`${p.name}: Meta is still processing — run sync again to confirm.`);
+                await markProduct(p.id, {
                   wa_catalog_status: "staged",
                   wa_catalog_error: "Meta is still processing this item.",
                 });
               } else {
                 succeeded += 1;
-                await markProduct((p as any).id, {
+                await markProduct(p.id, {
                   wa_catalog_status: "synced",
                   wa_catalog_synced_at: now,
                   wa_catalog_error: null,
@@ -366,17 +367,17 @@ export const runCatalogSync = createServerFn({ method: "POST" })
               await sbAny(context.supabase)
                 .from("products")
                 .update({ retailer_id: rid })
-                .eq("id", (p as any).id)
+                .eq("id", p.id)
                 .is("retailer_id", null);
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             failed += batch.length;
-            errors.push(e?.message ?? String(e));
+            errors.push(e instanceof Error ? e.message : String(e));
             await sbAny(context.supabase)
               .from("products")
               .update({
                 wa_catalog_status: "error",
-                wa_catalog_error: (e?.message ?? "sync failed").slice(0, 400),
+                wa_catalog_error: (e instanceof Error ? e.message : "sync failed").slice(0, 400),
               })
               .in(
                 "id",
@@ -417,8 +418,11 @@ export const runCatalogSync = createServerFn({ method: "POST" })
         reason: null,
         error: errorText,
       };
-    } catch (e: any) {
-      await finish({ status: "error", error: (e?.message ?? String(e)).slice(0, 500) });
+    } catch (e: unknown) {
+      await finish({
+        status: "error",
+        error: (e instanceof Error ? e.message : String(e)).slice(0, 500),
+      });
       throw e;
     }
   });
@@ -487,14 +491,14 @@ export const importFromMetaCatalog = createServerFn({ method: "POST" })
         .limit(5000);
       if (lErr) throw lErr;
       const local = new Map<string, { id: string; retailer_id: string | null }>();
-      for (const p of (localRows ?? []) as any[]) local.set(retailerIdFor(p), p);
+      for (const p of localRows ?? []) local.set(retailerIdFor(p), p);
 
       const { data: brandRows } = await sbAny(context.supabase)
         .from("commerce_brands")
         .select("id, name")
         .eq("workspace_id", workspaceId);
       const brands = new Map<string, string>(
-        ((brandRows ?? []) as any[]).map((b) => [String(b.name).trim().toLowerCase(), b.id]),
+        (brandRows ?? []).map((b) => [String(b.name).trim().toLowerCase(), b.id]),
       );
       const brandIdFor = async (name: unknown) => {
         const label = typeof name === "string" ? name.trim() : "";
@@ -576,8 +580,11 @@ export const importFromMetaCatalog = createServerFn({ method: "POST" })
         details: { kind: "import", imported, linked },
       });
       return { ok: !failed, total: items.length, imported, linked, failed, error: errorText };
-    } catch (e: any) {
-      await finish({ status: "error", error: (e?.message ?? String(e)).slice(0, 500) });
+    } catch (e: unknown) {
+      await finish({
+        status: "error",
+        error: (e instanceof Error ? e.message : String(e)).slice(0, 500),
+      });
       throw e;
     }
   });
@@ -879,10 +886,10 @@ export const getCatalogAnalytics = createServerFn({ method: "GET" })
     const ids = top.map((t) => t.product_id);
     const { data: prods } = ids.length
       ? await sbAny(context.supabase).from("products").select("id, name, image_url").in("id", ids)
-      : { data: [] as any[] };
+      : { data: [] };
     const topProducts = top.map((t) => ({
       ...t,
-      product: (prods ?? []).find((p: any) => p.id === t.product_id) ?? null,
+      product: (prods ?? []).find((p) => p.id === t.product_id) ?? null,
     }));
 
     return { totals, series: rows ?? [], topProducts };
@@ -919,7 +926,11 @@ export const getRecommendations = createServerFn({ method: "GET" })
       .slice(0, limit)
       .map(([id]) => id);
 
-    let picks: any[] = [];
+    type RecommendedProduct = Pick<
+      Database["public"]["Tables"]["products"]["Row"],
+      "id" | "name" | "image_url" | "price" | "sale_price" | "retailer_id" | "sku"
+    >;
+    let picks: RecommendedProduct[] = [];
     if (topIds.length) {
       const { data: rows } = await sbAny(context.supabase)
         .from("products")

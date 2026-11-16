@@ -34,6 +34,9 @@ import { Link2, Plus, X, History } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
+type RelationshipEntity = Awaited<ReturnType<typeof listTicketRelationships>>["entities"][number];
+type CustomerHistoryEntry = Awaited<ReturnType<typeof getCustomerHistory>>["timeline"][number];
+
 const ENTITY_LABELS: Record<LinkableEntity, string> = {
   contact: "Contact",
   company: "Company",
@@ -81,16 +84,20 @@ export function TicketRelationshipsPanel({ ticketId }: { ticketId: string }) {
       toast.success("Linked");
       qc.invalidateQueries({ queryKey: ["ticket-relationships", ticketId] });
     },
-    onError: (e: any) => toast.error(e.message ?? "Failed to link"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to link"),
   });
 
-  const grouped = (rel.data?.entities ?? []).reduce((acc: Record<string, any[]>, e: any) => {
-    (acc[e.kind] ??= []).push(e);
-    return acc;
-  }, {});
+  const grouped = (rel.data?.entities ?? []).reduce<Record<string, RelationshipEntity[]>>(
+    (acc, e) => {
+      (acc[e.kind] ??= []).push(e);
+      return acc;
+    },
+    {},
+  );
   const linkIndex = new Map<string, string>();
-  (rel.data?.links ?? []).forEach((l: any) =>
-    linkIndex.set(`${l.entity_type}:${l.entity_id}`, l.id),
+  (rel.data?.links ?? []).forEach((link) =>
+    linkIndex.set(`${link.entity_type}:${link.entity_id}`, link.id),
   );
 
   return (
@@ -165,7 +172,7 @@ export function TicketRelationshipsPanel({ ticketId }: { ticketId: string }) {
             )}
             <ScrollArea className="h-[360px] pr-2">
               <div className="space-y-2">
-                {(history.data?.timeline ?? []).map((t: any) => (
+                {(history.data?.timeline ?? []).map((t: CustomerHistoryEntry) => (
                   <div key={`${t.kind}-${t.id}`} className="flex items-start gap-2 border-l-2 pl-2">
                     <Badge variant="outline" className="text-[11px]">
                       {t.kind}
@@ -237,18 +244,20 @@ function AddLinkDialog({
           <Input placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
           <ScrollArea className="h-[320px] pr-2">
             <div className="space-y-1">
-              {(results.data ?? []).map((r: any) => (
+              {(results.data ?? []).map((result) => (
                 <button
-                  key={r.id}
+                  key={result.id}
                   className="w-full rounded border px-2 py-1.5 text-left text-sm hover:bg-muted"
                   onClick={() => {
-                    onLink({ entityType, entityId: r.id });
+                    onLink({ entityType, entityId: result.id });
                     setOpen(false);
                     setQ("");
                   }}
                 >
-                  <div className="truncate font-medium">{r.label}</div>
-                  {r.sub && <div className="truncate text-xs text-muted-foreground">{r.sub}</div>}
+                  <div className="truncate font-medium">{result.label}</div>
+                  {result.sub && (
+                    <div className="truncate text-xs text-muted-foreground">{result.sub}</div>
+                  )}
                 </button>
               ))}
               {(results.data?.length ?? 0) === 0 && (

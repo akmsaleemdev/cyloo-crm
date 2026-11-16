@@ -109,7 +109,7 @@ function MarketingDashboard() {
             ) : (data?.campaigns ?? []).slice(0, 8).length === 0 ? (
               <div className="p-6 text-sm text-muted-foreground">No campaigns yet.</div>
             ) : (
-              (data?.campaigns ?? []).slice(0, 8).map((c: any) => (
+              (data?.campaigns ?? []).slice(0, 8).map((c) => (
                 <Link
                   key={c.id}
                   to="/campaigns/$campaignId"

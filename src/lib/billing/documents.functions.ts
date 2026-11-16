@@ -5,6 +5,8 @@ import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
 import { sbAny } from "@/lib/supabase/untyped";
 import { normalizeCurrencyCode } from "@/lib/currency/format";
 import { resolveOrganizationCurrency } from "@/lib/currency/resolve.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database, Json, Tables } from "@/integrations/supabase/types";
 
 const LineItemSchema = z.object({
   description: z.string(),
@@ -15,8 +17,22 @@ const LineItemSchema = z.object({
 });
 
 const DocumentTypeSchema = z.enum(["invoice", "credit_note", "receipt", "refund_receipt"]);
+const JsonValueSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(JsonValueSchema),
+    z.record(z.string(), JsonValueSchema),
+  ]),
+);
 
-async function assertOrgMember(supabase: any, userId: string, organizationId: string) {
+async function assertOrgMember(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  organizationId: string,
+) {
   const { data } = await sbAny(supabase)
     .from("organization_members")
     .select("id")
@@ -27,7 +43,7 @@ async function assertOrgMember(supabase: any, userId: string, organizationId: st
 }
 
 async function logHistory(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   documentId: string,
   organizationId: string,
   actorId: string,
@@ -64,7 +80,7 @@ export const listDocumentTemplates = createServerFn({ method: "GET" })
 
 export const upsertDocumentTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z
       .object({
         id: z.string().uuid().optional(),
@@ -74,7 +90,7 @@ export const upsertDocumentTemplate = createServerFn({ method: "POST" })
         document_type: DocumentTypeSchema.optional(),
         company_name: z.string().optional().nullable(),
         company_logo_url: z.string().optional().nullable(),
-        company_address: z.any().optional(),
+        company_address: JsonValueSchema.optional().nullable(),
         company_tax_id: z.string().optional().nullable(),
         company_email: z.string().optional().nullable(),
         company_phone: z.string().optional().nullable(),
@@ -110,7 +126,7 @@ export const upsertDocumentTemplate = createServerFn({ method: "POST" })
 
 export const deleteDocumentTemplate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z.object({ id: z.string().uuid(), organization_id: z.string().uuid() }).parse(data),
   )
   .handler(async ({ data, context }) => {
@@ -128,7 +144,7 @@ export const deleteDocumentTemplate = createServerFn({ method: "POST" })
 
 export const listBillingDocuments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z
       .object({
         organization_id: z.string().uuid(),
@@ -148,7 +164,7 @@ export const listBillingDocuments = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 100);
     if (data.type) q = q.eq("type", data.type);
-    if (data.status) q = q.eq("status", data.status as any);
+    if (data.status) q = q.eq("status", data.status);
     if (data.search)
       q = q.or(
         `number.ilike.%${sanitizeSearchTerm(data.search)}%,customer_name.ilike.%${sanitizeSearchTerm(data.search)}%,customer_email.ilike.%${sanitizeSearchTerm(data.search)}%`,
@@ -160,7 +176,7 @@ export const listBillingDocuments = createServerFn({ method: "GET" })
 
 export const getBillingDocument = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: doc, error } = await sbAny(context.supabase)
       .from("billing_documents")
@@ -228,7 +244,7 @@ function computeTotals(
 
 export const createBillingDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z
       .object({
         organization_id: z.string().uuid(),
@@ -238,7 +254,7 @@ export const createBillingDocument = createServerFn({ method: "POST" })
         parent_document_id: z.string().uuid().optional().nullable(),
         customer_name: z.string().optional().nullable(),
         customer_email: z.string().optional().nullable(),
-        customer_address: z.any().optional(),
+        customer_address: JsonValueSchema.optional().nullable(),
         customer_tax_id: z.string().optional().nullable(),
         customer_id: z.string().uuid().optional().nullable(),
         // No USD default here: an absent currency resolves from the organization
@@ -263,7 +279,7 @@ export const createBillingDocument = createServerFn({ method: "POST" })
     const rateIds = Array.from(
       new Set(data.line_items.map((i) => i.tax_rate_id).filter(Boolean)),
     ) as string[];
-    const taxRates = new Map<string, any>();
+    const taxRates = new Map<string, Tables<"tax_rates">>();
     if (rateIds.length > 0) {
       const { data: rates } = await sbAny(context.supabase)
         .from("tax_rates")
@@ -357,7 +373,7 @@ export const createBillingDocument = createServerFn({ method: "POST" })
 
 export const issueBillingDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: doc, error: e1 } = await sbAny(context.supabase)
       .from("billing_documents")
@@ -379,7 +395,7 @@ export const issueBillingDocument = createServerFn({ method: "POST" })
 
 export const voidBillingDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z.object({ id: z.string().uuid(), reason: z.string().optional() }).parse(data),
   )
   .handler(async ({ data, context }) => {
@@ -403,7 +419,7 @@ export const voidBillingDocument = createServerFn({ method: "POST" })
 
 export const markDocumentSent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) =>
+  .validator((data: unknown) =>
     z.object({ id: z.string().uuid(), to_email: z.string().email() }).parse(data),
   )
   .handler(async ({ data, context }) => {
@@ -429,7 +445,7 @@ export const markDocumentSent = createServerFn({ method: "POST" })
 
 export const deleteBillingDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((data: any) => z.object({ id: z.string().uuid() }).parse(data))
+  .validator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
   .handler(async ({ data, context }) => {
     const { data: doc } = await sbAny(context.supabase)
       .from("billing_documents")

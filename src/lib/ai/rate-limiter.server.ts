@@ -30,17 +30,21 @@ export async function enforceAIRateLimit(rl: AIRateLimit): Promise<void> {
     const { data, error } = await sbAny(supabaseAdmin).rpc(
       "enforce_rate_limit" as never,
       {
-        p_key: bucketKey,
-        p_limit: rl.limit,
-        p_window_seconds: 60,
+        _bucket_key: bucketKey,
+        _limit: rl.limit,
+        _window_seconds: 60,
+        _workspace_id: rl.workspaceId,
       } as never,
     );
-    if (error) return; // fail-open — the limiter shouldn't take the app down
-    if (data === false) {
+    const result = Array.isArray(data) ? data[0] : null;
+    if (error || !result || typeof result.allowed !== "boolean") {
+      throw new AIError("server", "AI rate limit verification is unavailable", { retryable: true });
+    }
+    if (!result.allowed) {
       throw new AIError("rate_limit", `Rate limit exceeded (${rl.limit}/min)`, { retryable: true });
     }
   } catch (e) {
     if (e instanceof AIError) throw e;
-    // otherwise fail-open
+    throw new AIError("server", "AI rate limit verification is unavailable", { retryable: true });
   }
 }

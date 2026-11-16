@@ -14,13 +14,17 @@ export async function keepSplashUntilReady() {
   splashHeld = true;
   try {
     await SplashScreen.preventAutoHideAsync();
-  } catch {}
+  } catch {
+    // Splash screen prevention may be unsupported in the current runtime.
+  }
 }
 
 export async function hideSplash() {
   try {
     await SplashScreen.hideAsync();
-  } catch {}
+  } catch {
+    // The splash screen may already be hidden by the native runtime.
+  }
 }
 
 /** Run heavy work after interactions settle. */

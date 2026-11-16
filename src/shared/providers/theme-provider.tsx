@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sbAny } from "@/lib/supabase/untyped";
 
 export type Theme = "light" | "dark" | "system";
 
@@ -93,7 +94,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
-      const { data } = await (supabase as any)
+      const { data } = await sbAny(supabase)
         .from("user_theme_preferences")
         .select("theme_mode")
         .eq("user_id", userId)
@@ -148,7 +149,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     storeTheme(t);
     const userId = userIdRef.current;
     if (!userId) return;
-    void (supabase as any)
+    void sbAny(supabase)
       .from("user_theme_preferences")
       .upsert({ user_id: userId, theme_mode: t }, { onConflict: "user_id" });
   }, []);

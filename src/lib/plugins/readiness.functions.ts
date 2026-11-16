@@ -36,8 +36,8 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .from("plugins")
       .select("id, status, is_verified, category", { count: "exact" });
     const totalPlugins = plugins.count ?? 0;
-    const approved = (plugins.data ?? []).filter((p: any) => p.status === "approved").length;
-    const pending = (plugins.data ?? []).filter((p: any) => p.status === "pending").length;
+    const approved = (plugins.data ?? []).filter((plugin) => plugin.status === "approved").length;
+    const pending = (plugins.data ?? []).filter((plugin) => plugin.status === "pending").length;
     add({
       id: "plugins.total",
       category: "Marketplace",
@@ -59,7 +59,9 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
     const installs = await supabase
       .from("plugin_installations")
       .select("id, status", { count: "exact", head: false });
-    const errored = (installs.data ?? []).filter((i: any) => i.status === "error").length;
+    const errored = (installs.data ?? []).filter(
+      (installation) => installation.status === "error",
+    ).length;
     add({
       id: "installs.health",
       category: "Installations",
@@ -81,7 +83,7 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
     const healthRows = health.data ?? [];
     const avgLatency = healthRows.length
       ? Math.round(
-          healthRows.reduce((s: number, r: any) => s + (r.latency_ms ?? 0), 0) / healthRows.length,
+          healthRows.reduce((sum, row) => sum + (row.latency_ms ?? 0), 0) / healthRows.length,
         )
       : 0;
     const avgError = averageErrorRate(healthRows);
@@ -110,7 +112,7 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .limit(200);
     const scanRows = scans.data ?? [];
     const failedScans = scanRows.filter(
-      (s: any) => s.status === "failed" || (s.score ?? 100) < 50,
+      (scan) => scan.status === "failed" || (scan.score ?? 100) < 50,
     ).length;
     add({
       id: "security.scans",
@@ -128,7 +130,7 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .order("checked_at", { ascending: false })
       .limit(200);
     const compatRows = compat.data ?? [];
-    const incompatible = compatRows.filter((c: any) => c.status !== "passed").length;
+    const incompatible = compatRows.filter((check) => check.status !== "passed").length;
     add({
       id: "compat.checks",
       category: "Security",
@@ -142,8 +144,10 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
     const licenses = await supabase
       .from("plugin_licenses")
       .select("id, status", { count: "exact", head: false });
-    const activeLicenses = (licenses.data ?? []).filter((l: any) => l.status === "active").length;
-    const revoked = (licenses.data ?? []).filter((l: any) => l.status === "revoked").length;
+    const activeLicenses = (licenses.data ?? []).filter(
+      (license) => license.status === "active",
+    ).length;
+    const revoked = (licenses.data ?? []).filter((license) => license.status === "revoked").length;
     add({
       id: "licensing.active",
       category: "Licensing",
@@ -158,7 +162,7 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .from("themes")
       .select("id, status", { count: "exact", head: false });
     const themeRows = themes.data ?? [];
-    const themesApproved = themeRows.filter((t: any) => t.status === "approved").length;
+    const themesApproved = themeRows.filter((theme) => theme.status === "approved").length;
     add({
       id: "themes.total",
       category: "Themes",
@@ -174,7 +178,9 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .select("id, brand_name, primary_color, logo_url", { count: "exact", head: false })
       .limit(100);
     const wlRows = wl.data ?? [];
-    const wlConfigured = wlRows.filter((w: any) => w.brand_name && w.primary_color).length;
+    const wlConfigured = wlRows.filter(
+      (workspace) => workspace.brand_name && workspace.primary_color,
+    ).length;
     add({
       id: "whitelabel.configured",
       category: "White Label",
@@ -192,8 +198,8 @@ export const getExtensionReadiness = createServerFn({ method: "GET" })
       .gte("created_at", since);
     const purchaseRows = purchases.data ?? [];
     const gross = purchaseRows
-      .filter((p: any) => p.status === "succeeded")
-      .reduce((s: number, p: any) => s + (p.amount_cents ?? 0), 0);
+      .filter((purchase) => purchase.status === "succeeded")
+      .reduce((sum, purchase) => sum + (purchase.amount_cents ?? 0), 0);
     add({
       id: "revenue.30d",
       category: "Marketplace",

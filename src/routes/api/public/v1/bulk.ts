@@ -93,7 +93,7 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
               .insert(rows)
               .select("id");
             if (error) return jsonError("internal_error", error.message, {}, ctx.requestId);
-            (data ?? []).forEach((row: any, i: number) =>
+            (data ?? []).forEach((row, i: number) =>
               results.push({ index: i, ok: true, id: row.id }),
             );
           } else if (operation === "update") {
@@ -139,7 +139,10 @@ export const Route = createFileRoute("/api/public/v1/bulk")({
               results.push({ index: i, ok: !error, id, error: error?.message });
             }
           } else if (operation === "delete") {
-            const ids = records.map((r) => (r as any).id).filter(Boolean) as string[];
+            const ids = records.flatMap((record) => {
+              if (!record || typeof record !== "object" || !("id" in record)) return [];
+              return typeof record.id === "string" ? [record.id] : [];
+            });
             const { error } = await ctx.supabase
               .from(cfg.table)
               .delete()

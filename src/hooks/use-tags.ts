@@ -91,7 +91,7 @@ export type SegmentRow = {
   deleted_at: string | null;
 };
 
-const anyFrom = (t: string) => sbAny(supabase).from(t as any) as any;
+const anyFrom = (table: string) => sbAny(supabase).from(table);
 
 /* --------------------------------- Tags ---------------------------------- */
 
@@ -370,17 +370,20 @@ export function useDeleteSegment() {
 /* --------------------------- Rule evaluation ----------------------------- */
 
 function get(obj: unknown, path: string): unknown {
-  return path.split(".").reduce<any>((o, k) => (o == null ? o : o[k]), obj);
+  return path.split(".").reduce<unknown>((value, key) => {
+    if (!value || typeof value !== "object") return undefined;
+    return (value as Record<string, unknown>)[key];
+  }, obj);
 }
 
-export function matchesRules(entity: any, rules: SegmentRules, tagIds: string[] = []): boolean {
+export function matchesRules(entity: unknown, rules: SegmentRules, tagIds: string[] = []): boolean {
   if (!rules?.conditions?.length) return true;
   const op = rules.operator ?? "AND";
   const results = rules.conditions.map((c) => matchCondition(entity, c, tagIds));
   return op === "AND" ? results.every(Boolean) : results.some(Boolean);
 }
 
-function matchCondition(entity: any, c: SegmentCondition, tagIds: string[]): boolean {
+function matchCondition(entity: unknown, c: SegmentCondition, tagIds: string[]): boolean {
   const v = c.field === "tags" ? tagIds : get(entity, c.field);
   switch (c.op) {
     case "eq":
@@ -444,9 +447,18 @@ export function useTagAnalytics() {
         rec.total = (rec.total ?? 0) + 1;
         counts.set(a.tag_id, rec);
       }
-      return ((tags || []) as any[]).map((t) => ({
-        ...t,
-        counts: counts.get(t.id) ?? { total: 0 },
+      return (
+        (tags || []) as Array<{
+          id: string;
+          name: string;
+          color: string | null;
+          is_favorite: boolean;
+          is_smart: boolean;
+          is_ai_generated: boolean;
+        }>
+      ).map((tag) => ({
+        ...tag,
+        counts: counts.get(tag.id) ?? { total: 0 },
       }));
     },
   });

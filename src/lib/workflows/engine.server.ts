@@ -21,6 +21,8 @@ import {
 import { AI_NODE_HANDLERS } from "./ai-eval.server";
 import { interpolate as sharedInterpolate } from "./variables";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { UntypedClient } from "@/lib/supabase/untyped";
+import type { Json } from "@/integrations/supabase/types";
 import { startCampaignForWorkflow, stopCampaignForWorkflow } from "./marketing-actions.server";
 
 /**
@@ -32,9 +34,7 @@ import { startCampaignForWorkflow, stopCampaignForWorkflow } from "./marketing-a
  * and executes the built-in action set.
  */
 
-export type SupabaseLike = {
-  from: (table: string) => any;
-};
+export type SupabaseLike = Pick<UntypedClient, "from">;
 
 export type ExecuteOptions = {
   supabase: SupabaseLike;
@@ -73,7 +73,7 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
       version: automation.version ?? 1,
       status: "running" satisfies WorkflowRunStatus,
       trigger_source: triggerSource,
-      input: input as any,
+      input: input as Json,
     })
     .select("id")
     .single();
@@ -119,7 +119,7 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
         node_type: node.type,
         status: "running" satisfies StepStatus,
         sort_order: i,
-        input: interpolate(node.config, variables) as any,
+        input: interpolate(node.config, variables) as Json,
       })
       .select("id")
       .single();
@@ -159,7 +159,7 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
           .from("workflow_run_steps")
           .update({
             status: "success",
-            output: (output ?? null) as any,
+            output: (output ?? null) as Json,
             duration_ms: Date.now() - stepStart,
             finished_at: new Date().toISOString(),
             attempts: attempt,
@@ -200,8 +200,8 @@ export async function executeAutomation(opts: ExecuteOptions): Promise<ExecuteRe
     .from("workflow_runs")
     .update({
       status: finalStatus,
-      output: variables as any,
-      error: (runError ?? null) as any,
+      output: variables as Json,
+      error: (runError ?? null) as Json,
       duration_ms: durationMs,
       finished_at: new Date().toISOString(),
     })

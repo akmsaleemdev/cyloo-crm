@@ -28,7 +28,7 @@ export type PluginAPI = {
   hooks: {
     on: (
       action: CoreAction | string,
-      fn: (payload: any) => void | Promise<void>,
+      fn: (payload: unknown) => void | Promise<void>,
       priority?: number,
     ) => () => void;
     filter: <T>(
@@ -36,7 +36,7 @@ export type PluginAPI = {
       fn: (value: T) => T | Promise<T> | null,
       priority?: number,
     ) => () => void;
-    emit: (action: CoreAction | string, payload?: any) => Promise<void>;
+    emit: (action: CoreAction | string, payload?: unknown) => Promise<void>;
     applyFilters: <T>(name: CoreFilter | string, value: T) => Promise<T | null>;
   };
   permissions: {
@@ -56,7 +56,7 @@ export type PluginAPI = {
       item: { id: string; title: string; icon?: string; path?: string; render?: string },
     ) => () => void;
   };
-  log: (level: "info" | "warn" | "error", ...args: any[]) => void;
+  log: (level: "info" | "warn" | "error", ...args: unknown[]) => void;
 };
 
 type LoadedModule = {
@@ -89,7 +89,7 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
         return off;
       },
       filter(name, fn, priority) {
-        const off = addFilter(slug, name, fn as any, priority);
+        const off = addFilter(slug, name, fn, priority);
         teardown.push(off);
         return off;
       },
@@ -101,10 +101,10 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       require: (p) => permissions.require(slug, p),
     },
     storage: {
-      get(key) {
+      get<T = unknown>(key: string): T | null {
         try {
           const v = localStorage.getItem(namespace + key);
-          return v ? (JSON.parse(v) as any) : null;
+          return v ? (JSON.parse(v) as T) : null;
         } catch {
           return null;
         }
@@ -112,12 +112,16 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       set(key, value) {
         try {
           localStorage.setItem(namespace + key, JSON.stringify(value));
-        } catch {}
+        } catch {
+          // Plugin storage is optional when the browser blocks localStorage.
+        }
       },
       remove(key) {
         try {
           localStorage.removeItem(namespace + key);
-        } catch {}
+        } catch {
+          // Removing an absent or inaccessible plugin value is best-effort.
+        }
       },
     },
     ui: {
@@ -140,7 +144,7 @@ function makeAPI(slug: string, version: string, teardown: Array<() => void>): Pl
       const tag = `%c[plugin:${slug}]`;
       const style =
         level === "error" ? "color:#ef4444" : level === "warn" ? "color:#f59e0b" : "color:#3b82f6";
-      // eslint-disable-next-line no-console
+
       console[level](tag, style, ...args);
     },
   };
@@ -239,7 +243,9 @@ export async function deactivatePlugin(slug: string): Promise<void> {
   for (const off of entry.teardown) {
     try {
       off();
-    } catch {}
+    } catch {
+      // Continue revoking permissions even if a plugin disposer throws.
+    }
   }
   permissions.revoke(slug);
   loaded.delete(slug);

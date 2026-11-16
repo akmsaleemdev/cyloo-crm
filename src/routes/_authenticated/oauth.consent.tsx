@@ -53,10 +53,13 @@ function ConsentPage() {
       redirect_uri: search.redirect_uri ?? "",
       response_type: (search.response_type as "code") ?? "code",
       scope: search.scope ?? "openid profile email",
-      state: search.state ?? undefined,
-      code_challenge: search.code_challenge ?? undefined,
-      code_challenge_method: (search.code_challenge_method as any) ?? undefined,
-      nonce: search.nonce ?? undefined,
+      state: search.state ?? "",
+      code_challenge: search.code_challenge ?? "",
+      code_challenge_method:
+        search.code_challenge_method === "S256" || search.code_challenge_method === "plain"
+          ? search.code_challenge_method
+          : "S256",
+      nonce: search.nonce ?? "",
     }),
     [search],
   );
@@ -73,13 +76,13 @@ function ConsentPage() {
 
   const approve = useMutation({
     mutationFn: () => approveFn({ data: params }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       if (r?.redirect_to) window.location.href = r.redirect_to;
     },
   });
   const deny = useMutation({
     mutationFn: () => denyFn({ data: { redirect_uri: params.redirect_uri, state: params.state } }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       if (r?.redirect_to) window.location.href = r.redirect_to;
     },
   });

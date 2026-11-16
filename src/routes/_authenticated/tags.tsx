@@ -249,12 +249,10 @@ function TagStats() {
   const { data = [], isLoading } = useTagAnalytics();
   if (isLoading || data.length === 0) return null;
   const totalTags = data.length;
-  const totalAssigns = data.reduce((s: number, t: any) => s + (t.counts?.total ?? 0), 0);
-  const smart = data.filter((t: any) => t.is_smart).length;
-  const ai = data.filter((t: any) => t.is_ai_generated).length;
-  const top = [...data]
-    .sort((a: any, b: any) => (b.counts?.total ?? 0) - (a.counts?.total ?? 0))
-    .slice(0, 5);
+  const totalAssigns = data.reduce((sum, tag) => sum + (tag.counts?.total ?? 0), 0);
+  const smart = data.filter((tag) => tag.is_smart).length;
+  const ai = data.filter((tag) => tag.is_ai_generated).length;
+  const top = [...data].sort((a, b) => (b.counts?.total ?? 0) - (a.counts?.total ?? 0)).slice(0, 5);
   return (
     <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
       <StatCard className="p-4">
@@ -280,10 +278,10 @@ function TagStats() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {top.map((t: any) => (
+          {top.map((t) => (
             <div key={t.id} className="flex items-center gap-3">
               <div className="w-40 truncate">
-                <TagBadge tag={t as TagRow} />
+                <TagBadge tag={t} />
               </div>
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div
@@ -400,7 +398,14 @@ function TagEditor({ existing, onClose }: { existing: TagRow | null; onClose: ()
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label>Parent tag (nested)</Label>
-            <Select value={parentId} onValueChange={(v) => setParentId(v as any)}>
+            <Select
+              value={parentId}
+              onValueChange={(value) => {
+                if (value === "none" || allTags.some((tag) => tag.id === value)) {
+                  setParentId(value);
+                }
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

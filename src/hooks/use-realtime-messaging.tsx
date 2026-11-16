@@ -396,7 +396,6 @@ export function RealtimeMessagingProvider({ children }: { children: ReactNode })
     // payloads from a previous subscription cannot invalidate the wrong cache.
     const boundWorkspaceId = workspaceId;
     let cancelled = false;
-    let heartbeat: ReturnType<typeof setInterval> | undefined;
     const channels: RealtimeChannel[] = [];
 
     // Single coalesced fan-out for every conversation-derived surface in the
@@ -781,7 +780,7 @@ export function RealtimeMessagingProvider({ children }: { children: ReactNode })
         .then(() => {});
     };
     beat();
-    heartbeat = setInterval(beat, 30_000);
+    const heartbeat = setInterval(beat, 30_000);
 
     return () => {
       cancelled = true;

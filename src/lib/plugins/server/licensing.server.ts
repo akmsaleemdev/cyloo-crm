@@ -2,7 +2,29 @@ import { supabaseAdmin } from "@/lib/demo/admin-write-guard.server";
 import { generateLicenseKey, DEFAULT_PUBLISHER_SHARE_BPS, splitRevenue } from "../license";
 import { sbAny } from "@/lib/supabase/untyped";
 
-export async function adminIssueLicense(data: any) {
+type LicensePurchaseInput = {
+  pluginId: string;
+  licenseType: string;
+  seats: number;
+  amountCents: number;
+  currency: string;
+  workspaceId: string;
+  gateway: string;
+  gatewayReference?: string | null;
+};
+
+type AdminIssueLicenseInput = {
+  pluginId: string;
+  licenseType: string;
+  seats: number;
+  priceCents: number;
+  currency: string;
+  customerUserId?: string | null;
+  customerWorkspaceId?: string | null;
+  expiresAt?: string | null;
+};
+
+export async function adminIssueLicense(data: AdminIssueLicenseInput) {
   const { data: plugin } = await sbAny(supabaseAdmin)
     .from("plugins")
     .select("id, publisher_id")
@@ -32,7 +54,7 @@ export async function adminIssueLicense(data: any) {
   return license;
 }
 
-export async function adminPurchasePlugin(data: any, userId: string) {
+export async function adminPurchasePlugin(data: LicensePurchaseInput, userId: string) {
   const { data: plugin } = await sbAny(supabaseAdmin)
     .from("plugins")
     .select("id, publisher_id")
@@ -97,7 +119,10 @@ export async function adminPurchasePlugin(data: any, userId: string) {
   return { license, purchase };
 }
 
-export async function adminStartTrial(data: any, userId: string) {
+export async function adminStartTrial(
+  data: { pluginId: string; workspaceId: string; trialDays: number },
+  userId: string,
+) {
   const existing = await sbAny(supabaseAdmin)
     .from("plugin_trials")
     .select("id, status")

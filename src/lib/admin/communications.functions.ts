@@ -12,10 +12,21 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sanitizeSearchTerm } from "@/lib/api/postgrest-filters";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Json } from "@/integrations/supabase/types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertStaff(supabase: any, userId: string) {
-  const { data, error } = await supabase
+const jsonValueSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonValueSchema),
+    z.record(z.string(), jsonValueSchema),
+  ]),
+);
+
+async function assertStaff(supabase: unknown, userId: string) {
+  const { data, error } = await sbAny(supabase)
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
@@ -54,7 +65,7 @@ const AnnouncementInput = z.object({
   cta_url: z.string().optional().nullable(),
   starts_at: z.string().optional().nullable(),
   expires_at: z.string().optional().nullable(),
-  translations: z.record(z.string(), z.any()).default({}),
+  translations: z.record(z.string(), jsonValueSchema).default({}),
   publish: z.boolean().default(false),
 });
 
@@ -80,7 +91,7 @@ export const upsertAnnouncement = createServerFn({ method: "POST" })
       updated_at: new Date().toISOString(),
     };
     if (data.id) {
-      const { data: row, error } = await (supabase as any)
+      const { data: row, error } = await sbAny(supabase)
         .from("platform_announcements")
         .update(payload)
         .eq("id", data.id)
@@ -89,7 +100,7 @@ export const upsertAnnouncement = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
       return row;
     }
-    const { data: row, error } = await (supabase as any)
+    const { data: row, error } = await sbAny(supabase)
       .from("platform_announcements")
       .insert(payload)
       .select()
@@ -154,7 +165,7 @@ const ReleaseNoteInput = z.object({
   category: z
     .enum(["feature", "improvement", "fix", "security", "breaking"])
     .default("improvement"),
-  translations: z.record(z.string(), z.any()).default({}),
+  translations: z.record(z.string(), jsonValueSchema).default({}),
   publish: z.boolean().default(false),
 });
 
@@ -318,7 +329,7 @@ export const updateTicket = createServerFn({ method: "POST" })
     if (data.priority) patch.priority = data.priority;
     if (data.category) patch.category = data.category;
     if (data.assigned_to !== undefined) patch.assigned_to = data.assigned_to;
-    const { error } = await (supabase as any)
+    const { error } = await sbAny(supabase)
       .from("platform_support_tickets")
       .update(patch)
       .eq("id", data.id);
@@ -449,7 +460,7 @@ const SystemTemplateInput = z.object({
   channel: z.enum(["in_app", "email", "whatsapp"]).default("in_app"),
   subject: z.string().optional().nullable(),
   body: z.string().min(1),
-  translations: z.record(z.string(), z.any()).default({}),
+  translations: z.record(z.string(), jsonValueSchema).default({}),
   variables: z.array(z.string()).default([]),
   enabled: z.boolean().default(true),
 });

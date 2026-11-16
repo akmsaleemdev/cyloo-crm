@@ -6,8 +6,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sbAny } from "@/lib/supabase/untyped";
 
-async function getOrgId(supabase: any, userId: string): Promise<string> {
-  const { data } = await supabase
+async function getOrgId(supabase: unknown, userId: string): Promise<string> {
+  const { data } = await sbAny(supabase)
     .from("organization_members")
     .select("organization_id")
     .eq("user_id", userId)
@@ -54,7 +54,8 @@ export const createWebhookEndpoint = createServerFn({ method: "POST" })
     const { full, prefix } = randomSecret();
     const secret_hash = await sha256Hex(full);
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { data: ep, error } = await (sbAny(supabaseAdmin).from("webhook_endpoints") as any)
+    const { data: ep, error } = await sbAny(supabaseAdmin)
+      .from("webhook_endpoints")
       .insert({
         organization_id: orgId,
         created_by: context.userId,
@@ -71,9 +72,9 @@ export const createWebhookEndpoint = createServerFn({ method: "POST" })
       .select("id, name, url")
       .single();
     if (error) throw error;
-    const { error: sErr } = await (
-      sbAny(supabaseAdmin).from("webhook_endpoint_secrets") as any
-    ).insert({ endpoint_id: ep.id, secret: full });
+    const { error: sErr } = await sbAny(supabaseAdmin)
+      .from("webhook_endpoint_secrets")
+      .insert({ endpoint_id: ep.id, secret: full });
     if (sErr) throw sErr;
     return { id: ep.id, signing_secret: full }; // shown once
   });
@@ -119,7 +120,8 @@ export const updateWebhookEndpoint = createServerFn({ method: "POST" })
         patch.consecutive_failures = 0;
       }
     }
-    const { error } = await (sbAny(context.supabase).from("webhook_endpoints") as any)
+    const { error } = await sbAny(context.supabase)
+      .from("webhook_endpoints")
       .update(patch)
       .eq("id", data.id)
       .eq("organization_id", orgId);
@@ -291,9 +293,9 @@ export const getWebhookStats = createServerFn({ method: "GET" })
       .gte("created_at", since);
     const rows = data ?? [];
     const total = rows.length;
-    const succeeded = rows.filter((r: any) => r.status === "succeeded").length;
-    const failed = rows.filter((r: any) => r.status === "dead_letter").length;
-    const pending = rows.filter((r: any) => ["pending", "delivering"].includes(r.status)).length;
+    const succeeded = rows.filter((row) => row.status === "succeeded").length;
+    const failed = rows.filter((row) => row.status === "dead_letter").length;
+    const pending = rows.filter((row) => ["pending", "delivering"].includes(row.status)).length;
     const successRate = total ? Math.round((succeeded / total) * 100) : 100;
     return { total, succeeded, failed, pending, successRate };
   });

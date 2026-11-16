@@ -4,7 +4,7 @@
  */
 import { useChannelAccounts } from "@/hooks/use-channel-accounts";
 import { useMonitoringOverview } from "@/hooks/use-monitoring";
-import { useSyncJobs } from "@/hooks/use-sync";
+import { useSyncJobs, type SyncJobRow } from "@/hooks/use-sync";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +15,13 @@ import {
   Inbox,
   Webhook,
   RefreshCw,
+  type LucideIcon,
 } from "lucide-react";
+import type { ChannelAccountsResult } from "@/lib/messaging/channel-account-schema";
+
+type ChannelAccount = ChannelAccountsResult["accounts"][number];
+type SyncJob = SyncJobRow;
+type MonitoringOverview = NonNullable<ReturnType<typeof useMonitoringOverview>["data"]>;
 
 function StatusPill({ ok, warn, label }: { ok: boolean; warn?: boolean; label: string }) {
   const Icon = ok ? CheckCircle2 : warn ? AlertTriangle : XCircle;
@@ -35,17 +41,13 @@ export function WhatsAppIntegrationHealth() {
   const overviewQ = useMonitoringOverview(wsId);
   const jobsQ = useSyncJobs(wsId);
 
-  const accountsData: any = accountsQ.data;
-  const accounts: any[] = Array.isArray(accountsData)
-    ? accountsData
-    : (accountsData?.accounts ?? []);
-  const jobsData: any = jobsQ.data;
-  const jobs: any[] = Array.isArray(jobsData) ? jobsData : (jobsData?.jobs ?? []);
-  const overview: any = overviewQ.data;
+  const accounts: ChannelAccount[] = accountsQ.data?.accounts ?? [];
+  const jobs: SyncJob[] = jobsQ.data?.jobs ?? [];
+  const overview: MonitoringOverview | undefined = overviewQ.data;
 
   const connected = accounts.filter((a) => a.status === "connected").length;
   const total = accounts.length;
-  const failing = accounts.filter((a) => a.health_status && a.health_status !== "healthy").length;
+  const failing = accounts.filter((account) => account.status === "error").length;
 
   const outboxLag = overview?.outbox?.pending ?? 0;
   const webhookLag = overview?.webhooks?.pending ?? 0;
@@ -158,7 +160,7 @@ function Card({
   sub,
   tone,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   value: string;
   sub: string;

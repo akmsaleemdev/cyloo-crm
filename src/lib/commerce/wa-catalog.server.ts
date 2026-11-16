@@ -1,4 +1,6 @@
 import { sbAny } from "@/lib/supabase/untyped";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 /**
  * WhatsApp Catalog — server-only helpers.
  *
@@ -9,7 +11,74 @@ import { sbAny } from "@/lib/supabase/untyped";
 
 const GRAPH = "https://graph.facebook.com/v20.0";
 
-export async function metaFetch(path: string, token: string, init?: RequestInit) {
+type MetaRecord = Record<string, unknown>;
+type MetaResponse = MetaRecord & {
+  data?: unknown[];
+  paging?: { next?: string | null; cursors?: { after?: string | null } };
+  handles?: string[];
+  validation_status?: Array<{
+    retailer_id?: string;
+    errors?: Array<{ message?: string }>;
+  }>;
+  messages?: Array<{ id?: string }>;
+};
+
+type MetaCatalogItem = {
+  id?: string;
+  retailer_id?: string | null;
+  name?: string | null;
+  description?: string | null;
+  price?: string | number | null;
+  sale_price?: string | number | null;
+  currency?: string | null;
+  image_url?: string | null;
+  additional_image_urls?: string[] | null;
+  availability?: string | null;
+  inventory?: string | number | null;
+  brand?: string | null;
+  category?: string | null;
+  url?: string | null;
+  review_status?: string | null;
+  review_rejection_reasons?: string[] | null;
+};
+
+type ProductImageSource = { image_url?: unknown; images?: unknown; gallery?: unknown };
+type CatalogProduct = {
+  id: string;
+  sku?: string | null;
+  retailer_id?: string | null;
+  name: string;
+  description?: string | null;
+  price?: string | number | null;
+  sale_price?: string | number | null;
+  currency?: string | null;
+  stock_quantity?: string | number | null;
+  image_url?: unknown;
+  images?: unknown;
+  gallery?: unknown;
+  public_url?: string | null;
+  brand_name?: string | null;
+  category_name?: string | null;
+  category?: string | null;
+  wa_visibility?: string | null;
+};
+type CatalogConfig = {
+  currency?: string | null;
+  shop_url?: string | null;
+  default_category?: string | null;
+};
+
+function asMetaRecord(value: unknown): MetaRecord | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as MetaRecord)
+    : null;
+}
+
+export async function metaFetch(
+  path: string,
+  token: string,
+  init?: RequestInit,
+): Promise<MetaResponse> {
   const res = await fetch(`${GRAPH}${path}`, {
     ...init,
     headers: {
@@ -18,12 +87,14 @@ export async function metaFetch(path: string, token: string, init?: RequestInit)
       ...(init?.headers ?? {}),
     },
   });
-  const json = await res.json().catch(() => ({}));
+  const json: unknown = await res.json().catch(() => ({}));
+  const payload = asMetaRecord(json) ?? {};
   if (!res.ok) {
-    const msg = (json as any)?.error?.message ?? `Meta API ${res.status}`;
+    const error = asMetaRecord(payload.error);
+    const msg = typeof error?.message === "string" ? error.message : `Meta API ${res.status}`;
     throw new Error(msg);
   }
-  return json as any;
+  return payload as MetaResponse;
 }
 
 /**
@@ -53,17 +124,23 @@ export async function awaitBatchResult(
         `/${catalogId}/check_batch_request_status?handle=${encodeURIComponent(handle)}`,
         token,
       );
-      for (const entry of (res?.data ?? []) as any[]) {
-        if (entry?.status !== "finished") {
+      for (const value of res.data ?? []) {
+        const entry = asMetaRecord(value);
+        if (!entry || entry.status !== "finished") {
           allFinished = false;
           continue;
         }
-        for (const err of (entry?.errors ?? []) as any[]) {
-          const message = String(err?.message ?? "Rejected by Meta");
+        const entryErrors = Array.isArray(entry.errors) ? entry.errors : [];
+        for (const value of entryErrors) {
+          const err = asMetaRecord(value);
+          if (!err) continue;
+          const message = String(err.message ?? "Rejected by Meta");
           const rid =
-            err?.retailer_id ??
-            err?.id ??
-            (Number.isInteger(err?.line) ? batch[err.line]?.retailer_id : null);
+            err.retailer_id ??
+            err.id ??
+            (typeof err.line === "number" && Number.isInteger(err.line)
+              ? batch[err.line]?.retailer_id
+              : null);
           if (rid) errors.set(String(rid), message);
           else general.push(message);
         }
@@ -92,11 +169,12 @@ export async function lookupCatalogItems(
     `/${catalogId}/products?filter=${filter}&fields=retailer_id,review_status,review_rejection_reasons&limit=${retailerIds.length}`,
     token,
   );
-  for (const row of (res?.data ?? []) as any[]) {
+  for (const value of res.data ?? []) {
+    const row = asMetaRecord(value);
     if (!row?.retailer_id) continue;
     const reasons = Array.isArray(row.review_rejection_reasons) ? row.review_rejection_reasons : [];
     found.set(String(row.retailer_id), {
-      reviewStatus: row.review_status ?? null,
+      reviewStatus: typeof row.review_status === "string" ? row.review_status : null,
       rejection:
         row.review_status === "rejected" ? reasons.join(", ") || "Rejected by Meta review" : null,
     });
@@ -131,7 +209,10 @@ export function parseMetaPrice(raw: unknown): number | null {
 }
 
 /** Every item in a Meta catalog, following cursor pages. */
-export async function fetchAllCatalogItems(catalogId: string, token: string): Promise<any[]> {
+export async function fetchAllCatalogItems(
+  catalogId: string,
+  token: string,
+): Promise<MetaCatalogItem[]> {
   const fields = [
     "id",
     "retailer_id",
@@ -148,7 +229,7 @@ export async function fetchAllCatalogItems(catalogId: string, token: string): Pr
     "category",
     "url",
   ].join(",");
-  const items: any[] = [];
+  const items: MetaCatalogItem[] = [];
   let after: string | null = null;
   // 20 pages × 100 items is far beyond what a WhatsApp catalog holds.
   for (let page = 0; page < 20; page++) {
@@ -157,7 +238,10 @@ export async function fetchAllCatalogItems(catalogId: string, token: string): Pr
       `/${catalogId}/products?fields=${fields}&limit=100${cursor}`,
       token,
     );
-    items.push(...((res?.data ?? []) as any[]));
+    for (const value of res.data ?? []) {
+      const item = asMetaRecord(value);
+      if (item) items.push(item as MetaCatalogItem);
+    }
     after = res?.paging?.next ? (res?.paging?.cursors?.after ?? null) : null;
     if (!after) break;
   }
@@ -165,7 +249,7 @@ export async function fetchAllCatalogItems(catalogId: string, token: string): Pr
 }
 
 /** Every image a product has, primary first, de-duplicated. */
-export function productImages(p: any): string[] {
+export function productImages(p: ProductImageSource): string[] {
   const all = [
     p.image_url,
     ...(Array.isArray(p.images) ? p.images : []),
@@ -191,7 +275,12 @@ export function waChatLink(phoneNumber: string | null | undefined, productName: 
  * catalogs that are not priced in dollars. The product's own currency wins over
  * the catalog setting — a BDT-priced product must not go out as USD.
  */
-export function mapProductToMeta(p: any, cfg: any, fallbackCurrency: string, link?: string | null) {
+export function mapProductToMeta(
+  p: CatalogProduct,
+  cfg: CatalogConfig | null,
+  fallbackCurrency: string,
+  link?: string | null,
+) {
   const price = Number(p.sale_price ?? p.price ?? 0);
   const currency = p?.currency || cfg?.currency || fallbackCurrency;
   // Postgres numerics arrive as strings ("50.000"); Meta wants a whole number.
@@ -262,16 +351,20 @@ export async function resolveWaCatalogCredentials(
   let phoneNumberId = cfg?.phone_number_id ?? null;
 
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  let q = (supabaseAdmin as any)
+  let q = sbAny(supabaseAdmin)
     .from("channel_accounts")
     .select("id, phone_number_id, status")
     .eq("workspace_id", workspaceId)
     .eq("provider", "whatsapp_cloud");
   if (cfg?.phone_number_id) q = q.eq("phone_number_id", cfg.phone_number_id);
   const { data: rows } = await q.order("is_default", { ascending: false }).limit(5);
+  const accounts = (rows ?? []) as Array<{
+    id: string;
+    phone_number_id: string | null;
+    status: string;
+  }>;
   const account =
-    (rows ?? []).find((r: any) => r.status === "active" || r.status === "connected") ??
-    (rows ?? [])[0];
+    accounts.find((row) => row.status === "active" || row.status === "connected") ?? accounts[0];
 
   if (account?.id) {
     const registry = await import("@/lib/messaging/registry.server");
@@ -325,7 +418,7 @@ export async function resolveWaCatalogCredentials(
  * never grew past 1. Read-modify-write keeps the daily aggregate accurate.
  */
 export async function bumpCatalogAnalytics(
-  supabase: any,
+  supabase: SupabaseClient<Database>,
   args: {
     workspaceId: string;
     productId: string;
@@ -335,16 +428,24 @@ export async function bumpCatalogAnalytics(
 ) {
   const today = new Date().toISOString().slice(0, 10);
   const by = args.by ?? 1;
-  const { data: existing } = await supabase
+  const { data: existingResult } = await sbAny(supabase)
     .from("wa_catalog_analytics_daily")
     .select(`id, ${args.field}`)
     .eq("workspace_id", args.workspaceId)
     .eq("product_id", args.productId)
     .eq("date", today)
     .maybeSingle();
+  const existing = existingResult as {
+    id: string;
+    views?: number | null;
+    shares?: number | null;
+    clicks?: number | null;
+    add_to_cart?: number | null;
+    orders?: number | null;
+  } | null;
 
   if (existing?.id) {
-    await supabase
+    await sbAny(supabase)
       .from("wa_catalog_analytics_daily")
       .update({ [args.field]: (Number(existing[args.field]) || 0) + by })
       .eq("id", existing.id);

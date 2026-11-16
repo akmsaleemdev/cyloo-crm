@@ -73,7 +73,7 @@ function AppsList() {
   }
   return (
     <div className="space-y-3">
-      {data.apps.map((a: any) => (
+      {data.apps.map((a) => (
         <Card key={a.consent_id}>
           <CardHeader className="flex-row items-center gap-4 space-y-0">
             <Avatar className="w-12 h-12">

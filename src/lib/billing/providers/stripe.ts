@@ -22,6 +22,7 @@ import type {
   Refund,
   RefundInput,
   SubscriptionSnapshot,
+  SubscriptionStatus,
   UsageReport,
   WebhookEvent,
   WebhookVerifyInput,
@@ -29,6 +30,62 @@ import type {
 import { BillingProviderUnsupported } from "./types";
 
 const STRIPE_API = "https://api.stripe.com/v1";
+const SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [
+  "trialing",
+  "active",
+  "past_due",
+  "canceled",
+  "unpaid",
+  "incomplete",
+  "paused",
+];
+const isSubscriptionStatus = (status: string): status is SubscriptionStatus =>
+  SUBSCRIPTION_STATUSES.some((candidate) => candidate === status);
+
+type StripeSubscriptionResponse = {
+  id: string;
+  customer: string;
+  status: string;
+  items?: { data?: Array<{ id: string; quantity?: number | null; price?: { id: string } | null }> };
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+  trial_end?: number | null;
+  cancel_at?: number | null;
+  canceled_at?: number | null;
+  cancel_at_period_end?: boolean;
+  metadata?: Record<string, string>;
+};
+
+type StripePaymentIntentResponse = {
+  id: string;
+  status: string;
+  amount?: number | null;
+  currency?: string | null;
+  amount_refunded?: number | null;
+  next_action?: { redirect_to_url?: { url?: string } | null } | null;
+  last_payment_error?: { code?: string | null; message?: string | null } | null;
+  metadata?: Record<string, string>;
+};
+
+type StripeInvoicePreviewResponse = {
+  subtotal?: number | null;
+  tax?: number | null;
+  total?: number | null;
+  currency?: string | null;
+  total_discount_amounts?: Array<{ amount?: number | null }> | null;
+  lines?: {
+    data?: Array<{ description?: string | null; amount?: number | null; quantity?: number | null }>;
+  };
+};
+
+type StripeRefundResponse = {
+  id: string;
+  amount?: number | null;
+  currency?: string | null;
+  status?: string | null;
+  reason?: string | null;
+  created?: number | null;
+};
 
 function requireKey(): string {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -140,22 +197,24 @@ export const stripeProvider: BillingProvider = {
   },
 
   async getSubscription(id: string): Promise<SubscriptionSnapshot> {
-    const s = await stripeCall<any>("GET", `/subscriptions/${id}`);
+    const s = await stripeCall<StripeSubscriptionResponse>("GET", `/subscriptions/${id}`);
     return mapSubscription(s);
   },
 
   async cancelSubscription(id: string, at_period_end = true): Promise<SubscriptionSnapshot> {
     const s = at_period_end
-      ? await stripeCall<any>("POST", `/subscriptions/${id}`, { cancel_at_period_end: true })
-      : await stripeCall<any>("DELETE", `/subscriptions/${id}`);
+      ? await stripeCall<StripeSubscriptionResponse>("POST", `/subscriptions/${id}`, {
+          cancel_at_period_end: true,
+        })
+      : await stripeCall<StripeSubscriptionResponse>("DELETE", `/subscriptions/${id}`);
     return mapSubscription(s);
   },
 
   async updateSubscriptionQuantity(id: string, quantity: number): Promise<SubscriptionSnapshot> {
-    const sub = await stripeCall<any>("GET", `/subscriptions/${id}`);
+    const sub = await stripeCall<StripeSubscriptionResponse>("GET", `/subscriptions/${id}`);
     const itemId = sub?.items?.data?.[0]?.id;
     if (!itemId) throw new Error(`Stripe subscription ${id} has no items`);
-    const updated = await stripeCall<any>("POST", `/subscriptions/${id}`, {
+    const updated = await stripeCall<StripeSubscriptionResponse>("POST", `/subscriptions/${id}`, {
       items: [{ id: itemId, quantity }],
       proration_behavior: "create_prorations",
     });
@@ -175,20 +234,23 @@ export const stripeProvider: BillingProvider = {
   },
 
   async previewInvoice(subscriptionId: string): Promise<InvoicePreview> {
-    const inv = await stripeCall<any>("GET", `/invoices/upcoming?subscription=${subscriptionId}`);
+    const inv = await stripeCall<StripeInvoicePreviewResponse>(
+      "GET",
+      `/invoices/upcoming?subscription=${subscriptionId}`,
+    );
     return {
       subtotal_cents: inv.subtotal ?? 0,
       tax_cents: inv.tax ?? 0,
       discount_cents: (inv.total_discount_amounts ?? []).reduce(
-        (n: number, d: any) => n + (d.amount ?? 0),
+        (n, discount) => n + (discount.amount ?? 0),
         0,
       ),
       total_cents: inv.total ?? 0,
       currency: (inv.currency ?? "usd").toUpperCase(),
-      line_items: (inv.lines?.data ?? []).map((l: any) => ({
-        description: l.description ?? "Line item",
-        amount_cents: l.amount ?? 0,
-        quantity: l.quantity ?? 1,
+      line_items: (inv.lines?.data ?? []).map((line) => ({
+        description: line.description ?? "Line item",
+        amount_cents: line.amount ?? 0,
+        quantity: line.quantity ?? 1,
       })),
     };
   },
@@ -219,7 +281,7 @@ export const stripeProvider: BillingProvider = {
 
   async createPaymentIntent(input: PaymentIntentInput): Promise<PaymentIntent> {
     const headers: Record<string, unknown> = {};
-    const pi = await stripeCall<any>("POST", "/payment_intents", {
+    const pi = await stripeCall<StripePaymentIntentResponse>("POST", "/payment_intents", {
       amount: input.amount_cents,
       currency: input.currency.toLowerCase(),
       customer: input.customer.provider_customer_id,
@@ -235,18 +297,21 @@ export const stripeProvider: BillingProvider = {
   },
 
   async getPayment(id: string): Promise<PaymentIntent> {
-    const pi = await stripeCall<any>("GET", `/payment_intents/${id}`);
+    const pi = await stripeCall<StripePaymentIntentResponse>("GET", `/payment_intents/${id}`);
     return mapPaymentIntent(pi);
   },
 
   async retryPayment(id: string): Promise<PaymentIntent> {
     // Stripe: confirm() reattempts a requires_payment_method intent.
-    const pi = await stripeCall<any>("POST", `/payment_intents/${id}/confirm`);
+    const pi = await stripeCall<StripePaymentIntentResponse>(
+      "POST",
+      `/payment_intents/${id}/confirm`,
+    );
     return mapPaymentIntent(pi);
   },
 
   async refundPayment(input: RefundInput): Promise<Refund> {
-    const r = await stripeCall<any>("POST", "/refunds", {
+    const r = await stripeCall<StripeRefundResponse>("POST", "/refunds", {
       payment_intent: input.provider_payment_id,
       amount: input.amount_cents,
       reason: input.reason,
@@ -272,8 +337,8 @@ export const stripeProvider: BillingProvider = {
   },
 };
 
-function mapPaymentIntent(pi: any): PaymentIntent {
-  const stripeStatus = pi.status as string;
+function mapPaymentIntent(pi: StripePaymentIntentResponse): PaymentIntent {
+  const stripeStatus = pi.status;
   const status: PaymentIntent["status"] =
     stripeStatus === "succeeded"
       ? "succeeded"
@@ -294,19 +359,19 @@ function mapPaymentIntent(pi: any): PaymentIntent {
     amount_cents: pi.amount ?? 0,
     currency: (pi.currency ?? "usd").toUpperCase(),
     next_action_url: pi.next_action?.redirect_to_url?.url,
-    failure_code: pi.last_payment_error?.code,
-    failure_message: pi.last_payment_error?.message,
+    failure_code: pi.last_payment_error?.code ?? undefined,
+    failure_message: pi.last_payment_error?.message ?? undefined,
     refunded_amount_cents: pi.amount_refunded ?? 0,
     metadata: pi.metadata ?? {},
   };
 }
 
-function mapSubscription(s: any): SubscriptionSnapshot {
+function mapSubscription(s: StripeSubscriptionResponse): SubscriptionSnapshot {
   return {
     provider: "stripe",
     provider_subscription_id: s.id,
     provider_customer_id: s.customer,
-    status: s.status,
+    status: isSubscriptionStatus(s.status) ? s.status : "incomplete",
     plan_code: s.items?.data?.[0]?.price?.id ?? "",
     quantity: s.items?.data?.[0]?.quantity ?? 1,
     current_period_start: new Date((s.current_period_start ?? 0) * 1000).toISOString(),

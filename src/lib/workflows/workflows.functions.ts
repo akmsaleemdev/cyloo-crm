@@ -1,8 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { Json } from "@/integrations/supabase/types";
 import type { WorkflowGraph } from "./types";
 import { sbAny } from "@/lib/supabase/untyped";
+
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
 
 /**
  * Workflow engine — public server-function surface.
@@ -18,7 +30,7 @@ import { sbAny } from "@/lib/supabase/untyped";
 const RunInput = z.object({
   automationId: z.string().uuid(),
   triggerSource: z.string().default("manual"),
-  input: z.record(z.string(), z.unknown()).default({}),
+  input: z.record(z.string(), jsonSchema).default({}),
   dryRun: z.boolean().optional(),
 });
 
@@ -62,7 +74,7 @@ export const runWorkflow = createServerFn({ method: "POST" })
 const EnqueueInput = z.object({
   automationId: z.string().uuid(),
   triggerSource: z.string().default("manual"),
-  input: z.record(z.string(), z.unknown()).default({}),
+  input: z.record(z.string(), jsonSchema).default({}),
   runAt: z.string().datetime().optional(),
   priority: z.number().int().min(1).max(9).optional(),
   maxAttempts: z.number().int().min(1).max(20).optional(),
@@ -100,7 +112,7 @@ export const enqueueWorkflow = createServerFn({ method: "POST" })
         automation_id: automation.id,
         version: automation.version ?? 1,
         trigger_source: data.triggerSource,
-        input: data.input as any,
+        input: data.input,
         run_at: data.runAt ?? new Date().toISOString(),
         priority: data.priority ?? 5,
         max_attempts: data.maxAttempts ?? 5,
@@ -116,7 +128,7 @@ export const enqueueWorkflow = createServerFn({ method: "POST" })
 
 const EmitEventInput = z.object({
   eventType: z.string().min(1),
-  payload: z.record(z.string(), z.unknown()).default({}),
+  payload: z.record(z.string(), jsonSchema).default({}),
   workspaceId: z.string().uuid().optional(),
   idempotencyKey: z.string().min(1).max(200).optional(),
 });
@@ -148,7 +160,7 @@ export const emitWorkflowEvent = createServerFn({ method: "POST" })
       version: a.version ?? 1,
       trigger_source: "event",
       event_type: data.eventType,
-      input: data.payload as any,
+      input: data.payload,
       run_at: new Date().toISOString(),
       priority: 5,
       max_attempts: 5,
@@ -213,17 +225,15 @@ export const publishWorkflow = createServerFn({ method: "POST" })
     // on that constraint, so retry with a re-read version instead of failing.
     let nextVersion = (automation.version ?? 1) + 1;
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { error: vErr } = await sbAny(supabase)
-        .from("workflow_versions")
-        .insert({
-          workspace_id: automation.workspace_id,
-          automation_id: automation.id,
-          version: nextVersion,
-          graph: automation.graph as any,
-          trigger_type: automation.trigger_type,
-          trigger_config: automation.trigger_config as any,
-          created_by: userId,
-        });
+      const { error: vErr } = await sbAny(supabase).from("workflow_versions").insert({
+        workspace_id: automation.workspace_id,
+        automation_id: automation.id,
+        version: nextVersion,
+        graph: automation.graph,
+        trigger_type: automation.trigger_type,
+        trigger_config: automation.trigger_config,
+        created_by: userId,
+      });
       if (!vErr) break;
       const isConflict = vErr.code === "23505";
       if (!isConflict || attempt === 2) throw new Error(vErr.message);
@@ -362,7 +372,7 @@ export const recoverStuckRuns = createServerFn({ method: "POST" })
       .from("workflow_runs")
       .update({
         status: "failed",
-        error: { message: `Run exceeded ${data.olderThanMinutes}m without completing` } as any,
+        error: { message: `Run exceeded ${data.olderThanMinutes}m without completing` },
         finished_at: new Date().toISOString(),
       })
       .eq("status", "running")

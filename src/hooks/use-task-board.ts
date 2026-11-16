@@ -29,7 +29,7 @@ export type TaskInput = {
   custom_fields: Record<string, unknown>;
 };
 
-const anyFrom = (t: string) => sbAny(supabase).from(t as any) as any;
+const anyFrom = (table: string) => sbAny(supabase).from(table as never);
 const boardKey = (workspaceId: string | null | undefined) => ["task-board", workspaceId] as const;
 
 /**

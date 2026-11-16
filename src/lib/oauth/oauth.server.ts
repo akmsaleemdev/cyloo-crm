@@ -3,6 +3,7 @@
  * (server routes, server-fn handlers loaded via dynamic import).
  */
 import { sbAny } from "@/lib/supabase/untyped";
+import type { Tables } from "@/integrations/supabase/types";
 
 const ACCESS_TTL_S = 3600; // 1h
 const REFRESH_TTL_S = 60 * 60 * 24 * 30; // 30d
@@ -63,10 +64,10 @@ export function generateClientCredentials() {
  * Client authentication (Basic header or body). Returns the DB client row or null.
  */
 export async function authenticateClient(
-  admin: any,
+  admin: unknown,
   request: Request,
   body: URLSearchParams,
-): Promise<{ client: any; authed: boolean; publicOk: boolean } | null> {
+): Promise<{ client: Tables<"oauth_clients">; authed: boolean; publicOk: boolean } | null> {
   let clientId = body.get("client_id") ?? "";
   let clientSecret = body.get("client_secret") ?? "";
   const auth = request.headers.get("authorization") ?? "";
@@ -83,21 +84,22 @@ export async function authenticateClient(
     }
   }
   if (!clientId) return null;
-  const { data: client } = await admin
+  const { data: client } = await sbAny(admin)
     .from("oauth_clients")
     .select("*")
     .eq("client_id", clientId)
     .maybeSingle();
   if (!client || client.revoked_at) return null;
+  const oauthClient = client as Tables<"oauth_clients">;
 
-  if (client.client_type === "public") {
+  if (oauthClient.client_type === "public") {
     // No secret required. Public clients are considered "authed" only for PKCE flows.
-    return { client, authed: !clientSecret, publicOk: true };
+    return { client: oauthClient, authed: !clientSecret, publicOk: true };
   }
   if (!clientSecret) return { client, authed: false, publicOk: false };
   const hash = await sha256Hex(clientSecret);
-  const ok = timingSafeEqual(hash, client.client_secret_hash ?? "");
-  return { client, authed: ok, publicOk: false };
+  const ok = timingSafeEqual(hash, oauthClient.client_secret_hash ?? "");
+  return { client: oauthClient, authed: ok, publicOk: false };
 }
 
 export function oauthError(error: string, description?: string, status = 400): Response {
@@ -124,7 +126,7 @@ export type MintedTokens = {
  * Mint access + optional refresh token pair. Persists hashed values.
  */
 export async function mintTokenPair(
-  admin: any,
+  admin: unknown,
   args: {
     clientId: string;
     userId: string | null;
@@ -139,7 +141,7 @@ export async function mintTokenPair(
   const refreshHash = refresh ? await sha256Hex(refresh) : null;
   const now = Date.now();
 
-  const { data: at, error: atErr } = await admin
+  const { data: at, error: atErr } = await sbAny(admin)
     .from("oauth_access_tokens")
     .insert({
       token_hash: accessHash,
@@ -180,10 +182,13 @@ export async function mintTokenPair(
 /**
  * Validate a bearer access token. Returns the token row or null.
  */
-export async function validateAccessToken(admin: any, token: string) {
+export async function validateAccessToken(
+  admin: unknown,
+  token: string,
+): Promise<Tables<"oauth_access_tokens"> | null> {
   if (!token) return null;
   const hash = await sha256Hex(token);
-  const { data } = await admin
+  const { data } = await sbAny(admin)
     .from("oauth_access_tokens")
     .select("*")
     .eq("token_hash", hash)
@@ -191,7 +196,7 @@ export async function validateAccessToken(admin: any, token: string) {
   if (!data) return null;
   if (data.revoked_at) return null;
   if (new Date(data.expires_at).getTime() < Date.now()) return null;
-  admin
+  sbAny(admin)
     .from("oauth_access_tokens")
     .update({ last_used_at: new Date().toISOString() })
     .eq("id", data.id)
@@ -199,5 +204,5 @@ export async function validateAccessToken(admin: any, token: string) {
       () => {},
       () => {},
     );
-  return data;
+  return data as Tables<"oauth_access_tokens">;
 }

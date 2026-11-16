@@ -40,6 +40,8 @@ export function detectLanguageHeuristic(text: string): string | null {
   for (const [code, re] of table) if (re.test(t)) return code;
 
   // Default to English when it looks like ASCII prose
+  // The ASCII range intentionally includes NUL and DEL control characters.
+  // eslint-disable-next-line no-control-regex
   if (/^[\x00-\x7f]+$/.test(text)) return "en";
   return null;
 }

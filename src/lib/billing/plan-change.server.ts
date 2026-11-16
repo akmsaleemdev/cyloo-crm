@@ -1,4 +1,5 @@
-import { sbAny } from "@/lib/supabase/untyped";
+import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
+import type { Json, Tables } from "@/integrations/supabase/types";
 import { resolveOrganizationCurrency } from "@/lib/currency/resolve.server";
 /**
  * Upgrade / downgrade flow.
@@ -24,10 +25,8 @@ export type PlanRow = {
   currency: string;
   interval: string;
   trial_days: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  features: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  limits: Record<string, any>;
+  features: Record<string, Json>;
+  limits: Record<string, Json>;
 };
 
 export type PlanChangeDirection = "upgrade" | "downgrade" | "lateral" | "same";
@@ -42,6 +41,8 @@ export type PendingChange = {
   provider: string | null;
   created_at: string;
 };
+
+type SubscriptionWithPlan = Tables<"subscriptions"> & { plan: PlanRow | null };
 
 const DAY = 86_400_000;
 
@@ -127,8 +128,7 @@ function diffEntitlements(current: PlanRow | null, target: PlanRow) {
 }
 
 export async function buildPlanChangePreview(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   args: { organization_id: string; plan_code: string; workspace_id?: string | null },
 ): Promise<PlanChangePreview> {
   const { data: target } = await supabase
@@ -218,8 +218,7 @@ export async function buildPlanChangePreview(
 
 /** Move the org onto `plan` now, refreshing the entitlement period. */
 export async function applyPlanEntitlement(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   organization_id: string,
   plan: Pick<PlanRow, "id" | "interval">,
   metadata: Record<string, unknown> = {},
@@ -254,17 +253,24 @@ export async function applyPlanEntitlement(
 }
 
 async function readPending(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   organization_id: string,
-): Promise<{ sub: any; pending: PendingChange | null; metadata: Record<string, unknown> }> {
+): Promise<{
+  sub: SubscriptionWithPlan | null;
+  pending: PendingChange | null;
+  metadata: Record<string, unknown>;
+}> {
   const { data: sub } = await supabase
     .from("subscriptions")
     .select("*, plan:plans!plan_id(id, code, name, interval, price_cents, currency)")
     .eq("organization_id", organization_id)
     .maybeSingle();
   const metadata = ((sub?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
-  return { sub, pending: (metadata["pending_change"] as PendingChange) ?? null, metadata };
+  return {
+    sub: (sub as SubscriptionWithPlan | null) ?? null,
+    pending: (metadata["pending_change"] as PendingChange) ?? null,
+    metadata,
+  };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -272,8 +278,7 @@ async function readPending(
 /* -------------------------------------------------------------------------- */
 
 export type StartPlanChangeResult =
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | { mode: "applied"; intent_id: string; subscription: any }
+  | { mode: "applied"; intent_id: string; subscription: SubscriptionWithPlan }
   | { mode: "scheduled"; intent_id: string; effective_date: string | null }
   | { mode: "checkout"; intent_id: string; url: string; provider: string };
 
@@ -285,8 +290,10 @@ export const PAYMENT_REQUIRED_MESSAGE =
   "Contact the platform administrator to activate this paid plan.";
 
 /** Manual (no-gateway) paid plan changes require a platform super admin. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertManualPaidChangeAllowed(supabase: any, actorUserId: string | undefined) {
+async function assertManualPaidChangeAllowed(
+  supabase: UntypedClient,
+  actorUserId: string | undefined,
+) {
   if (!actorUserId) throw new Error(PAYMENT_REQUIRED_MESSAGE);
   const { assertSuperAdmin } = await import("@/lib/admin/platform-guard.server");
   try {
@@ -297,8 +304,7 @@ async function assertManualPaidChangeAllowed(supabase: any, actorUserId: string 
 }
 
 export async function startPlanChange(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   args: {
     organization_id: string;
     plan_code: string;
@@ -428,13 +434,11 @@ export type ConfirmPlanChangeResult = {
   plan_code: string | null;
   plan_name: string | null;
   message: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  subscription?: any;
+  subscription?: SubscriptionWithPlan;
 };
 
 export async function confirmPlanChange(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
+  supabase: UntypedClient,
   args: { organization_id: string; intent_id: string; canceled?: boolean; actor_user_id?: string },
 ): Promise<ConfirmPlanChangeResult> {
   const { sub, pending, metadata } = await readPending(supabase, args.organization_id);
@@ -501,7 +505,7 @@ export async function confirmPlanChange(
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const settled = (events ?? []).some((e: any) => {
+  const settled = ((events ?? []) as Array<{ event_type: string }>).some((e) => {
     const t = String(e.event_type ?? "");
     return (
       t.startsWith("payment.succeeded") ||
@@ -590,8 +594,7 @@ export type AdminApplyPlanResult = {
  * offline payment as a gateway payment.
  */
 export async function adminApplyPlanManually(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabaseAdmin: any,
+  supabaseAdmin: UntypedClient,
   args: { organization_id: string; plan_id: string; actor_user_id: string; note?: string | null },
 ): Promise<AdminApplyPlanResult> {
   const { data: org, error: orgErr } = await supabaseAdmin

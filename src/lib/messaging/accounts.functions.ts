@@ -89,7 +89,12 @@ export const listChannelAccounts = createServerFn({ method: "GET" })
     );
 
     // Audit mass secret view
-    const secretsList = (secrets ?? []) as any[];
+    const secretsList = (secrets ?? []) as Array<{
+      id: string;
+      verify_token: string | null;
+      access_token_secret_name: string | null;
+      app_secret_name: string | null;
+    }>;
     if (secretsList.length > 0) {
       const { recordServerAuditEvent } = await import("@/lib/security/audit.server");
       void recordServerAuditEvent({
@@ -102,16 +107,7 @@ export const listChannelAccounts = createServerFn({ method: "GET" })
       });
     }
 
-    const secretById = new Map(
-      (
-        (secrets ?? []) as Array<{
-          id: string;
-          verify_token: string | null;
-          access_token_secret_name: string | null;
-          app_secret_name: string | null;
-        }>
-      ).map((s) => [s.id, s]),
-    );
+    const secretById = new Map(secretsList.map((s) => [s.id, s]));
     const merged = ((rows ?? []) as Array<Record<string, unknown>>).map((r) => ({
       ...r,
       verify_token: secretById.get(String(r.id))?.verify_token ?? null,
@@ -153,11 +149,11 @@ const ConnectSchema = z.object({
 });
 
 async function requireWorkspaceAdmin(
-  supabase: ReturnType<typeof requireSupabaseAuth extends unknown ? never : never> | any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  supabase: unknown,
   workspaceId: string,
   userId: string,
 ): Promise<void> {
-  const { data } = await supabase
+  const { data } = await sbAny(supabase)
     .from("workspace_members")
     .select("role")
     .eq("workspace_id", workspaceId)
@@ -184,8 +180,8 @@ export const connectChannelAccount = createServerFn({ method: "POST" })
         .eq("workspace_id", data.workspaceId);
     }
 
-    const { data: row, error } = await context.supabase
-      .from("channel_accounts" as never)
+    const { data: row, error } = await sbAny(context.supabase)
+      .from("channel_accounts")
       .insert({
         workspace_id: data.workspaceId,
         inbox_id: data.inboxId ?? null,
@@ -216,7 +212,7 @@ export const connectChannelAccount = createServerFn({ method: "POST" })
       workspaceId: data.workspaceId,
       actorId: context.userId,
       resourceType: "channel_account",
-      resourceId: String((row as any).id),
+      resourceId: String(row.id),
       data: { provider, phone_number_id: data.phoneNumberId },
     });
 

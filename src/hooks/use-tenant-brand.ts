@@ -83,7 +83,7 @@ export function useTenantBrand(): TenantBrand {
   );
   const { data } = useQuery({
     queryKey: ["white-label", workspaceId],
-    queryFn: () => getWhiteLabel({ data: { workspaceId } } as any),
+    queryFn: () => getWhiteLabel({ data: { workspaceId } }),
     // Cache the resolved brand: with staleTime/gcTime at 0 the config was
     // dropped on every remount (e.g. entering /admin), so the UI fell back to
     // the shipped default name and leaked the vendor brand on white-label
@@ -99,19 +99,22 @@ export function useTenantBrand(): TenantBrand {
   // an active workspace white-label still overrides it.
   const platform = usePlatformBranding();
 
-  const c: any = data?.config;
+  const config = data?.config;
+  const c = config && typeof config === "object" && !Array.isArray(config) ? config : {};
+  const brandName = typeof c.brand_name === "string" ? c.brand_name.trim() : "";
+  const logoUrl = typeof c.logo_url === "string" ? c.logo_url : null;
+  const logoDarkUrl = typeof c.logo_dark_url === "string" ? c.logo_dark_url : null;
+  const faviconUrl = typeof c.favicon_url === "string" ? c.favicon_url : null;
   const active = Boolean(c?.is_active);
-  const name =
-    (active && c?.brand_name?.trim()) || platform.platformName?.trim() || DEFAULT_BRAND_NAME;
+  const name = (active && brandName) || platform.platformName?.trim() || DEFAULT_BRAND_NAME;
   const initial = name.charAt(0).toUpperCase() || DEFAULT_BRAND_INITIAL;
 
   return {
     name,
     initial,
-    logoUrl: (active ? c?.logo_url : null) ?? platform.logoUrl ?? null,
-    logoDarkUrl:
-      (active ? c?.logo_dark_url : null) ?? platform.logoDarkUrl ?? platform.logoUrl ?? null,
-    faviconUrl: (active ? c?.favicon_url : null) ?? platform.faviconUrl ?? null,
+    logoUrl: (active ? logoUrl : null) ?? platform.logoUrl ?? null,
+    logoDarkUrl: (active ? logoDarkUrl : null) ?? platform.logoDarkUrl ?? platform.logoUrl ?? null,
+    faviconUrl: (active ? faviconUrl : null) ?? platform.faviconUrl ?? null,
     metaTitle: (active && c?.meta_title?.trim()) || null,
     hasWorkspaceOverride: active,
     socials: {

@@ -20,6 +20,7 @@
  *   - Timestamp window (±300s) rejects replayed captures.
  */
 import { createFileRoute } from "@tanstack/react-router";
+import { sbAny } from "@/lib/supabase/untyped";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const CORS = {
@@ -140,10 +141,11 @@ async function dispatch(
   admin: unknown,
   eventType: string,
   sessionId: string | undefined,
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   workspace_id?: string,
 ) {
-  const db = admin as any;
+  const db = sbAny(admin);
+  const nullableString = (value: unknown) => (typeof value === "string" ? value : null);
 
   switch (eventType) {
     case "session.qr_updated": {
@@ -152,7 +154,7 @@ async function dispatch(
         .from("whatsapp_qr_sessions")
         .update({
           status: "awaiting_scan",
-          qr_expires_at: data.qr_expires_at ?? null,
+          qr_expires_at: nullableString(data.qr_expires_at),
           last_seen_at: new Date().toISOString(),
         })
         .eq("id", sessionId);
@@ -172,9 +174,9 @@ async function dispatch(
         .from("whatsapp_qr_sessions")
         .update({
           status: "connected",
-          phone_number: data.phone_number ?? null,
-          display_name: data.display_name ?? null,
-          device_platform: data.device_platform ?? null,
+          phone_number: nullableString(data.phone_number),
+          display_name: nullableString(data.display_name),
+          device_platform: nullableString(data.device_platform),
           connected_at: new Date().toISOString(),
           last_seen_at: new Date().toISOString(),
           error_message: null,
@@ -189,7 +191,7 @@ async function dispatch(
         .update({
           status: "disconnected",
           disconnected_at: new Date().toISOString(),
-          error_message: data.reason ?? null,
+          error_message: nullableString(data.reason),
         })
         .eq("id", sessionId);
       return;
@@ -198,7 +200,10 @@ async function dispatch(
       if (!sessionId) return;
       await db
         .from("whatsapp_qr_sessions")
-        .update({ status: "error", error_message: data.error ?? "Worker error" })
+        .update({
+          status: "error",
+          error_message: nullableString(data.error) ?? "Worker error",
+        })
         .eq("id", sessionId);
       return;
     }
@@ -217,7 +222,6 @@ async function dispatch(
         botPaused = res?.botPaused ?? false;
         conversationId = res?.conversationId ?? null;
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] inbox ingest failed", err);
       }
       if (botPaused) return;
@@ -225,7 +229,6 @@ async function dispatch(
         const { runAutoReplyForSession } = await import("@/lib/messaging/wa-auto-reply.server");
         await runAutoReplyForSession(db, sessionId, data ?? {}, { conversationId });
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] auto-reply failed", err);
       }
       return;
@@ -236,7 +239,6 @@ async function dispatch(
         const { applyWaMessageStatus } = await import("@/lib/messaging/wa-inbox.server");
         await applyWaMessageStatus(db, workspace_id ?? "", data ?? {});
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error("[qr-webhook] status apply failed", err);
       }
       return;

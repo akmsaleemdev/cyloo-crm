@@ -13,7 +13,7 @@ export async function setupHarness() {
       email,
       password,
       email_confirm: true,
-      user_metadata: { rls_harness: true, run_id: runId },
+      app_metadata: { rls_harness: true, run_id: runId },
     });
     if (error || !data.user) throw new Error(`user_create_${label}: ${error?.message}`);
     return { id: data.user.id, email, password };

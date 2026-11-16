@@ -8,6 +8,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import type { Tables } from "@/integrations/supabase/types";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sbAny, type UntypedClient } from "@/lib/supabase/untyped";
@@ -48,8 +49,10 @@ async function adminClient(): Promise<UntypedClient> {
   return sbAny(supabaseAdmin);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function loadPayment(sb: UntypedClient, id: string): Promise<any> {
+async function loadPayment(
+  sb: UntypedClient,
+  id: string,
+): Promise<Tables<"billing_payment_attempts">> {
   const { data, error } = await sb
     .from("billing_payment_attempts")
     .select("*")
@@ -97,7 +100,8 @@ export const listPayments = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.organization_id) query = query.eq("organization_id", data.organization_id);
-    if (data.status) query = query.eq("status", data.status as any);
+    if (data.status)
+      query = query.eq("status", data.status as Tables<"billing_payment_attempts">["status"]);
     if (data.provider) query = query.eq("provider", data.provider);
     if (data.cursor) query = query.lt("created_at", data.cursor);
     const { data: rows, error } = await query;
@@ -154,7 +158,7 @@ export const refundPayment = createServerFn({ method: "POST" })
       );
     }
 
-    return { refund: refund as any, fully_refunded: fullyRefunded };
+    return { refund, fully_refunded: fullyRefunded };
   });
 
 /** Retry a failed payment attempt via the same provider. */
@@ -188,7 +192,7 @@ export const retryPayment = createServerFn({ method: "POST" })
 export const syncPaymentStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input) => z.object({ payment_id: z.string().uuid() }).parse(input))
-  .handler(async ({ data, context }): Promise<any> => {
+  .handler(async ({ data, context }) => {
     await requirePlatformAdmin(context);
     const sb = await adminClient();
     const payment = await loadPayment(sb, data.payment_id);

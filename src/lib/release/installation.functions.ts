@@ -13,6 +13,7 @@ import { BRAND_NAME } from "@/lib/branding/brand";
 import { getPlatformBranding } from "@/lib/admin/platform-branding.functions";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sbAny } from "@/lib/supabase/untyped";
 import { z } from "zod";
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -61,10 +62,9 @@ function report(probes: Probe[]): ProbeReport {
   return { overall: rollup(probes), probes, generated_at: new Date().toISOString() };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveWorkspaceId(supabase: any, userId: string): Promise<string | null> {
+async function resolveWorkspaceId(supabase: unknown, userId: string): Promise<string | null> {
   try {
-    const { data } = await supabase
+    const { data } = await sbAny(supabase)
       .from("workspace_members")
       .select("workspace_id")
       .eq("user_id", userId)
@@ -268,8 +268,7 @@ function decodePurchaseCode(code: string): { valid: boolean; tier: LicenseInfo["
  */
 const LICENSE_SETTING = { scope: "platform", key: "cyloo.license" } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function licenseAdmin(): Promise<any> {
+async function licenseAdmin() {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
   return supabaseAdmin;
 }
@@ -437,7 +436,7 @@ export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
 
     // Refuse if a superadmin already exists — fail closed when unreadable.
     try {
-      const { data: existing, error: exErr } = await (supabaseAdmin as any)
+      const { data: existing, error: exErr } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
         .eq("role", "superadmin")
@@ -480,7 +479,7 @@ export const bootstrapSuperAdmin = createServerFn({ method: "POST" })
     // so a failure must stop the wizard. Roll back the auth user so the
     // operator can fix the database (e.g. apply migrations) and retry with
     // the same email.
-    const { error: roleErr } = await (supabaseAdmin as any)
+    const { error: roleErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: userId, role: "superadmin" });
     if (roleErr) {
@@ -587,7 +586,7 @@ export const getMigrationStatus = createServerFn({ method: "GET" })
     let present = 0;
     for (const t of CORE_TABLES) {
       try {
-        const { error } = await (context.supabase as any)
+        const { error } = await sbAny(context.supabase)
           .from(t)
           .select("*", { count: "exact", head: true })
           .limit(1);
@@ -660,7 +659,11 @@ export const seedDemoData = createServerFn({ method: "POST" })
           continue;
         }
         const wsId = await resolveWorkspaceId(context.supabase, context.userId);
-        const { error } = await (context.supabase as any).from("contacts").insert({
+        if (!wsId) {
+          skipped.contacts += 1;
+          continue;
+        }
+        const { error } = await context.supabase.from("contacts").insert({
           ...c,
           owner_id: context.userId,
           workspace_id: wsId,
@@ -698,7 +701,7 @@ export const runHealthReport = createServerFn({ method: "GET" })
 
     // Database reachability
     try {
-      const { error } = await (context.supabase as any)
+      const { error } = await context.supabase
         .from("profiles")
         .select("id", { head: true, count: "exact" })
         .limit(1);
@@ -777,7 +780,7 @@ export const runOptimizationReport = createServerFn({ method: "GET" })
     // Missing indexes heuristic — look for high row counts on hot tables.
     for (const table of ["messages", "conversations", "campaign_dispatch_queue", "audit_logs"]) {
       try {
-        const { count } = await (context.supabase as any)
+        const { count } = await sbAny(context.supabase)
           .from(table)
           .select("*", { head: true, count: "estimated" });
         if ((count ?? 0) > 100_000) {
@@ -852,7 +855,7 @@ export const runOneClickInstall = createServerFn({ method: "POST" })
     const missing: string[] = [];
     for (const t of CORE_TABLES) {
       try {
-        const { error } = await (supabaseAdmin as any)
+        const { error } = await sbAny(supabaseAdmin)
           .from(t)
           .select("*", { head: true, count: "exact" })
           .limit(1);
@@ -886,13 +889,13 @@ export const runOneClickInstall = createServerFn({ method: "POST" })
       const wsId = ownerId ? await resolveWorkspaceId(supabaseAdmin, ownerId) : null;
       for (const c of SAMPLE_CONTACTS) {
         try {
-          const { data: existing } = await (supabaseAdmin as any)
+          const { data: existing } = await supabaseAdmin
             .from("contacts")
             .select("id")
             .eq("email", c.email)
             .maybeSingle();
-          if (!existing) {
-            const { error } = await (supabaseAdmin as any)
+          if (!existing && ownerId && wsId) {
+            const { error } = await supabaseAdmin
               .from("contacts")
               .insert({ ...c, owner_id: ownerId, workspace_id: wsId });
             if (!error) created += 1;
@@ -943,7 +946,7 @@ export const runOneClickUpgrade = createServerFn({ method: "POST" })
       const missing: string[] = [];
       for (const t of CORE_TABLES) {
         try {
-          const { error } = await (context.supabase as any)
+          const { error } = await sbAny(context.supabase)
             .from(t)
             .select("*", { head: true, count: "exact" })
             .limit(1);
@@ -997,18 +1000,16 @@ export const runErrorDiagnostics = createServerFn({ method: "GET" })
     try {
       const { data } = await context.supabase
         .from("audit_logs")
-        .select("id, created_at, action, severity, metadata")
+        .select("id, created_at, action, metadata")
         .order("created_at", { ascending: false })
         .limit(25);
       for (const row of data ?? []) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const r = row as any;
         events.push({
-          id: String(r.id),
-          when: r.created_at,
+          id: String(row.id),
+          when: row.created_at,
           source: "audit_logs",
-          severity: (r.severity as DiagnosticEvent["severity"]) ?? "info",
-          message: r.action ?? "audit event",
+          severity: "info",
+          message: row.action ?? "audit event",
         });
       }
     } catch {

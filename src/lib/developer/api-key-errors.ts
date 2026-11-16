@@ -20,31 +20,37 @@ export interface ApiKeyErrorInfo {
   raw: string;
 }
 
+type ErrorRecord = Record<string, unknown>;
+
+function asErrorRecord(value: unknown): ErrorRecord | null {
+  return value && typeof value === "object" ? (value as ErrorRecord) : null;
+}
+
 function rawMessage(e: unknown): string {
   if (!e) return "";
   if (typeof e === "string") return e;
-  const anyErr = e as any;
-  return (
-    anyErr?.message ??
-    anyErr?.error_description ??
-    anyErr?.error ??
-    (() => {
-      try {
-        return JSON.stringify(anyErr);
-      } catch {
-        return String(anyErr);
-      }
-    })()
-  );
+  const error = asErrorRecord(e);
+  for (const candidate of [error?.message, error?.error_description, error?.error]) {
+    if (typeof candidate === "string") return candidate;
+  }
+  try {
+    return JSON.stringify(e) ?? String(e);
+  } catch {
+    return String(e);
+  }
 }
 
 function pgCode(e: unknown): string | undefined {
-  const c = (e as any)?.code ?? (e as any)?.cause?.code;
+  const error = asErrorRecord(e);
+  const cause = asErrorRecord(error?.cause);
+  const c = error?.code ?? cause?.code;
   return typeof c === "string" ? c : undefined;
 }
 
 function httpStatus(e: unknown): number | undefined {
-  const s = (e as any)?.status ?? (e as any)?.statusCode ?? (e as any)?.response?.status;
+  const error = asErrorRecord(e);
+  const response = asErrorRecord(error?.response);
+  const s = error?.status ?? error?.statusCode ?? response?.status;
   return typeof s === "number" ? s : undefined;
 }
 

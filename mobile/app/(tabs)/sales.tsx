@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { View, Text, Pressable, ScrollView, RefreshControl, ActivityIndicator } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Screen } from "@/components/Screen";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -76,7 +76,7 @@ export default function SalesTab() {
     { label: "Tasks due", value: String(stats.data?.tasksDue ?? "—") },
   ];
 
-  const QUICK_LINKS: { label: string; to: any; badge?: number }[] = [
+  const QUICK_LINKS: { label: string; to: Href; badge?: number }[] = [
     { label: "Kanban Pipeline", to: "/sales/kanban" },
     { label: "Quotes", to: "/sales/quotes" },
     { label: "Invoices", to: "/sales/invoices" },

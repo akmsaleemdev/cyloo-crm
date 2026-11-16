@@ -11,6 +11,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { UntypedClient } from "@/lib/supabase/untyped";
 
 export interface PageCapabilityReport {
   accountId: string;
@@ -30,7 +31,7 @@ const WorkspaceInput = z.object({ workspaceId: z.string().uuid() });
 const AccountInput = z.object({ accountId: z.string().uuid() });
 
 async function loadAccount(
-  supabase: { from: (t: string) => any },
+  supabase: UntypedClient,
   accountId: string,
 ): Promise<{
   id: string;
@@ -50,7 +51,8 @@ async function loadAccount(
 
 async function cipherFor(accountId: string): Promise<string | null> {
   const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-  const { data } = await (sbAny(supabaseAdmin).from("messenger_accounts" as never) as any)
+  const { data } = await sbAny(supabaseAdmin)
+    .from("messenger_accounts")
     .select("access_token_ciphertext")
     .eq("id", accountId)
     .maybeSingle();

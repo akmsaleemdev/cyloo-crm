@@ -9,6 +9,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getPlatformBranding } from "@/lib/admin/platform-branding.functions";
 import { encryptToken } from "@/lib/instagram/token-crypto.server";
 import { sbAny } from "@/lib/supabase/untyped";
+import { parseMetaPayload, type MetaPage } from "@/lib/meta/oauth-payload";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
@@ -92,7 +93,7 @@ async function handler({ request }: { request: Request }) {
   tokenUrl.searchParams.set("redirect_uri", stateRow.redirect_uri);
   tokenUrl.searchParams.set("code", code);
   const tokRes = await fetch(tokenUrl.toString());
-  const tokJson: any = await tokRes.json();
+  const tokJson = parseMetaPayload(await tokRes.json());
   if (!tokRes.ok || !tokJson.access_token) {
     return html(
       "Token exchange failed",
@@ -109,7 +110,7 @@ async function handler({ request }: { request: Request }) {
   longUrl.searchParams.set("client_secret", appSecret);
   longUrl.searchParams.set("fb_exchange_token", tokJson.access_token);
   const longRes = await fetch(longUrl.toString());
-  const longJson: any = await longRes.json();
+  const longJson = parseMetaPayload(await longRes.json());
   const userToken: string = longJson.access_token ?? tokJson.access_token;
   const expiresIn: number | null = longJson.expires_in ?? tokJson.expires_in ?? null;
 
@@ -117,7 +118,7 @@ async function handler({ request }: { request: Request }) {
   const pagesRes = await fetch(
     `${GRAPH}/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name,profile_picture_url}&access_token=${encodeURIComponent(userToken)}`,
   );
-  const pagesJson: any = await pagesRes.json();
+  const pagesJson = parseMetaPayload(await pagesRes.json());
   if (!pagesRes.ok) {
     return html(
       "Failed to list Pages",
@@ -127,8 +128,14 @@ async function handler({ request }: { request: Request }) {
     );
   }
 
-  const pages: any[] = pagesJson.data ?? [];
-  const igPages = pages.filter((p) => p.instagram_business_account?.id);
+  const pages = pagesJson.data ?? [];
+  type InstagramAccountPage = MetaPage & {
+    access_token: string;
+    instagram_business_account: NonNullable<MetaPage["instagram_business_account"]>;
+  };
+  const igPages = pages.filter((page): page is InstagramAccountPage =>
+    Boolean(page.access_token && page.instagram_business_account?.id),
+  );
   if (igPages.length === 0) {
     return html(
       "No Instagram account found",
@@ -150,7 +157,7 @@ async function handler({ request }: { request: Request }) {
       profile_picture_url: ig.profile_picture_url ?? null,
       page_id: p.id,
       page_name: p.name ?? null,
-      access_token_ciphertext: encryptToken(p.access_token as string),
+      access_token_ciphertext: encryptToken(p.access_token),
       token_expires_at: tokenExpiresAt,
       scopes: ["instagram_basic", "instagram_manage_messages", "pages_show_list"],
       status: "connected",

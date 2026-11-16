@@ -64,6 +64,10 @@ type Zone = {
   commerce_shipping_rates: Rate[];
 };
 
+function isShippingStatus(value: string): value is "all" | "active" | "inactive" {
+  return value === "all" || value === "active" || value === "inactive";
+}
+
 const emptyZone = { id: undefined as string | undefined, name: "", countries: "", is_active: true };
 const emptyRate = {
   id: undefined as string | undefined,
@@ -94,7 +98,7 @@ function Shipping() {
 
   const { data: zones = [] } = useQuery<Zone[]>({
     queryKey: ["ship-zones", workspace?.id],
-    queryFn: () => fetch({ data: { workspaceId: workspace!.id } }) as any,
+    queryFn: () => fetch({ data: { workspaceId: workspace!.id } }),
     enabled: !!workspace?.id,
   });
 
@@ -161,7 +165,8 @@ function Shipping() {
       invalidate();
       setZoneOpen(false);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save zone"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save zone"),
   });
 
   // Rate dialog
@@ -214,7 +219,8 @@ function Shipping() {
       invalidate();
       setRateOpen(false);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save rate"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save rate"),
   });
 
   // Toggles
@@ -222,13 +228,15 @@ function Shipping() {
     mutationFn: (v: { id: string; is_active: boolean }) =>
       toggleZoneFn({ data: { workspaceId: workspace!.id, ...v } }),
     onSuccess: () => invalidate(),
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to update zone"),
   });
   const toggleRate = useMutation({
     mutationFn: (v: { id: string; is_active: boolean }) =>
       toggleRateFn({ data: { workspaceId: workspace!.id, ...v } }),
     onSuccess: () => invalidate(),
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to update rate"),
   });
 
   // Deletes
@@ -243,7 +251,8 @@ function Shipping() {
       toast.success("Zone deleted");
       invalidate();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to delete zone"),
   });
   const delRate = useMutation({
     mutationFn: (id: string) => delRateFn({ data: { workspaceId: workspace!.id, id } }),
@@ -251,7 +260,8 @@ function Shipping() {
       toast.success("Rate deleted");
       invalidate();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to delete rate"),
   });
 
   // Export
@@ -355,7 +365,12 @@ function Shipping() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+          <Select
+            value={status}
+            onValueChange={(value) => {
+              if (isShippingStatus(value)) setStatus(value);
+            }}
+          >
             <SelectTrigger className="w-[160px]">
               <SelectValue />
             </SelectTrigger>

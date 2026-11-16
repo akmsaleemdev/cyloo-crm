@@ -53,7 +53,7 @@ function DeveloperPlugins() {
         category: "productivity",
       });
     },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+    onError: (e: Error) => toast.error(e.message ?? "Save failed"),
   });
 
   return (
@@ -168,7 +168,7 @@ function DeveloperPlugins() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {data!.plugins.map((p: any) => (
+            {data!.plugins.map((p) => (
               <PluginRow
                 key={p.id}
                 plugin={p}
@@ -182,7 +182,23 @@ function DeveloperPlugins() {
   );
 }
 
-function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) {
+function PluginRow({
+  plugin,
+  onChange,
+}: {
+  plugin: {
+    id: string;
+    name: string;
+    slug: string;
+    tagline: string | null;
+    description: string | null;
+    status: string;
+    install_count: number;
+    rating_avg: number | null;
+    rating_count: number;
+  };
+  onChange: () => void;
+}) {
   const [showPublish, setShowPublish] = useState(false);
   const [ver, setVer] = useState({
     version: "1.0.0",
@@ -220,7 +236,7 @@ function PluginRow({ plugin, onChange }: { plugin: any; onChange: () => void }) 
       setShowPublish(false);
       onChange();
     },
-    onError: (e: any) => toast.error(e.message ?? "Publish failed"),
+    onError: (e: Error) => toast.error(e.message ?? "Publish failed"),
   });
   return (
     <Card>

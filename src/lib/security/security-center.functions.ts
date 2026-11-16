@@ -102,14 +102,9 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
 
     const { resolveActiveWorkspaceId } = await import("@/lib/auth/active-workspace.server");
     const workspaceId = await resolveActiveWorkspaceId(supabase, userId);
-    const scopeWs = <T>(q: T) => {
+    const scopeWs = <T extends { eq(column: string, value: string): T }>(q: T): T => {
       if (!workspaceId) return q;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      try {
-        return (q as any).eq("workspace_id", workspaceId);
-      } catch {
-        return q;
-      }
+      return q.eq("workspace_id", workspaceId);
     };
     const r = createSignalReader(supabase);
 
@@ -138,7 +133,13 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       "login_history (success 24h)",
     );
 
-    const recentLogins = await r.select(
+    const recentLogins = await r.select<{
+      ip_address: string | null;
+      location: string | null;
+      device: string | null;
+      event: string;
+      created_at: string;
+    }>(
       "login_history",
       "id, user_id, event, ip_address, device, location, failure_reason, created_at",
       (q) => q.gte("created_at", d7).order("created_at", { ascending: false }).limit(500),
@@ -153,8 +154,7 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     const countrySet = new Set<string>();
     const deviceSet = new Set<string>();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const r of recentLogins as any[]) {
+    for (const r of recentLogins) {
       if (r.ip_address) ipSet.add(r.ip_address);
       if (r.location) countrySet.add(r.location);
       if (r.device) deviceSet.add(r.device);
@@ -179,24 +179,29 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       .map(([ip, v]) => ({ ip, attempts: v.attempts, last_seen: v.last }));
 
     // --- Security events ---
-    const securityEvents = await r.select(
+    const securityEvents = await r.select<{
+      id: string;
+      event_type: string;
+      severity: string | null;
+      ip_address: string | null;
+      actor_id: string | null;
+      created_at: string;
+    }>(
       "security_events",
       "id, event_type, severity, ip_address, user_agent, actor_id, created_at",
       (q) => scopeWs(q.gte("created_at", d7).order("created_at", { ascending: false }).limit(500)),
     );
 
     const suspicious24 = securityEvents.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (e: any) => new Date(e.created_at) >= new Date(d1),
+      (e) => new Date(e.created_at) >= new Date(d1),
     ).length;
-    const highSev7 = securityEvents.filter(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (e: any) => ["high", "critical"].includes((e.severity ?? "").toLowerCase()),
+    const highSev7 = securityEvents.filter((e) =>
+      ["high", "critical"].includes((e.severity ?? "").toLowerCase()),
     ).length;
 
     const suspiciousByIp = new Map<string, { events: number; last: string }>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const e of securityEvents as any[]) {
+
+    for (const e of securityEvents) {
       if (!e.ip_address) continue;
       const cur = suspiciousByIp.get(e.ip_address);
       suspiciousByIp.set(e.ip_address, {
@@ -251,14 +256,17 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
     const ipAllowlistRules = await r.count("ip_allowlists", (q) => scopeWs(q));
 
     // --- Audit timeline (last 40) ---
-    const auditRows = await r.select(
-      "audit_logs",
-      "id, actor_id, action, ip_address, created_at",
-      (q) => scopeWs(q.order("created_at", { ascending: false }).limit(40)),
+    const auditRows = await r.select<{
+      id: string;
+      actor_id: string | null;
+      action: string;
+      ip_address: string | null;
+      created_at: string;
+    }>("audit_logs", "id, actor_id, action, ip_address, created_at", (q) =>
+      scopeWs(q.order("created_at", { ascending: false }).limit(40)),
     );
     const timeline: TimelineEntry[] = [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...(auditRows as any[]).map((r) => ({
+      ...auditRows.map((r) => ({
         id: r.id,
         timestamp: r.created_at,
         actor: r.actor_id,
@@ -267,8 +275,8 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
         source: "audit" as const,
         severity: "info" as Severity,
       })),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ...(securityEvents.slice(0, 20) as any[]).map((r) => ({
+
+      ...securityEvents.slice(0, 20).map((r) => ({
         id: r.id,
         timestamp: r.created_at,
         actor: r.actor_id,
@@ -293,8 +301,8 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
         category: "Brute Force",
       });
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const e of (securityEvents as any[]).slice(0, 8)) {
+
+    for (const e of securityEvents.slice(0, 8)) {
       if (["high", "critical"].includes((e.severity ?? "").toLowerCase())) {
         alerts.push({
           id: `sec-${e.id}`,
@@ -341,9 +349,7 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
         owasp: "A07: Identification & Auth Failures",
       });
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const p: any = policyRow;
-      if ((p.min_length ?? 0) < 12) {
+      if ((policyRow.min_length ?? 0) < 12) {
         score -= 4;
         recs.push({
           id: "pw-length",
@@ -353,7 +359,7 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
           owasp: "A07",
         });
       }
-      if (!(p.require_symbol || p.require_number)) {
+      if (!(policyRow.require_symbol || policyRow.require_number)) {
         score -= 3;
         recs.push({
           id: "pw-complexity",
@@ -457,20 +463,14 @@ export const getSecurityOverview = createServerFn({ method: "GET" })
       },
       password_policy: {
         configured: !!policyRow,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        min_length: (policyRow as any)?.min_length ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        require_uppercase: (policyRow as any)?.require_uppercase ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        require_number: (policyRow as any)?.require_number ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        require_symbol: (policyRow as any)?.require_symbol ?? null,
+        min_length: policyRow?.min_length ?? null,
+        require_uppercase: policyRow?.require_uppercase ?? null,
+        require_number: policyRow?.require_number ?? null,
+        require_symbol: policyRow?.require_symbol ?? null,
         // Real column names: rotation_days and max_failed_attempts. The old
         // max_age_days / lockout_threshold do not exist, so these always read "—".
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        max_age_days: (policyRow as any)?.rotation_days ?? null,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        lockout_threshold: (policyRow as any)?.max_failed_attempts ?? null,
+        max_age_days: policyRow?.rotation_days ?? null,
+        lockout_threshold: policyRow?.max_failed_attempts ?? null,
       },
       alerts: alerts.slice(0, 20),
       recommendations: recs,

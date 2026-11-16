@@ -83,7 +83,7 @@ export type EndpointRow = {
  * updates endpoint health. Returns 'succeeded' | 'retrying' | 'dead_letter'.
  */
 export async function sendOneDelivery(
-  admin: any,
+  admin: unknown,
   delivery: DeliveryRow,
   endpoint: EndpointRow,
   signingSecret: string,
@@ -129,11 +129,13 @@ export async function sendOneDelivery(
     // Cap body to avoid runaway storage.
     const raw = await res.text();
     response_body = raw.length > 8192 ? raw.slice(0, 8192) + "" : raw;
-  } catch (e: any) {
+  } catch (error: unknown) {
     error_message =
-      e?.name === "AbortError"
+      error instanceof Error && error.name === "AbortError"
         ? `timeout after ${endpoint.timeout_ms}ms`
-        : (e?.message ?? "network error");
+        : error instanceof Error
+          ? error.message
+          : "network error";
   }
   const duration_ms = Date.now() - start;
   const ok = response_status !== null && response_status >= 200 && response_status < 300;
@@ -195,17 +197,18 @@ export async function sendOneDelivery(
  * Lease and dispatch up to `limit` pending deliveries. Worker id is used to
  * scope leases so multiple concurrent workers don't collide. Returns counts.
  */
-export async function drainQueue(admin: any, limit = 25, workerId = crypto.randomUUID()) {
+export async function drainQueue(admin: unknown, limit = 25, workerId = crypto.randomUUID()) {
+  const db = sbAny(admin);
   const nowIso = new Date().toISOString();
   // Reclaim stale leases (>2 min old).
-  await admin
+  await db
     .from("webhook_deliveries")
     .update({ locked_at: null, locked_by: null })
     .lt("locked_at", new Date(Date.now() - 2 * 60_000).toISOString())
     .eq("status", "delivering");
 
   // Select due jobs.
-  const { data: due } = await admin
+  const { data: due } = await db
     .from("webhook_deliveries")
     .select("id")
     .in("status", ["pending"])
@@ -213,30 +216,31 @@ export async function drainQueue(admin: any, limit = 25, workerId = crypto.rando
     .is("locked_at", null)
     .order("next_attempt_at", { ascending: true })
     .limit(limit);
-  const ids = (due ?? []).map((r: any) => r.id);
+  const ids = ((due ?? []) as Array<{ id: string }>).map((row) => row.id);
   if (!ids.length) return { leased: 0, succeeded: 0, retrying: 0, dead_letter: 0 };
 
   // Lease.
-  await admin
+  await db
     .from("webhook_deliveries")
     .update({ status: "delivering", locked_at: nowIso, locked_by: workerId })
     .in("id", ids)
     .is("locked_at", null);
 
-  const { data: leased } = await admin
+  const { data: leased } = await db
     .from("webhook_deliveries")
     .select("*")
     .in("id", ids)
     .eq("locked_by", workerId);
 
   // Fetch endpoints in one round trip.
-  const epIds = Array.from(new Set((leased ?? []).map((d: any) => d.endpoint_id)));
-  const { data: eps } = await admin.from("webhook_endpoints").select("*").in("id", epIds);
-  const epsById: Record<string, any> = {};
-  for (const e of eps ?? []) epsById[e.id] = e;
+  const leasedRows = (leased ?? []) as DeliveryRow[];
+  const epIds = Array.from(new Set(leasedRows.map((delivery) => delivery.endpoint_id)));
+  const { data: eps } = await db.from("webhook_endpoints").select("*").in("id", epIds);
+  const endpointRows = (eps ?? []) as EndpointRow[];
+  const epsById = new Map(endpointRows.map((endpoint) => [endpoint.id, endpoint] as const));
 
   // Load plaintext secrets in one round trip (service-role-only table).
-  const { data: secretRows } = await admin
+  const { data: secretRows } = await db
     .from("webhook_endpoint_secrets")
     .select("endpoint_id, secret")
     .in("endpoint_id", epIds);
@@ -244,8 +248,8 @@ export async function drainQueue(admin: any, limit = 25, workerId = crypto.rando
   for (const s of secretRows ?? []) secretByEp[s.endpoint_id] = s.secret;
 
   const counts = { leased: leased?.length ?? 0, succeeded: 0, retrying: 0, dead_letter: 0 };
-  for (const d of leased ?? []) {
-    const ep = epsById[d.endpoint_id];
+  for (const d of leasedRows) {
+    const ep = epsById.get(d.endpoint_id);
     const secret = secretByEp[d.endpoint_id];
     if (!ep || ep.status !== "active" || !secret) {
       await sbAny(admin)
@@ -259,7 +263,7 @@ export async function drainQueue(admin: any, limit = 25, workerId = crypto.rando
         .eq("id", d.id);
       continue;
     }
-    const outcome = await sendOneDelivery(admin, d as DeliveryRow, ep as EndpointRow, secret);
+    const outcome = await sendOneDelivery(admin, d, ep, secret);
     counts[outcome] += 1;
   }
   return counts;

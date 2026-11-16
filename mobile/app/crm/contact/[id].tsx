@@ -8,7 +8,30 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useRealtimeTable } from "@/realtime/useRealtimeTable";
-import { fetchCustomer360, updateContact, addNote, createTask, logActivity } from "@/api/crm";
+import {
+  fetchCustomer360,
+  updateContact,
+  addNote,
+  createTask,
+  logActivity,
+  type ActivityRow,
+  type ContactRow,
+  type NoteRow,
+  type TaskRow,
+} from "@/api/crm";
+
+type Customer360 = Awaited<ReturnType<typeof fetchCustomer360>>;
+type TimelineEntry = {
+  id: string;
+  _kind: "activity" | "note" | "conversation";
+  created_at: string | null;
+  type?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  name?: string | null;
+  channel?: string | null;
+};
+type DealSummary = { id: string; name: string; amount: number | null; currency: string | null };
 
 export default function ContactDetail() {
   const t = useTheme();
@@ -214,15 +237,18 @@ function QuickAction({
   );
 }
 
-function Timeline({ data }: { data: any }) {
+function Timeline({ data }: { data: Customer360 | undefined }) {
   const t = useTheme();
-  const merged = [
-    ...(data?.activities ?? []).map((a: any) => ({ ...a, _kind: "activity" })),
-    ...(data?.notes ?? []).map((n: any) => ({ ...n, _kind: "note" })),
-    ...(data?.conversations ?? []).map((c: any) => ({
-      ...c,
-      _kind: "conversation",
-      created_at: c.last_message_at,
+  const merged: TimelineEntry[] = [
+    ...(data?.activities ?? []).map((activity: ActivityRow) => ({
+      ...activity,
+      _kind: "activity" as const,
+    })),
+    ...(data?.notes ?? []).map((note: NoteRow) => ({ ...note, _kind: "note" as const })),
+    ...(data?.conversations ?? []).map((conversation) => ({
+      ...conversation,
+      _kind: "conversation" as const,
+      created_at: conversation.last_message_at,
     })),
   ].sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime());
 
@@ -235,7 +261,7 @@ function Timeline({ data }: { data: any }) {
 
   return (
     <View style={{ gap: t.spacing.sm }}>
-      {merged.map((e: any) => (
+      {merged.map((e) => (
         <View
           key={`${e._kind}-${e.id}`}
           style={{
@@ -271,7 +297,7 @@ function Timeline({ data }: { data: any }) {
   );
 }
 
-function NotesList({ notes, onAdd }: { notes: any[]; onAdd: () => void }) {
+function NotesList({ notes, onAdd }: { notes: NoteRow[]; onAdd: () => void }) {
   const t = useTheme();
   return (
     <View style={{ gap: t.spacing.sm }}>
@@ -291,7 +317,7 @@ function NotesList({ notes, onAdd }: { notes: any[]; onAdd: () => void }) {
   );
 }
 
-function TasksList({ tasks, onAdd }: { tasks: any[]; onAdd: () => void }) {
+function TasksList({ tasks, onAdd }: { tasks: TaskRow[]; onAdd: () => void }) {
   const t = useTheme();
   return (
     <View style={{ gap: t.spacing.sm }}>
@@ -316,7 +342,7 @@ function TasksList({ tasks, onAdd }: { tasks: any[]; onAdd: () => void }) {
   );
 }
 
-function DealsList({ deals }: { deals: any[] }) {
+function DealsList({ deals }: { deals: DealSummary[] }) {
   const t = useTheme();
   return (
     <View style={{ gap: t.spacing.sm }}>
@@ -353,7 +379,7 @@ function EditContactModal({
   onSaved,
 }: {
   open: boolean;
-  contact: any;
+  contact: ContactRow | null | undefined;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -424,8 +450,11 @@ function EditContactModal({
                 if (res.queued)
                   Alert.alert("Saved offline", "Changes will sync when you reconnect.");
                 onSaved();
-              } catch (e: any) {
-                Alert.alert("Save failed", e?.message ?? "Unknown error");
+              } catch (error: unknown) {
+                Alert.alert(
+                  "Save failed",
+                  error instanceof Error ? error.message : "Unknown error",
+                );
               } finally {
                 setSaving(false);
               }

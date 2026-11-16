@@ -489,7 +489,7 @@ export function MessageComposer({
         applyTemplate(rendered);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [conversationId, replyTo?.id, send, saveDraft, onClearReply, applyTemplate],
   );
 

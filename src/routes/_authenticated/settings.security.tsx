@@ -270,7 +270,7 @@ function SecuritySettings() {
             <p className="text-xs text-muted-foreground">No sessions tracked.</p>
           ) : (
             <ul className="divide-y divide-[#262626]">
-              {sessions.data!.map((s: any) => (
+              {sessions.data!.map((s) => (
                 <li key={s.id} className="py-2.5 flex items-center justify-between text-xs">
                   <div>
                     <span className="font-medium text-[#ededed]">

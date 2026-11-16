@@ -3,10 +3,24 @@
  * Catalog is public read; installations are per-organization.
  */
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database, Json, TablesUpdate } from "@/integrations/supabase/types";
 import { z } from "zod";
+import { sbAny } from "@/lib/supabase/untyped";
 
-async function getOrgId(supabase: any, userId: string): Promise<string> {
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ]),
+);
+
+async function getOrgId(supabase: SupabaseClient<Database>, userId: string): Promise<string> {
   const { data } = await supabase
     .from("organization_members")
     .select("organization_id")
@@ -25,7 +39,7 @@ export const listMarketplaceCatalog = createServerFn({ method: "GET" }).handler(
   const client = createClient(process.env.SUPABASE_URL!, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
-      fetch: (input: any, init: any) => {
+      fetch: (input, init) => {
         const h = new Headers(init?.headers);
         if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
           h.delete("Authorization");
@@ -58,7 +72,7 @@ export const listMyInstallations = createServerFn({ method: "GET" })
 
 const InstallSchema = z.object({
   integrationId: z.string().uuid(),
-  config: z.record(z.string(), z.any()).default({}),
+  config: z.record(z.string(), jsonSchema).default({}),
   scopes: z.array(z.string()).default([]),
 });
 
@@ -68,14 +82,14 @@ export const installIntegration = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const orgId = await getOrgId(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/lib/demo/admin-write-guard.server");
-    const { data: integ, error: iErr } = await (supabaseAdmin as any)
+    const { data: integ, error: iErr } = await supabaseAdmin
       .from("marketplace_integrations")
       .select("id, version, scopes")
       .eq("id", data.integrationId)
       .single();
     if (iErr || !integ) throw new Error("Integration not found");
     const scopes = data.scopes.length ? data.scopes : (integ.scopes as string[]);
-    const { data: installed, error } = await (supabaseAdmin as any)
+    const { data: installed, error } = await supabaseAdmin
       .from("marketplace_installations")
       .upsert(
         {
@@ -93,10 +107,12 @@ export const installIntegration = createServerFn({ method: "POST" })
       .select("*")
       .single();
     if (error) throw error;
-    await (supabaseAdmin as any).rpc("increment_install_count", { p_id: integ.id }).then(
-      () => {},
-      () => {},
-    );
+    await sbAny(supabaseAdmin)
+      .rpc("increment_install_count", { p_id: integ.id })
+      .then(
+        () => {},
+        () => {},
+      );
     return { installation: installed };
   });
 
@@ -123,14 +139,14 @@ export const updateInstallationConfig = createServerFn({ method: "POST" })
     z
       .object({
         id: z.string().uuid(),
-        config: z.record(z.string(), z.any()),
+        config: z.record(z.string(), jsonSchema),
         scopes: z.array(z.string()).optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
     const orgId = await getOrgId(context.supabase, context.userId);
-    const patch: any = { config: data.config };
+    const patch: TablesUpdate<"marketplace_installations"> = { config: data.config };
     if (data.scopes) patch.granted_scopes = data.scopes;
     const { error } = await context.supabase
       .from("marketplace_installations")

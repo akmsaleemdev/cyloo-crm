@@ -110,25 +110,23 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     const intel = intelRes.data ?? [];
 
     // Messages tallies
-    const outbound = msgs.filter((m: any) => m.direction === "outbound");
-    const inbound = msgs.filter((m: any) => m.direction === "inbound");
-    const sent = outbound.filter((m: any) =>
-      ["sent", "delivered", "read"].includes(m.status),
-    ).length;
-    const delivered = outbound.filter((m: any) => ["delivered", "read"].includes(m.status)).length;
-    const read = outbound.filter((m: any) => m.status === "read").length;
-    const failed = outbound.filter((m: any) => m.status === "failed").length;
-    const queued = outbound.filter((m: any) => m.status === "queued").length;
+    const outbound = msgs.filter((m) => m.direction === "outbound");
+    const inbound = msgs.filter((m) => m.direction === "inbound");
+    const sent = outbound.filter((m) => ["sent", "delivered", "read"].includes(m.status)).length;
+    const delivered = outbound.filter((m) => ["delivered", "read"].includes(m.status)).length;
+    const read = outbound.filter((m) => m.status === "read").length;
+    const failed = outbound.filter((m) => m.status === "failed").length;
+    const queued = outbound.filter((m) => m.status === "queued").length;
     const totalOut = outbound.length;
     const deliveryRate = totalOut ? (delivered / totalOut) * 100 : 0;
     const readRate = totalOut ? (read / totalOut) * 100 : 0;
     const failureRate = totalOut ? (failed / totalOut) * 100 : 0;
 
     // Conversation status
-    const open = convs.filter((c: any) => c.status === "open").length;
-    const pending = convs.filter((c: any) => c.status === "pending").length;
-    const resolved = convs.filter((c: any) => c.status === "resolved").length;
-    const snoozed = convs.filter((c: any) => c.status === "snoozed").length;
+    const open = convs.filter((c) => c.status === "open").length;
+    const pending = convs.filter((c) => c.status === "pending").length;
+    const resolved = convs.filter((c) => c.status === "resolved").length;
+    const snoozed = convs.filter((c) => c.status === "snoozed").length;
     const resolutionRate = convs.length ? (resolved / convs.length) * 100 : 0;
 
     // Response / resolution / duration averages
@@ -138,7 +136,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
       cntRes = 0,
       sumDur = 0,
       cntDur = 0;
-    for (const c of convs as any[]) {
+    for (const c of convs) {
       if (c.first_response_at && c.created_at) {
         sumResp +=
           (new Date(c.first_response_at).getTime() - new Date(c.created_at).getTime()) / 1000;
@@ -158,14 +156,14 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     const avgDurationSeconds = cntDur ? sumDur / cntDur : 0;
 
     // CSAT from intelligence
-    const scored = intel.filter((i: any) => i.satisfaction_score != null);
+    const scored = intel.filter((i) => i.satisfaction_score != null);
     const avgScore =
       scored.length > 0
-        ? scored.reduce((a: number, i: any) => a + Number(i.satisfaction_score), 0) / scored.length
+        ? scored.reduce((a, i) => a + Number(i.satisfaction_score), 0) / scored.length
         : 0;
-    const positive = intel.filter((i: any) => i.sentiment === "positive").length;
-    const neutral = intel.filter((i: any) => i.sentiment === "neutral").length;
-    const negative = intel.filter((i: any) => i.sentiment === "negative").length;
+    const positive = intel.filter((i) => i.sentiment === "positive").length;
+    const neutral = intel.filter((i) => i.sentiment === "neutral").length;
+    const negative = intel.filter((i) => i.sentiment === "negative").length;
 
     // Volume by day
     const volumeMap = new Map<
@@ -175,7 +173,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     for (let i = days - 1; i >= 0; i--) {
       volumeMap.set(dayKey(daysAgo(i)), { sent: 0, delivered: 0, read: 0, failed: 0, inbound: 0 });
     }
-    for (const m of msgs as any[]) {
+    for (const m of msgs) {
       const k = dayKey(m.created_at);
       const rec = volumeMap.get(k);
       if (!rec) continue;
@@ -191,7 +189,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
 
     // Response trend per day
     const respMap = new Map<string, { resp: number[]; res: number[] }>();
-    for (const c of convs as any[]) {
+    for (const c of convs) {
       const k = dayKey(c.created_at);
       let rec = respMap.get(k);
       if (!rec) {
@@ -222,7 +220,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
     // Peak hours + day/hour heatmap
     const hourAgg = new Array(24).fill(0).map(() => ({ messages: 0, conversations: 0 }));
     const heatmap = new Map<string, number>(); // day-hour
-    for (const m of msgs as any[]) {
+    for (const m of msgs) {
       const d = new Date(m.created_at);
       const h = d.getHours();
       const day = d.getDay();
@@ -230,7 +228,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
       const key = `${day}-${h}`;
       heatmap.set(key, (heatmap.get(key) ?? 0) + 1);
     }
-    for (const c of convs as any[]) {
+    for (const c of convs) {
       const h = new Date(c.created_at).getHours();
       hourAgg[h].conversations++;
     }
@@ -247,7 +245,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
       string,
       { conversations: Set<string>; messages: number; respTimes: number[]; resolved: number }
     >();
-    for (const c of convs as any[]) {
+    for (const c of convs) {
       if (!c.assigned_to) continue;
       let rec = agentMap.get(c.assigned_to);
       if (!rec) {
@@ -262,7 +260,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
       }
       if (c.status === "resolved") rec.resolved++;
     }
-    for (const m of msgs as any[]) {
+    for (const m of msgs) {
       if (!m.sent_by) continue;
       const rec = agentMap.get(m.sent_by);
       if (rec) rec.messages++;
@@ -282,7 +280,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
         .from("profiles")
         .select("id, full_name, email")
         .in("id", agentIds);
-      (profiles ?? []).forEach((p: any) => {
+      (profiles ?? []).forEach((p) => {
         nameMap.set(p.id, p.full_name || p.email || "Unknown");
       });
     }
@@ -302,7 +300,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
 
     // Categories
     const catMap = new Map<string, { count: number; sentSum: number; sentCount: number }>();
-    for (const i of intel as any[]) {
+    for (const i of intel) {
       const c = (i.category as string) || "Uncategorized";
       let rec = catMap.get(c);
       if (!rec) {
@@ -326,7 +324,7 @@ export const getWhatsAppAnalytics = createServerFn({ method: "POST" })
 
     // Top issues (topics)
     const topicMap = new Map<string, number>();
-    for (const i of intel as any[]) {
+    for (const i of intel) {
       const topics: string[] = Array.isArray(i.topics) ? i.topics : [];
       for (const t of topics) {
         if (!t) continue;

@@ -11,7 +11,7 @@ export const listBrands = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .validator((d: { workspaceId: string }) => ws.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: rows } = await sbAny(context.supabase)
+    const { data: rows } = await context.supabase
       .from("commerce_brands")
       .select("*")
       .eq("workspace_id", data.workspaceId)
@@ -141,7 +141,7 @@ export const listInventory = createServerFn({ method: "GET" })
       .eq("workspace_id", data.workspaceId);
     let list = rows ?? [];
     if (data.lowStockOnly) {
-      list = list.filter((r: any) => {
+      list = list.filter((r) => {
         const threshold = r.products?.low_stock_threshold ?? r.reorder_point ?? 0;
         return r.quantity_on_hand - r.quantity_reserved <= threshold;
       });
@@ -473,17 +473,17 @@ export const getCommerceAnalytics = createServerFn({ method: "GET" })
     const { supabase } = context;
 
     const [ordersRes, itemsRes, linksRes] = await Promise.all([
-      sbAny(supabase)
+      supabase
         .from("commerce_orders")
         .select("id,total,status,payment_status,channel,created_at,paid_at,currency")
         .eq("workspace_id", data.workspaceId)
         .gte("created_at", since),
-      sbAny(supabase)
+      supabase
         .from("commerce_order_items")
         .select("id,name,quantity,total,order_id,commerce_orders!inner(workspace_id,created_at)")
         .eq("commerce_orders.workspace_id", data.workspaceId)
         .gte("commerce_orders.created_at", since),
-      sbAny(supabase)
+      supabase
         .from("commerce_payment_links")
         .select("id,amount,status,created_at")
         .eq("workspace_id", data.workspaceId)
@@ -496,7 +496,7 @@ export const getCommerceAnalytics = createServerFn({ method: "GET" })
 
     // Daily revenue
     const byDay: Record<string, { date: string; revenue: number; orders: number }> = {};
-    orders.forEach((o: any) => {
+    orders.forEach((o) => {
       const day = (o.paid_at ?? o.created_at).slice(0, 10);
       byDay[day] ??= { date: day, revenue: 0, orders: 0 };
       byDay[day].orders += 1;
@@ -505,7 +505,7 @@ export const getCommerceAnalytics = createServerFn({ method: "GET" })
 
     // Top products
     const byProduct: Record<string, { name: string; qty: number; revenue: number }> = {};
-    items.forEach((it: any) => {
+    items.forEach((it) => {
       const key = it.name ?? "Unknown";
       byProduct[key] ??= { name: key, qty: 0, revenue: 0 };
       byProduct[key].qty += Number(it.quantity ?? 0);
@@ -514,15 +514,15 @@ export const getCommerceAnalytics = createServerFn({ method: "GET" })
 
     // Channel breakdown
     const byChannel: Record<string, number> = {};
-    orders.forEach((o: any) => {
+    orders.forEach((o) => {
       const c = o.channel ?? "direct";
       byChannel[c] = (byChannel[c] ?? 0) + 1;
     });
 
     const totalRevenue = orders
-      .filter((o: any) => o.payment_status === "paid")
-      .reduce((s: number, o: any) => s + Number(o.total ?? 0), 0);
-    const paidCount = orders.filter((o: any) => o.payment_status === "paid").length;
+      .filter((o) => o.payment_status === "paid")
+      .reduce((s, o) => s + Number(o.total ?? 0), 0);
+    const paidCount = orders.filter((o) => o.payment_status === "paid").length;
     const aov = paidCount > 0 ? totalRevenue / paidCount : 0;
 
     return {
@@ -532,7 +532,7 @@ export const getCommerceAnalytics = createServerFn({ method: "GET" })
       averageOrderValue: aov,
       conversionRate:
         links.length > 0
-          ? (links.filter((l: any) => l.status === "paid").length / links.length) * 100
+          ? (links.filter((link) => link.status === "paid").length / links.length) * 100
           : 0,
       daily: Object.values(byDay).sort((a, b) => a.date.localeCompare(b.date)),
       topProducts: Object.values(byProduct)

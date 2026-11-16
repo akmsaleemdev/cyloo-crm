@@ -70,6 +70,36 @@ import {
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useBrandName } from "@/hooks/use-brand-name";
 
+type CatalogConfig = NonNullable<Awaited<ReturnType<typeof getCatalogConfig>>>;
+type CatalogSyncLog = Awaited<ReturnType<typeof listSyncLogs>>[number];
+type CatalogProduct = Awaited<ReturnType<typeof previewCatalog>>[number];
+type CatalogCollection = Awaited<ReturnType<typeof listCollections>>[number];
+type CatalogAnalytics = Awaited<ReturnType<typeof getCatalogAnalytics>>;
+type CatalogRecommendation = Awaited<ReturnType<typeof getRecommendations>>[number];
+type CatalogConfigPatch = Omit<Parameters<typeof saveCatalogConfig>[0]["data"], "workspaceId">;
+type CollectionInput = Omit<Parameters<typeof upsertCollection>[0]["data"], "workspaceId">;
+type CatalogSyncRequest = {
+  kind: "full" | "products" | "inventory" | "prices" | "images" | "categories";
+  productIds?: string[];
+};
+type CollectionDraft = {
+  name: string;
+  description: string | null;
+  is_featured: boolean;
+  cover_url: string | null;
+};
+type CatalogMessageRequest = {
+  to: string;
+  bodyText: string;
+  productIds: string[];
+  collectionId?: string;
+  header?: string;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 export const Route = createFileRoute("/_authenticated/commerce/wa-catalog")({
   component: WaCatalogPage,
   staticData: { breadcrumb: "WhatsApp Catalog" },
@@ -143,23 +173,21 @@ function WaCatalogPage() {
   });
 
   const saveM = useMutation({
-    mutationFn: (patch: Record<string, unknown>) =>
-      fnSave({ data: { workspaceId: workspaceId!, ...patch } as any }),
+    mutationFn: (patch: CatalogConfigPatch) =>
+      fnSave({ data: { workspaceId: workspaceId!, ...patch } }),
     onSuccess: () => {
       toast.success("Settings saved");
       qc.invalidateQueries({ queryKey: ["wa-cat-cfg"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save"),
   });
   const syncM = useMutation({
-    mutationFn: (args: {
-      kind: "full" | "products" | "inventory" | "prices" | "images" | "categories";
-      productIds?: string[];
-    }) =>
+    mutationFn: (args: CatalogSyncRequest) =>
       fnSync({
-        data: { workspaceId: workspaceId!, kind: args.kind, productIds: args.productIds } as any,
+        data: { workspaceId: workspaceId!, kind: args.kind, productIds: args.productIds },
       }),
-    onSuccess: (r: any) => {
+    onSuccess: (r) => {
       if (!r.canPush) {
         toast.error(`Catalog not synced: ${r.reason}`);
       } else if (r.failed > 0) {
@@ -173,7 +201,8 @@ function WaCatalogPage() {
       qc.invalidateQueries({ queryKey: ["wa-cat-preview"] });
       qc.invalidateQueries({ queryKey: ["wa-cat-cfg"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Sync failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Sync failed"),
   });
 
   const fnImport = useServerFn(importFromMetaCatalog);
@@ -192,14 +221,17 @@ function WaCatalogPage() {
       qc.invalidateQueries({ queryKey: ["wa-cat-logs"] });
       qc.invalidateQueries({ queryKey: ["wa-cat-preview"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Import from Meta failed"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Import from Meta failed"),
   });
 
   const cfg = cfgQ.data ?? null;
 
   // "Connected" only once Meta has accepted a push. Older rows could hold "ok"
   // from local-only syncs, so the latest pushed sync must also have succeeded.
-  const lastPush = ((logsQ.data ?? []) as any[]).find((l) => l?.details?.canPush === true);
+  const lastPush = (logsQ.data ?? []).find(
+    (log) => isRecord(log.details) && log.details.canPush === true,
+  );
   const catalogStatus: { label: string; healthy: boolean } = !cfg?.catalog_id
     ? { label: "Not linked", healthy: false }
     : cfg.last_sync_status === "ok" && lastPush?.status === "success"
@@ -357,8 +389,8 @@ function WaCatalogPage() {
               collections={colsQ.data ?? []}
               onSend={async (payload) => {
                 const r = await fnSend({ data: { workspaceId: workspaceId!, ...payload } });
-                if ((r as any).ok) toast.success("Sent via WhatsApp");
-                else toast.warning((r as any).reason ?? "Message staged");
+                if (r.ok) toast.success("Sent via WhatsApp");
+                else toast.warning(r.reason ?? "Message staged");
               }}
             />
             <RecommendationsPanel recs={recsQ.data ?? []} />
@@ -385,7 +417,15 @@ function WaCatalogPage() {
   );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: any; icon: React.ReactNode }) {
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon: React.ReactNode;
+}) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between text-muted-foreground">
@@ -497,9 +537,9 @@ function SettingsPanel({
   onSave,
   saving,
 }: {
-  cfg: any;
+  cfg: CatalogConfig | null;
   numbers: CatalogNumber[];
-  onSave: (p: any) => void;
+  onSave: (patch: CatalogConfigPatch) => void;
   saving: boolean;
 }) {
   const tenantCurrency = useTenantCurrency();
@@ -667,14 +707,14 @@ function CollectionsPanel({
   onSave,
   onDelete,
 }: {
-  collections: any[];
-  products: any[];
-  onSave: (v: any) => Promise<void>;
+  collections: CatalogCollection[];
+  products: CatalogProduct[];
+  onSave: (value: CollectionInput) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<any>(null);
-  const [deleting, setDeleting] = useState<any>(null);
+  const [editing, setEditing] = useState<CatalogCollection | null>(null);
+  const [deleting, setDeleting] = useState<CatalogCollection | null>(null);
   return (
     <>
       <div className="flex items-center justify-between">
@@ -771,14 +811,14 @@ function CollectionDialog({
   products,
   onSubmit,
 }: {
-  editing: any;
-  products: any[];
-  onSubmit: (v: any) => Promise<void>;
+  editing: CatalogCollection | null;
+  products: CatalogProduct[];
+  onSubmit: (value: CollectionInput) => Promise<void>;
 }) {
   const initial = editing ?? { name: "", description: "", is_featured: false, cover_url: "" };
-  const [form, setForm] = useState<any>(initial);
+  const [form, setForm] = useState<CollectionDraft>(initial);
   const [selected, setSelected] = useState<string[]>(
-    editing?.wa_catalog_collection_items?.map((i: any) => i.product_id) ?? [],
+    editing?.wa_catalog_collection_items?.map((item) => item.product_id) ?? [],
   );
   return (
     <DialogContent className="max-w-2xl">
@@ -786,24 +826,24 @@ function CollectionDialog({
         <DialogTitle>{editing ? "Edit collection" : "New collection"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-3">
-        <Field label="Name" v={form.name} on={(v) => setForm((s: any) => ({ ...s, name: v }))} />
+        <Field label="Name" v={form.name} on={(v) => setForm((s) => ({ ...s, name: v }))} />
         <div className="space-y-1">
           <Label>Description</Label>
           <Textarea
             rows={2}
             value={form.description ?? ""}
-            onChange={(e) => setForm((s: any) => ({ ...s, description: e.target.value }))}
+            onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
           />
         </div>
         <Field
           label="Cover URL"
           v={form.cover_url ?? ""}
-          on={(v) => setForm((s: any) => ({ ...s, cover_url: v }))}
+          on={(v) => setForm((s) => ({ ...s, cover_url: v }))}
         />
         <Toggle
           label="Featured collection"
           v={!!form.is_featured}
-          on={(v) => setForm((s: any) => ({ ...s, is_featured: v }))}
+          on={(v) => setForm((s) => ({ ...s, is_featured: v }))}
         />
         <div>
           <Label>Products ({selected.length})</Label>
@@ -835,7 +875,17 @@ function CollectionDialog({
         </div>
       </div>
       <DialogFooter>
-        <Button onClick={() => onSubmit({ id: editing?.id, ...form, productIds: selected })}>
+        <Button
+          onClick={() =>
+            onSubmit({
+              ...(editing ? { id: editing.id } : {}),
+              ...form,
+              description: form.description ?? undefined,
+              cover_url: form.cover_url ?? undefined,
+              productIds: selected,
+            })
+          }
+        >
           Save
         </Button>
       </DialogFooter>
@@ -848,9 +898,9 @@ function SharePanel({
   collections,
   onSend,
 }: {
-  products: any[];
-  collections: any[];
-  onSend: (p: any) => Promise<void>;
+  products: CatalogProduct[];
+  collections: CatalogCollection[];
+  onSend: (value: CatalogMessageRequest) => Promise<void>;
 }) {
   const [to, setTo] = useState("");
   const [bodyText, setBodyText] = useState("Check out these products from our catalog:");
@@ -862,7 +912,7 @@ function SharePanel({
     if (!collectionId) return products;
     const col = collections.find((c) => c.id === collectionId);
     if (!col) return products;
-    const ids = new Set((col.wa_catalog_collection_items ?? []).map((i: any) => i.product_id));
+    const ids = new Set((col.wa_catalog_collection_items ?? []).map((item) => item.product_id));
     return products.filter((p) => ids.has(p.id));
   }, [products, collectionId, collections]);
 
@@ -947,7 +997,7 @@ function SharePanel({
   );
 }
 
-function RecommendationsPanel({ recs }: { recs: any[] }) {
+function RecommendationsPanel({ recs }: { recs: CatalogRecommendation[] }) {
   if (!recs.length) return null;
   return (
     <Card className="p-4">
@@ -971,7 +1021,13 @@ function RecommendationsPanel({ recs }: { recs: any[] }) {
   );
 }
 
-function AnalyticsPanel({ data, logs }: { data: any; logs: any[] }) {
+function AnalyticsPanel({
+  data,
+  logs,
+}: {
+  data: CatalogAnalytics | undefined;
+  logs: CatalogSyncLog[];
+}) {
   const zonedDate = useZonedDateFormatter();
   const t = data?.totals ?? {
     views: 0,
@@ -1002,7 +1058,7 @@ function AnalyticsPanel({ data, logs }: { data: any; logs: any[] }) {
       <Card className="p-4">
         <div className="font-medium mb-3">Top shared products</div>
         <div className="space-y-2">
-          {(data?.topProducts ?? []).map((r: any) => (
+          {(data?.topProducts ?? []).map((r) => (
             <div key={r.product_id} className="flex items-center justify-between text-sm">
               <span className="truncate">{r.product?.name ?? r.product_id}</span>
               <span className="text-muted-foreground">
@@ -1018,7 +1074,7 @@ function AnalyticsPanel({ data, logs }: { data: any; logs: any[] }) {
       <Card className="p-4">
         <div className="font-medium mb-3">Recent sync activity</div>
         <div className="space-y-2 text-sm">
-          {logs.slice(0, 10).map((l: any) => (
+          {logs.slice(0, 10).map((l) => (
             <div key={l.id} className="flex justify-between border-b last:border-0 pb-2">
               <span>
                 <Badge

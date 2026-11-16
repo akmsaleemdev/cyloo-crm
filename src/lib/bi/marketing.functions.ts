@@ -174,8 +174,8 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
       .is("archived_at", null)
       .order("created_at", { ascending: false });
 
-    const campaigns: CampaignPerf[] = (campaignsRaw ?? []).map((c: any) => {
-      const snap = (c.audience_snapshot ?? {}) as Record<string, any>;
+    const campaigns: CampaignPerf[] = (campaignsRaw ?? []).map((c) => {
+      const snap = (c.audience_snapshot ?? {}) as Record<string, unknown>;
       const cost = Number(snap.cost ?? snap.budget ?? 0) || 0;
       const revenue = Number(snap.revenue ?? snap.attributed_revenue ?? 0) || 0;
       const sent = c.sent_count ?? 0;
@@ -287,12 +287,12 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
           const b = trendMap.get(k);
           if (b) b[key] += 1;
         };
-        bump((r as any).sent_at, "sent");
-        bump((r as any).delivered_at, "delivered");
-        bump((r as any).read_at, "read");
-        bump((r as any).replied_at, "replied");
-        bump((r as any).clicked_at, "clicked");
-        bump((r as any).opted_out_at, "optedOut");
+        bump(r.sent_at, "sent");
+        bump(r.delivered_at, "delivered");
+        bump(r.read_at, "read");
+        bump(r.replied_at, "replied");
+        bump(r.clicked_at, "clicked");
+        bump(r.opted_out_at, "optedOut");
       }
     }
 
@@ -323,15 +323,15 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
     let optedInPeriod = 0;
     let optedOutPeriod = 0;
     for (const c of consents ?? []) {
-      const status = (c as any).status as string;
+      const status = c.status as string;
       if (status === "opted_in") {
-        const k = dayKey(new Date((c as any).effective_at ?? (c as any).created_at));
+        const k = dayKey(new Date(c.effective_at ?? c.created_at));
         const b = growthMap.get(k);
         if (b) b.optedIn += 1;
         optedInPeriod += 1;
       }
-      if ((c as any).revoked_at || status === "opted_out") {
-        const rk = dayKey(new Date((c as any).revoked_at ?? (c as any).created_at));
+      if (c.revoked_at || status === "opted_out") {
+        const rk = dayKey(new Date(c.revoked_at ?? c.created_at));
         const b = growthMap.get(rk);
         if (b) b.optedOut += 1;
         optedOutPeriod += 1;
@@ -385,7 +385,7 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         .from("wa_templates")
         .select("id,name")
         .in("id", templateIds);
-      for (const t of tpls ?? []) templateNames.set((t as any).id, (t as any).name);
+      for (const t of tpls ?? []) templateNames.set(t.id, t.name);
     }
     const tplAgg = new Map<
       string,
@@ -443,14 +443,14 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         .from("customer_segments")
         .select("id,name")
         .in("id", segIds);
-      for (const s of segs ?? []) segNames.set((s as any).id, (s as any).name);
+      for (const s of segs ?? []) segNames.set(s.id, s.name);
     }
     if (listIds.length > 0) {
       const { data: lists = [] } = await supabase
         .from("contact_lists")
         .select("id,name")
         .in("id", listIds);
-      for (const l of lists ?? []) segNames.set((l as any).id, `${(l as any).name} (list)`);
+      for (const l of lists ?? []) segNames.set(l.id, `${l.name} (list)`);
     }
     const segAgg = new Map<
       string,
@@ -511,15 +511,15 @@ export const getMarketingAnalytics = createServerFn({ method: "GET" })
         campaignIds.length > 0 ? campaignIds : ["00000000-0000-0000-0000-000000000000"],
       );
 
-    const variantsByCampaign = new Map<string, any[]>();
+    const variantsByCampaign = new Map<string, NonNullable<typeof variants>[number][]>();
     for (const v of variants ?? []) {
-      const arr = variantsByCampaign.get((v as any).campaign_id) ?? [];
+      const arr = variantsByCampaign.get(v.campaign_id) ?? [];
       arr.push(v);
-      variantsByCampaign.set((v as any).campaign_id, arr);
+      variantsByCampaign.set(v.campaign_id, arr);
     }
     const campaignById = new Map(campaigns.map((c) => [c.id, c]));
     const abTests = Array.from(variantsByCampaign.entries()).map(([cid, vs]) => {
-      const perVariant = vs.map((v: any) => ({
+      const perVariant = vs.map((v) => ({
         id: v.id,
         name: v.name,
         weight: Number(v.weight ?? 0),

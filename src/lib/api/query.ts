@@ -85,23 +85,38 @@ export function parseQuery(url: URL, spec: QuerySpec): ParsedQuery {
   return { limit, offset, sort, filters, search, fields };
 }
 
-export function applyQuery<T>(builder: any, parsed: ParsedQuery, spec: QuerySpec): any {
+interface QueryFilterBuilder {
+  eq(column: string, value: unknown): unknown;
+  in(column: string, values: unknown[]): unknown;
+  gte(column: string, value: unknown): unknown;
+  lte(column: string, value: unknown): unknown;
+  ilike(column: string, value: unknown): unknown;
+  or(expression: string): unknown;
+  order(column: string, options: { ascending: boolean }): unknown;
+  range(from: number, to: number): unknown;
+}
+
+export function applyQuery<T extends QueryFilterBuilder>(
+  builder: T,
+  parsed: ParsedQuery,
+  spec: QuerySpec,
+): T {
   for (const f of parsed.filters) {
     switch (f.op) {
       case "eq":
-        builder = builder.eq(f.column, f.value);
+        builder.eq(f.column, f.value);
         break;
       case "in":
-        builder = builder.in(f.column, f.value as unknown[]);
+        builder.in(f.column, f.value as unknown[]);
         break;
       case "gte":
-        builder = builder.gte(f.column, f.value);
+        builder.gte(f.column, f.value);
         break;
       case "lte":
-        builder = builder.lte(f.column, f.value);
+        builder.lte(f.column, f.value);
         break;
       case "ilike":
-        builder = builder.ilike(f.column, f.value);
+        builder.ilike(f.column, f.value);
         break;
     }
   }
@@ -110,15 +125,15 @@ export function applyQuery<T>(builder: any, parsed: ParsedQuery, spec: QuerySpec
     const orExpr = spec.searchable
       .map((c) => `${c}.ilike.%${sanitizeSearchTerm(clean)}%`)
       .join(",");
-    builder = builder.or(orExpr);
+    builder.or(orExpr);
   }
   if (parsed.sort.length === 0) {
-    builder = builder.order("created_at", { ascending: false });
+    builder.order("created_at", { ascending: false });
   } else {
-    for (const s of parsed.sort) builder = builder.order(s.column, { ascending: s.ascending });
+    for (const s of parsed.sort) builder.order(s.column, { ascending: s.ascending });
   }
-  builder = builder.range(parsed.offset, parsed.offset + parsed.limit - 1);
-  return builder as T;
+  builder.range(parsed.offset, parsed.offset + parsed.limit - 1);
+  return builder;
 }
 
 export function selectFields(defaults: string, fields: string[] | null): string {

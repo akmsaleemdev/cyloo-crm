@@ -66,6 +66,7 @@ import { ActionBar } from "@/components/app/action-bar";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
+import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/commerce/promotions")({
   component: PromotionsPage,
@@ -109,6 +110,7 @@ type FormState = {
   auto_apply: boolean;
   priority: string;
 };
+type Promotion = Tables<"commerce_promotions">;
 
 const empty: FormState = {
   code: "",
@@ -202,14 +204,14 @@ function PromotionsPage() {
   const upd = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
 
-  const openEdit = (p: Record<string, any>) => {
+  const openEdit = (p: Promotion) => {
     setForm({
       id: p.id,
       code: p.code ?? "",
       name: p.name,
       description: p.description ?? "",
-      promo_type: p.promo_type,
-      discount_type: p.discount_type,
+      promo_type: p.promo_type as FormState["promo_type"],
+      discount_type: p.discount_type as FormState["discount_type"],
       percent_off: p.percent_off?.toString() ?? "",
       amount_off_cents: p.amount_off_cents?.toString() ?? "",
       min_order_cents: p.min_order_cents?.toString() ?? "",
@@ -219,8 +221,8 @@ function PromotionsPage() {
       get_discount_percent: p.get_discount_percent?.toString() ?? "100",
       bundle_price_cents: p.bundle_price_cents?.toString() ?? "",
       currency: p.currency ?? tenantCurrency,
-      applies_to: p.applies_to,
-      customer_scope: p.customer_scope,
+      applies_to: p.applies_to as FormState["applies_to"],
+      customer_scope: p.customer_scope as FormState["customer_scope"],
       starts_at: p.starts_at?.slice(0, 16) ?? "",
       ends_at: p.ends_at?.slice(0, 16) ?? "",
       usage_limit: p.usage_limit?.toString() ?? "",
@@ -328,7 +330,7 @@ function PromotionsPage() {
   const now = Date.now();
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (promotions as any[]).filter((p) => {
+    return promotions.filter((p) => {
       const expired = p.ends_at && new Date(p.ends_at).getTime() < now;
       if (filter === "active" && !(p.is_active && !expired)) return false;
       if (filter === "automatic" && !(p.auto_apply || p.promo_type === "automatic")) return false;
@@ -342,10 +344,10 @@ function PromotionsPage() {
     });
   }, [promotions, filter, search, now]);
 
-  const allSelected = filtered.length > 0 && filtered.every((p: any) => selected.has(p.id));
+  const allSelected = filtered.length > 0 && filtered.every((p) => selected.has(p.id));
   const toggleAll = () => {
     if (allSelected) setSelected(new Set());
-    else setSelected(new Set(filtered.map((p: any) => p.id)));
+    else setSelected(new Set(filtered.map((p) => p.id)));
   };
   const toggleOne = (id: string) => {
     const s = new Set(selected);
@@ -370,12 +372,12 @@ function PromotionsPage() {
         "Usage Limit",
       ],
     ];
-    filtered.forEach((p: any) => {
+    filtered.forEach((p) => {
       const value =
         p.discount_type === "percent"
           ? `${p.percent_off}%`
           : p.discount_type === "fixed"
-            ? `$${(p.amount_off_cents / 100).toFixed(2)}`
+            ? `$${(Number(p.amount_off_cents ?? 0) / 100).toFixed(2)}`
             : p.discount_type === "free_shipping"
               ? "Free shipping"
               : p.discount_type === "bxgy"
@@ -572,13 +574,13 @@ function PromotionsPage() {
                     : "No promotions match your filters."}
                 </div>
               )}
-              {filtered.map((p: any) => {
+              {filtered.map((p) => {
                 const expired = p.ends_at && new Date(p.ends_at).getTime() < now;
                 const value =
                   p.discount_type === "percent"
                     ? `${p.percent_off}%`
                     : p.discount_type === "fixed"
-                      ? `$${(p.amount_off_cents / 100).toFixed(2)}`
+                      ? `$${((p.amount_off_cents ?? 0) / 100).toFixed(2)}`
                       : p.discount_type === "free_shipping"
                         ? "Free ship"
                         : p.discount_type === "bxgy"
@@ -605,7 +607,7 @@ function PromotionsPage() {
                           <button
                             className="text-[11px] font-mono bg-muted px-1.5 py-0.5 rounded inline-flex items-center gap-1 hover:bg-muted-foreground/10"
                             onClick={() => {
-                              navigator.clipboard.writeText(p.code);
+                              navigator.clipboard.writeText(String(p.code));
                               toast.success("Code copied");
                             }}
                           >

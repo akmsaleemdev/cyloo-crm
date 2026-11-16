@@ -15,6 +15,7 @@ import {
   type AiAuditLogEntry,
   type AiSettingsOption,
   type AiBusinessContext,
+  type AiSettingsPatch,
 } from "@/lib/ai/settings.functions";
 import { toast } from "sonner";
 
@@ -39,8 +40,7 @@ export function useAiSettingsMutation(workspaceId: string | undefined) {
   const fn = useServerFn(updateAiSettings);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (patch: Partial<AiSettings>) =>
-      fn({ data: { workspaceId: workspaceId!, patch: patch as any } }),
+    mutationFn: (patch: AiSettingsPatch) => fn({ data: { workspaceId: workspaceId!, patch } }),
     onSuccess: (data) => {
       qc.setQueryData(["ai-settings", workspaceId], data);
       qc.invalidateQueries({ queryKey: ["ai-audit-logs", workspaceId] });

@@ -68,6 +68,10 @@ type Brand = {
 
 const empty = { name: "", description: "", website: "", logo_url: "", is_active: true };
 
+function isBrandStatus(value: string): value is "all" | "active" | "inactive" {
+  return value === "all" || value === "active" || value === "inactive";
+}
+
 function Brands() {
   const { active: workspace } = useCurrentWorkspace();
   const qc = useQueryClient();
@@ -101,7 +105,8 @@ function Brands() {
       setEditing(null);
       setForm(empty);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to save brand"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to save brand"),
   });
 
   const deleteMut = useMutation({
@@ -115,7 +120,8 @@ function Brands() {
       setConfirmDelete(null);
       setReassignTo("none");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to delete brand"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to delete brand"),
   });
 
   const toggleMut = useMutation({
@@ -125,7 +131,8 @@ function Brands() {
       invalidate();
       toast.success(args.isActive ? "Brand activated" : "Brand deactivated");
     },
-    onError: (e: any) => toast.error(e?.message ?? "Failed to update brand"),
+    onError: (error: unknown) =>
+      toast.error(error instanceof Error ? error.message : "Failed to update brand"),
   });
 
   const openEdit = (b: Brand) => {
@@ -250,7 +257,12 @@ function Brands() {
               className="pl-9 h-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              if (isBrandStatus(value)) setStatusFilter(value);
+            }}
+          >
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue />
             </SelectTrigger>
@@ -292,7 +304,6 @@ function Brands() {
                         </Badge>
                         <Link
                           to="/commerce"
-                          search={{ brand: b.id } as any}
                           className="text-[11px] text-muted-foreground hover:text-primary"
                         >
                           {b.product_count} product{b.product_count === 1 ? "" : "s"}

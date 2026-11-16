@@ -52,7 +52,8 @@ function buildResources() {
   for (const l of langs) {
     const t: Record<string, string> = {};
     for (const [key, values] of Object.entries(common)) {
-      t[key] = (values as Record<string, string>)[l] ?? (values as any).en;
+      const localizedValues = values as Record<string, string>;
+      t[key] = localizedValues[l] ?? localizedValues.en;
     }
     out[l] = { translation: t };
   }

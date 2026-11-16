@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, type ViewStyle } from "react-native";
 import { useTheme } from "@/theme/ThemeProvider";
 
 export function KpiTile({
@@ -23,9 +23,8 @@ export function KpiTile({
         : tone === "destructive"
           ? t.colors.destructive
           : t.colors.foreground;
-  const Wrap: any = onPress ? Pressable : View;
   return (
-    <Wrap
+    <InteractiveWrapper
       onPress={onPress}
       style={{
         flex: 1,
@@ -47,7 +46,7 @@ export function KpiTile({
         {value}
       </Text>
       {hint ? <Text style={{ ...t.typography.small, color: t.colors.mutedFg }}>{hint}</Text> : null}
-    </Wrap>
+    </InteractiveWrapper>
   );
 }
 
@@ -93,9 +92,8 @@ export function ListRow({
   onPress?: () => void;
 }) {
   const t = useTheme();
-  const Wrap: any = onPress ? Pressable : View;
   return (
-    <Wrap
+    <InteractiveWrapper
       onPress={onPress}
       style={{
         paddingVertical: 10,
@@ -113,7 +111,25 @@ export function ListRow({
         ) : null}
       </View>
       {right}
-    </Wrap>
+    </InteractiveWrapper>
+  );
+}
+
+function InteractiveWrapper({
+  onPress,
+  style,
+  children,
+}: {
+  onPress?: () => void;
+  style: ViewStyle;
+  children: React.ReactNode;
+}) {
+  return onPress ? (
+    <Pressable onPress={onPress} style={style}>
+      {children}
+    </Pressable>
+  ) : (
+    <View style={style}>{children}</View>
   );
 }
 

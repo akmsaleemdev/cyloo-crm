@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
-import { CameraView, useCameraPermissions, type BarcodeScanningResult } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  type BarcodeScanningResult,
+  type BarcodeType,
+} from "expo-camera";
 import * as Haptics from "expo-haptics";
 
 export type ScanResult = { type: string; data: string };
@@ -62,7 +67,7 @@ export function ScannerView({ mode = "any", onScan, onClose }: Props) {
         style={StyleSheet.absoluteFill}
         facing="back"
         onBarcodeScanned={scanned ? undefined : handle}
-        barcodeScannerSettings={{ barcodeTypes: types as any }}
+        barcodeScannerSettings={{ barcodeTypes: types as BarcodeType[] }}
       />
       <View style={styles.overlay} pointerEvents="box-none">
         <View style={styles.frame} />

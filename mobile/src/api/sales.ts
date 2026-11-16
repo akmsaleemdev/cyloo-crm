@@ -93,6 +93,12 @@ export type Notification = {
   read_at: string | null;
 };
 
+type DashboardDeal = {
+  amount: number | null;
+  deal_stages: { is_won: boolean; is_lost: boolean } | null;
+};
+type DashboardInvoice = { due_date: string | null };
+
 // ---------- Pipelines & stages ----------
 
 export async function listPipelines(): Promise<Pipeline[]> {
@@ -267,11 +273,10 @@ export async function fetchSalesDashboard(userId?: string): Promise<DashboardSta
     supabase.from("tasks").select("id").eq("status", "pending").limit(500),
   ]);
 
-  const openList = ((openDeals.data ?? []) as any[]).filter(
-    (d) => !d.deal_stages?.is_won && !d.deal_stages?.is_lost,
-  );
-  const wonList = ((openDeals.data ?? []) as any[]).filter((d) => d.deal_stages?.is_won);
-  const invsRows = (invoices.data ?? []) as any[];
+  const dealRows = (openDeals.data ?? []) as DashboardDeal[];
+  const openList = dealRows.filter((d) => !d.deal_stages?.is_won && !d.deal_stages?.is_lost);
+  const wonList = dealRows.filter((d) => d.deal_stages?.is_won);
+  const invsRows = (invoices.data ?? []) as DashboardInvoice[];
   const overdue = invsRows.filter((i) => i.due_date && new Date(i.due_date) < now).length;
 
   return {
@@ -292,25 +297,26 @@ export async function fetchSalesDashboard(userId?: string): Promise<DashboardSta
 async function mutateOrQueue(
   op: "insert" | "update" | "delete",
   table: string,
-  payload: any,
-  match?: any,
+  payload: object,
+  match?: Record<string, unknown>,
 ) {
   const online = useAppStore.getState().networkOnline;
   if (!online) {
-    enqueue({ op, table, payload, match });
+    enqueue({ op, table, payload: payload as Record<string, unknown>, match });
     return { queued: true } as const;
   }
   try {
     const t = supabase.from(table);
-    let error: any = null;
+    let error: unknown = null;
     if (op === "insert") ({ error } = await t.insert(payload));
     else if (op === "update") ({ error } = await t.update(payload).match(match ?? {}));
     else ({ error } = await t.delete().match(match ?? {}));
     if (error) throw error;
     return { queued: false } as const;
-  } catch (e: any) {
-    if (String(e?.message ?? "").match(/Network request failed|fetch/i)) {
-      enqueue({ op, table, payload, match });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (/Network request failed|fetch/i.test(message)) {
+      enqueue({ op, table, payload: payload as Record<string, unknown>, match });
       return { queued: true } as const;
     }
     throw e;

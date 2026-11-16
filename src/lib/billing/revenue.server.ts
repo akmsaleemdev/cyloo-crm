@@ -51,7 +51,13 @@ export async function computeRevenueSnapshot(
   if (opts.organization_id) subQuery.eq("organization_id", opts.organization_id);
   const subsRes = await subQuery;
   if (subsRes.error) throw subsRes.error;
-  const subs = (subsRes.data ?? []) as any[];
+  const subs = (subsRes.data ?? []) as Array<{
+    created_at: string;
+    canceled_at: string | null;
+    status: string;
+    seats: number | null;
+    plans: { price_cents: number | null; interval: string | null }[];
+  }>;
 
   let mrr_cents = 0;
   let active = 0;
@@ -59,8 +65,10 @@ export async function computeRevenueSnapshot(
   let newCount = 0;
   let churned = 0;
   for (const s of subs) {
-    const factor = MONTHLY_FACTOR[s.plans.interval as string] ?? 1;
-    const monthly = Math.round(s.plans.price_cents * (s.seats ?? 1) * factor);
+    const plan = s.plans[0];
+    if (!plan) continue;
+    const factor = MONTHLY_FACTOR[plan.interval ?? "month"] ?? 1;
+    const monthly = Math.round((plan.price_cents ?? 0) * (s.seats ?? 1) * factor);
     if (s.status === "active") {
       active++;
       mrr_cents += monthly;
@@ -77,10 +85,7 @@ export async function computeRevenueSnapshot(
     .lte("paid_at", dayEnd);
   if (opts.organization_id) invQuery.eq("organization_id", opts.organization_id);
   const invRes = await invQuery;
-  const gross = (invRes.data ?? []).reduce(
-    (s: number, i: any) => s + (i.amount_paid_cents ?? 0),
-    0,
-  );
+  const gross = (invRes.data ?? []).reduce((s: number, i) => s + (i.amount_paid_cents ?? 0), 0);
 
   const refundsQuery = supabase
     .from("billing_payment_attempts")
@@ -92,7 +97,7 @@ export async function computeRevenueSnapshot(
   if (opts.organization_id) refundsQuery.eq("organization_id", opts.organization_id);
   const refRes = await refundsQuery;
   const refunds = (refRes.data ?? []).reduce(
-    (s: number, r: any) => s + (r.refunded_amount_cents ?? 0),
+    (s: number, r) => s + (r.refunded_amount_cents ?? 0),
     0,
   );
 

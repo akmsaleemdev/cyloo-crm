@@ -19,7 +19,7 @@ interface AuditParams {
   templateId?: string | null;
   templateName: string;
   channelAccountId: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export async function auditTemplateAction(type: TemplateAuditEvent, params: AuditParams) {

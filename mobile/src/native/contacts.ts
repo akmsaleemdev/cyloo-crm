@@ -60,6 +60,6 @@ export async function createContact(input: {
       ? [{ label: "mobile", number: input.phone }]
       : undefined,
     [Contacts.Fields.Emails]: input.email ? [{ label: "work", email: input.email }] : undefined,
-  } as any;
+  } as unknown as Contacts.Contact;
   return Contacts.addContactAsync(contact);
 }

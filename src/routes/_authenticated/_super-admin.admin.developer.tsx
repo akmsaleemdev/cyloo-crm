@@ -24,6 +24,7 @@ import {
   Ban,
   ChevronLeft,
   ChevronRight,
+  type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -85,8 +86,8 @@ function DeveloperInner() {
       toast.success("API key revoked");
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to revoke");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to revoke");
     }
   }
 
@@ -96,8 +97,8 @@ function DeveloperInner() {
       toast.success("Webhook queued for retry");
       await qc.invalidateQueries({ queryKey: ["admin", "developer"] });
       await router.invalidate();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Failed to retry");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to retry");
     }
   }
 
@@ -160,7 +161,7 @@ function DeveloperInner() {
                       </TableCell>
                     </TableRow>
                   )}
-                  {data.apiKeys.map((k: any) => {
+                  {data.apiKeys.map((k) => {
                     const revoked = !!k.revoked_at;
                     const expired = k.expires_at && new Date(k.expires_at) < new Date();
                     return (
@@ -228,7 +229,7 @@ function DeveloperInner() {
                       </TableCell>
                     </TableRow>
                   )}
-                  {data.signingSecrets.map((s: any) => (
+                  {data.signingSecrets.map((s) => (
                     <TableRow key={s.id}>
                       <TableCell className="font-mono text-xs">{s.secret_prefix}</TableCell>
                       <TableCell>
@@ -282,7 +283,7 @@ function DeveloperInner() {
                       </TableCell>
                     </TableRow>
                   )}
-                  {pagedWebhookEvents.map((e: any) => (
+                  {pagedWebhookEvents.map((e) => (
                     <TableRow key={e.id}>
                       <TableCell className="text-xs">{e.provider}</TableCell>
                       <TableCell className="text-xs font-medium">{e.event_type}</TableCell>
@@ -362,7 +363,7 @@ function Stat({
   sub,
   tone,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   value: number;
   sub?: string;

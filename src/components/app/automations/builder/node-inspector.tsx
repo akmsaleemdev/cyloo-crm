@@ -120,7 +120,7 @@ async function loadReferenceOptions(
   kind: string,
   workspaceId: string,
 ): Promise<RefOption[] | null> {
-  const db = supabase as unknown as { from: (t: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+  const db = supabase;
   const byName = (rows: { id: string; label: string }[]) =>
     rows.map((r) => ({ value: r.id, label: r.label || r.id }));
   switch (kind) {
@@ -132,7 +132,7 @@ async function loadReferenceOptions(
         .order("name")
         .limit(500);
       return byName(
-        (data ?? []).map((c: any) => ({
+        (data ?? []).map((c) => ({
           id: c.id,
           label: c.name || [c.first_name, c.last_name].filter(Boolean).join(" ") || c.phone || c.id,
         })),
@@ -145,8 +145,11 @@ async function loadReferenceOptions(
         .eq("workspace_id", workspaceId)
         .order("name");
       return (data ?? [])
-        .filter((t: any) => String(t.status).toUpperCase() === "APPROVED")
-        .map((t: any) => ({ value: t.id, label: `${t.name} (${t.language})` }));
+        .filter((template) => String(template.status).toUpperCase() === "APPROVED")
+        .map((template) => ({
+          value: template.id,
+          label: `${template.name} (${template.language})`,
+        }));
     }
     case "campaign": {
       const { data } = await db
@@ -156,7 +159,7 @@ async function loadReferenceOptions(
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(200);
-      return byName((data ?? []).map((c: any) => ({ id: c.id, label: c.name })));
+      return byName((data ?? []).map((campaign) => ({ id: campaign.id, label: campaign.name })));
     }
     case "deal": {
       const { data } = await db
@@ -166,7 +169,7 @@ async function loadReferenceOptions(
         .is("deleted_at", null)
         .order("created_at", { ascending: false })
         .limit(200);
-      return byName((data ?? []).map((d: any) => ({ id: d.id, label: d.title })));
+      return byName((data ?? []).map((deal) => ({ id: deal.id, label: deal.title })));
     }
     case "channel": {
       const { data } = await db
@@ -174,9 +177,9 @@ async function loadReferenceOptions(
         .select("id, display_name, provider, phone_number")
         .eq("workspace_id", workspaceId)
         .order("created_at");
-      return (data ?? []).map((c: any) => ({
-        value: c.id,
-        label: `${c.display_name || c.phone_number || c.id} · ${c.provider}`,
+      return (data ?? []).map((channel) => ({
+        value: channel.id,
+        label: `${channel.display_name || channel.phone_number || channel.id} · ${channel.provider}`,
       }));
     }
     case "user": {
@@ -185,15 +188,15 @@ async function loadReferenceOptions(
         .select("user_id")
         .eq("workspace_id", workspaceId)
         .eq("status", "active");
-      const ids = (members ?? []).map((m: any) => m.user_id);
+      const ids = (members ?? []).map((member) => member.user_id);
       if (ids.length === 0) return [];
       const { data: people } = await db
         .from("profiles")
         .select("id, display_name, full_name, email")
         .in("id", ids);
-      return (people ?? []).map((p: any) => ({
-        value: p.id,
-        label: p.display_name || p.full_name || p.email || p.id,
+      return (people ?? []).map((person) => ({
+        value: person.id,
+        label: person.display_name || person.full_name || person.email || person.id,
       }));
     }
     default:

@@ -188,7 +188,7 @@ function DashboardPage() {
                         <QuickAction
                           icon={Calendar}
                           label="New Task"
-                          onClick={() => nav({ to: "/tasks", search: (prev: any) => prev })}
+                          onClick={() => nav({ to: "/tasks", search: { taskId: undefined } })}
                         />
                         <QuickAction
                           icon={MessagesSquare}
@@ -604,7 +604,7 @@ function DashboardPage() {
                               {!!tasks.data?.crmUpcomingCount && (
                                 <Link
                                   to="/tasks"
-                                  search={(prev: any) => prev}
+                                  search={{ taskId: undefined }}
                                   className="text-accent hover:underline"
                                 >
                                   View CRM tasks ({tasks.data.crmUpcomingCount})

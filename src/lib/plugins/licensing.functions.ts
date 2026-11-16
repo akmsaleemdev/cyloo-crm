@@ -303,7 +303,7 @@ export const recordUsage = createServerFn({ method: "POST" })
         workspace_id: data.workspaceId ?? null,
         event_name: data.eventName,
         quantity: data.quantity,
-        metadata: (data.metadata ?? {}) as any,
+        metadata: (data.metadata ?? {}) as import("@/integrations/supabase/types").Json,
       });
     if (error) throw error;
     return { ok: true };

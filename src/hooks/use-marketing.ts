@@ -3,12 +3,17 @@ import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 import { sbAny } from "@/lib/supabase/untyped";
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 /* ---------- Types ---------- */
 
 export type CampaignRow = {
   id: string;
   workspace_id: string;
+  approval_status: string;
+  approved_at: string | null;
+  archived_at: string | null;
+  is_recurring: boolean;
   name: string;
   description: string | null;
   message_body: string | null;
@@ -145,10 +150,10 @@ export function useUpsertCampaign() {
   return useMutation({
     mutationFn: async (input: Partial<CampaignRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("campaigns")
-        .upsert(payload as any)
+        .upsert(payload as unknown as TablesInsert<"campaigns">)
         .select()
         .single();
       if (error) throw error;
@@ -220,10 +225,10 @@ export function useUpsertSegment() {
   return useMutation({
     mutationFn: async (input: Partial<SegmentRow> & { id?: string }) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("customer_segments")
-        .upsert(payload as any)
+        .upsert(payload as unknown as TablesInsert<"customer_segments">)
         .select()
         .single();
       if (error) throw error;
@@ -273,10 +278,10 @@ export function useRecordConsent() {
   return useMutation({
     mutationFn: async (input: Partial<ConsentRow>) => {
       const payload = { ...input, workspace_id: input.workspace_id ?? active!.id };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const { data, error } = await sbAny(supabase)
         .from("consent_records")
-        .insert(payload as any)
+        .insert(payload as unknown as TablesInsert<"consent_records">)
         .select()
         .single();
       if (error) throw error;

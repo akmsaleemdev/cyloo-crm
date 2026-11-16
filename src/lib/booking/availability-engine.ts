@@ -54,7 +54,6 @@ function toDateOnly(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function computeAvailability(
   supabase: SupabaseClient,
   eventTypeId: string,
@@ -88,8 +87,14 @@ export async function computeAvailability(
   if (to <= from) return [];
 
   const hosts: HostSchedule[] = [];
-  for (const row of (hostsData ?? []) as any[]) {
-    const sched = row.booking_availability_schedules;
+  for (const row of (hostsData ?? []) as Array<{
+    host_id: string;
+    booking_availability_schedules: Array<{
+      timezone: string | null;
+      booking_availability_slots: WeeklySlot[] | null;
+    }> | null;
+  }>) {
+    const sched = row.booking_availability_schedules?.[0];
     hosts.push({
       host_id: row.host_id,
       timezone: sched?.timezone ?? "UTC",
@@ -108,7 +113,9 @@ export async function computeAvailability(
     .in("host_id", hostIds)
     .gte("override_date", toDateOnly(from))
     .lte("override_date", toDateOnly(to));
-  for (const o of (overrides ?? []) as any[]) {
+  for (const o of (overrides ?? []) as Array<
+    HostSchedule["overrides"][number] & { host_id: string }
+  >) {
     const h = hosts.find((x) => x.host_id === o.host_id);
     if (h) h.overrides.push(o);
   }
@@ -120,7 +127,11 @@ export async function computeAvailability(
     .in("status", ["pending", "confirmed"])
     .lt("start_at", to.toISOString())
     .gt("end_at", from.toISOString());
-  for (const b of (busyRows ?? []) as any[]) {
+  for (const b of (busyRows ?? []) as Array<{
+    host_id: string;
+    start_at: string;
+    end_at: string;
+  }>) {
     const h = hosts.find((x) => x.host_id === b.host_id);
     if (h) h.busy.push({ start_at: b.start_at, end_at: b.end_at });
   }

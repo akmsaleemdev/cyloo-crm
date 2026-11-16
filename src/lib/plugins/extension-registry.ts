@@ -293,7 +293,10 @@ class ExtensionRegistry {
   }
 
   private add<T>(map: Map<string, Owned<T>>, key: string, slug: string, value: T) {
-    map.set(`${slug}::${key}`, { ...(value as any), pluginSlug: slug });
+    map.set(`${slug}::${key}`, {
+      ...(value as Record<string, unknown>),
+      pluginSlug: slug,
+    } as Owned<T>);
     this.notify();
   }
 

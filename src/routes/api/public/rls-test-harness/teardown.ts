@@ -7,11 +7,9 @@ export const Route = createFileRoute("/api/public/rls-test-harness/teardown")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = process.env.RLS_TEST_HARNESS_SECRET;
-        if (!secret) return json({ error: "harness_disabled" }, 503);
-        if (request.headers.get("x-harness-secret") !== secret) {
-          return json({ error: "unauthorized" }, 401);
-        }
+        const { guardHarnessRequest } = await import("./server/harness.server");
+        const denied = guardHarnessRequest(request);
+        if (denied) return denied;
 
         let body: { user_ids?: string[] } = {};
         try {
@@ -25,7 +23,7 @@ export const Route = createFileRoute("/api/public/rls-test-harness/teardown")({
           const result = await teardownHarness(body.user_ids ?? []);
           return json(result);
         } catch (err) {
-          return json({ error: "teardown_failed", message: (err as Error).message }, 500);
+          return json({ error: "teardown_failed", message: "Internal harness error" }, 500);
         }
       },
     },

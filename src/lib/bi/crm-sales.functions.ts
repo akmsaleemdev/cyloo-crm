@@ -5,6 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { campaignSpendFromSnapshot } from "@/lib/bi/campaign-spend";
 
 const input = z.object({
   workspaceId: z.string().uuid(),
@@ -105,21 +106,19 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     const leads = leadsRes.data ?? [];
     const deals = dealsRes.data ?? [];
     const stages = stagesRes.data ?? [];
-    const memberIds = (membersRes.data ?? []).map((m: any) => m.user_id).filter(Boolean);
+    const memberIds = (membersRes.data ?? []).map((m) => m.user_id).filter(Boolean);
     const history = historyRes.data ?? [];
 
     // Lookup owner names
     const ownerNames = new Map<string, string>();
-    const ownerIds = Array.from(
-      new Set(deals.map((d: any) => d.owner_id).filter(Boolean)),
-    ) as string[];
+    const ownerIds = Array.from(new Set(deals.map((d) => d.owner_id).filter(Boolean))) as string[];
     const allIds = Array.from(new Set([...ownerIds, ...memberIds])) as string[];
     if (allIds.length) {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, full_name, email")
         .in("id", allIds);
-      (profiles ?? []).forEach((p: any) => {
+      (profiles ?? []).forEach((p) => {
         ownerNames.set(p.id, p.full_name || p.email || "Unknown");
       });
     }
@@ -146,16 +145,14 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     // Lead conversion
     const totalLeads = leads.length;
     const qualifiedLeads = leads.filter(
-      (l: any) => l.qualified_at || l.status === "qualified" || l.converted_at,
+      (l) => l.qualified_at || l.status === "qualified" || l.converted_at,
     ).length;
-    const convertedLeads = leads.filter((l: any) => !!l.converted_at).length;
-    const lostLeads = leads.filter(
-      (l: any) => l.status === "lost" || l.status === "unqualified",
-    ).length;
+    const convertedLeads = leads.filter((l) => !!l.converted_at).length;
+    const lostLeads = leads.filter((l) => l.status === "lost" || l.status === "unqualified").length;
     const convertedTimes = leads
-      .filter((l: any) => l.converted_at && l.created_at)
+      .filter((l) => l.converted_at && l.created_at)
       .map(
-        (l: any) =>
+        (l) =>
           (new Date(l.converted_at as string).getTime() - new Date(l.created_at).getTime()) /
           86400_000,
       );
@@ -174,7 +171,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     };
 
     // Funnel by stage
-    const stageMap = new Map(stages.map((s: any) => [s.id, s]));
+    const stageMap = new Map(stages.map((s) => [s.id, s]));
     const funnelAgg = new Map<string, { deals: number; value: number }>();
     for (const d of deals) {
       const key = d.stage_id || "unassigned";
@@ -183,7 +180,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
       agg.value += Number(d.amount || 0);
       funnelAgg.set(key, agg);
     }
-    const funnel = stages.map((s: any) => {
+    const funnel = stages.map((s) => {
       const agg = funnelAgg.get(s.id) ?? { deals: 0, value: 0 };
       return {
         stage: s.name,
@@ -195,23 +192,23 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     });
 
     // Pipeline metrics
-    const openDeals = deals.filter((d: any) => d.status === "open");
-    const wonDeals = deals.filter((d: any) => d.status === "won");
-    const lostDeals = deals.filter((d: any) => d.status === "lost");
-    const totalValue = openDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0);
+    const openDeals = deals.filter((d) => d.status === "open");
+    const wonDeals = deals.filter((d) => d.status === "won");
+    const lostDeals = deals.filter((d) => d.status === "lost");
+    const totalValue = openDeals.reduce((a: number, d) => a + Number(d.amount || 0), 0);
     const weightedValue = openDeals.reduce(
-      (a: number, d: any) => a + Number(d.amount || 0) * (Number(d.probability || 0) / 100),
+      (a: number, d) => a + Number(d.amount || 0) * (Number(d.probability || 0) / 100),
       0,
     );
     const avgDealSize =
       wonDeals.length > 0
-        ? wonDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0) / wonDeals.length
+        ? wonDeals.reduce((a: number, d) => a + Number(d.amount || 0), 0) / wonDeals.length
         : 0;
 
     // Velocity: avg duration from stage history
     const durations = history
-      .filter((h: any) => h.duration_seconds)
-      .map((h: any) => Number(h.duration_seconds) / 86400);
+      .filter((h) => h.duration_seconds)
+      .map((h) => Number(h.duration_seconds) / 86400);
     const avgVelocityDays =
       durations.length > 0
         ? durations.reduce((a: number, b: number) => a + b, 0) / durations.length
@@ -220,22 +217,22 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     // Stagnant deals: open > 30 days since last activity (using created_at as proxy)
     const stagnantCutoff = daysAgo(30).getTime();
     const stagnantDeals = openDeals.filter(
-      (d: any) => new Date(d.created_at).getTime() < stagnantCutoff,
+      (d) => new Date(d.created_at).getTime() < stagnantCutoff,
     ).length;
 
     // Sales cycle: avg from created to actual_close_date for won
     const cycles = wonDeals
-      .filter((d: any) => d.actual_close_date)
+      .filter((d) => d.actual_close_date)
       .map(
-        (d: any) =>
+        (d) =>
           (new Date(d.actual_close_date as string).getTime() - new Date(d.created_at).getTime()) /
           86400_000,
       );
     const avgSalesCycleDays =
       cycles.length > 0 ? cycles.reduce((a: number, b: number) => a + b, 0) / cycles.length : 0;
 
-    const wonValue = wonDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0);
-    const lostValue = lostDeals.reduce((a: number, d: any) => a + Number(d.amount || 0), 0);
+    const wonValue = wonDeals.reduce((a: number, d) => a + Number(d.amount || 0), 0);
+    const lostValue = lostDeals.reduce((a: number, d) => a + Number(d.amount || 0), 0);
     const winRate =
       wonDeals.length + lostDeals.length > 0
         ? (wonDeals.length / (wonDeals.length + lostDeals.length)) * 100
@@ -319,7 +316,7 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     // LTV: total won revenue / distinct customers with won deal
     const customerRevenue = new Map<string, number>();
     for (const d of wonDeals) {
-      const c = (d.contact_id as string) || (d as any).company_id;
+      const c = (d.contact_id as string) || undefined;
       if (!c) continue;
       customerRevenue.set(c, (customerRevenue.get(c) ?? 0) + Number(d.amount || 0));
     }
@@ -332,11 +329,11 @@ export const getCrmSalesAnalytics = createServerFn({ method: "POST" })
     try {
       const { data: campaigns } = await supabase
         .from("campaigns")
-        .select("budget, spend")
+        .select("audience_snapshot")
         .eq("workspace_id", workspaceId)
         .gte("created_at", fromIso);
       totalSpend = (campaigns ?? []).reduce(
-        (a: number, c: any) => a + Number(c.spend ?? c.budget ?? 0),
+        (total, campaign) => total + campaignSpendFromSnapshot(campaign.audience_snapshot),
         0,
       );
     } catch {
