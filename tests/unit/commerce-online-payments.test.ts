@@ -10,8 +10,11 @@ import {
   type ProviderConfig,
 } from "@/lib/commerce/online-payment-providers.server";
 import { onlinePaymentMarket } from "@/lib/commerce/online-payment-methods";
+import { commerceGatewayReadiness } from "@/lib/commerce/online-payments.server";
 import { checkoutComPaymentDetails } from "@/lib/commerce/online-checkout-com.server";
 import { paddleProvider } from "@/lib/billing/providers/paddle";
+import { getBillingProvider, listBillingProviders } from "@/lib/billing/providers";
+import { defaultGatewayId, enabledGatewayIds } from "@/lib/billing/gateway-guard.server";
 
 const id = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const reference = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
@@ -64,6 +67,38 @@ function responses(...fixtures: unknown[]) {
 }
 
 describe("online checkout gateway contracts", () => {
+  it("keeps retired and placeholder providers out of default and enabled billing when stale rows remain", async () => {
+    const supabase = {
+      rpc: vi.fn().mockResolvedValue({
+        data: [
+          { provider_id: "mollie", enabled: true, is_default: true },
+          { provider_id: "paystack", enabled: true, is_default: false },
+          { provider_id: "stripe", enabled: true, is_default: false },
+        ],
+      }),
+    };
+    await expect(enabledGatewayIds(supabase)).resolves.toEqual(["stripe"]);
+    await expect(defaultGatewayId(supabase)).resolves.toBe("stripe");
+    expect(listBillingProviders().map(({ id }) => id)).not.toContain("paystack");
+    expect(getBillingProvider("paystack").id).toBe("paystack");
+    expect(getBillingProvider("mollie").supports.checkout).toBe(false);
+  });
+
+  it("reports only validated merchant market and mode without returning merchant credentials", () => {
+    const prefix = `COMMERCE_${id.replaceAll("-", "").toUpperCase()}`;
+    vi.stubEnv("APP_ORIGIN", "https://app.example.test");
+    vi.stubEnv("APP_MODE", "production");
+    vi.stubEnv(`${prefix}_AE_TABBY_API_KEY`, "sk_test_checkout-fixture");
+    vi.stubEnv(`${prefix}_AE_TABBY_MERCHANT_CODE`, "fixture-merchant");
+    vi.stubEnv(`${prefix}_AE_TABBY_WEBHOOK_SECRET`, "fixture-webhook");
+    vi.stubEnv(`${prefix}_KW_TAMARA_API_KEY`, "fixture-key");
+    vi.stubEnv(`${prefix}_KW_TAMARA_WEBHOOK_SECRET`, "fixture-webhook");
+    expect(commerceGatewayReadiness().slice(0, 2)).toEqual([
+      { provider: "tabby", markets: [{ country: "AE", mode: "sandbox" }] },
+      { provider: "tamara", markets: [] },
+    ]);
+  });
+
   it("preserves two-decimal order totals and rejects currencies outside the supported market", () => {
     expect(minorUnits(120.5)).toBe(12050);
     expect(() => minorUnits(1.001)).toThrow();

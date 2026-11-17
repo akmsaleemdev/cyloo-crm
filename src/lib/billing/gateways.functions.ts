@@ -16,6 +16,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { formatGatewayErrors, hasGatewayErrors, validateGatewayForm } from "./gateway-validation";
 import { listBillingProviders } from "./providers";
+import {
+  assertImplementedBillingGateway,
+  isImplementedBillingGateway,
+  isRetiredGateway,
+} from "./gateway-lifecycle";
 import { sbAny } from "@/lib/supabase/untyped";
 
 // Keep select() strings opaque to the type-level parser (typecheck perf).
@@ -126,8 +131,9 @@ export const listGateways = createServerFn({ method: "GET" })
       supports,
       builtIn,
       adapterId: s?.adapter_id ?? (builtIn ? id : "custom"),
-      enabled: s?.enabled ?? false,
-      isDefault: s?.is_default ?? false,
+      canActivate: isImplementedBillingGateway(id),
+      enabled: isImplementedBillingGateway(id) && Boolean(s?.enabled),
+      isDefault: isImplementedBillingGateway(id) && Boolean(s?.is_default),
       mode: (s?.mode ?? "sandbox") as "sandbox" | "live",
       notes: s?.notes ?? null,
       publishableKey: s?.publishable_key ?? null,
@@ -148,12 +154,20 @@ export const listGateways = createServerFn({ method: "GET" })
       (catalog.find((p) => p.id === "custom")?.supports as Record<string, boolean>) ?? {};
 
     const customs = rows
-      .filter((r) => !known.has(r.provider_id))
+      .filter((r) => !known.has(r.provider_id) && !isRetiredGateway(r.provider_id))
       .map((r) =>
         shape(r.provider_id, r.display_label || r.provider_id, customAdapterSupports, r, false),
       );
 
     return [...builtIns, ...customs];
+  });
+
+export const listCommerceGatewayReadiness = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+    const { commerceGatewayReadiness } = await import("@/lib/commerce/online-payments.server");
+    return commerceGatewayReadiness();
   });
 
 /** Enable or disable a gateway platform-wide. */
@@ -166,7 +180,9 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
 
-    if (!data.enabled) {
+    if (data.enabled) {
+      assertImplementedBillingGateway(data.provider_id);
+    } else {
       const { data: row } = await supabase
         .from("payment_gateway_settings")
         .select("is_default")
@@ -209,6 +225,7 @@ export const setDefaultGateway = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
 
+    assertImplementedBillingGateway(data.provider_id);
     // Clear the current default first — a partial unique index enforces one.
     const clear = await supabase
       .from("payment_gateway_settings")
@@ -312,6 +329,10 @@ export const upsertGateway = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
 
+    if (isRetiredGateway(data.provider_id)) {
+      throw new Error("This gateway has been retired.");
+    }
+    if (data.enabled) assertImplementedBillingGateway(data.provider_id);
     // Same rules the configure dialog applies inline — never trust the client.
     const fieldErrors = validateGatewayForm({
       provider_id: data.provider_id,

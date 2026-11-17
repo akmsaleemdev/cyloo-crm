@@ -1,4 +1,5 @@
 import { sbAny } from "@/lib/supabase/untyped";
+import { isImplementedBillingGateway } from "./gateway-lifecycle";
 /**
  * Runtime enforcement of the Payment Gateways enable/disable switches.
  *
@@ -57,7 +58,9 @@ type Basic = { provider_id: string; enabled: boolean; is_default: boolean };
 async function platformGateways(supabase: Client): Promise<Basic[]> {
   const { data, error } = await sbAny(supabase).rpc("list_payment_gateway_basics");
   if (error) throw error;
-  return (data ?? []) as Basic[];
+  return ((data ?? []) as Basic[]).filter(({ provider_id }) =>
+    isImplementedBillingGateway(provider_id),
+  );
 }
 
 export async function isGatewayEnabled(

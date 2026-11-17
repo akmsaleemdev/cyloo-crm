@@ -46,6 +46,7 @@ import {
   setGatewayMode,
   upsertGateway,
 } from "@/lib/billing/gateways.functions";
+import { isImplementedBillingGateway } from "@/lib/billing/gateway-lifecycle";
 import {
   hasGatewayErrors,
   validateGatewayForm,
@@ -193,7 +194,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
   if (gatewaysQ.isError) {
     return (
       <section className="space-y-3">
-        <h3 className="text-sm font-medium">Registered gateways</h3>
+        <h3 className="text-sm font-medium">Platform billing gateways</h3>
         <GatewayPermissionNotice error={gatewaysQ.error} />
       </section>
     );
@@ -203,7 +204,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 className="text-sm font-medium">Registered gateways</h3>
+          <h3 className="text-sm font-medium">Platform billing gateways</h3>
           <p className="text-xs text-muted-foreground">
             {enabledCount} of {gateways.length} enabled · credentials are stored as backend secret
             names, never as raw keys.
@@ -223,7 +224,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
           <Card className="p-4 text-sm text-muted-foreground">Loading gateways</Card>
         )}
         {gateways.map((p) => {
-          const implemented = Boolean(p.supports.payments && p.supports.checkout);
+          const implemented = p.canActivate;
           const busy = toggleMut.isPending && toggleMut.variables?.provider_id === p.id;
           return (
             <Card key={p.id} className={`p-4 space-y-3 ${p.enabled ? "" : "opacity-70"}`}>
@@ -248,8 +249,12 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                     ) : (
                       <ShieldAlert className="w-3 h-3" />
                     )}
-                    {implemented ? "Full adapter" : "Stub adapter"} · {p.mode}
-                    {p.secretName ? " · key set" : " · no key"}
+                    {p.id === "manual"
+                      ? "Offline invoicing"
+                      : implemented
+                        ? "Billing adapter"
+                        : "Unavailable for platform billing"}
+                    {implemented && ` · ${p.mode}`}
                   </div>
                 </div>
                 {busy ? (
@@ -257,6 +262,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                 ) : (
                   <Switch
                     checked={p.enabled}
+                    disabled={!implemented}
                     aria-label={`${p.enabled ? "Disable" : "Enable"} ${p.displayName}`}
                     onCheckedChange={(v) => toggleMut.mutate({ provider_id: p.id, enabled: v })}
                   />
@@ -286,7 +292,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  disabled={p.isDefault || defaultMut.isPending}
+                  disabled={!implemented || p.isDefault || defaultMut.isPending}
                   onClick={() => defaultMut.mutate({ provider_id: p.id })}
                 >
                   {p.isDefault ? "Default gateway" : "Make default"}
@@ -295,7 +301,7 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
                   size="sm"
                   variant="ghost"
                   className="h-8"
-                  disabled={modeMut.isPending}
+                  disabled={!implemented || modeMut.isPending}
                   onClick={() =>
                     modeMut.mutate({
                       provider_id: p.id,
@@ -313,7 +319,9 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
 
       <GatewayWebhookHealth />
 
-      <GatewayTestWebhook gatewayIds={gateways.map((g) => g.id)} />
+      <GatewayTestWebhook
+        gatewayIds={gateways.filter((g) => g.supports.webhooks).map((g) => g.id)}
+      />
 
       <GatewayWebhookReplay gatewayIds={gateways.map((g) => g.id)} />
 
@@ -454,6 +462,7 @@ function GatewayDialog({
               <div className="flex items-center gap-2 h-9">
                 <Switch
                   checked={form.enabled}
+                  disabled={!isImplementedBillingGateway(form.provider_id)}
                   aria-label="Gateway enabled"
                   onCheckedChange={(v) => patch({ enabled: v })}
                 />

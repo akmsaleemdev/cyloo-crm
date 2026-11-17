@@ -36,7 +36,7 @@ export function createStubProvider(opts: StubOptions): BillingProvider {
   return {
     id: opts.id,
     displayName: opts.displayName,
-    supports: { ...OFF, ...opts.supports },
+    supports: { ...OFF },
     createCustomer: async () => fail("createCustomer"),
     updateCustomer: async () => fail("updateCustomer"),
     createCheckoutSession: async () => fail("createCheckoutSession"),

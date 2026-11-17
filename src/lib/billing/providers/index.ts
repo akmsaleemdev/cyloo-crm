@@ -24,6 +24,7 @@ import {
 import { manualProvider } from "./manual";
 import { paddleProvider } from "./paddle";
 import { stripeProvider } from "./stripe";
+import { isRetiredGateway } from "../gateway-lifecycle";
 import type { BillingProvider, BillingProviderId } from "./types";
 
 const providers: Record<string, BillingProvider> = {
@@ -54,11 +55,13 @@ export function getBillingProvider(id: BillingProviderId): BillingProvider {
 export function listBillingProviders(): Array<
   Pick<BillingProvider, "id" | "displayName" | "supports">
 > {
-  return Object.values(providers).map((p) => ({
-    id: p.id,
-    displayName: p.displayName,
-    supports: p.supports,
-  }));
+  return Object.values(providers)
+    .filter((p) => !isRetiredGateway(p.id))
+    .map((p) => ({
+      id: p.id,
+      displayName: p.displayName,
+      supports: p.supports,
+    }));
 }
 
 export function getDefaultBillingProvider(): BillingProvider {

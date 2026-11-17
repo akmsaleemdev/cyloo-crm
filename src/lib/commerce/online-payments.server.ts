@@ -5,6 +5,8 @@ import { sbAny } from "@/lib/supabase/untyped";
 import {
   ONLINE_PAYMENT_PROVIDERS,
   GCC_MARKETS,
+  isGccMarket,
+  isOnlinePaymentProvider,
   onlinePaymentMarket,
   type OnlinePaymentProvider,
 } from "./online-payment-methods";
@@ -97,6 +99,33 @@ function appOrigin(): string | null {
   } catch {
     return null;
   }
+}
+
+const regionalCurrencies: Partial<Record<Market, string>> = { AE: "AED", SA: "SAR", QA: "QAR" };
+
+export function commerceGatewayReadiness() {
+  const available = new Map<OnlinePaymentProvider, Map<Market, PaymentMode>>();
+  if (appOrigin()) {
+    for (const name of Object.keys(process.env)) {
+      const match = /^COMMERCE_([A-F0-9]{32})_([A-Z]{2})_([A-Z0-9]+)_API_KEY$/.exec(name);
+      if (!match) continue;
+      const [, workspace, market, key] = match;
+      const provider = key.toLowerCase();
+      if (!isOnlinePaymentProvider(provider) || !isGccMarket(market)) continue;
+      const currency = provider === "paypal" ? "USD" : regionalCurrencies[market];
+      if (!currency || !onlinePaymentMarket(market, currency, provider)) continue;
+      const config = providerConfig(provider, workspace, market);
+      if (!config) continue;
+      const existing = available.get(provider) ?? new Map<Market, PaymentMode>();
+      if (existing.get(market) !== "live") existing.set(market, config.mode);
+      available.set(provider, existing);
+    }
+  }
+
+  return ONLINE_PAYMENT_PROVIDERS.map((provider) => ({
+    provider,
+    markets: Array.from(available.get(provider) ?? [], ([country, mode]) => ({ country, mode })),
+  }));
 }
 
 export function configuredOnlineMethods(profile: Profile, country: string, currency: string) {

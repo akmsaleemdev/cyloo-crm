@@ -12,6 +12,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { listBillingProviders } from "./providers";
+import { assertImplementedBillingGateway, isImplementedBillingGateway } from "./gateway-lifecycle";
 import { sbAny } from "@/lib/supabase/untyped";
 
 export type WorkspaceGateway = {
@@ -79,22 +80,24 @@ export const listWorkspaceGateways = createServerFn({ method: "GET" })
     const catalog = new Map(listBillingProviders().map((p) => [p.id, p.displayName]));
     const byId = new Map((overrides ?? []).map((o) => [o.provider_id, o]));
 
-    return (platform ?? []).map((p) => {
-      const o = byId.get(p.provider_id);
-      const override = o?.enabled ?? null;
-      const effectiveEnabled = p.enabled && (override ?? true);
-      return {
-        id: p.provider_id,
-        displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
-        platformEnabled: p.enabled,
-        platformDefault: p.is_default,
-        mode: p.mode ?? "sandbox",
-        override,
-        effectiveEnabled,
-        isWorkspaceDefault: Boolean(o?.is_default) && effectiveEnabled,
-        notes: o?.notes ?? null,
-      };
-    });
+    return (platform ?? [])
+      .filter((p) => isImplementedBillingGateway(p.provider_id))
+      .map((p) => {
+        const o = byId.get(p.provider_id);
+        const override = o?.enabled ?? null;
+        const effectiveEnabled = p.enabled && (override ?? true);
+        return {
+          id: p.provider_id,
+          displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
+          platformEnabled: p.enabled,
+          platformDefault: p.is_default,
+          mode: p.mode ?? "sandbox",
+          override,
+          effectiveEnabled,
+          isWorkspaceDefault: Boolean(o?.is_default) && effectiveEnabled,
+          notes: o?.notes ?? null,
+        };
+      });
   });
 
 /** Turn a gateway on/off for one workspace, or clear the override (inherit). */
@@ -141,6 +144,7 @@ export const setWorkspaceGatewayOverride = createServerFn({ method: "POST" })
     }
 
     if (data.enabled) {
+      assertImplementedBillingGateway(data.provider_id);
       const { data: platform } = await supabase
         .rpc("list_payment_gateway_basics")
         .returns<Array<{ provider_id: string; enabled: boolean }>>();
@@ -183,6 +187,7 @@ export const setWorkspaceDefaultGateway = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertWorkspaceAdmin(supabase, data.workspace_id, userId);
 
+    if (data.provider_id) assertImplementedBillingGateway(data.provider_id);
     // Only one default per workspace (enforced by a partial unique index too).
     const { error: clearErr } = await supabase
       .from("workspace_payment_gateway_settings")
@@ -326,33 +331,35 @@ export const getWorkspaceGatewayHealth = createServerFn({ method: "GET" })
     const catalog = new Map(listBillingProviders().map((p) => [p.id, p.displayName]));
     const byId = new Map((overrides ?? []).map((o) => [o.provider_id, o]));
 
-    const gateways = ((platform ?? []) as PlatformRow[]).map((p): WorkspaceGatewayHealth => {
-      const o = byId.get(p.provider_id);
-      const enabled = p.enabled && (o?.enabled ?? true);
-      const s = stats.get(p.provider_id);
-      const total = s?.total ?? 0;
-      const failures = s?.failures ?? 0;
-      const failureRate = total > 0 ? failures / total : 0;
+    const gateways = ((platform ?? []) as PlatformRow[])
+      .filter((p) => isImplementedBillingGateway(p.provider_id))
+      .map((p): WorkspaceGatewayHealth => {
+        const o = byId.get(p.provider_id);
+        const enabled = p.enabled && (o?.enabled ?? true);
+        const s = stats.get(p.provider_id);
+        const total = s?.total ?? 0;
+        const failures = s?.failures ?? 0;
+        const failureRate = total > 0 ? failures / total : 0;
 
-      let state: WorkspaceGatewayHealth["state"] = "healthy";
-      if (!enabled) state = "disabled";
-      else if (total === 0) state = "idle";
-      else if (failureRate >= 0.5) state = "failing";
-      else if (failures > 0) state = "degraded";
+        let state: WorkspaceGatewayHealth["state"] = "healthy";
+        if (!enabled) state = "disabled";
+        else if (total === 0) state = "idle";
+        else if (failureRate >= 0.5) state = "failing";
+        else if (failures > 0) state = "degraded";
 
-      return {
-        id: p.provider_id,
-        displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
-        mode: p.mode ?? "sandbox",
-        enabled,
-        isDefault: o?.is_default ? enabled : p.is_default && enabled,
-        lastWebhookAt: s?.lastAt ?? null,
-        lastWebhookStatus: s?.lastStatus ?? null,
-        deliveries: total,
-        failures,
-        state,
-      };
-    });
+        return {
+          id: p.provider_id,
+          displayName: p.display_label?.trim() || catalog.get(p.provider_id) || p.provider_id,
+          mode: p.mode ?? "sandbox",
+          enabled,
+          isDefault: o?.is_default ? enabled : p.is_default && enabled,
+          lastWebhookAt: s?.lastAt ?? null,
+          lastWebhookStatus: s?.lastStatus ?? null,
+          deliveries: total,
+          failures,
+          state,
+        };
+      });
 
     return { windowHours, generatedAt: new Date().toISOString(), gateways };
   });

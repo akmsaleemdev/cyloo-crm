@@ -4,8 +4,7 @@ import { PageTransition } from "@/shared/motion";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/app/app-sidebar";
 import { AppFooter } from "@/components/app/app-footer";
-import { CommandPalette } from "@/components/app/command-palette";
-import { LayoutProvider } from "@/shared/contexts/layout-context";
+import { LayoutProvider, useLayout } from "@/shared/contexts/layout-context";
 import { RealtimeMessagingProvider } from "@/hooks/use-realtime-messaging";
 import { UnsupportedProviderBanner } from "@/components/app/inbox/unsupported-provider-banner";
 import { cn } from "@/lib/utils";
@@ -23,17 +22,41 @@ import {
   resolveHostedWorkspace,
 } from "@/lib/white-label/hosted-domain";
 import { ThemeApplier } from "@/components/ThemeApplier";
-import type { ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { usePlatformRuntime } from "@/hooks/use-platform-runtime";
 import { featureForRoute, isRouteEnabled } from "@/lib/admin/platform-features";
 import { RoutePermissionGate } from "@/components/app/route-permission-gate";
+
+const CommandPalette = lazy(() =>
+  import("@/components/app/command-palette").then((module) => ({ default: module.CommandPalette })),
+);
+
+function DeferredCommandPalette() {
+  const { commandOpen } = useLayout();
+  const [hasOpened, setHasOpened] = useState(false);
+  useEffect(() => {
+    if (commandOpen) setHasOpened(true);
+  }, [commandOpen]);
+  if (!commandOpen && !hasOpened) return null;
+  return (
+    <Suspense
+      fallback={
+        <span className="sr-only" role="status">
+          Loading search…
+        </span>
+      }
+    >
+      <CommandPalette />
+    </Suspense>
+  );
+}
 
 export const Route = createFileRoute("/_authenticated")({
   // The Supabase session lives in localStorage, which the server cannot read.
   // Without this, SSR of a protected route always sees "no session" and
   // bounces signed-in users to /auth on hard refresh / direct link.
   ssr: false,
-  beforeLoad: async ({ location }) => {
+  beforeLoad: async ({ location, context }) => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth", search: { next: location.href } });
     setHostedTenant(null);
@@ -42,7 +65,12 @@ export const Route = createFileRoute("/_authenticated")({
       // A server-side failure can resolve to `undefined` instead of throwing
       // (e.g. the request middleware turned the error into an HTML response),
       // so never destructure the result blindly.
-      const result = (await ensureMyOrganization()) as { organizationId?: string } | undefined;
+      const result = await context.queryClient.fetchQuery({
+        queryKey: ["auth", "organization-bootstrap", data.session.user.id],
+        queryFn: () => ensureMyOrganization(),
+        staleTime: 60_000,
+        retry: false,
+      });
       // Provisioning returns the personal/default organization. A navigation
       // triggered by the switcher must preserve the user's current selection.
       // Read after the await so an in-flight provision cannot undo a switch.
@@ -116,7 +144,7 @@ function AuthenticatedLayout() {
 
               {!immersiveRoute && <AppFooter />}
             </div>
-            <CommandPalette />
+            <DeferredCommandPalette />
           </div>
         </RealtimeMessagingProvider>
       </LayoutProvider>

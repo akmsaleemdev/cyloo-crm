@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DISTANCE, DURATION, TRANSITION, useReducedMotionSafe, variants } from "@/shared/motion";
 import { AppTopbar } from "@/components/app/app-topbar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -43,8 +43,12 @@ import {
   resetDashboardPreferences,
   type DashboardWidgetConfig,
 } from "@/components/dashboard/dashboard-preferences";
-import { DashboardCustomizeModal } from "@/components/dashboard/dashboard-customize-modal";
 import { MotionCard } from "@/components/ui/motion";
+const DashboardCustomizeModal = lazy(() =>
+  import("@/components/dashboard/dashboard-customize-modal").then((module) => ({
+    default: module.DashboardCustomizeModal,
+  })),
+);
 let hasEnteredDashboard = false;
 
 const leadDisplayName = (l: {
@@ -681,14 +685,24 @@ function DashboardPage() {
         )}
       </main>
 
-      {/* Dashboard Customization Modal */}
-      <DashboardCustomizeModal
-        open={customizeOpen}
-        onOpenChange={setCustomizeOpen}
-        widgets={widgets}
-        onSaveWidgets={handleSaveWidgets}
-        onResetDefaults={handleResetWidgets}
-      />
+      {customizeOpen && (
+        <Suspense
+          fallback={
+            <DialogContent>
+              <DialogTitle>Customize Layout</DialogTitle>
+              <Skeleton className="h-24" />
+            </DialogContent>
+          }
+        >
+          <DashboardCustomizeModal
+            open={customizeOpen}
+            onOpenChange={setCustomizeOpen}
+            widgets={widgets}
+            onSaveWidgets={handleSaveWidgets}
+            onResetDefaults={handleResetWidgets}
+          />
+        </Suspense>
+      )}
     </Dialog>
   );
 }
