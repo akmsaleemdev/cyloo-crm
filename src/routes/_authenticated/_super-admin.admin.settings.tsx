@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { GoogleConnectorSettings } from "@/components/integrations/google-connector-settings";
 import { AdminPageShell } from "@/components/admin/admin-page-shell";
+import { CommerceGatewayReadinessPanel } from "@/components/admin/billing/commerce-gateway-readiness-panel";
 import { GatewaySettingsPanel } from "@/components/admin/billing/gateway-settings-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1583,12 +1584,15 @@ function PaymentsPanel() {
   return (
     <div className="space-y-4">
       <Card>
+        <CardContent className="pt-6">
+          <CommerceGatewayReadinessPanel />
+        </CardContent>
+      </Card>
+      <Card>
         <CardHeader>
           <CardTitle>Payment gateways</CardTitle>
           <CardDescription>
-            Add a gateway, configure its keys and webhook, switch sandbox/live, enable or disable
-            it, and pick the platform default. Disabled gateways cannot start new checkouts anywhere
-            in the app.
+            Manage platform billing providers, their webhook settings, and the platform default.
           </CardDescription>
         </CardHeader>
         <CardContent>
