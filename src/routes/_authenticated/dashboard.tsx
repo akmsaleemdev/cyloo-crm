@@ -33,7 +33,7 @@ import { companyInitials } from "@/hooks/use-companies";
 import { useDashboardData } from "@/hooks/use-dashboard";
 import { useDashboardTasks } from "@/hooks/use-dashboard-tasks";
 import { useDashboardPipeline, type DashboardPipelineData } from "@/hooks/use-dashboard-pipeline";
-import { useCurrentWorkspace } from "@/hooks/use-workspace";
+import { useCurrentWorkspace, useWorkspaceRole } from "@/hooks/use-workspace";
 import { useZonedDateFormatter } from "@/hooks/use-timezone";
 import { useTenantCurrency } from "@/hooks/use-currency";
 import { formatMoney } from "@/lib/currency/format";
@@ -82,6 +82,7 @@ function DashboardPage() {
     hasEnteredDashboard = true;
   }, []);
   const { active } = useCurrentWorkspace();
+  const { data: workspaceRole } = useWorkspaceRole(active?.id);
   const d = useDashboardData();
   const tasks = useDashboardTasks();
   const pipeline = useDashboardPipeline(active?.id);
@@ -143,12 +144,19 @@ function DashboardPage() {
         subtitle="Your CRM at a glance — live"
         dashboard
         actions={
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="min-h-11 gap-2 sm:min-h-9">
-              <SlidersHorizontal className="size-4 text-primary" />
-              Customize Layout
-            </Button>
-          </DialogTrigger>
+          <>
+            {(workspaceRole === "owner" || workspaceRole === "admin") && (
+              <Button variant="outline" size="sm" className="min-h-11 sm:min-h-9" asChild>
+                <Link to="/onboarding">Workspace setup</Link>
+              </Button>
+            )}
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="min-h-11 gap-2 sm:min-h-9">
+                <SlidersHorizontal className="size-4 text-primary" />
+                Customize Layout
+              </Button>
+            </DialogTrigger>
+          </>
         }
       />
       <main

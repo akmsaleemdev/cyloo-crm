@@ -81,6 +81,7 @@ import { Route as AuthenticatedMonitoringCenterRouteImport } from './routes/_aut
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOmnichannelAiRouteImport } from './routes/_authenticated/omnichannel-ai'
 import { Route as AuthenticatedOmnichannelAnalyticsRouteImport } from './routes/_authenticated/omnichannel-analytics'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedOrganizationRouteImport } from './routes/_authenticated/organization'
 import { Route as AuthenticatedPartnersRouteImport } from './routes/_authenticated/partners'
 import { Route as AuthenticatedPerformanceCenterRouteImport } from './routes/_authenticated/performance-center'
@@ -814,6 +815,11 @@ const AuthenticatedOmnichannelAnalyticsRoute =
     path: '/omnichannel-analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOrganizationRoute =
   AuthenticatedOrganizationRouteImport.update({
     id: '/organization',
@@ -2870,6 +2876,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/organization': typeof AuthenticatedOrganizationRoute
   '/partners': typeof AuthenticatedPartnersRoute
   '/performance-center': typeof AuthenticatedPerformanceCenterRoute
@@ -3284,6 +3291,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/organization': typeof AuthenticatedOrganizationRoute
   '/partners': typeof AuthenticatedPartnersRoute
   '/performance-center': typeof AuthenticatedPerformanceCenterRoute
@@ -3701,6 +3709,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/omnichannel-ai': typeof AuthenticatedOmnichannelAiRoute
   '/_authenticated/omnichannel-analytics': typeof AuthenticatedOmnichannelAnalyticsRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/organization': typeof AuthenticatedOrganizationRoute
   '/_authenticated/partners': typeof AuthenticatedPartnersRoute
   '/_authenticated/performance-center': typeof AuthenticatedPerformanceCenterRoute
@@ -4122,6 +4131,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/omnichannel-ai'
     | '/omnichannel-analytics'
+    | '/onboarding'
     | '/organization'
     | '/partners'
     | '/performance-center'
@@ -4536,6 +4546,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/omnichannel-ai'
     | '/omnichannel-analytics'
+    | '/onboarding'
     | '/organization'
     | '/partners'
     | '/performance-center'
@@ -4952,6 +4963,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/omnichannel-ai'
     | '/_authenticated/omnichannel-analytics'
+    | '/_authenticated/onboarding'
     | '/_authenticated/organization'
     | '/_authenticated/partners'
     | '/_authenticated/performance-center'
@@ -5954,6 +5966,13 @@ declare module '@tanstack/react-router' {
       path: '/omnichannel-analytics'
       fullPath: '/omnichannel-analytics'
       preLoaderRoute: typeof AuthenticatedOmnichannelAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/organization': {
@@ -8908,6 +8927,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOmnichannelAiRoute: typeof AuthenticatedOmnichannelAiRoute
   AuthenticatedOmnichannelAnalyticsRoute: typeof AuthenticatedOmnichannelAnalyticsRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedOrganizationRoute: typeof AuthenticatedOrganizationRoute
   AuthenticatedPartnersRoute: typeof AuthenticatedPartnersRoute
   AuthenticatedPerformanceCenterRoute: typeof AuthenticatedPerformanceCenterRoute
@@ -9082,6 +9102,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOmnichannelAiRoute: AuthenticatedOmnichannelAiRoute,
   AuthenticatedOmnichannelAnalyticsRoute:
     AuthenticatedOmnichannelAnalyticsRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedOrganizationRoute: AuthenticatedOrganizationRoute,
   AuthenticatedPartnersRoute: AuthenticatedPartnersRoute,
   AuthenticatedPerformanceCenterRoute: AuthenticatedPerformanceCenterRoute,

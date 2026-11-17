@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Download, Loader2, Upload, X } from "lucide-react";
@@ -174,6 +174,22 @@ function GeneralSettings() {
           />
         </SettingsRow>
       </SettingsCard>
+
+      {canEdit && (
+        <SettingsCard
+          title="Workspace setup"
+          description="Resume your CRM setup or complete optional steps."
+        >
+          <SettingsRow
+            label="Onboarding checklist"
+            description="Profile, pipeline, team, records, and channels"
+          >
+            <Button variant="outline" asChild>
+              <Link to="/onboarding">Open workspace setup</Link>
+            </Button>
+          </SettingsRow>
+        </SettingsCard>
+      )}
 
       <SettingsCard
         title={`About ${brandName}`}
