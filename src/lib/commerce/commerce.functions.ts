@@ -1,3 +1,4 @@
+import { isOnlinePaymentProvider } from "./online-payment-methods";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -235,6 +236,15 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       if (data.status === "refunded") patch.refunded_at = now;
     }
     if (data.paymentStatus) {
+      const { data: order, error } = await sbAny(context.supabase)
+        .from("commerce_orders")
+        .select("metadata")
+        .eq("id", data.orderId)
+        .eq("workspace_id", data.workspaceId)
+        .maybeSingle();
+      if (error || !order) throw new Error("Order not found.");
+      if (isOnlinePaymentProvider(order.metadata?.payment_method))
+        throw new Error("This order's payment status is confirmed by its payment provider.");
       patch.payment_status = data.paymentStatus;
       if (data.paymentStatus === "paid") patch.paid_at = now;
     }

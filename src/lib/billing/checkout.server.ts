@@ -123,6 +123,11 @@ export async function createGatewayCheckout(
   }
 
   const provider = getBillingProvider(providerId);
+  if (providerId === "paddle") {
+    const { paddleMode } = await import("./providers/paddle");
+    if (link.mode !== paddleMode())
+      throw new Error("Paddle credentials and the selected plan must use the same mode.");
+  }
 
   // Ensure a billing customer exists for this org+provider.
   const { data: existing } = await supabase
@@ -142,9 +147,12 @@ export async function createGatewayCheckout(
       .select("id, name")
       .eq("id", data.organization_id)
       .maybeSingle();
+    const email =
+      providerId === "paddle" ? (await supabase.auth.getUser()).data.user?.email : undefined;
     const ref = await provider.createCustomer({
       organization_id: data.organization_id,
       name: org?.name ?? undefined,
+      ...(email ? { email } : {}),
     });
     await sbAny(supabase).from("billing_customers").insert({
       organization_id: data.organization_id,

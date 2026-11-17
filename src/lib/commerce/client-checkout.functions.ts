@@ -16,6 +16,11 @@ import {
   type AppliedPromoAudit,
 } from "./promo-runtime";
 import { sbAny } from "@/lib/supabase/untyped";
+import {
+  isOnlinePaymentProvider,
+  ONLINE_PAYMENT_PROVIDERS,
+  type OnlinePaymentProvider,
+} from "./online-payment-methods";
 import type { Tables } from "@/integrations/supabase/types";
 
 const uuid = z.string().uuid();
@@ -34,11 +39,13 @@ async function admin() {
 }
 
 async function resolveContact(email: string): Promise<Ctx> {
+  if (!email || !z.string().email().safeParse(email).success)
+    throw new Error("A verified customer email is required.");
   const sb = await admin();
   const { data } = await sbAny(sb)
     .from("contacts")
     .select("id, workspace_id, email, name, first_name, last_name, phone")
-    .ilike("email", email)
+    .ilike("email", email.replace(/[\\%_]/g, "\\$&"))
     .is("deleted_at", null)
     .limit(1)
     .maybeSingle();
@@ -694,7 +701,8 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
       cartId: string;
       shippingAddress: z.infer<typeof addrSchema>;
       billingAddress?: z.infer<typeof addrSchema>;
-      paymentMethod: "card" | "cod" | "bank_transfer" | "wallet" | "payment_link";
+      paymentMethod:
+        "card" | "cod" | "bank_transfer" | "wallet" | "payment_link" | OnlinePaymentProvider;
       notes?: string;
     }) =>
       z
@@ -702,7 +710,14 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
           cartId: uuid,
           shippingAddress: addrSchema,
           billingAddress: addrSchema.optional(),
-          paymentMethod: z.enum(["card", "cod", "bank_transfer", "wallet", "payment_link"]),
+          paymentMethod: z.enum([
+            "card",
+            "cod",
+            "bank_transfer",
+            "wallet",
+            "payment_link",
+            ...ONLINE_PAYMENT_PROVIDERS,
+          ]),
           notes: z.string().max(2000).optional(),
         })
         .parse(d),
@@ -710,14 +725,42 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const c = await resolveContact(context.claims?.email ?? "");
     const sb = await admin();
-    const totals = await recalc(data.cartId);
     const { data: cart } = await sbAny(sb)
       .from("commerce_carts")
       .select("*")
       .eq("id", data.cartId)
       .maybeSingle();
-    if (!cart || (cart as { contact_id: string | null }).contact_id !== c.contactId)
+    if (!cart || cart.contact_id !== c.contactId || cart.workspace_id !== c.workspaceId)
       throw new Error("Forbidden");
+    if (cart.status !== "active") {
+      const { data: existing } = await sbAny(sb)
+        .from("commerce_orders")
+        .select("id,order_number,total")
+        .eq("cart_id", data.cartId)
+        .eq("workspace_id", c.workspaceId)
+        .eq("contact_id", c.contactId)
+        .maybeSingle();
+      if (!existing) throw new Error("This cart is no longer active.");
+      return {
+        orderId: String(existing.id),
+        orderNumber: String(existing.order_number),
+        total: Number(existing.total),
+      };
+    }
+    if (isOnlinePaymentProvider(data.paymentMethod)) {
+      const { configuredOnlineMethods } = await import("./online-payments.server");
+      if (
+        !configuredOnlineMethods(c, data.shippingAddress.country, String(cart.currency)).some(
+          (method) => method.provider === data.paymentMethod,
+        )
+      ) {
+        throw new Error("This online payment method is unavailable for your order.");
+      }
+      const name = data.shippingAddress.name?.trim() || c.name?.trim();
+      if (!name || (data.paymentMethod === "tamara" && !/\S\s+\S/.test(name)))
+        throw new Error("Enter a first and last name in your delivery details.");
+    }
+    const totals = await recalc(data.cartId);
     const { data: items } = await sbAny(sb)
       .from("commerce_cart_items")
       .select("*")
@@ -770,7 +813,7 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
       metadata: unknown;
     }>;
     const lineDiscountsCents = allocateLineDiscounts(itemsTyped, totals.discount);
-    await sbAny(sb)
+    const { error: saveItemsError } = await sbAny(sb)
       .from("commerce_order_items")
       .insert(
         itemsTyped.map((it, idx) => ({
@@ -787,6 +830,15 @@ export const myPlaceOrder = createServerFn({ method: "POST" })
           } as never,
         })) as never,
       );
+    if (saveItemsError) {
+      await sbAny(sb)
+        .from("commerce_orders")
+        .delete()
+        .eq("id", oid)
+        .eq("payment_status", "unpaid")
+        .eq("status", "pending");
+      throw saveItemsError;
+    }
     await sbAny(sb)
       .from("commerce_order_events")
       .insert({
@@ -850,4 +902,88 @@ export const myGetOrder = createServerFn({ method: "GET" })
       .select("*")
       .eq("order_id", data.orderId);
     return { order, items: items ?? [] };
+  });
+
+export const myListOnlinePaymentMethods = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({ cartId: uuid, country: z.string().trim().length(2) }))
+  .handler(async ({ data, context }) => {
+    const profile = await resolveContact(context.claims?.email ?? "");
+    const db = sbAny(await admin());
+    const { data: cart, error } = await db
+      .from("commerce_carts")
+      .select("currency")
+      .eq("id", data.cartId)
+      .eq("workspace_id", profile.workspaceId)
+      .eq("contact_id", profile.contactId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (error || !cart) return [];
+    const { configuredOnlineMethods } = await import("./online-payments.server");
+    return configuredOnlineMethods(profile, data.country, String(cart.currency));
+  });
+
+async function onlineOrderContext(orderId: string, email: string) {
+  const profile = await resolveContact(email);
+  const db = sbAny(await admin());
+  const { data: order, error } = await db
+    .from("commerce_orders")
+    .select("metadata")
+    .eq("id", orderId)
+    .eq("workspace_id", profile.workspaceId)
+    .eq("contact_id", profile.contactId)
+    .maybeSingle();
+  if (error || !order) throw new Error("Order not found.");
+  const metadata = z.object({ payment_method: z.string().optional() }).safeParse(order.metadata);
+  return {
+    profile,
+    provider:
+      metadata.success && isOnlinePaymentProvider(metadata.data.payment_method)
+        ? metadata.data.payment_method
+        : null,
+  };
+}
+
+const onlineOrderInput = z.object({ orderId: uuid });
+
+export const myBeginOnlineCheckout = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(onlineOrderInput)
+  .handler(async ({ data, context }) => {
+    const { profile } = await onlineOrderContext(data.orderId, context.claims?.email ?? "");
+    const { startOnlineCheckout } = await import("./online-payments.server");
+    return startOnlineCheckout(profile, data.orderId);
+  });
+
+export const myOnlinePaymentStatus = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .validator(onlineOrderInput)
+  .handler(async ({ data, context }) => {
+    const { profile, provider } = await onlineOrderContext(
+      data.orderId,
+      context.claims?.email ?? "",
+    );
+    if (!provider) return null;
+    const { orderOnlinePayment } = await import("./online-payments.server");
+    return (
+      (await orderOnlinePayment(profile, data.orderId, false)) ?? {
+        provider,
+        mode: null,
+        status: "unstarted" as const,
+        canResume: true,
+      }
+    );
+  });
+
+export const myRefreshOnlinePayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(onlineOrderInput)
+  .handler(async ({ data, context }) => {
+    const { profile, provider } = await onlineOrderContext(
+      data.orderId,
+      context.claims?.email ?? "",
+    );
+    if (!provider) return null;
+    const { orderOnlinePayment } = await import("./online-payments.server");
+    return orderOnlinePayment(profile, data.orderId, true);
   });

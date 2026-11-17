@@ -1,8 +1,18 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, Package } from "lucide-react";
-import { myGetOrder } from "@/lib/commerce/client-checkout.functions";
+import {
+  myBeginOnlineCheckout,
+  myGetOrder,
+  myOnlinePaymentStatus,
+  myRefreshOnlinePayment,
+} from "@/lib/commerce/client-checkout.functions";
+import {
+  isOnlinePaymentProvider,
+  ONLINE_PAYMENT_LABELS,
+} from "@/lib/commerce/online-payment-methods";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency";
@@ -10,13 +20,49 @@ export const Route = createFileRoute("/_authenticated/client/order-confirmation/
   component: ConfirmationPage,
 });
 
+const PAYMENT_MESSAGES = {
+  unstarted: "Continue to the payment provider to complete checkout.",
+  creating: "The checkout provider is preparing your payment.",
+  pending: "Payment is awaiting confirmation from the provider.",
+  authorized: "The provider authorized your payment. Capture is pending.",
+  paid: "Payment confirmed.",
+  failed: "Payment was declined or the checkout expired.",
+  uncertain:
+    "The provider did not confirm checkout creation. Contact support before trying another payment.",
+  refunded: "The provider confirmed a full refund.",
+} as const;
+
 function ConfirmationPage() {
   const money = useCurrencyFormatter({ locale: "en-US" });
   const { id } = useParams({ from: "/_authenticated/client/order-confirmation/$id" });
   const getOrder = useServerFn(myGetOrder);
+  const getPaymentStatus = useServerFn(myOnlinePaymentStatus);
+  const refreshPayment = useServerFn(myRefreshOnlinePayment);
+  const beginPayment = useServerFn(myBeginOnlineCheckout);
   const q = useQuery({
     queryKey: ["client-order", id],
     queryFn: () => getOrder({ data: { orderId: id } }),
+  });
+
+  const orderMetadata = q.data?.order?.metadata as { payment_method?: unknown } | undefined;
+  const provider = orderMetadata?.payment_method;
+  const paymentQ = useQuery({
+    queryKey: ["client-order-online-payment", id],
+    queryFn: () => getPaymentStatus({ data: { orderId: id } }),
+    enabled: isOnlinePaymentProvider(provider),
+  });
+  const refresh = useMutation({
+    mutationFn: () => refreshPayment({ data: { orderId: id } }),
+    onSuccess: () => Promise.all([paymentQ.refetch(), q.refetch()]),
+    onError: (error: Error) => toast.error(error.message),
+  });
+  const resume = useMutation({
+    mutationFn: () => beginPayment({ data: { orderId: id } }),
+    onSuccess: ({ url }) => window.location.assign(url),
+    onError: (error: Error) => {
+      toast.error(error.message);
+      void paymentQ.refetch();
+    },
   });
 
   if (q.isLoading)
@@ -59,6 +105,41 @@ function ConfirmationPage() {
           Placed via {order.channel ?? "portal"} · Status {order.status}
         </p>
       </div>
+
+      {isOnlinePaymentProvider(provider) && (
+        <section className="space-y-3 rounded-control border border-border bg-surface p-4">
+          <h3 className="font-semibold">
+            {ONLINE_PAYMENT_LABELS[provider]} payment
+            {paymentQ.data?.mode === "sandbox" ? " (test mode)" : ""}
+          </h3>
+          <p className="text-sm text-muted-foreground" role="status">
+            {paymentQ.data
+              ? PAYMENT_MESSAGES[paymentQ.data.status]
+              : paymentQ.isError
+                ? "Payment status is temporarily unavailable."
+                : "Checking payment status…"}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {paymentQ.data?.canResume && order.payment_status === "unpaid" && (
+              <Button
+                disabled={resume.isPending || refresh.isPending}
+                onClick={() => resume.mutate()}
+              >
+                Continue to {ONLINE_PAYMENT_LABELS[provider]}
+              </Button>
+            )}
+            {paymentQ.data?.mode && (
+              <Button
+                variant="outline"
+                disabled={refresh.isPending || resume.isPending}
+                onClick={() => refresh.mutate()}
+              >
+                {refresh.isPending ? "Checking payment…" : "Check payment status"}
+              </Button>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="rounded-control border border-border bg-surface p-4">
         <h3 className="font-semibold flex items-center gap-2">

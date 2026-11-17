@@ -1,12 +1,8 @@
 /**
  * Paddle adapter (Billing v2).
  *
- * Only the pieces needed for webhook-driven subscription lifecycle are wired
- * against the REST API (no SDK, so it runs in the Worker runtime):
- *   - `verifyWebhook` — Paddle-Signature HMAC verification
- *   - `getSubscription` / `cancelSubscription` — snapshot refresh + cancel
- *
- * Everything else still falls back to the stub's explicit "unsupported" error.
+ * Uses Paddle Billing REST endpoints for hosted subscription checkout, the
+ * customer portal, and webhook-driven subscription updates.
  * Secrets: PADDLE_API_KEY, PADDLE_WEBHOOK_SECRET, optional PADDLE_ENV=live.
  */
 import { createStubProvider } from "./_stub";
@@ -59,27 +55,41 @@ const base = createStubProvider({
   supports: {
     checkout: true,
     customer_portal: true,
-    usage_reporting: true,
+    usage_reporting: false,
     tax: true,
     coupons: true,
-    payments: true,
-    refunds: true,
-    partial_refunds: true,
+    payments: false,
+    refunds: false,
+    partial_refunds: false,
     webhooks: true,
   },
 });
 
-function apiBase(): string {
-  return process.env.PADDLE_ENV === "live"
-    ? "https://api.paddle.com"
-    : "https://sandbox-api.paddle.com";
+export function paddleMode(): "live" | "sandbox" {
+  return ["live", "production"].includes(process.env.PADDLE_ENV ?? "") ? "live" : "sandbox";
 }
 
-async function paddleGet<T>(path: string): Promise<T> {
+function apiBase(): string {
+  return paddleMode() === "live" ? "https://api.paddle.com" : "https://sandbox-api.paddle.com";
+}
+
+async function paddleRequest(
+  path: string,
+  method: "GET" | "POST" = "GET",
+  body?: unknown,
+): Promise<unknown> {
   const key = process.env.PADDLE_API_KEY;
   if (!key) throw new Error("PADDLE_API_KEY is not configured.");
   const res = await fetch(`${apiBase()}${path}`, {
-    headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
+    method,
+    headers: {
+      Authorization: `Bearer ${key}`,
+      Accept: "application/json",
+      ...(body ? { "Content-Type": "application/json" } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    redirect: "error",
+    signal: AbortSignal.timeout(12_000),
   });
   const raw: unknown = await res.json().catch(() => null);
   if (!res.ok) {
@@ -91,12 +101,12 @@ async function paddleGet<T>(path: string): Promise<T> {
       errorObject && "detail" in errorObject && typeof errorObject.detail === "string"
         ? errorObject.detail
         : res.statusText;
-    throw new Error(`Paddle GET ${path} failed: ${detail}`);
+    throw new Error(`Paddle ${method} ${path} failed: ${detail}`);
   }
   if (!raw || typeof raw !== "object" || !("data" in raw)) {
-    throw new Error(`Paddle GET ${path} returned an invalid response`);
+    throw new Error(`Paddle ${method} ${path} returned an invalid response`);
   }
-  return raw.data as T;
+  return raw.data;
 }
 
 function hex(buf: ArrayBuffer): string {
@@ -143,6 +153,82 @@ function mapSubscription(raw: unknown): SubscriptionSnapshot {
 export const paddleProvider: BillingProvider = {
   ...base,
 
+  async createCustomer(input) {
+    const email = z.email().safeParse(input.email);
+    if (!email.success) throw new Error("A verified billing email is required for Paddle.");
+    const customer = z.object({ id: z.string().regex(/^ctm_[a-z0-9]{26}$/) }).parse(
+      await paddleRequest("/customers", "POST", {
+        email: email.data,
+        name: input.name,
+        custom_data: { organization_id: input.organization_id },
+      }),
+    );
+    return { provider: "paddle", provider_customer_id: customer.id };
+  },
+
+  async createCheckoutSession(input) {
+    const priceId = z
+      .string()
+      .regex(/^pri_[a-z0-9]{26}$/)
+      .parse(input.plan_code);
+    if (input.trial_days) throw new Error("Configure the trial duration on the Paddle price.");
+    if (input.coupon_code && !/^dsc_[a-z0-9]{26}$/.test(input.coupon_code))
+      throw new Error("This coupon needs a Paddle discount ID.");
+    const configured = process.env.PADDLE_CHECKOUT_URL;
+    if (!configured)
+      throw new Error("Configure the approved Paddle checkout page in PADDLE_CHECKOUT_URL.");
+    const approved = new URL(configured);
+    if (
+      approved.protocol !== "https:" ||
+      approved.username ||
+      approved.password ||
+      approved.search ||
+      approved.hash
+    )
+      throw new Error("PADDLE_CHECKOUT_URL must be an approved HTTPS checkout page.");
+    const transaction = z
+      .object({ id: z.string().regex(/^txn_[a-z0-9]{26}$/), checkout: z.object({ url: z.url() }) })
+      .parse(
+        await paddleRequest("/transactions", "POST", {
+          customer_id: input.customer.provider_customer_id,
+          collection_mode: "automatic",
+          items: [{ price_id: priceId, quantity: input.quantity ?? 1 }],
+          discount_id: input.coupon_code,
+          custom_data: { ...input.metadata, organization_id: input.organization_id },
+          checkout: { url: approved.href },
+        }),
+      );
+    const url = new URL(transaction.checkout.url);
+    if (
+      url.origin !== approved.origin ||
+      url.pathname !== approved.pathname ||
+      url.searchParams.get("_ptxn") !== transaction.id
+    )
+      throw new Error("Paddle returned an unexpected checkout link.");
+    return { provider: "paddle", id: transaction.id, url: url.href };
+  },
+
+  async createCustomerPortalSession(ref) {
+    const portal = z
+      .object({ urls: z.object({ general: z.object({ overview: z.url() }) }) })
+      .parse(
+        await paddleRequest(
+          `/customers/${encodeURIComponent(ref.provider_customer_id)}/portal-sessions`,
+          "POST",
+          {},
+        ),
+      );
+    const url = new URL(portal.urls.general.overview);
+    if (
+      url.protocol !== "https:" ||
+      !url.hostname.endsWith(".paddle.com") ||
+      url.username ||
+      url.password
+    )
+      throw new Error("Paddle returned an unexpected portal link.");
+    return { url: url.href };
+  },
+
   async verifyWebhook({ raw_body, signature, secret }: WebhookVerifyInput): Promise<WebhookEvent> {
     if (!signature) throw new Error("Missing Paddle-Signature header");
     // Format: ts=<unix>;h1=<hex hmac of `${ts}:${rawBody}`>
@@ -187,6 +273,14 @@ export const paddleProvider: BillingProvider = {
   },
 
   async getSubscription(id: string): Promise<SubscriptionSnapshot> {
-    return mapSubscription(await paddleGet<unknown>(`/subscriptions/${encodeURIComponent(id)}`));
+    return mapSubscription(await paddleRequest(`/subscriptions/${encodeURIComponent(id)}`));
+  },
+
+  async cancelSubscription(id, atPeriodEnd = true) {
+    return mapSubscription(
+      await paddleRequest(`/subscriptions/${encodeURIComponent(id)}/cancel`, "POST", {
+        effective_from: atPeriodEnd ? "next_billing_period" : "immediately",
+      }),
+    );
   },
 };

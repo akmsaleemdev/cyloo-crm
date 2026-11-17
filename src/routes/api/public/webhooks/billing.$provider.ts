@@ -9,20 +9,37 @@
  * Idempotency: the (provider, provider_event_id) unique index on
  * `billing_events` deduplicates redelivered webhooks.
  *
- * Health: every delivery (success, duplicate, signature failure, processing
- * error) is logged to `payment_gateway_webhook_deliveries` with latency so
- * the super-admin gateway panel can show delivery health.
+ * Subscription deliveries are logged to `payment_gateway_webhook_deliveries`
+ * for the super-admin gateway panel. Commerce deliveries reconcile their
+ * order against the provider's current payment state.
  */
 
 import { createFileRoute } from "@tanstack/react-router";
 import type { WebhookEvent } from "@/lib/billing/providers/types";
 import type { Json } from "@/integrations/supabase/types";
+import { isOnlinePaymentProvider } from "@/lib/commerce/online-payment-methods";
 
 export const Route = createFileRoute("/api/public/webhooks/billing/$provider")({
   server: {
     handlers: {
+      GET: async ({ request, params }) => {
+        const provider = params.provider;
+        if (
+          (provider !== "amazonpayservices" && provider !== "paytabs") ||
+          !new URL(request.url).searchParams.has("returnOrder")
+        )
+          return new Response("Not found", { status: 404 });
+        const { handleOnlinePaymentWebhook } =
+          await import("@/lib/commerce/online-payments.server");
+        return handleOnlinePaymentWebhook(provider, request);
+      },
       POST: async ({ request, params }) => {
         const providerId = params.provider;
+        if (isOnlinePaymentProvider(providerId)) {
+          const { handleOnlinePaymentWebhook } =
+            await import("@/lib/commerce/online-payments.server");
+          return handleOnlinePaymentWebhook(providerId, request);
+        }
         const startedAt = Date.now();
         const rawBody = await request.text();
         const signature =

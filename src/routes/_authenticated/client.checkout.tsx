@@ -20,6 +20,8 @@ import { toast } from "sonner";
 import {
   myApplyPromoCode,
   myApplyTax,
+  myBeginOnlineCheckout,
+  myListOnlinePaymentMethods,
   myGetCart,
   myListAddresses,
   myListShipping,
@@ -33,6 +35,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  isGccMarket,
+  isOnlinePaymentProvider,
+  ONLINE_PAYMENT_LABELS,
+  type OnlinePaymentProvider,
+} from "@/lib/commerce/online-payment-methods";
 import { useCurrencyFormatter } from "@/hooks/use-currency";
 
 export const Route = createFileRoute("/_authenticated/client/checkout")({
@@ -51,7 +59,8 @@ type Address = {
 
 type SavedAddress = Address & { id: string; label: string | null };
 type CheckoutStep = 0 | 1 | 2;
-type PaymentMethod = "card" | "cod" | "bank_transfer" | "wallet" | "payment_link";
+type PaymentMethod =
+  "card" | "cod" | "bank_transfer" | "wallet" | "payment_link" | OnlinePaymentProvider;
 
 const STEPS = ["Delivery", "Payment", "Review"] as const;
 const EMPTY_SAVED_ADDRESSES: SavedAddress[] = [];
@@ -94,6 +103,8 @@ function CheckoutPage() {
   const selectShipping = useServerFn(mySelectShipping);
   const applyTax = useServerFn(myApplyTax);
   const placeOrder = useServerFn(myPlaceOrder);
+  const onlineMethods = useServerFn(myListOnlinePaymentMethods);
+  const beginOnlineCheckout = useServerFn(myBeginOnlineCheckout);
   const applyPromo = useServerFn(myApplyPromoCode);
   const removePromo = useServerFn(myRemovePromoCode);
 
@@ -156,7 +167,25 @@ function CheckoutPage() {
         }>
       | undefined) ?? [];
   const selectedRate = rates.find((rate) => rate.id === shippingRateId);
-  const selectedPayment = PAYMENT_METHODS.find((method) => method.value === payment)!;
+  const country = activeAddress.country.trim().toUpperCase();
+  const onlineMethodsQ = useQuery({
+    queryKey: ["client-online-payment-methods", cart?.id, country],
+    queryFn: () => onlineMethods({ data: { cartId: cart!.id, country } }),
+    enabled: Boolean(cart?.id) && isGccMarket(country),
+  });
+  const paymentMethods = [
+    ...(onlineMethodsQ.data ?? []).map(({ provider, mode }) => ({
+      value: provider,
+      label: `${ONLINE_PAYMENT_LABELS[provider]}${mode === "sandbox" ? " (test mode)" : ""}`,
+      description:
+        provider === "tabby" || provider === "tamara"
+          ? "Pay in installments on a secure provider page."
+          : "Pay on the provider’s secure checkout page.",
+    })),
+    ...PAYMENT_METHODS,
+  ];
+  const selectedPayment =
+    paymentMethods.find((method) => method.value === payment) ?? PAYMENT_METHODS[0];
 
   const applyPromoM = useMutation({
     mutationFn: (code: string) => applyPromo({ data: { cartId: cart!.id, code } }),
@@ -273,12 +302,23 @@ function CheckoutPage() {
             ...activeAddress,
             country: activeAddress.country.trim().toUpperCase(),
           },
-          paymentMethod: payment,
+          paymentMethod: selectedPayment.value,
           notes: notes.trim() || undefined,
         },
       });
       toast.success(`Order ${result.orderNumber} placed`);
-      navigate({ to: "/client/order-confirmation/$id", params: { id: result.orderId } });
+      if (isOnlinePaymentProvider(selectedPayment.value)) {
+        try {
+          const checkout = await beginOnlineCheckout({ data: { orderId: result.orderId } });
+          window.location.assign(checkout.url);
+          return;
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Could not open installment checkout.",
+          );
+        }
+      }
+      void navigate({ to: "/client/order-confirmation/$id", params: { id: result.orderId } });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "We could not place your order.");
     } finally {
@@ -667,20 +707,20 @@ function CheckoutPage() {
                 className="animate-in fade-in slide-in-from-bottom-1 duration-200 motion-reduce:animate-none"
               >
                 <p className="mb-4 rounded-control bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
-                  Payment is not collected on this screen. Your selected method is added to the
-                  order, and payment is completed separately.
+                  With an online payment provider, you’ll complete payment after placing your order.
+                  The other methods are arranged separately.
                 </p>
                 <RadioGroup
-                  value={payment}
+                  value={selectedPayment.value}
                   onValueChange={(value) => setPayment(value as PaymentMethod)}
                   aria-label="Choose a payment method"
                   className="space-y-2"
                 >
-                  {PAYMENT_METHODS.map((method) => (
+                  {paymentMethods.map((method) => (
                     <label
                       key={method.value}
                       className={`flex cursor-pointer gap-3 rounded-control border p-4 transition-colors ${
-                        payment === method.value
+                        selectedPayment.value === method.value
                           ? "border-primary bg-primary/5 ring-1 ring-primary/20"
                           : "border-border hover:bg-muted/40"
                       }`}

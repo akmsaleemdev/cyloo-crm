@@ -44,6 +44,25 @@ import {
   getOrderContact,
   ORDER_STATUSES,
 } from "@/lib/commerce/commerce.functions";
+import {
+  getStaffOnlinePayment,
+  refundStaffOnlinePayment,
+} from "@/lib/commerce/online-payment-admin.functions";
+import {
+  isOnlinePaymentProvider,
+  ONLINE_PAYMENT_LABELS,
+} from "@/lib/commerce/online-payment-methods";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useCurrentWorkspace } from "@/hooks/use-workspace";
 
 import { useCurrencyFormatter } from "@/hooks/use-currency";
@@ -92,6 +111,8 @@ function OrderDetail() {
   const fnNote = useServerFn(addOrderNote);
   const fnInvoices = useServerFn(listOrderInvoices);
   const fnContact = useServerFn(getOrderContact);
+  const fnOnlinePayment = useServerFn(getStaffOnlinePayment);
+  const fnRefund = useServerFn(refundStaffOnlinePayment);
 
   const { data, isLoading } = useQuery({
     queryKey: ["commerce-order", orderId],
@@ -106,6 +127,7 @@ function OrderDetail() {
         contact_id: string | null;
         status: OrderStatus;
         payment_status: string;
+        metadata?: { payment_method?: unknown } | null;
         fulfillment_status: string;
         currency: string;
         subtotal: number;
@@ -148,6 +170,27 @@ function OrderDetail() {
     queryKey: ["commerce-order-contact", order?.contact_id],
     queryFn: () => fnContact({ data: { contactId: order!.contact_id! } }),
     enabled: !!order?.contact_id,
+  });
+
+  const orderProvider = order?.metadata?.payment_method;
+  const onlineProvider = isOnlinePaymentProvider(orderProvider) ? orderProvider : null;
+  const onlinePaymentQ = useQuery({
+    queryKey: ["commerce-order-payment", orderId, order?.workspace_id],
+    queryFn: () => fnOnlinePayment({ data: { orderId, workspaceId: order!.workspace_id } }),
+    enabled: !!order && !!onlineProvider,
+  });
+  const refund = useMutation({
+    mutationFn: () => fnRefund({ data: { orderId, workspaceId: order!.workspace_id } }),
+    onSuccess: async ({ confirmed }) => {
+      toast.success(
+        confirmed
+          ? "Refund confirmed by the provider."
+          : "Refund requested. Awaiting provider confirmation.",
+      );
+      await qc.invalidateQueries({ queryKey: ["commerce-order", orderId] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+    onSettled: () => onlinePaymentQ.refetch(),
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["commerce-order", orderId] });
@@ -557,55 +600,98 @@ function OrderDetail() {
               <CreditCard className="h-4 w-4" />
               Payment
             </h3>
-            <Select
-              value={order.payment_status}
-              onValueChange={(v) =>
-                update.mutate({
-                  orderId,
-                  workspaceId: order.workspace_id,
-                  paymentStatus: v as "unpaid" | "paid" | "partially_paid" | "refunded",
-                })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["unpaid", "paid", "partially_paid", "refunded"].map((s) => (
-                  <SelectItem key={s} value={s} className="capitalize">
-                    {s.replaceAll("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              className="w-full"
-              onClick={() => genLink.mutate()}
-              disabled={genLink.isPending}
-            >
-              Generate payment link
-            </Button>
-            {(data?.paymentLinks.length ?? 0) > 0 && (
-              <div className="space-y-1 pt-2 border-t">
-                <div className="text-xs font-medium">Links</div>
-                {data?.paymentLinks.map((l) => (
-                  <div key={l.id} className="flex items-center justify-between text-xs">
-                    <Badge
-                      variant={
-                        l.status === "paid"
-                          ? "default"
-                          : l.status === "active"
-                            ? "secondary"
-                            : "outline"
-                      }
-                    >
-                      {l.status}
-                    </Badge>
-                    <span className="font-mono">/pay/{l.token.slice(0, 10)}</span>
-                    <span>{money(l.amount, l.currency)}</span>
+            {onlineProvider ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  {ONLINE_PAYMENT_LABELS[onlineProvider]} ·{" "}
+                  {onlinePaymentQ.data?.status ?? "awaiting checkout"}
+                  {onlinePaymentQ.data?.mode === "sandbox" ? " · test mode" : ""}
+                </p>
+                {onlinePaymentQ.data?.refundRequested &&
+                  onlinePaymentQ.data.status !== "refunded" && (
+                    <p className="text-sm text-muted-foreground">
+                      Refund requested. Awaiting provider confirmation.
+                    </p>
+                  )}
+                {onlinePaymentQ.data?.canRefund && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={refund.isPending}>
+                        Request full refund
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Refund this payment?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Request a refund of {money(order.total, order.currency)} through{" "}
+                          {ONLINE_PAYMENT_LABELS[onlineProvider]}.
+                          {onlinePaymentQ.data.mode === "sandbox" ? " This is a test payment." : ""}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => refund.mutate()}>
+                          Request refund
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </>
+            ) : (
+              <>
+                <Select
+                  value={order.payment_status}
+                  onValueChange={(v) =>
+                    update.mutate({
+                      orderId,
+                      workspaceId: order.workspace_id,
+                      paymentStatus: v as "unpaid" | "paid" | "partially_paid" | "refunded",
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {["unpaid", "paid", "partially_paid", "refunded"].map((s) => (
+                      <SelectItem key={s} value={s} className="capitalize">
+                        {s.replaceAll("_", " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  className="w-full"
+                  onClick={() => genLink.mutate()}
+                  disabled={genLink.isPending}
+                >
+                  Generate payment link
+                </Button>
+                {(data?.paymentLinks.length ?? 0) > 0 && (
+                  <div className="space-y-1 pt-2 border-t">
+                    <div className="text-xs font-medium">Links</div>
+                    {data?.paymentLinks.map((l) => (
+                      <div key={l.id} className="flex items-center justify-between text-xs">
+                        <Badge
+                          variant={
+                            l.status === "paid"
+                              ? "default"
+                              : l.status === "active"
+                                ? "secondary"
+                                : "outline"
+                          }
+                        >
+                          {l.status}
+                        </Badge>
+                        <span className="font-mono">/pay/{l.token.slice(0, 10)}</span>
+                        <span>{money(l.amount, l.currency)}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </Card>
         </div>
