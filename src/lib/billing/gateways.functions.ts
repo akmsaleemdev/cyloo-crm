@@ -15,7 +15,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { formatGatewayErrors, hasGatewayErrors, validateGatewayForm } from "./gateway-validation";
-import { listBillingProviders } from "./providers";
+import { isCatalogOnlyGateway, isRetiredGateway, listBillingProviders } from "./providers";
 import { sbAny } from "@/lib/supabase/untyped";
 
 // Keep select() strings opaque to the type-level parser (typecheck perf).
@@ -148,12 +148,82 @@ export const listGateways = createServerFn({ method: "GET" })
       (catalog.find((p) => p.id === "custom")?.supports as Record<string, boolean>) ?? {};
 
     const customs = rows
-      .filter((r) => !known.has(r.provider_id))
+      .filter((r) => !known.has(r.provider_id) && !isRetiredGateway(r.provider_id))
       .map((r) =>
         shape(r.provider_id, r.display_label || r.provider_id, customAdapterSupports, r, false),
       );
 
     return [...builtIns, ...customs];
+  });
+
+/**
+ * Configuration readiness only. A secret reference is not the secret itself,
+ * and this check does not claim provider authentication or live connectivity.
+ * Provider integrations must implement verified sandbox API checks separately.
+ */
+export const checkGatewaySetup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z.object({ provider_id: z.string().min(2).max(40) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.supabase, context.userId);
+
+    if (isRetiredGateway(data.provider_id)) {
+      return { status: "retired" as const, message: "This gateway is retired for new payments." };
+    }
+    if (isCatalogOnlyGateway(data.provider_id)) {
+      return {
+        status: "adapter_pending" as const,
+        message: "The provider adapter is not implemented yet. Saving keys cannot enable checkout.",
+      };
+    }
+
+    const provider = listBillingProviders().find((p) => p.id === data.provider_id);
+    if (!provider || !provider.supports.checkout || !provider.supports.payments) {
+      return {
+        status: "adapter_pending" as const,
+        message: "No verified payment and checkout implementation is registered for this provider.",
+      };
+    }
+
+    const { data: row, error } = await context.supabase
+      .from("payment_gateway_settings")
+      .select("mode, secret_name, webhook_secret_name, webhook_url")
+      .eq("provider_id", data.provider_id)
+      .maybeSingle();
+    if (error) throw new Error("Unable to read gateway configuration");
+    if (!row) return { status: "not_configured" as const, message: "Save the gateway configuration first." };
+
+    const config = row as {
+      mode: "sandbox" | "live";
+      secret_name: string | null;
+      webhook_secret_name: string | null;
+      webhook_url: string | null;
+    };
+    const secretName = config.secret_name;
+    if (!secretName || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(secretName) || !process.env[secretName]) {
+      return {
+        status: "missing_secret" as const,
+        message: "The backend secret is missing. Add it to the server environment using the configured secret name.",
+      };
+    }
+    if (!config.webhook_secret_name || !process.env[config.webhook_secret_name]) {
+      return {
+        status: "missing_webhook_secret" as const,
+        message: "Add the webhook verification secret to the backend environment.",
+      };
+    }
+    if (!config.webhook_url || !config.webhook_url.startsWith("https://")) {
+      return {
+        status: "missing_webhook_url" as const,
+        message: "Configure the public HTTPS webhook callback URL.",
+      };
+    }
+    return {
+      status: "configuration_ready" as const,
+      message: "Required configuration references are present. Provider API authentication, webhook verification and test transactions are still required.",
+    };
   });
 
 /** Enable or disable a gateway platform-wide. */
@@ -165,6 +235,10 @@ export const setGatewayEnabled = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
+      throw new Error("This gateway is not available for new payments until a verified adapter is implemented.");
+    }
 
     if (!data.enabled) {
       const { data: row } = await supabase
@@ -208,6 +282,10 @@ export const setDefaultGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id)) {
+      throw new Error("An unimplemented or retired gateway cannot be the default.");
+    }
 
     // Clear the current default first — a partial unique index enforces one.
     const clear = await supabase
@@ -311,6 +389,10 @@ export const upsertGateway = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertSuperAdmin(supabase, userId);
+
+    if (data.enabled && (isCatalogOnlyGateway(data.provider_id) || isRetiredGateway(data.provider_id))) {
+      throw new Error("This gateway cannot be enabled until its real payment adapter is verified.");
+    }
 
     // Same rules the configure dialog applies inline — never trust the client.
     const fieldErrors = validateGatewayForm({

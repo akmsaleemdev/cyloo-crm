@@ -1,4 +1,5 @@
 import { sbAny } from "@/lib/supabase/untyped";
+import { isCatalogOnlyGateway, isRetiredGateway } from "./providers";
 /**
  * Runtime enforcement of the Payment Gateways enable/disable switches.
  *
@@ -65,6 +66,7 @@ export async function isGatewayEnabled(
   providerId: string,
   workspaceId?: string | null,
 ) {
+  if (isCatalogOnlyGateway(providerId) || isRetiredGateway(providerId)) return false;
   const row = (await platformGateways(supabase)).find((r) => r.provider_id === providerId);
   if (!row?.enabled) return false;
 
@@ -87,7 +89,9 @@ export async function enabledGatewayIds(
   supabase: Client,
   workspaceId?: string | null,
 ): Promise<string[]> {
-  const ids = (await platformGateways(supabase)).filter((r) => r.enabled).map((r) => r.provider_id);
+  const ids = (await platformGateways(supabase))
+    .filter((r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id))
+    .map((r) => r.provider_id);
 
   const overrides = await workspaceOverrides(supabase, workspaceId);
   return ids.filter((id) => overrides.get(id)?.enabled ?? true);
@@ -101,7 +105,8 @@ export async function defaultGatewayId(
   supabase: Client,
   workspaceId?: string | null,
 ): Promise<string | null> {
-  const rows = (await platformGateways(supabase)).filter((r) => r.enabled);
+  const rows = (await platformGateways(supabase))
+    .filter((r) => r.enabled && !isCatalogOnlyGateway(r.provider_id) && !isRetiredGateway(r.provider_id));
 
   const overrides = await workspaceOverrides(supabase, workspaceId);
   const available = rows.filter((r) => overrides.get(r.provider_id)?.enabled ?? true);

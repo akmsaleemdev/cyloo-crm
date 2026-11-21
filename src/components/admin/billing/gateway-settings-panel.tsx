@@ -6,6 +6,7 @@
  * Rendered both on Admin → Payment Gateways and Platform Settings → Payments.
  */
 import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Plus, Settings2, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { GatewayAuditLog } from "./gateway-audit-log";
+import { GatewayLogo } from "./gateway-logo";
 import { GatewayPermissionNotice } from "./gateway-permission-notice";
 import { GatewayTestWebhook } from "./gateway-test-webhook";
 import { GatewayWebhookHealth } from "./gateway-webhook-health";
@@ -40,12 +42,14 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   deleteGateway,
+  checkGatewaySetup,
   listGateways,
   setDefaultGateway,
   setGatewayEnabled,
   setGatewayMode,
   upsertGateway,
 } from "@/lib/billing/gateways.functions";
+import { isCatalogOnlyGateway } from "@/lib/billing/providers";
 import {
   hasGatewayErrors,
   validateGatewayForm,
@@ -120,12 +124,14 @@ const fromGateway = (g: Gateway): FormState => ({
 
 export function GatewaySettingsPanel({ compact = false }: { compact?: boolean }) {
   const qc = useQueryClient();
+  const reduceMotion = useReducedMotion();
   const gatewaysFn = useServerFn(listGateways);
   const toggleFn = useServerFn(setGatewayEnabled);
   const defaultFn = useServerFn(setDefaultGateway);
   const modeFn = useServerFn(setGatewayMode);
   const upsertFn = useServerFn(upsertGateway);
   const deleteFn = useServerFn(deleteGateway);
+  const checkSetupFn = useServerFn(checkGatewaySetup);
 
   const [editing, setEditing] = useState<{ mode: "add" | "edit"; form: FormState } | null>(null);
 
@@ -168,12 +174,22 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const checkSetupMut = useMutation({
+    mutationFn: (provider_id: string) => checkSetupFn({ data: { provider_id } }),
+    onSuccess: (result) => {
+      if (result.status === "configuration_ready") toast.info(result.message);
+      else toast.warning(result.message);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const saveMut = useMutation({
     mutationFn: (form: FormState) => upsertFn({ data: form }),
     onSuccess: (res) => {
-      toast.success(`${res.provider_id} saved`);
+      toast.success(`${res.provider_id} settings saved — checking setup`);
       setEditing(null);
       invalidate();
+      checkSetupMut.mutate(res.provider_id);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -218,95 +234,99 @@ export function GatewaySettingsPanel({ compact = false }: { compact?: boolean })
         </Button>
       </div>
 
-      <div className={`grid gap-3 ${compact ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
+
+      <div className={`grid gap-4 ${compact ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {gatewaysQ.isLoading && (
-          <Card className="p-4 text-sm text-muted-foreground">Loading gateways</Card>
+          <Card className="p-5 text-sm text-muted-foreground">Loading gateways</Card>
         )}
-        {gateways.map((p) => {
-          const implemented = Boolean(p.supports.payments && p.supports.checkout);
+        {gateways.map((p, index) => {
+          const catalogOnly = isCatalogOnlyGateway(p.id);
+          const implemented = !catalogOnly && Boolean(p.supports.payments && p.supports.checkout);
           const busy = toggleMut.isPending && toggleMut.variables?.provider_id === p.id;
+          const status = catalogOnly ? "Integration pending" : !implemented ? "Adapter unavailable" : p.enabled ? "Enabled" : "Blocked";
           return (
-            <Card key={p.id} className={`p-4 space-y-3 ${p.enabled ? "" : "opacity-70"}`}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <div className="font-medium flex items-center gap-2 truncate">
-                    {p.displayName}
-                    {p.isDefault && (
-                      <Badge variant="default" className="text-[11px]">
-                        Default
-                      </Badge>
-                    )}
-                    {!p.builtIn && (
-                      <Badge variant="outline" className="text-[11px]">
-                        Custom
-                      </Badge>
-                    )}
+            <motion.div
+              key={p.id}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.24, delay: reduceMotion ? 0 : Math.min(index, 8) * 0.035 }}
+              whileHover={reduceMotion ? undefined : { y: -3 }}
+              className="min-w-0"
+            >
+              <Card className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow duration-200 hover:shadow-md">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <GatewayLogo providerId={p.id} name={p.displayName} />
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-sm font-semibold text-foreground">{p.displayName}</span>
+                        {p.isDefault && <Badge variant="default" className="text-[10px]">Default</Badge>}
+                        {!p.builtIn && <Badge variant="outline" className="text-[10px]">Custom</Badge>}
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {implemented ? <ShieldCheck className="h-3.5 w-3.5" /> : <ShieldAlert className="h-3.5 w-3.5" />}
+                        {status}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                    {implemented ? (
-                      <ShieldCheck className="w-3 h-3" />
-                    ) : (
-                      <ShieldAlert className="w-3 h-3" />
-                    )}
-                    {implemented ? "Full adapter" : "Stub adapter"} · {p.mode}
-                    {p.secretName ? " · key set" : " · no key"}
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : (
+                    <Switch
+                      checked={p.enabled}
+                      disabled={catalogOnly}
+                      aria-label={`${p.enabled ? "Disable" : "Enable"} ${p.displayName}`}
+                      onCheckedChange={(enabled) => toggleMut.mutate({ provider_id: p.id, enabled })}
+                    />
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <p className="text-[11px] text-muted-foreground">Environment</p>
+                    <p className="mt-1 text-xs font-medium capitalize text-foreground">{p.mode}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <p className="text-[11px] text-muted-foreground">Credentials</p>
+                    <p className="mt-1 text-xs font-medium text-foreground">{p.secretName ? "Secret reference set" : "Not configured"}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <p className="text-[11px] text-muted-foreground">Webhook</p>
+                    <p className="mt-1 text-xs font-medium text-foreground">{p.webhookUrl && p.webhookSecretName ? "References set" : "Incomplete"}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-muted/30 p-3">
+                    <p className="text-[11px] text-muted-foreground">New payments</p>
+                    <p className="mt-1 text-xs font-medium text-foreground">{p.enabled && implemented ? "Allowed by switch" : "Blocked"}</p>
                   </div>
                 </div>
-                {busy ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground mt-1" />
-                ) : (
-                  <Switch
-                    checked={p.enabled}
-                    aria-label={`${p.enabled ? "Disable" : "Enable"} ${p.displayName}`}
-                    onCheckedChange={(v) => toggleMut.mutate({ provider_id: p.id, enabled: v })}
-                  />
-                )}
-              </div>
 
-              <div className="flex flex-wrap gap-1 text-[11px]">
-                {Object.entries(p.supports)
-                  .filter(([, v]) => v)
-                  .map(([k]) => (
-                    <span key={k} className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                      {k.replace(/_/g, " ")}
+                {catalogOnly && (
+                  <p className="text-xs leading-5 text-muted-foreground">
+                    Provider API integration is pending. Adding credentials does not activate checkout.
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(p.supports).filter(([, value]) => value).slice(0, 4).map(([capability]) => (
+                    <span key={capability} className="rounded-md border border-border bg-muted/30 px-2 py-1 text-[10px] text-muted-foreground">
+                      {capability.replace(/_/g, " ")}
                     </span>
                   ))}
-              </div>
+                </div>
 
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8"
-                  onClick={() => setEditing({ mode: "edit", form: fromGateway(p) })}
-                >
-                  <Settings2 className="w-4 h-4 " /> Configure
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8"
-                  disabled={p.isDefault || defaultMut.isPending}
-                  onClick={() => defaultMut.mutate({ provider_id: p.id })}
-                >
-                  {p.isDefault ? "Default gateway" : "Make default"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8"
-                  disabled={modeMut.isPending}
-                  onClick={() =>
-                    modeMut.mutate({
-                      provider_id: p.id,
-                      mode: p.mode === "live" ? "sandbox" : "live",
-                    })
-                  }
-                >
-                  Switch to {p.mode === "live" ? "sandbox" : "live"}
-                </Button>
-              </div>
-            </Card>
+                <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-border pt-4">
+                  <Button size="sm" variant="outline" className="h-8" onClick={() => setEditing({ mode: "edit", form: fromGateway(p) })}>
+                    <Settings2 className="mr-1 h-3.5 w-3.5" /> Configure
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-8" disabled={checkSetupMut.isPending} onClick={() => checkSetupMut.mutate(p.id)}>
+                    Check setup
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8" disabled={catalogOnly || p.isDefault || defaultMut.isPending} onClick={() => defaultMut.mutate({ provider_id: p.id })}>
+                    {p.isDefault ? "Default gateway" : "Make default"}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8" disabled={catalogOnly || modeMut.isPending} onClick={() => modeMut.mutate({ provider_id: p.id, mode: p.mode === "live" ? "sandbox" : "live" })}>
+                    Switch to {p.mode === "live" ? "sandbox" : "live"}
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
           );
         })}
       </div>
@@ -351,6 +371,7 @@ function GatewayDialog({
 }) {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [submitted, setSubmitted] = useState(false);
+  const reduceMotion = useReducedMotion();
   useEffect(() => {
     if (state) {
       setForm(state.form);
@@ -384,8 +405,10 @@ function GatewayDialog({
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto border-border bg-card p-0 shadow-xl">
+        <motion.div initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22 }} className="p-6 space-y-5">
         <DialogHeader>
+          {!isAdd && <div className="mb-2"><GatewayLogo providerId={form.provider_id} name={form.display_label || form.provider_id} /></div>}
           <DialogTitle>
             {isAdd ? "Add payment gateway" : `Configure ${form.display_label || form.provider_id}`}
           </DialogTitle>
@@ -454,6 +477,7 @@ function GatewayDialog({
               <div className="flex items-center gap-2 h-9">
                 <Switch
                   checked={form.enabled}
+                  disabled={isCatalogOnlyGateway(form.provider_id)}
                   aria-label="Gateway enabled"
                   onCheckedChange={(v) => patch({ enabled: v })}
                 />
@@ -505,7 +529,7 @@ function GatewayDialog({
             <Input
               value={form.webhook_url}
               onChange={(e) => patch({ webhook_url: e.target.value })}
-              placeholder="https:///api/public/webhooks/my-gateway"
+              placeholder="https://your-domain.com/api/public/webhooks/provider"
               aria-invalid={Boolean(errors.webhook_url)}
             />
             <FieldError message={errors.webhook_url} />
@@ -569,6 +593,7 @@ function GatewayDialog({
             </Button>
           </div>
         </DialogFooter>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
